@@ -8,7 +8,7 @@
   /* Primary: Dark Blue (#1e3a5f) from logo */
   /* Accent: Green (#10b981) from logo */
   --radius: 0.625rem;
-  
+
   /* Base Colors - Light Theme */
   --background: oklch(0.99 0 0);
   --foreground: oklch(0.15 0 0);
@@ -16,23 +16,23 @@
   --card-foreground: oklch(0.15 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.15 0 0);
-  
+
   /* Primary - Dark Blue from logo */
   --primary: oklch(0.35 0.08 250);
   --primary-foreground: oklch(0.98 0 0);
-  
+
   /* Secondary - Muted version of green */
   --secondary: oklch(0.95 0.01 165);
   --secondary-foreground: oklch(0.25 0.05 250);
-  
+
   /* Accent - Green from logo */
   --accent: oklch(0.65 0.15 165);
   --accent-foreground: oklch(0.98 0 0);
-  
+
   /* Muted colors */
   --muted: oklch(0.96 0 0);
   --muted-foreground: oklch(0.55 0 0);
-  
+
   /* Semantic colors */
   --success: oklch(0.65 0.15 165);
   --success-foreground: oklch(0.98 0 0);
@@ -42,23 +42,23 @@
   --error-foreground: oklch(0.98 0 0);
   --info: oklch(0.55 0.12 240);
   --info-foreground: oklch(0.98 0 0);
-  
+
   /* Destructive (red for errors) */
   --destructive: oklch(0.60 0.22 25);
   --destructive-foreground: oklch(0.98 0 0);
-  
+
   /* Borders and inputs */
   --border: oklch(0.90 0 0);
   --input: oklch(0.90 0 0);
   --ring: oklch(0.35 0.08 250);
-  
+
   /* Charts */
   --chart-1: oklch(0.65 0.15 165);
   --chart-2: oklch(0.55 0.12 240);
   --chart-3: oklch(0.75 0.15 70);
   --chart-4: oklch(0.60 0.22 25);
   --chart-5: oklch(0.35 0.08 250);
-  
+
   /* Sidebar */
   --sidebar: oklch(0.98 0 0);
   --sidebar-foreground: oklch(0.15 0 0);
@@ -132,23 +132,23 @@ body {
   --card-foreground: oklch(0.98 0 0);
   --popover: oklch(0.18 0 0);
   --popover-foreground: oklch(0.98 0 0);
-  
+
   /* Primary - Lighter blue for dark mode */
   --primary: oklch(0.65 0.12 250);
   --primary-foreground: oklch(0.12 0 0);
-  
+
   /* Secondary */
   --secondary: oklch(0.25 0.02 165);
   --secondary-foreground: oklch(0.98 0 0);
-  
+
   /* Accent - Brighter green for dark mode */
   --accent: oklch(0.70 0.18 165);
   --accent-foreground: oklch(0.12 0 0);
-  
+
   /* Muted colors */
   --muted: oklch(0.22 0 0);
   --muted-foreground: oklch(0.70 0 0);
-  
+
   /* Semantic colors - Adjusted for dark mode */
   --success: oklch(0.70 0.18 165);
   --success-foreground: oklch(0.12 0 0);
@@ -158,23 +158,23 @@ body {
   --error-foreground: oklch(0.98 0 0);
   --info: oklch(0.60 0.15 240);
   --info-foreground: oklch(0.98 0 0);
-  
+
   /* Destructive */
   --destructive: oklch(0.65 0.25 25);
   --destructive-foreground: oklch(0.98 0 0);
-  
+
   /* Borders and inputs */
   --border: oklch(0.25 0 0);
   --input: oklch(0.25 0 0);
   --ring: oklch(0.65 0.12 250);
-  
+
   /* Charts - Adjusted for dark mode */
   --chart-1: oklch(0.70 0.18 165);
   --chart-2: oklch(0.60 0.15 240);
   --chart-3: oklch(0.80 0.18 70);
   --chart-4: oklch(0.65 0.25 25);
   --chart-5: oklch(0.65 0.12 250);
-  
+
   /* Sidebar */
   --sidebar: oklch(0.18 0 0);
   --sidebar-foreground: oklch(0.98 0 0);
@@ -190,6 +190,7 @@ body {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
     transition: background-color 0.2s ease, color 0.2s ease;
@@ -206,7 +207,7 @@ body {
   }
 
   /* Improved scrollbar styling */
-  ::-webkit-scrollbar {
+  /* ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
@@ -221,6 +222,5 @@ body {
 
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-muted-foreground/50;
-  }
+  } */
 }
-
