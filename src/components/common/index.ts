@@ -1,4 +1,6 @@
 export * from './Breadcrumbs'
+export * from './BlockContent'
+export * from './ModalDialog'
 export * from './ConfirmDialog'
 export * from './EmptyState'
 export * from './ErrorBoundary'

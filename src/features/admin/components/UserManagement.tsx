@@ -1,33 +1,16 @@
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDeleteUser } from '../hooks/useUsers'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
-import { Button } from '../../../components/ui/button'
 import { UserForm } from './UserForm'
 import type { User } from '../../../types/user.types'
-import { DataTable } from '@/components/ui/data-table'
 import { createUserColumns } from './UserTableColumns'
 import { useDataTable } from '@/hooks/useDataTable'
 import { userService } from '../api/user.service'
-import { DataTableFacetedFilter } from '@/components/ui/data-table/data-table-faceted-filter'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
-import { UserPlus, Users, AlertCircle } from 'lucide-react'
+import { DataTable, Button } from '@/components/ui'
+import { BlockContent, ModalDialog } from '@/components/common'
+import { AlertCircle, PlusCircle } from 'lucide-react'
 import { useToast } from '@/components/common/NotificationToast'
-
-const roleOptions = [
-  { label: "طالب", value: "student" },
-  { label: "مشرف", value: "supervisor" },
-  { label: "لجنة المناقشة", value: "discussion_committee" },
-  { label: "لجنة المشاريع", value: "projects_committee" },
-  { label: "مدير", value: "admin" },
-]
-
-const statusOptions = [
-  { label: "نشط", value: "active" },
-  { label: "غير نشط", value: "inactive" },
-  { label: "معلق", value: "suspended" },
-]
 
 export function UserManagement() {
   const { t } = useTranslation()
@@ -40,7 +23,6 @@ export function UserManagement() {
 
   const {
     data: users,
-    totalCount,
     pageCount,
     isLoading,
     error,
@@ -64,11 +46,11 @@ export function UserManagement() {
     if (!userToDelete) return
     try {
       await deleteUser.mutateAsync(userToDelete.id)
-      showToast(t('user.deleteSuccess') || 'تم حذف المستخدم بنجاح', 'success')
+      showToast(t('user.deleteSuccess'), 'success')
       setUserToDelete(null)
       setShowDeleteDialog(false)
-    } catch (err) {
-      showToast(t('user.deleteError') || 'فشل حذف المستخدم', 'error')
+    } catch {
+      showToast(t('user.deleteError'), 'error')
     }
   }
 
@@ -89,12 +71,13 @@ export function UserManagement() {
   )
 
   const handleFormSuccess = () => {
+    const wasEditing = !!editingUser
     setShowForm(false)
     setEditingUser(null)
     showToast(
-      editingUser 
-        ? (t('user.updateSuccess') || 'تم تحديث المستخدم بنجاح')
-        : (t('user.createSuccess') || 'تم إنشاء المستخدم بنجاح'),
+      wasEditing
+        ? (t('user.updateSuccess'))
+        : (t('user.createSuccess')),
       'success'
     )
   }
@@ -104,95 +87,56 @@ export function UserManagement() {
     setEditingUser(null)
   }
 
+  const actions = useMemo(() => (
+    <Button onClick={() => {
+      setEditingUser(null)
+      setShowForm(true)
+    }}><PlusCircle className="mr-2 h-4 w-4" />{t('common.add')}</Button>
+  ), [t])
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Users className="h-6 w-6" />
-            {t('nav.users') || 'إدارة المستخدمين'}
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t('user.managementDescription') || 'التحكم الكامل في حسابات المستخدمين وإدارة صلاحياتهم'}
-          </p>
-        </div>
-        <Button
-          onClick={() => {
-            setEditingUser(null)
-            setShowForm(true)
+    <>
+      <BlockContent title={t('user.userList')} actions={actions}>
+        <DataTable
+          columns={columns}
+          data={users}
+          isLoading={isLoading}
+          error={error}
+          pageCount={pageCount}
+          pageIndex={pagination.pageIndex}
+          pageSize={pagination.pageSize}
+          onPaginationChange={(pageIndex, pageSize) => {
+            setPagination({ pageIndex, pageSize })
           }}
-          className="w-full sm:w-auto"
-        >
-          <UserPlus className="mr-2 h-4 w-4" />
-          {t('user.addUser') || 'إضافة مستخدم جديد'}
-        </Button>
-      </div>
+          sorting={sorting}
+          onSortingChange={setSorting}
+          columnFilters={columnFilters}
+          onColumnFiltersChange={setColumnFilters}
+          searchValue={globalFilter}
+          onSearchChange={setGlobalFilter}
+          searchPlaceholder={t('user.searchPlaceholder')}
+          rtl={rtl}
+          enableFiltering={true}
+          enableViews={true}
+        />
+      </BlockContent>
 
       {error && (
-        <Card className="border-destructive">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 text-destructive">
-              <AlertCircle className="h-5 w-5" />
-              <span>{t('user.loadError') || 'حدث خطأ أثناء تحميل المستخدمين'}</span>
-            </div>
-          </CardContent>
-        </Card>
+        <BlockContent variant="container" className="border-destructive">
+          <div className="flex items-center gap-2 text-destructive">
+            <AlertCircle className="h-5 w-5" />
+            <span>{t('user.loadError')}</span>
+          </div>
+        </BlockContent>
       )}
 
-      <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingUser 
-                ? (t('user.editUser') || 'تعديل المستخدم')
-                : (t('user.createUser') || 'إضافة مستخدم جديد')
-              }
-            </DialogTitle>
-          </DialogHeader>
-          <UserForm
-            user={editingUser}
-            onSuccess={handleFormSuccess}
-            onCancel={handleFormCancel}
-          />
-        </DialogContent>
-      </Dialog>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>{t('user.userList') || 'قائمة المستخدمين'}</span>
-            {totalCount !== undefined && (
-              <span className="text-sm font-normal text-muted-foreground">
-                {totalCount} {t('user.totalUsers') || 'مستخدم'}
-              </span>
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <DataTable
-            columns={columns}
-            data={users}
-            isLoading={isLoading}
-            error={error}
-            pageCount={pageCount}
-            pageIndex={pagination.pageIndex}
-            pageSize={pagination.pageSize}
-            onPaginationChange={(pageIndex, pageSize) => {
-              setPagination({ pageIndex, pageSize })
-            }}
-            sorting={sorting}
-            onSortingChange={setSorting}
-            columnFilters={columnFilters}
-            onColumnFiltersChange={setColumnFilters}
-            searchValue={globalFilter}
-            onSearchChange={setGlobalFilter}
-            searchPlaceholder={t('user.searchPlaceholder') || 'البحث بالاسم أو البريد الإلكتروني...'}
-            rtl={rtl}
-            enableFiltering={true}
-            enableViews={true}
-          />
-        </CardContent>
-      </Card>
+      <ModalDialog open={showForm} onOpenChange={setShowForm} title={editingUser ? t('user.editUser') : t('user.createUser')}>
+        <UserForm
+          user={editingUser}
+          onSuccess={handleFormSuccess}
+          onCancel={handleFormCancel}
+        />
+      </ModalDialog>
 
       <ConfirmDialog
         open={showDeleteDialog}
@@ -201,19 +145,17 @@ export function UserManagement() {
           setUserToDelete(null)
         }}
         onConfirm={handleDelete}
-        title={t('user.confirmDelete') || 'تأكيد الحذف'}
+        title={t('user.confirmDelete')}
         description={
           userToDelete
-            ? t('user.confirmDeleteDescription', { name: userToDelete.name }) ||
-              `هل أنت متأكد من حذف المستخدم "${userToDelete.name}"؟ لا يمكن التراجع عن هذا الإجراء.`
+            ? t('user.confirmDeleteDescription', { name: userToDelete.name })
             : ''
         }
-        confirmLabel={t('common.delete') || 'حذف'}
-        cancelLabel={t('common.cancel') || 'إلغاء'}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
         variant="destructive"
-        isLoading={deleteUser.isPending}
       />
-    </div>
+    </>
   )
 }
 
