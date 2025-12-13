@@ -1,4 +1,5 @@
 import { Component, ReactNode, ErrorInfo } from 'react'
+import i18n from '@/lib/i18n/i18n'
 
 interface ErrorBoundaryProps {
   children: ReactNode
@@ -33,10 +34,10 @@ export class ErrorBoundary extends Component<
         this.props.fallback || (
           <div className="flex flex-col items-center justify-center p-8">
             <h2 className="text-xl font-bold text-destructive">
-              Something went wrong
+              {i18n.t('error.errorBoundary.title')}
             </h2>
             <p className="mt-2 text-muted-foreground">
-              {this.state.error?.message || 'An unexpected error occurred'}
+              {this.state.error?.message || i18n.t('error.errorBoundary.message')}
             </p>
           </div>
         )

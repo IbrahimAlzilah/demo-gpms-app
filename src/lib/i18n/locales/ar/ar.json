@@ -69,6 +69,8 @@
         "logoutSuccess": "تم تسجيل الخروج بنجاح",
         "emailPlaceholder": "example@university.edu",
         "passwordPlaceholder": "••••••••",
+        "showPassword": "إظهار كلمة المرور",
+        "hidePassword": "إخفاء كلمة المرور",
         "validation": {
             "emailRequired": "البريد الإلكتروني مطلوب",
             "emailInvalid": "البريد الإلكتروني غير صحيح",
@@ -706,5 +708,26 @@
     },
     "admin": {
         "usersDescription": "التحكم الكامل في حسابات المستخدمين وإدارة صلاحياتهم"
+    },
+    "error": {
+        "errorBoundary": {
+            "title": "حدث خطأ",
+            "message": "حدث خطأ غير متوقع"
+        },
+        "notFound": {
+            "title": "404 - الصفحة غير موجودة"
+        },
+        "unauthorized": {
+            "title": "403",
+            "heading": "غير مصرح بالوصول",
+            "message": "ليس لديك الصلاحية للوصول إلى هذه الصفحة.",
+            "backHome": "العودة إلى الصفحة الرئيسية"
+        }
+    },
+    "fileUpload": {
+        "dragDrop": "اسحب الملفات هنا أو اضغط للاختيار",
+        "maxSize": "الحد الأقصى:",
+        "selectFiles": "اختر الملفات",
+        "fileExceedsSize": "الملف {{name}} يتجاوز الحد الأقصى للحجم ({{size}})"
     }
 }

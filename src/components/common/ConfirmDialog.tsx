@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { AlertTriangle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { ReactNode } from 'react'
 
 interface ConfirmDialogProps {
@@ -23,11 +24,14 @@ export function ConfirmDialog({
   onConfirm,
   title,
   description,
-  confirmLabel = 'تأكيد',
-  cancelLabel = 'إلغاء',
+  confirmLabel,
+  cancelLabel,
   variant = 'default',
   icon,
 }: ConfirmDialogProps) {
+  const { t } = useTranslation()
+  const defaultConfirmLabel = confirmLabel || t('common.confirm')
+  const defaultCancelLabel = cancelLabel || t('common.cancel')
   const handleClose = () => {
     onOpenChange?.(false)
     onClose?.()
@@ -54,13 +58,13 @@ export function ConfirmDialog({
         </DialogHeader>
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={handleClose}>
-            {cancelLabel}
+            {defaultCancelLabel}
           </Button>
           <Button
             variant={variant === 'destructive' ? 'destructive' : 'default'}
             onClick={handleConfirm}
           >
-            {confirmLabel}
+            {defaultConfirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>
