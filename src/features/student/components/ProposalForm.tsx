@@ -1,0 +1,323 @@
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
+import { useCreateProposal } from '../hooks/useProposals'
+import { useAuthStore } from '../../auth/store/auth.store'
+import { usePeriodCheck } from '../../../hooks/usePeriodCheck'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import { FileUpload } from '@/components/common/FileUpload'
+import { AlertCircle, FileText, Loader2, Calendar, AlertTriangle } from 'lucide-react'
+import type { Proposal } from '@/types/project.types'
+
+interface ProposalFormData {
+  title: string
+  description: string
+  objectives: string
+  methodology?: string
+  expectedOutcomes?: string
+}
+
+interface ProposalFormProps {
+  onSuccess?: () => void
+}
+
+export function ProposalForm({ onSuccess }: ProposalFormProps) {
+  const { t } = useTranslation()
+  const { user } = useAuthStore()
+  const createProposal = useCreateProposal()
+  const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('proposal_submission')
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([])
+  const [error, setError] = useState('')
+  
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    watch,
+  } = useForm<ProposalFormData>({
+    defaultValues: {
+      title: '',
+      description: '',
+      objectives: '',
+      methodology: '',
+      expectedOutcomes: '',
+    },
+  })
+
+  const title = watch('title')
+  const description = watch('description')
+  const objectives = watch('objectives')
+
+  const onSubmit = async (data: ProposalFormData) => {
+    if (!user) {
+      setError(t('proposal.authRequired') || 'يجب تسجيل الدخول أولاً')
+      return
+    }
+
+    if (!isPeriodActive) {
+      setError(t('proposal.periodClosed') || 'فترة تقديم المقترحات غير مفتوحة حالياً')
+      return
+    }
+
+    setError('')
+
+    try {
+      await createProposal.mutateAsync({
+        title: data.title.trim(),
+        description: data.description.trim(),
+        objectives: data.objectives.trim(),
+        methodology: data.methodology?.trim(),
+        expectedOutcomes: data.expectedOutcomes?.trim(),
+        submitterId: user.id,
+      })
+      
+      // Reset form and files
+      reset()
+      setAttachedFiles([])
+      setError('')
+      onSuccess?.()
+    } catch (err) {
+      setError(
+        err instanceof Error 
+          ? err.message 
+          : t('proposal.submitError') || 'حدث خطأ أثناء إرسال المقترح'
+      )
+    }
+  }
+
+  const handleFileChange = (files: File[]) => {
+    setAttachedFiles(files)
+    setError('')
+  }
+
+  if (periodLoading) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <LoadingSpinner />
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (!isPeriodActive) {
+    return (
+      <Card className="border-warning">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-warning" />
+            <CardTitle>{t('proposal.periodClosed') || 'فترة التقديم مغلقة'}</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-start gap-3 p-4 bg-warning/10 border border-warning/20 rounded-lg">
+            <Calendar className="h-5 w-5 text-warning mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-warning-foreground">
+                {t('proposal.periodClosedMessage') || 'فترة تقديم المقترحات غير مفتوحة حالياً'}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {t('proposal.periodClosedDescription') || 'يرجى الانتظار حتى يتم فتح فترة التقديم من قبل لجنة المشاريع'}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <FileText className="h-5 w-5 text-primary" />
+          <div>
+            <CardTitle>{t('proposal.submitNew') || 'تقديم مقترح جديد'}</CardTitle>
+            <CardDescription>
+              {t('proposal.submitDescription') || 'املأ النموذج أدناه لتقديم مقترح مشروع تخرج'}
+            </CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {error && (
+            <div className="flex items-start gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
+              <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="title">
+              {t('proposal.title') || 'عنوان المقترح'} <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="title"
+              {...register('title', {
+                required: t('proposal.validation.titleRequired') || 'عنوان المقترح مطلوب',
+                minLength: {
+                  value: 5,
+                  message: t('proposal.validation.titleMinLength') || 'العنوان يجب أن يكون 5 أحرف على الأقل',
+                },
+                maxLength: {
+                  value: 200,
+                  message: t('proposal.validation.titleMaxLength') || 'العنوان يجب أن يكون أقل من 200 حرف',
+                },
+              })}
+              placeholder={t('proposal.titlePlaceholder') || 'أدخل عنوان المقترح'}
+              className={errors.title ? 'border-destructive' : ''}
+              aria-invalid={!!errors.title}
+            />
+            {errors.title && (
+              <p className="text-sm text-destructive flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors.title.message}
+              </p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              {title?.length || 0} / 200 {t('common.characters') || 'حرف'}
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">
+              {t('proposal.description') || 'الوصف'} <span className="text-destructive">*</span>
+            </Label>
+            <Textarea
+              id="description"
+              {...register('description', {
+                required: t('proposal.validation.descriptionRequired') || 'الوصف مطلوب',
+                minLength: {
+                  value: 50,
+                  message: t('proposal.validation.descriptionMinLength') || 'الوصف يجب أن يكون 50 حرفاً على الأقل',
+                },
+              })}
+              placeholder={t('proposal.descriptionPlaceholder') || 'أدخل وصفاً مفصلاً للمقترح'}
+              rows={5}
+              className={errors.description ? 'border-destructive' : ''}
+              aria-invalid={!!errors.description}
+            />
+            {errors.description && (
+              <p className="text-sm text-destructive flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors.description.message}
+              </p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              {description?.length || 0} {t('common.characters') || 'حرف'}
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="objectives">
+              {t('proposal.objectives') || 'الأهداف'} <span className="text-destructive">*</span>
+            </Label>
+            <Textarea
+              id="objectives"
+              {...register('objectives', {
+                required: t('proposal.validation.objectivesRequired') || 'الأهداف مطلوبة',
+                minLength: {
+                  value: 30,
+                  message: t('proposal.validation.objectivesMinLength') || 'الأهداف يجب أن تكون 30 حرفاً على الأقل',
+                },
+              })}
+              placeholder={t('proposal.objectivesPlaceholder') || 'اذكر أهداف المشروع'}
+              rows={4}
+              className={errors.objectives ? 'border-destructive' : ''}
+              aria-invalid={!!errors.objectives}
+            />
+            {errors.objectives && (
+              <p className="text-sm text-destructive flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors.objectives.message}
+              </p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              {objectives?.length || 0} {t('common.characters') || 'حرف'}
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="methodology">
+              {t('proposal.methodology') || 'المنهجية'} ({t('common.optional') || 'اختياري'})
+            </Label>
+            <Textarea
+              id="methodology"
+              {...register('methodology')}
+              placeholder={t('proposal.methodologyPlaceholder') || 'اذكر المنهجية المتبعة (اختياري)'}
+              rows={4}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="expectedOutcomes">
+              {t('proposal.expectedOutcomes') || 'النتائج المتوقعة'} ({t('common.optional') || 'اختياري'})
+            </Label>
+            <Textarea
+              id="expectedOutcomes"
+              {...register('expectedOutcomes')}
+              placeholder={t('proposal.expectedOutcomesPlaceholder') || 'اذكر النتائج المتوقعة (اختياري)'}
+              rows={4}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>
+              {t('proposal.attachments') || 'المرفقات'} ({t('common.optional') || 'اختياري'})
+            </Label>
+            <FileUpload
+              value={attachedFiles}
+              onChange={handleFileChange}
+              accept=".pdf,.doc,.docx,.txt"
+              maxSize={10 * 1024 * 1024}
+              multiple={true}
+            />
+            <p className="text-xs text-muted-foreground">
+              {t('proposal.fileUploadHint') || 'يمكن رفع ملفات PDF, Word, أو نص. الحد الأقصى 10MB لكل ملف'}
+            </p>
+          </div>
+
+          <div className="flex gap-2 justify-end pt-4 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                reset()
+                setAttachedFiles([])
+                setError('')
+              }}
+              disabled={createProposal.isPending}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={createProposal.isPending || !isPeriodActive}
+            >
+              {createProposal.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t('proposal.submitting') || 'جاري الإرسال...'}
+                </>
+              ) : (
+                <>
+                  <FileText className="mr-2 h-4 w-4" />
+                  {t('proposal.submit') || 'إرسال المقترح'}
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  )
+}
+
+
