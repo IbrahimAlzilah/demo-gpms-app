@@ -1,11 +1,11 @@
 import { useTranslation } from 'react-i18next'
-import { MainLayout } from '../../../app/layouts/MainLayout'
+import { MainLayout } from '../../../layouts/MainLayout'
 import { TimePeriodManager } from '../../../features/projects-committee/components/TimePeriodManager'
 import { Calendar } from 'lucide-react'
 
 export function PeriodsPage() {
   const { t } = useTranslation()
-  
+
   return (
     <MainLayout>
       <div className="space-y-6">

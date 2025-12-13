@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { MainLayout } from '../../app/layouts/MainLayout'
+import { MainLayout } from '../../layouts/MainLayout'
 import { ProposalForm } from '../../features/student/components/ProposalForm'
 import { useProposals } from '../../features/student/hooks/useProposals'
 import { useAuthStore } from '../../features/auth/store/auth.store'
@@ -74,7 +74,7 @@ export function ProposalsPage() {
               {t('proposal.pageDescription') || 'قم بتقديم مقترحات مشاريع التخرج أو راجع المقترحات المقدمة'}
             </p>
           </div>
-          <Button 
+          <Button
             onClick={() => setShowForm(!showForm)}
             className="w-full sm:w-auto"
           >
@@ -85,10 +85,10 @@ export function ProposalsPage() {
 
         {/* Proposal Form */}
         {showForm && (
-          <ProposalForm 
+          <ProposalForm
             onSuccess={() => {
               setShowForm(false)
-            }} 
+            }}
           />
         )}
 
@@ -237,9 +237,9 @@ export function ProposalsPage() {
             action={
               userProposals.length === 0
                 ? {
-                    label: t('proposal.submitNew') || 'تقديم مقترح جديد',
-                    onClick: () => setShowForm(true),
-                  }
+                  label: t('proposal.submitNew') || 'تقديم مقترح جديد',
+                  onClick: () => setShowForm(true),
+                }
                 : undefined
             }
           />

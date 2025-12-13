@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
-import { MainLayout } from '../../app/layouts/MainLayout'
+import { MainLayout } from '../../layouts/MainLayout'
 import { ProjectProgressTracker } from '../../features/supervisor/components/ProjectProgressTracker'
 import { TrendingUp } from 'lucide-react'
 
@@ -8,7 +8,7 @@ export function ProgressPage() {
   const { t } = useTranslation()
   const { projectId } = useParams<{ projectId: string }>()
   const defaultProjectId = projectId || '2' // Fallback for development
-  
+
   return (
     <MainLayout>
       <div className="space-y-6">

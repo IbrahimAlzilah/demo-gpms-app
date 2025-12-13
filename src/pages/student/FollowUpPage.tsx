@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { MainLayout } from '../../app/layouts/MainLayout'
+import { MainLayout } from '../../layouts/MainLayout'
 import { ProjectDashboard } from '../../features/student/components/ProjectDashboard'
 import { useProjects } from '../../features/student/hooks/useProjects'
 import { useAuthStore } from '../../features/auth/store/auth.store'

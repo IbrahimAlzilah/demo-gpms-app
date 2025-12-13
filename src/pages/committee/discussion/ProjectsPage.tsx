@@ -1,11 +1,11 @@
 import { useTranslation } from 'react-i18next'
-import { MainLayout } from '../../../app/layouts/MainLayout'
+import { MainLayout } from '../../../layouts/MainLayout'
 import { AssignedProjectsList } from '../../../features/discussion-committee/components/AssignedProjectsList'
 import { Briefcase } from 'lucide-react'
 
 export function DiscussionProjectsPage() {
   const { t } = useTranslation()
-  
+
   return (
     <MainLayout>
       <div className="space-y-6">

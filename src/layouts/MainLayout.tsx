@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { Sidebar } from '../../components/layout/Sidebar'
-import { Header } from '../../components/layout/Header'
-import { Footer } from '../../components/layout/Footer'
-import { Breadcrumbs } from '../../components/common/Breadcrumbs'
+import { Sidebar } from '../components/layout/Sidebar'
+import { Header } from '../components/layout/Header'
+import { Footer } from '../components/layout/Footer'
+import { Breadcrumbs } from '../components/common/Breadcrumbs'
 import { cn } from '@/lib/utils'
 import { isRTL } from '@/lib/utils/rtl'
 

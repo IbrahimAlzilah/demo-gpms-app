@@ -1,11 +1,11 @@
 import { useTranslation } from 'react-i18next'
-import { MainLayout } from '../../../app/layouts/MainLayout'
+import { MainLayout } from '../../../layouts/MainLayout'
 import { SupervisorAssignment } from '../../../features/projects-committee/components/SupervisorAssignment'
 import { UserCheck } from 'lucide-react'
 
 export function SupervisorsPage() {
   const { t } = useTranslation()
-  
+
   return (
     <MainLayout>
       <div className="space-y-6">

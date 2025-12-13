@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { MainLayout } from '../../app/layouts/MainLayout'
+import { MainLayout } from '../../layouts/MainLayout'
 import { RequestSubmissionForm } from '../../features/student/components/RequestSubmissionForm'
 import { useRequests, useCancelRequest } from '../../features/student/hooks/useRequests'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card'
@@ -76,7 +76,7 @@ export function RequestsPage() {
               {t('request.pageDescription') || 'تقديم طلب رسمي (تغيير مشرف، مجموعة، أو مشروع، إلخ)'}
             </p>
           </div>
-          <Button 
+          <Button
             onClick={() => setShowForm(!showForm)}
             className="w-full sm:w-auto"
           >
@@ -209,11 +209,10 @@ export function RequestsPage() {
                     {/* Workflow Status */}
                     <div className="flex items-center gap-2 text-xs">
                       {request.supervisorApproval ? (
-                        <div className={`flex items-center gap-1 px-2 py-1 rounded ${
-                          request.supervisorApproval.approved 
-                            ? 'bg-success/10 text-success' 
+                        <div className={`flex items-center gap-1 px-2 py-1 rounded ${request.supervisorApproval.approved
+                            ? 'bg-success/10 text-success'
                             : 'bg-destructive/10 text-destructive'
-                        }`}>
+                          }`}>
                           {request.supervisorApproval.approved ? (
                             <CheckCircle2 className="h-3 w-3" />
                           ) : (
@@ -228,11 +227,10 @@ export function RequestsPage() {
                         </div>
                       )}
                       {request.committeeApproval ? (
-                        <div className={`flex items-center gap-1 px-2 py-1 rounded ${
-                          request.committeeApproval.approved 
-                            ? 'bg-success/10 text-success' 
+                        <div className={`flex items-center gap-1 px-2 py-1 rounded ${request.committeeApproval.approved
+                            ? 'bg-success/10 text-success'
                             : 'bg-destructive/10 text-destructive'
-                        }`}>
+                          }`}>
                           {request.committeeApproval.approved ? (
                             <CheckCircle2 className="h-3 w-3" />
                           ) : (
@@ -295,7 +293,7 @@ export function RequestsPage() {
                 {/* Workflow Timeline */}
                 <div className="space-y-3">
                   <h4 className="text-sm font-medium">{t('request.workflow') || 'مسار الطلب'}</h4>
-                  
+
                   {/* Submitted */}
                   <div className="flex items-start gap-3 p-3 bg-muted rounded-lg">
                     <CheckCircle2 className="h-5 w-5 text-success mt-0.5" />
@@ -307,11 +305,10 @@ export function RequestsPage() {
 
                   {/* Supervisor Decision */}
                   {selectedRequest.supervisorApproval ? (
-                    <div className={`flex items-start gap-3 p-3 rounded-lg ${
-                      selectedRequest.supervisorApproval.approved 
-                        ? 'bg-success/10' 
+                    <div className={`flex items-start gap-3 p-3 rounded-lg ${selectedRequest.supervisorApproval.approved
+                        ? 'bg-success/10'
                         : 'bg-destructive/10'
-                    }`}>
+                      }`}>
                       {selectedRequest.supervisorApproval.approved ? (
                         <CheckCircle2 className="h-5 w-5 text-success mt-0.5" />
                       ) : (
@@ -320,7 +317,7 @@ export function RequestsPage() {
                       <div className="flex-1">
                         <p className="text-sm font-medium">
                           {t('request.supervisorDecision') || 'قرار المشرف'}: {' '}
-                          {selectedRequest.supervisorApproval.approved 
+                          {selectedRequest.supervisorApproval.approved
                             ? (t('request.approved') || 'موافق عليه')
                             : (t('request.rejected') || 'مرفوض')
                           }
@@ -348,11 +345,10 @@ export function RequestsPage() {
 
                   {/* Committee Decision */}
                   {selectedRequest.committeeApproval ? (
-                    <div className={`flex items-start gap-3 p-3 rounded-lg ${
-                      selectedRequest.committeeApproval.approved 
-                        ? 'bg-success/10' 
+                    <div className={`flex items-start gap-3 p-3 rounded-lg ${selectedRequest.committeeApproval.approved
+                        ? 'bg-success/10'
                         : 'bg-destructive/10'
-                    }`}>
+                      }`}>
                       {selectedRequest.committeeApproval.approved ? (
                         <CheckCircle2 className="h-5 w-5 text-success mt-0.5" />
                       ) : (
@@ -361,7 +357,7 @@ export function RequestsPage() {
                       <div className="flex-1">
                         <p className="text-sm font-medium">
                           {t('request.committeeDecision') || 'قرار اللجنة'}: {' '}
-                          {selectedRequest.committeeApproval.approved 
+                          {selectedRequest.committeeApproval.approved
                             ? (t('request.approved') || 'موافق عليه')
                             : (t('request.rejected') || 'مرفوض')
                           }

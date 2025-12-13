@@ -1,11 +1,11 @@
 import { useTranslation } from 'react-i18next'
-import { MainLayout } from '../../../app/layouts/MainLayout'
+import { MainLayout } from '../../../layouts/MainLayout'
 import { CommitteeDistribution } from '../../../features/projects-committee/components/CommitteeDistribution'
 import { Users } from 'lucide-react'
 
 export function DistributeCommitteesPage() {
   const { t } = useTranslation()
-  
+
   return (
     <MainLayout>
       <div className="space-y-6">

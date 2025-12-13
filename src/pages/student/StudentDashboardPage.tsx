@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { MainLayout } from '../../app/layouts/MainLayout'
+import { MainLayout } from '../../layouts/MainLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
 import { LoadingSpinner } from '../../components/common/LoadingSpinner'
 import { useProposals } from '../../features/student/hooks/useProposals'

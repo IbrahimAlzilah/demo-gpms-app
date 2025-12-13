@@ -1,11 +1,11 @@
 import { useTranslation } from 'react-i18next'
-import { MainLayout } from '../../../app/layouts/MainLayout'
+import { MainLayout } from '../../../layouts/MainLayout'
 import { ReportGenerator } from '../../../features/projects-committee/components/ReportGenerator'
 import { FileBarChart } from 'lucide-react'
 
 export function CommitteeReportsPage() {
   const { t } = useTranslation()
-  
+
   return (
     <MainLayout>
       <div className="space-y-6">

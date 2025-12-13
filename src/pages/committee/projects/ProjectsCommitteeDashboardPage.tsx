@@ -1,4 +1,4 @@
-import { MainLayout } from '../../../app/layouts/MainLayout'
+import { MainLayout } from '../../../layouts/MainLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { useAuthStore } from '../../../features/auth/store/auth.store'
 import { ROUTES } from '../../../lib/constants'

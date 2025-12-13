@@ -1,53 +1,53 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { ProtectedRoute } from '../../components/common/ProtectedRoute'
-import { RoleGuard } from '../../components/common/RoleGuard'
-import { ROUTES } from '../../lib/constants'
+import { ProtectedRoute } from '../components/common/ProtectedRoute'
+import { RoleGuard } from '../components/common/RoleGuard'
+import { ROUTES } from '../lib/constants'
 
 // Public pages
-import { LoginPage } from '../../pages/auth/LoginPage'
-import { LogoutPage } from '../../pages/auth/LogoutPage'
-import { PasswordRecoveryPage } from '../../pages/auth/PasswordRecoveryPage'
-import { UnauthorizedPage } from '../../pages/unauthorized/UnauthorizedPage'
-import { NotFoundPage } from '../../pages/not-found/NotFoundPage'
+import { LoginPage } from '../pages/auth/LoginPage'
+import { LogoutPage } from '../pages/auth/LogoutPage'
+import { PasswordRecoveryPage } from '../pages/auth/PasswordRecoveryPage'
+import { UnauthorizedPage } from '../pages/unauthorized/UnauthorizedPage'
+import { NotFoundPage } from '../pages/not-found/NotFoundPage'
 
 // Student pages
-import { StudentDashboardPage } from '../../pages/student/StudentDashboardPage'
-import { ProposalsPage as StudentProposalsPage } from '../../pages/student/ProposalsPage'
-import { ProjectsPage } from '../../pages/student/ProjectsPage'
-import { GroupsPage } from '../../pages/student/GroupsPage'
-import { RequestsPage } from '../../pages/student/RequestsPage'
-import { DocumentsPage } from '../../pages/student/DocumentsPage'
-import { FollowUpPage } from '../../pages/student/FollowUpPage'
-import { GradesPage } from '../../pages/student/GradesPage'
+import { StudentDashboardPage } from '../pages/student/StudentDashboardPage'
+import { ProposalsPage as StudentProposalsPage } from '../pages/student/ProposalsPage'
+import { ProjectsPage } from '../pages/student/ProjectsPage'
+import { GroupsPage } from '../pages/student/GroupsPage'
+import { RequestsPage } from '../pages/student/RequestsPage'
+import { DocumentsPage } from '../pages/student/DocumentsPage'
+import { FollowUpPage } from '../pages/student/FollowUpPage'
+import { GradesPage } from '../pages/student/GradesPage'
 
 // Supervisor pages
-import { SupervisorDashboardPage } from '../../pages/supervisor/SupervisorDashboardPage'
-import { SupervisionRequestsPage } from '../../pages/supervisor/SupervisionRequestsPage'
-import { SupervisorProjectsPage } from '../../pages/supervisor/ProjectsPage'
-import { ProgressPage } from '../../pages/supervisor/ProgressPage'
-import { EvaluationPage } from '../../pages/supervisor/EvaluationPage'
+import { SupervisorDashboardPage } from '../pages/supervisor/SupervisorDashboardPage'
+import { SupervisionRequestsPage } from '../pages/supervisor/SupervisionRequestsPage'
+import { SupervisorProjectsPage } from '../pages/supervisor/ProjectsPage'
+import { ProgressPage } from '../pages/supervisor/ProgressPage'
+import { EvaluationPage } from '../pages/supervisor/EvaluationPage'
 
 // Discussion Committee pages
-import { DiscussionCommitteeDashboardPage } from '../../pages/committee/discussion/DiscussionCommitteeDashboardPage'
-import { DiscussionEvaluationPage } from '../../pages/committee/discussion/EvaluationPage'
-import { DiscussionProjectsPage } from '../../pages/committee/discussion/ProjectsPage'
+import { DiscussionCommitteeDashboardPage } from '../pages/committee/discussion/DiscussionCommitteeDashboardPage'
+import { DiscussionEvaluationPage } from '../pages/committee/discussion/EvaluationPage'
+import { DiscussionProjectsPage } from '../pages/committee/discussion/ProjectsPage'
 
 // Projects Committee pages
-import { ProjectsCommitteeDashboardPage } from '../../pages/committee/projects/ProjectsCommitteeDashboardPage'
-import { PeriodsPage } from '../../pages/committee/projects/PeriodsPage'
-import { ProposalsPage as CommitteeProposalsPage } from '../../pages/committee/projects/ProposalsPage'
-import { AnnounceProjectsPage } from '../../pages/committee/projects/AnnounceProjectsPage'
-import { SupervisorsPage } from '../../pages/committee/projects/SupervisorsPage'
-import { CommitteeRequestsPage } from '../../pages/committee/projects/RequestsPage'
-import { DistributeCommitteesPage } from '../../pages/committee/projects/DistributeCommitteesPage'
-import { CommitteeReportsPage } from '../../pages/committee/projects/ReportsPage'
+import { ProjectsCommitteeDashboardPage } from '../pages/committee/projects/ProjectsCommitteeDashboardPage'
+import { PeriodsPage } from '../pages/committee/projects/PeriodsPage'
+import { ProposalsPage as CommitteeProposalsPage } from '../pages/committee/projects/ProposalsPage'
+import { AnnounceProjectsPage } from '../pages/committee/projects/AnnounceProjectsPage'
+import { SupervisorsPage } from '../pages/committee/projects/SupervisorsPage'
+import { CommitteeRequestsPage } from '../pages/committee/projects/RequestsPage'
+import { DistributeCommitteesPage } from '../pages/committee/projects/DistributeCommitteesPage'
+import { CommitteeReportsPage } from '../pages/committee/projects/ReportsPage'
 
 // Admin pages
-import { AdminDashboardPage } from '../../pages/admin/AdminDashboardPage'
-import { UsersPage } from '../../pages/admin/UsersPage'
-import { ReportsPage } from '../../pages/admin/ReportsPage'
+import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage'
+import { UsersPage } from '../pages/admin/UsersPage'
+import { ReportsPage } from '../pages/admin/ReportsPage'
 
-export function Router() {
+export function RootRouter() {
   return (
     <BrowserRouter>
       <Routes>

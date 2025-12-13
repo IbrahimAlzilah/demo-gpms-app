@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { MainLayout } from '../../app/layouts/MainLayout'
+import { MainLayout } from '../../layouts/MainLayout'
 import { ProjectBrowser } from '../../features/student/components/ProjectBrowser'
 import { ProjectRegistrationForm } from '../../features/student/components/ProjectRegistrationForm'
 import { Button } from '../../components/ui/button'

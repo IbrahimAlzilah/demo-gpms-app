@@ -1,4 +1,4 @@
-import { MainLayout } from '../../app/layouts/MainLayout'
+import { MainLayout } from '../../layouts/MainLayout'
 import { Card } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
 
@@ -13,7 +13,7 @@ export function ReportsPage() {
     <MainLayout>
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">إصدار التقارير</h1>
-        
+
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Card className="p-6">
             <h3 className="font-semibold mb-2">تقرير المشاريع</h3>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { MainLayout } from '../../app/layouts/MainLayout'
+import { MainLayout } from '../../layouts/MainLayout'
 import { DocumentUpload } from '../../features/student/components/DocumentUpload'
 import { useDocuments } from '../../features/student/hooks/useDocuments'
 import { useProjects } from '../../features/student/hooks/useProjects'
@@ -114,7 +114,7 @@ export function DocumentsPage() {
             </p>
           </div>
           {isPeriodActive && (
-            <Button 
+            <Button
               onClick={() => setShowUploadForm(!showUploadForm)}
               className="w-full sm:w-auto"
             >
@@ -327,9 +327,9 @@ export function DocumentsPage() {
             action={
               isPeriodActive
                 ? {
-                    label: t('document.uploadNew') || 'رفع وثيقة جديدة',
-                    onClick: () => setShowUploadForm(true),
-                  }
+                  label: t('document.uploadNew') || 'رفع وثيقة جديدة',
+                  onClick: () => setShowUploadForm(true),
+                }
                 : undefined
             }
           />

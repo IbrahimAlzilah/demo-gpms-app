@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../../features/auth/store/auth.store'
 import { ROUTES } from '../../lib/constants'
-import { AuthLayout } from '../../app/layouts/AuthLayout'
+import { AuthLayout } from '../../layouts/AuthLayout'
 import { LoadingSpinner } from '../../components/common/LoadingSpinner'
 import { useToast } from '../../components/common/NotificationToast'
 import { LogOut, CheckCircle2 } from 'lucide-react'
@@ -21,7 +21,7 @@ export function LogoutPage() {
       try {
         // Clear auth state
         logout()
-        
+
         // Clear any cached data
         if (window.localStorage) {
           // Clear only auth-related items, keep preferences
@@ -42,10 +42,10 @@ export function LogoutPage() {
 
         // Small delay to show loading state
         await new Promise((resolve) => setTimeout(resolve, 800))
-        
+
         setIsComplete(true)
         showToast(t('auth.logoutSuccess') || 'تم تسجيل الخروج بنجاح', 'success')
-        
+
         // Navigate to login after a brief moment
         setTimeout(() => {
           navigate(ROUTES.LOGIN, { replace: true })
@@ -58,7 +58,7 @@ export function LogoutPage() {
         setIsLoggingOut(false)
       }
     }
-    
+
     performLogout()
   }, [logout, navigate, showToast, t])
 
