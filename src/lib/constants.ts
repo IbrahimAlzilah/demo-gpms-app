@@ -37,26 +37,26 @@ export const ROUTES = {
   },
   // Discussion Committee routes
   DISCUSSION_COMMITTEE: {
-    DASHBOARD: "/committee/discussion/dashboard",
-    PROJECTS: "/committee/discussion/projects",
-    EVALUATION: "/committee/discussion/evaluation",
+    DASHBOARD: "/dashboard",
+    PROJECTS: "/projects",
+    EVALUATION: "/evaluation",
   },
   // Projects Committee routes
   PROJECTS_COMMITTEE: {
-    DASHBOARD: "/committee/projects/dashboard",
-    PERIODS: "/committee/projects/periods",
-    PROPOSALS: "/committee/projects/proposals",
-    ANNOUNCE_PROJECTS: "/committee/projects/announce",
-    ASSIGN_SUPERVISORS: "/committee/projects/supervisors",
-    REQUESTS: "/committee/projects/requests",
-    DISTRIBUTE_COMMITTEES: "/committee/projects/distribute",
-    REPORTS: "/committee/projects/reports",
+    DASHBOARD: "/dashboard",
+    PERIODS: "/periods",
+    PROPOSALS: "/proposals",
+    ANNOUNCE_PROJECTS: "/announce",
+    ASSIGN_SUPERVISORS: "/supervisors",
+    REQUESTS: "/requests",
+    DISTRIBUTE_COMMITTEES: "/distribute",
+    REPORTS: "/reports",
   },
   // Admin routes
   ADMIN: {
-    DASHBOARD: "/admin/dashboard",
-    USERS: "/admin/users",
-    REPORTS: "/admin/reports",
+    DASHBOARD: "/dashboard",
+    USERS: "/users",
+    REPORTS: "/reports",
   },
 } as const;
 

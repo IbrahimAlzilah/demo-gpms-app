@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { ProtectedRoute } from '../components/common/ProtectedRoute'
-import { RoleGuard } from '../components/common/RoleGuard'
 import { ROUTES } from '../lib/constants'
+import { useAuthStore } from '../features/auth/store/auth.store'
 
 // Public pages
 import { LoginPage } from '../pages/auth/LoginPage'
@@ -46,6 +46,81 @@ import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage'
 import { UsersPage } from '../pages/admin/UsersPage'
 import { ReportsPage } from '../pages/admin/ReportsPage'
 
+function RoleBasedRoutes() {
+  const { user } = useAuthStore()
+
+  if (!user) {
+    return <Navigate to={ROUTES.LOGIN} replace />
+  }
+
+  switch (user.role) {
+    case 'student':
+      return (
+        <Routes>
+          <Route path="dashboard" element={<StudentDashboardPage />} />
+          <Route path="proposals" element={<StudentProposalsPage />} />
+          <Route path="projects" element={<ProjectsPage />} />
+          <Route path="groups" element={<GroupsPage />} />
+          <Route path="requests" element={<RequestsPage />} />
+          <Route path="documents" element={<DocumentsPage />} />
+          <Route path="follow-up" element={<FollowUpPage />} />
+          <Route path="grades" element={<GradesPage />} />
+          <Route path="*" element={<Navigate to={ROUTES.STUDENT.DASHBOARD} replace />} />
+        </Routes>
+      )
+
+    case 'supervisor':
+      return (
+        <Routes>
+          <Route path="dashboard" element={<SupervisorDashboardPage />} />
+          <Route path="supervision-requests" element={<SupervisionRequestsPage />} />
+          <Route path="projects" element={<SupervisorProjectsPage />} />
+          <Route path="progress" element={<ProgressPage />} />
+          <Route path="evaluation" element={<EvaluationPage />} />
+          <Route path="*" element={<Navigate to={ROUTES.SUPERVISOR.DASHBOARD} replace />} />
+        </Routes>
+      )
+
+    case 'discussion_committee':
+      return (
+        <Routes>
+          <Route path="dashboard" element={<DiscussionCommitteeDashboardPage />} />
+          <Route path="projects" element={<DiscussionProjectsPage />} />
+          <Route path="evaluation" element={<DiscussionEvaluationPage />} />
+          <Route path="*" element={<Navigate to={ROUTES.DISCUSSION_COMMITTEE.DASHBOARD} replace />} />
+        </Routes>
+      )
+
+    case 'projects_committee':
+      return (
+        <Routes>
+          <Route path="dashboard" element={<ProjectsCommitteeDashboardPage />} />
+          <Route path="periods" element={<PeriodsPage />} />
+          <Route path="proposals" element={<CommitteeProposalsPage />} />
+          <Route path="announce" element={<AnnounceProjectsPage />} />
+          <Route path="supervisors" element={<SupervisorsPage />} />
+          <Route path="requests" element={<CommitteeRequestsPage />} />
+          <Route path="distribute" element={<DistributeCommitteesPage />} />
+          <Route path="reports" element={<CommitteeReportsPage />} />
+          <Route path="*" element={<Navigate to={ROUTES.PROJECTS_COMMITTEE.DASHBOARD} replace />} />
+        </Routes>
+      )
+
+    case 'admin':
+      return (
+        <Routes>
+          <Route path="dashboard" element={<AdminDashboardPage />} />
+          <Route path="users" element={<UsersPage />} />
+          <Route path="reports" element={<ReportsPage />} />
+          <Route path="*" element={<Navigate to={ROUTES.ADMIN.DASHBOARD} replace />} />
+        </Routes>
+      )
+
+    default:
+      return <Navigate to={ROUTES.UNAUTHORIZED} replace />
+  }
+}
+
 export function RootRouter() {
   return (
     <BrowserRouter>
@@ -54,203 +129,15 @@ export function RootRouter() {
         <Route path={ROUTES.LOGIN} element={<LoginPage />} />
         <Route path="/recover-password" element={<PasswordRecoveryPage />} />
         <Route path={ROUTES.UNAUTHORIZED} element={<UnauthorizedPage />} />
-
-        {/* Protected routes - Student */}
+        {/* Protected routes - Role-based routing */}
         <Route
           path="*"
           element={
             <ProtectedRoute>
-              <RoleGuard allowedRoles={['student']}>
-                <Routes>
-                  <Route
-                    path="dashboard"
-                    element={<StudentDashboardPage />}
-                  />
-                  <Route
-                    path="proposals"
-                    element={<StudentProposalsPage />}
-                  />
-                  <Route
-                    path="projects"
-                    element={<ProjectsPage />}
-                  />
-                  <Route
-                    path="groups"
-                    element={<GroupsPage />}
-                  />
-                  <Route
-                    path="requests"
-                    element={<RequestsPage />}
-                  />
-                  <Route
-                    path="documents"
-                    element={<DocumentsPage />}
-                  />
-                  <Route
-                    path="follow-up"
-                    element={<FollowUpPage />}
-                  />
-                  <Route
-                    path="grades"
-                    element={<GradesPage />}
-                  />
-                  <Route
-                    path="*"
-                    element={<Navigate to={ROUTES.STUDENT.DASHBOARD} replace />}
-                  />
-                </Routes>
-              </RoleGuard>
+              <RoleBasedRoutes />
             </ProtectedRoute>
           }
         />
-
-        {/* Protected routes - Supervisor */}
-        <Route
-          path="/*"
-          element={
-            <ProtectedRoute>
-              <RoleGuard allowedRoles={['supervisor']}>
-                <Routes>
-                  <Route
-                    path="dashboard"
-                    element={<SupervisorDashboardPage />}
-                  />
-                  <Route
-                    path="supervision-requests"
-                    element={<SupervisionRequestsPage />}
-                  />
-                  <Route
-                    path="projects"
-                    element={<SupervisorProjectsPage />}
-                  />
-                  <Route
-                    path="progress"
-                    element={<ProgressPage />}
-                  />
-                  <Route
-                    path="evaluation"
-                    element={<EvaluationPage />}
-                  />
-                  <Route
-                    path="*"
-                    element={
-                      <Navigate to={ROUTES.SUPERVISOR.DASHBOARD} replace />
-                    }
-                  />
-                </Routes>
-              </RoleGuard>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Protected routes - Discussion Committee */}
-        <Route
-          path="/committee/discussion/*"
-          element={
-            <ProtectedRoute>
-              <RoleGuard allowedRoles={['discussion_committee']}>
-                <Routes>
-                  <Route
-                    path="dashboard"
-                    element={<DiscussionCommitteeDashboardPage />}
-                  />
-                  <Route
-                    path="projects"
-                    element={<DiscussionProjectsPage />}
-                  />
-                  <Route
-                    path="evaluation"
-                    element={<DiscussionEvaluationPage />}
-                  />
-                  <Route
-                    path="*"
-                    element={
-                      <Navigate
-                        to={ROUTES.DISCUSSION_COMMITTEE.DASHBOARD}
-                        replace
-                      />
-                    }
-                  />
-                </Routes>
-              </RoleGuard>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Protected routes - Projects Committee */}
-        <Route
-          path="/committee/projects/*"
-          element={
-            <ProtectedRoute>
-              <RoleGuard allowedRoles={['projects_committee']}>
-                <Routes>
-                  <Route
-                    path="dashboard"
-                    element={<ProjectsCommitteeDashboardPage />}
-                  />
-                  <Route
-                    path="periods"
-                    element={<PeriodsPage />}
-                  />
-                  <Route
-                    path="proposals"
-                    element={<CommitteeProposalsPage />}
-                  />
-                  <Route
-                    path="announce"
-                    element={<AnnounceProjectsPage />}
-                  />
-                  <Route
-                    path="supervisors"
-                    element={<SupervisorsPage />}
-                  />
-                  <Route
-                    path="requests"
-                    element={<CommitteeRequestsPage />}
-                  />
-                  <Route
-                    path="distribute"
-                    element={<DistributeCommitteesPage />}
-                  />
-                  <Route
-                    path="reports"
-                    element={<CommitteeReportsPage />}
-                  />
-                  <Route
-                    path="*"
-                    element={
-                      <Navigate
-                        to={ROUTES.PROJECTS_COMMITTEE.DASHBOARD}
-                        replace
-                      />
-                    }
-                  />
-                </Routes>
-              </RoleGuard>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Protected routes - Admin */}
-        <Route
-          path="/admin/*"
-          element={
-            <ProtectedRoute>
-              <RoleGuard allowedRoles={['admin']}>
-                <Routes>
-                  <Route path="dashboard" element={<AdminDashboardPage />} />
-                  <Route path="users" element={<UsersPage />} />
-                  <Route path="reports" element={<ReportsPage />} />
-                  <Route
-                    path="*"
-                    element={<Navigate to={ROUTES.ADMIN.DASHBOARD} replace />}
-                  />
-                </Routes>
-              </RoleGuard>
-            </ProtectedRoute>
-          }
-        />
-
         {/* Default redirect for authenticated users */}
         <Route
           path="*"
