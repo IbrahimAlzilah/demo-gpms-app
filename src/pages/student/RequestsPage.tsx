@@ -5,9 +5,7 @@ export function RequestsPage() {
 
   return (
     <MainLayout>
-      <div className="space-y-6">
-        <RequestManagement />
-      </div>
+      <RequestManagement />
     </MainLayout>
   )
 }

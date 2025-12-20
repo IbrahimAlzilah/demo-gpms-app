@@ -40,12 +40,12 @@ export function GroupManagement() {
 
   const handleInvite = async () => {
     if (!group || !inviteeId.trim()) {
-      setError(t('group.validation.studentIdRequired') || 'يرجى إدخال معرف الطالب')
+      setError(t('group.validation.studentIdRequired'))
       return
     }
 
     if (group.members.length >= group.maxMembers) {
-      setError(t('group.fullCapacity') || 'المجموعة ممتلئة')
+      setError(t('group.fullCapacity'))
       return
     }
 
@@ -60,15 +60,15 @@ export function GroupManagement() {
       setInviteeId('')
       setInviteMessage('')
       setShowInviteForm(false)
-      setSuccess(t('group.inviteSuccess') || 'تم إرسال الدعوة بنجاح')
+      setSuccess(t('group.inviteSuccess'))
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('group.inviteError') || 'فشل إرسال الدعوة')
+      setError(err instanceof Error ? err.message : t('group.inviteError'))
     }
   }
 
   const handleJoin = async () => {
     if (!joinGroupId.trim()) {
-      setError(t('group.validation.groupIdRequired') || 'يرجى إدخال معرف المجموعة')
+      setError(t('group.validation.groupIdRequired'))
       return
     }
 
@@ -78,9 +78,9 @@ export function GroupManagement() {
       await joinGroup.mutateAsync(joinGroupId.trim())
       setJoinGroupId('')
       setShowJoinForm(false)
-      setSuccess(t('group.joinSuccess') || 'تم الانضمام إلى المجموعة بنجاح')
+      setSuccess(t('group.joinSuccess'))
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('group.joinError') || 'فشل الانضمام إلى المجموعة')
+      setError(err instanceof Error ? err.message : t('group.joinError'))
     }
   }
 
@@ -113,10 +113,10 @@ export function GroupManagement() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Mail className="h-5 w-5 text-primary" />
-                {t('group.invitations') || 'دعوات المجموعة'}
+                {t('group.invitations')}
               </CardTitle>
               <CardDescription>
-                {t('group.invitationsDescription') || 'لديك دعوات للانضمام إلى مجموعات'}
+                {t('group.invitationsDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -129,11 +129,11 @@ export function GroupManagement() {
                     <Mail className="h-5 w-5 text-info mt-0.5" />
                     <div className="flex-1">
                       <p className="font-medium mb-1">
-                        {t('group.invitationFrom') || 'دعوة للانضمام إلى مجموعة'}
+                        {t('group.invitationFrom')}
                       </p>
                       {invitation.inviter && (
                         <p className="text-sm text-muted-foreground mb-2">
-                          {t('group.from') || 'من'}: {invitation.inviter.name}
+                          {t('group.from')}: {invitation.inviter.name}
                         </p>
                       )}
                       {invitation.message && (
@@ -154,7 +154,7 @@ export function GroupManagement() {
                         ) : (
                           <>
                             <CheckCircle2 className="mr-1 h-4 w-4" />
-                            {t('common.accept') || 'قبول'}
+                            {t('common.accept')}
                           </>
                         )}
                       </Button>
@@ -169,7 +169,7 @@ export function GroupManagement() {
                         ) : (
                           <>
                             <XCircle className="mr-1 h-4 w-4" />
-                            {t('common.reject') || 'رفض'}
+                            {t('common.reject')}
                           </>
                         )}
                       </Button>
@@ -181,102 +181,89 @@ export function GroupManagement() {
           </Card>
         )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
-              {t('group.management') || 'إدارة المجموعة'}
-            </CardTitle>
-            <CardDescription>
-              {t('group.noGroupDescription') || 'لم يتم إنشاء مجموعة بعد'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {error && (
-              <div className="flex items-start gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
-                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                <span>{error}</span>
-              </div>
+        {error && (
+          <div className="flex items-start gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
+            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {success && (
+          <div className="flex items-start gap-2 p-3 text-sm text-success bg-success/10 border border-success/20 rounded-md">
+            <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" />
+            <span>{success}</span>
+          </div>
+        )}
+
+        <Button
+          onClick={() => {
+            setError(t('group.needProjectFirst'))
+          }}
+          className="w-full"
+        >
+          <UserPlus className="mr-2 h-4 w-4" />
+          {t('group.createNew')}
+        </Button>
+
+        <div className="border-t pt-4">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setShowJoinForm(!showJoinForm)
+              setError('')
+            }}
+            className="w-full"
+          >
+            {showJoinForm ? (
+              <>
+                <XCircle className="mr-2 h-4 w-4" />
+                {t('common.cancel')}
+              </>
+            ) : (
+              <>
+                <Users className="mr-2 h-4 w-4" />
+                {t('group.joinExisting')}
+              </>
             )}
+          </Button>
 
-            {success && (
-              <div className="flex items-start gap-2 p-3 text-sm text-success bg-success/10 border border-success/20 rounded-md">
-                <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" />
-                <span>{success}</span>
+          {showJoinForm && (
+            <div className="mt-4 space-y-3">
+              <div>
+                <Label htmlFor="joinGroupId">
+                  {t('group.groupId')} <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="joinGroupId"
+                  value={joinGroupId}
+                  onChange={(e) => {
+                    setJoinGroupId(e.target.value)
+                    setError('')
+                  }}
+                  placeholder={t('group.groupIdPlaceholder')}
+                  className={error ? 'border-destructive' : ''}
+                />
               </div>
-            )}
-
-            <Button
-              onClick={() => {
-                setError(t('group.needProjectFirst') || 'يرجى التسجيل في مشروع أولاً')
-              }}
-              className="w-full"
-            >
-              <UserPlus className="mr-2 h-4 w-4" />
-              {t('group.createNew') || 'إنشاء مجموعة جديدة'}
-            </Button>
-
-            <div className="border-t pt-4">
               <Button
-                variant="outline"
-                onClick={() => {
-                  setShowJoinForm(!showJoinForm)
-                  setError('')
-                }}
+                onClick={handleJoin}
+                disabled={joinGroup.isPending || !joinGroupId.trim()}
                 className="w-full"
               >
-                {showJoinForm ? (
+                {joinGroup.isPending ? (
                   <>
-                    <XCircle className="mr-2 h-4 w-4" />
-                    {t('common.cancel')}
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {t('group.joining')}
                   </>
                 ) : (
                   <>
                     <Users className="mr-2 h-4 w-4" />
-                    {t('group.joinExisting') || 'الانضمام إلى مجموعة موجودة'}
+                    {t('group.join')}
                   </>
                 )}
               </Button>
-
-              {showJoinForm && (
-                <div className="mt-4 space-y-3">
-                  <div>
-                    <Label htmlFor="joinGroupId">
-                      {t('group.groupId') || 'معرف المجموعة'} <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="joinGroupId"
-                      value={joinGroupId}
-                      onChange={(e) => {
-                        setJoinGroupId(e.target.value)
-                        setError('')
-                      }}
-                      placeholder={t('group.groupIdPlaceholder') || 'أدخل معرف المجموعة'}
-                      className={error ? 'border-destructive' : ''}
-                    />
-                  </div>
-                  <Button
-                    onClick={handleJoin}
-                    disabled={joinGroup.isPending || !joinGroupId.trim()}
-                    className="w-full"
-                  >
-                    {joinGroup.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {t('group.joining') || 'جاري الانضمام...'}
-                      </>
-                    ) : (
-                      <>
-                        <Users className="mr-2 h-4 w-4" />
-                        {t('group.join') || 'الانضمام'}
-                      </>
-                    )}
-                  </Button>
-                </div>
-              )}
             </div>
-          </CardContent>
-        </Card>
+          )}
+        </div>
       </div>
     )
   }
@@ -302,10 +289,10 @@ export function GroupManagement() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Mail className="h-5 w-5 text-primary" />
-              {t('group.invitations') || 'دعوات المجموعة'}
+              {t('group.invitations')}
             </CardTitle>
             <CardDescription>
-              {t('group.invitationsDescription') || 'لديك دعوات للانضمام إلى مجموعات'}
+              {t('group.invitationsDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -318,11 +305,11 @@ export function GroupManagement() {
                   <Mail className="h-5 w-5 text-info mt-0.5" />
                   <div className="flex-1">
                     <p className="font-medium mb-1">
-                      {t('group.invitationFrom') || 'دعوة للانضمام إلى مجموعة'}
+                      {t('group.invitationFrom')}
                     </p>
                     {invitation.inviter && (
                       <p className="text-sm text-muted-foreground mb-2">
-                        {t('group.from') || 'من'}: {invitation.inviter.name}
+                        {t('group.from')}: {invitation.inviter.name}
                       </p>
                     )}
                     {invitation.message && (
@@ -343,7 +330,7 @@ export function GroupManagement() {
                       ) : (
                         <>
                           <CheckCircle2 className="mr-1 h-4 w-4" />
-                          {t('common.accept') || 'قبول'}
+                          {t('common.accept')}
                         </>
                       )}
                     </Button>
@@ -358,7 +345,7 @@ export function GroupManagement() {
                       ) : (
                         <>
                           <XCircle className="mr-1 h-4 w-4" />
-                          {t('common.reject') || 'رفض'}
+                          {t('common.reject')}
                         </>
                       )}
                     </Button>
@@ -376,17 +363,17 @@ export function GroupManagement() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5 text-primary" />
-                {t('group.myGroup') || 'مجموعتي'}
+                {t('group.myGroup')}
               </CardTitle>
               <CardDescription>
-                {t('group.membersCount') || 'الأعضاء'}: {group.members.length}/{group.maxMembers}
-                {isFull && <span className="text-destructive ms-2">({t('group.full') || 'مكتملة'})</span>}
+                {t('group.membersCount')}: {group.members.length}/{group.maxMembers}
+                {isFull && <span className="text-destructive ms-2">({t('group.full')})</span>}
               </CardDescription>
             </div>
             {isLeader && (
               <div className="flex items-center gap-1 text-primary">
                 <Crown className="h-4 w-4" />
-                <span className="text-sm font-medium">{t('group.leader') || 'قائد المجموعة'}</span>
+                <span className="text-sm font-medium">{t('group.leader')}</span>
               </div>
             )}
           </div>
@@ -402,7 +389,7 @@ export function GroupManagement() {
           <div>
             <h4 className="font-semibold mb-3 flex items-center gap-2">
               <Users className="h-4 w-4" />
-              {t('group.members') || 'أعضاء المجموعة'}
+              {t('group.members')}
             </h4>
             <div className="space-y-2">
               {group.members.map((member) => (
@@ -419,7 +406,7 @@ export function GroupManagement() {
                       {member.id === group.leaderId && (
                         <div className="flex items-center gap-1 text-xs text-primary">
                           <Crown className="h-3 w-3" />
-                          <span>{t('group.leader') || 'قائد المجموعة'}</span>
+                          <span>{t('group.leader')}</span>
                         </div>
                       )}
                     </div>
@@ -429,7 +416,7 @@ export function GroupManagement() {
                       size="sm"
                       variant="outline"
                       onClick={() => {
-                        if (window.confirm(t('group.confirmRemove') || `هل أنت متأكد من إزالة ${member.name} من المجموعة؟`)) {
+                        if (window.confirm(t('group.confirmRemove'))) {
                           removeMember.mutate(
                             {
                               groupId: group.id,
@@ -437,10 +424,10 @@ export function GroupManagement() {
                             },
                             {
                               onError: (err) => {
-                                setError(err instanceof Error ? err.message : t('group.removeError') || 'فشل إزالة العضو')
+                                setError(err instanceof Error ? err.message : t('group.removeError'))
                               },
                               onSuccess: () => {
-                                setSuccess(t('group.removeSuccess') || 'تم إزالة العضو بنجاح')
+                                setSuccess(t('group.removeSuccess'))
                               },
                             }
                           )
@@ -448,7 +435,7 @@ export function GroupManagement() {
                       }}
                     >
                       <UserMinus className="mr-1 h-4 w-4" />
-                      {t('group.remove') || 'إزالة'}
+                      {t('group.remove')}
                     </Button>
                   )}
                   {member.id !== group.leaderId && !isLeader && member.id === user?.id && (
@@ -456,7 +443,7 @@ export function GroupManagement() {
                       size="sm"
                       variant="outline"
                       onClick={() => {
-                        if (window.confirm(t('group.confirmLeave') || 'هل أنت متأكد من مغادرة المجموعة؟')) {
+                        if (window.confirm(t('group.confirmLeave'))) {
                           removeMember.mutate(
                             {
                               groupId: group.id,
@@ -464,7 +451,7 @@ export function GroupManagement() {
                             },
                             {
                               onError: (err) => {
-                                setError(err instanceof Error ? err.message : t('group.leaveError') || 'فشل مغادرة المجموعة')
+                                setError(err instanceof Error ? err.message : t('group.leaveError'))
                               },
                             }
                           )
@@ -472,7 +459,7 @@ export function GroupManagement() {
                       }}
                     >
                       <UserMinus className="mr-1 h-4 w-4" />
-                      {t('group.leave') || 'مغادرة'}
+                      {t('group.leave')}
                     </Button>
                   )}
                 </div>
@@ -498,7 +485,7 @@ export function GroupManagement() {
                 ) : (
                   <>
                     <UserPlus className="mr-2 h-4 w-4" />
-                    {t('group.inviteMember') || 'دعوة زميل'}
+                    {t('group.inviteMember')}
                   </>
                 )}
               </Button>
@@ -507,7 +494,7 @@ export function GroupManagement() {
                 <div className="mt-4 space-y-3">
                   <div>
                     <Label htmlFor="inviteeId">
-                      {t('group.studentId') || 'معرف الطالب'} <span className="text-destructive">*</span>
+                      {t('group.studentId')} <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id="inviteeId"
@@ -516,19 +503,19 @@ export function GroupManagement() {
                         setInviteeId(e.target.value)
                         setError('')
                       }}
-                      placeholder={t('group.studentIdPlaceholder') || 'أدخل معرف الطالب'}
+                      placeholder={t('group.studentIdPlaceholder')}
                       className={error ? 'border-destructive' : ''}
                     />
                   </div>
                   <div>
                     <Label htmlFor="inviteMessage">
-                      {t('group.message') || 'رسالة'} ({t('common.optional') || 'اختياري'})
+                      {t('group.message')} ({t('common.optional')})
                     </Label>
                     <Textarea
                       id="inviteMessage"
                       value={inviteMessage}
                       onChange={(e) => setInviteMessage(e.target.value)}
-                      placeholder={t('group.messagePlaceholder') || 'رسالة الدعوة (اختياري)'}
+                      placeholder={t('group.messagePlaceholder')}
                       rows={3}
                     />
                   </div>
@@ -540,12 +527,12 @@ export function GroupManagement() {
                     {inviteMember.isPending ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {t('group.sending') || 'جاري الإرسال...'}
+                        {t('group.sending')}
                       </>
                     ) : (
                       <>
                         <Mail className="mr-2 h-4 w-4" />
-                        {t('group.sendInvitation') || 'إرسال الدعوة'}
+                        {t('group.sendInvitation')}
                       </>
                     )}
                   </Button>

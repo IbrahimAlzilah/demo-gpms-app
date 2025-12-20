@@ -4,9 +4,7 @@ import { DocumentManagement } from '@/features/student/components/DocumentManage
 export function DocumentsPage() {
   return (
     <MainLayout>
-      <div className="space-y-6">
-        <DocumentManagement />
-      </div>
+      <DocumentManagement />
     </MainLayout>
   )
 }

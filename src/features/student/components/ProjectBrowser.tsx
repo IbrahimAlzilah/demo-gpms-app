@@ -47,31 +47,29 @@ export function ProjectBrowser({ onSelectProject }: ProjectBrowserProps) {
   )
 
   return (
-    <div className="space-y-4">
-      <DataTable
-        columns={columns}
-        data={projects}
-        isLoading={isLoading}
-        error={error}
-        pageCount={pageCount}
-        pageIndex={pagination.pageIndex}
-        pageSize={pagination.pageSize}
-        onPaginationChange={(pageIndex, pageSize) => {
-          setPagination({ pageIndex, pageSize })
-        }}
-        sorting={sorting}
-        onSortingChange={setSorting}
-        columnFilters={columnFilters}
-        onColumnFiltersChange={setColumnFilters}
-        searchValue={globalFilter}
-        onSearchChange={setGlobalFilter}
-        searchPlaceholder={t('project.searchPlaceholder') || 'البحث في المشاريع...'}
-        rtl={rtl}
-        enableFiltering={true}
-        enableViews={true}
-        emptyMessage={t('project.noAvailableProjects') || 'لا توجد مشاريع متاحة للتسجيل حالياً'}
-      />
-    </div>
+    <DataTable
+      columns={columns}
+      data={projects}
+      isLoading={isLoading}
+      error={error}
+      pageCount={pageCount}
+      pageIndex={pagination.pageIndex}
+      pageSize={pagination.pageSize}
+      onPaginationChange={(pageIndex, pageSize) => {
+        setPagination({ pageIndex, pageSize })
+      }}
+      sorting={sorting}
+      onSortingChange={setSorting}
+      columnFilters={columnFilters}
+      onColumnFiltersChange={setColumnFilters}
+      searchValue={globalFilter}
+      onSearchChange={setGlobalFilter}
+      searchPlaceholder={t('project.searchPlaceholder')}
+      rtl={rtl}
+      enableFiltering={true}
+      enableViews={true}
+      emptyMessage={t('project.noAvailableProjects')}
+    />
   )
 }
 

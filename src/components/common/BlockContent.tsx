@@ -35,7 +35,7 @@ export const BlockContent = ({
     content = <div className={containerClassName}>{children}</div>;
   } else {
     const shadowClass = shadow === "xs" ? "shadow-xs" : "shadow-sm";
-    const cardClassName = `${shadowClass} border-none !p-0 print:shadow-none print:border-0 ${className}`.trim();
+    const cardClassName = `${shadowClass} border-none gap-0 !p-0 print:shadow-none print:border-0 ${className}`.trim();
 
     content = (
       <Card className={cn(printShadow ? "print:shadow-none print:border-0" : "", cardClassName)}>

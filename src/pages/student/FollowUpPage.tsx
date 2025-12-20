@@ -44,9 +44,7 @@ export function FollowUpPage() {
 
   return (
     <MainLayout>
-      <div className="space-y-6">
-        <ProjectDashboard projectId={userProject.id} />
-      </div>
+      <ProjectDashboard projectId={userProject.id} />
     </MainLayout>
   )
 }

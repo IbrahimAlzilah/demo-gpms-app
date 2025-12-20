@@ -59,11 +59,7 @@ export function ProposalManagement() {
 
   const handleFormSuccess = () => {
     setShowForm(false)
-    showToast(t('proposal.submitSuccess') || 'تم تقديم المقترح بنجاح', 'success')
-  }
-
-  const handleFormCancel = () => {
-    setShowForm(false)
+    showToast(t('proposal.submitSuccess'), 'success')
   }
 
   // Calculate statistics
@@ -81,7 +77,7 @@ export function ProposalManagement() {
   const actions = useMemo(() => (
     <Button onClick={() => setShowForm(true)}>
       <PlusCircle className="mr-2 h-4 w-4" />
-      {t('proposal.submitNew') || 'مقترح جديد'}
+      {t('proposal.submitNew')}
     </Button>
   ), [t])
 
@@ -93,7 +89,7 @@ export function ProposalManagement() {
           <div className="rounded-lg border bg-card p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">{t('proposal.total') || 'المجموع'}</p>
+                <p className="text-sm text-muted-foreground">{t('proposal.total')}</p>
                 <p className="text-2xl font-bold">{stats.total}</p>
               </div>
               <FileText className="h-8 w-8 text-muted-foreground" />
@@ -102,7 +98,7 @@ export function ProposalManagement() {
           <div className="rounded-lg border bg-card p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">{t('proposal.status.pendingReview') || 'قيد المراجعة'}</p>
+                <p className="text-sm text-muted-foreground">{t('proposal.status.pendingReview')}</p>
                 <p className="text-2xl font-bold">{stats.pending}</p>
               </div>
               <FileText className="h-8 w-8 text-warning" />
@@ -111,7 +107,7 @@ export function ProposalManagement() {
           <div className="rounded-lg border bg-card p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">{t('proposal.status.approved') || 'معتمد'}</p>
+                <p className="text-sm text-muted-foreground">{t('proposal.status.approved')}</p>
                 <p className="text-2xl font-bold">{stats.approved}</p>
               </div>
               <FileText className="h-8 w-8 text-success" />
@@ -120,7 +116,7 @@ export function ProposalManagement() {
           <div className="rounded-lg border bg-card p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">{t('proposal.status.rejected') || 'مرفوض'}</p>
+                <p className="text-sm text-muted-foreground">{t('proposal.status.rejected')}</p>
                 <p className="text-2xl font-bold">{stats.rejected}</p>
               </div>
               <FileText className="h-8 w-8 text-destructive" />
@@ -129,7 +125,7 @@ export function ProposalManagement() {
         </div>
       )}
 
-      <BlockContent title={t('nav.proposals') || 'المقترحات'} actions={actions}>
+      <BlockContent title={t('nav.proposals')} actions={actions}>
         <DataTable
           columns={columns}
           data={proposals}
@@ -147,11 +143,11 @@ export function ProposalManagement() {
           onColumnFiltersChange={setColumnFilters}
           searchValue={globalFilter}
           onSearchChange={setGlobalFilter}
-          searchPlaceholder={t('proposal.searchPlaceholder') || 'البحث في المقترحات...'}
+          searchPlaceholder={t('proposal.searchPlaceholder')}
           rtl={rtl}
           enableFiltering={true}
           enableViews={true}
-          emptyMessage={t('proposal.noProposals') || 'لا توجد مقترحات'}
+          emptyMessage={t('proposal.noProposals')}
         />
       </BlockContent>
 
@@ -159,12 +155,12 @@ export function ProposalManagement() {
         <BlockContent variant="container" className="border-destructive">
           <div className="flex items-center gap-2 text-destructive">
             <AlertCircle className="h-5 w-5" />
-            <span>{t('proposal.loadError') || 'حدث خطأ أثناء تحميل المقترحات'}</span>
+            <span>{t('proposal.loadError')}</span>
           </div>
         </BlockContent>
       )}
 
-      <ModalDialog open={showForm} onOpenChange={setShowForm} title={t('proposal.submitNew') || 'تقديم مقترح جديد'}>
+      <ModalDialog open={showForm} onOpenChange={setShowForm} title={t('proposal.submitNew')}>
         <ProposalForm
           onSuccess={handleFormSuccess}
         />
@@ -184,12 +180,12 @@ export function ProposalManagement() {
               <div className="flex items-center gap-4 text-sm">
                 <StatusBadge status={selectedProposal.status} />
                 <span className="text-muted-foreground">
-                  {t('proposal.submittedAt') || 'تم الإرسال في'} {formatDate(selectedProposal.createdAt)}
+                  {t('proposal.submittedAt')} {formatDate(selectedProposal.createdAt)}
                 </span>
               </div>
 
               <div>
-                <h4 className="text-sm font-medium mb-2">{t('proposal.description') || 'الوصف'}</h4>
+                <h4 className="text-sm font-medium mb-2">{t('proposal.description')}</h4>
                 <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                   {selectedProposal.description}
                 </p>
@@ -197,7 +193,7 @@ export function ProposalManagement() {
 
               {selectedProposal.objectives && (
                 <div>
-                  <h4 className="text-sm font-medium mb-2">{t('proposal.objectives') || 'الأهداف'}</h4>
+                  <h4 className="text-sm font-medium mb-2">{t('proposal.objectives')}</h4>
                   <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                     {selectedProposal.objectives}
                   </p>
@@ -206,7 +202,7 @@ export function ProposalManagement() {
 
               {selectedProposal.methodology && (
                 <div>
-                  <h4 className="text-sm font-medium mb-2">{t('proposal.methodology') || 'المنهجية'}</h4>
+                  <h4 className="text-sm font-medium mb-2">{t('proposal.methodology')}</h4>
                   <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                     {selectedProposal.methodology}
                   </p>
@@ -215,7 +211,7 @@ export function ProposalManagement() {
 
               {selectedProposal.expectedOutcomes && (
                 <div>
-                  <h4 className="text-sm font-medium mb-2">{t('proposal.expectedOutcomes') || 'النتائج المتوقعة'}</h4>
+                  <h4 className="text-sm font-medium mb-2">{t('proposal.expectedOutcomes')}</h4>
                   <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                     {selectedProposal.expectedOutcomes}
                   </p>
@@ -226,12 +222,12 @@ export function ProposalManagement() {
                 <div className="rounded-lg bg-muted p-4 border border-muted-foreground/20">
                   <div className="flex items-center gap-2 mb-2">
                     <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                    <h4 className="text-sm font-medium">{t('proposal.reviewNotes') || 'ملاحظات المراجعة'}</h4>
+                    <h4 className="text-sm font-medium">{t('proposal.reviewNotes')}</h4>
                   </div>
                   <p className="text-sm whitespace-pre-wrap">{selectedProposal.reviewNotes}</p>
                   {selectedProposal.reviewedAt && (
                     <p className="text-xs text-muted-foreground mt-2">
-                      {t('proposal.reviewedAt') || 'تمت المراجعة في'} {formatDate(selectedProposal.reviewedAt)}
+                      {t('proposal.reviewedAt')} {formatDate(selectedProposal.reviewedAt)}
                     </p>
                   )}
                 </div>

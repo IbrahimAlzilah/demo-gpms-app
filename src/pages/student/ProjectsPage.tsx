@@ -8,6 +8,7 @@ import { usePeriodCheck } from '@/hooks/usePeriodCheck'
 import { AlertTriangle, ArrowRight, Briefcase, Calendar, Users, User, Building2 } from 'lucide-react'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import type { Project } from '@/types/project.types'
+import { BlockContent } from '@/components/common'
 
 export function ProjectsPage() {
   const { t } = useTranslation()
@@ -48,7 +49,7 @@ export function ProjectsPage() {
 
   return (
     <MainLayout>
-      <div className="space-y-6">
+      <BlockContent title={t('nav.projects')}>
         {periodLoading ? (
           <Card>
             <CardContent className="pt-6">
@@ -56,26 +57,18 @@ export function ProjectsPage() {
             </CardContent>
           </Card>
         ) : !isPeriodActive ? (
-          <Card className="border-warning">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-warning" />
-                <CardTitle>{t('project.periodClosed')}</CardTitle>
+          <Card className="border-warning p-0 shadow-none">
+            <div className="flex items-start gap-3 p-4 bg-warning/10 border border-warning/20 rounded-lg">
+              <Calendar className="h-5 w-5 text-warning mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-warning-foreground">
+                  {t('project.periodClosedMessage')}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t('project.periodClosedDescription')}
+                </p>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-start gap-3 p-4 bg-warning/10 border border-warning/20 rounded-lg">
-                <Calendar className="h-5 w-5 text-warning mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-warning-foreground">
-                    {t('project.periodClosedMessage')}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {t('project.periodClosedDescription')}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
+            </div>
           </Card>
         ) : null}
 
@@ -177,7 +170,7 @@ export function ProjectsPage() {
             </DialogContent>
           </Dialog>
         )}
-      </div>
+      </BlockContent>
     </MainLayout>
   )
 }

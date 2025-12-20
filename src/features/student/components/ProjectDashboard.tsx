@@ -4,20 +4,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useProject } from '../hooks/useProjects'
 import { useDocuments } from '../hooks/useDocuments'
 import { projectService } from '../api/project.service'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../components/ui/card'
-import { Button } from '../../../components/ui/button'
-import { Textarea } from '../../../components/ui/textarea'
-import { Label } from '../../../components/ui/label'
-import { LoadingSpinner } from '../../../components/common/LoadingSpinner'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Textarea, Label, Badge } from '@/components/ui'
+import { LoadingSpinner, StatusBadge } from '@/components/common'
 import { DocumentUpload } from './DocumentUpload'
-import { Badge } from '../../../components/ui/badge'
-import { Progress } from '../../../components/ui/progress'
-import { 
-  Briefcase, User, Calendar, FileText, MessageSquare, CheckCircle2, Clock, 
+import {
+  Briefcase, User, Calendar, FileText, MessageSquare, CheckCircle2, Clock,
   MapPin, Users, TrendingUp, Loader2, Send, X, AlertCircle
 } from 'lucide-react'
-import { formatDate, formatRelativeTime } from '../../../lib/utils/format'
-import { StatusBadge } from '../../../components/common/StatusBadge'
+import { formatDate, formatRelativeTime } from '@/lib/utils/format'
 
 interface ProjectDashboardProps {
   projectId: string
@@ -95,17 +89,15 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 text-destructive">
             <AlertCircle className="h-5 w-5" />
-            <span>{t('followUp.projectNotFound') || 'المشروع غير موجود'}</span>
+            <span>{t('followUp.projectNotFound')}</span>
           </div>
         </CardContent>
       </Card>
     )
   }
 
-  const isLoading = projectLoading || documentsLoading || notesLoading || milestonesLoading || meetingsLoading || progressLoading
-
   return (
-    <div className="space-y-6">
+    <>
       {/* Project Overview */}
       <Card>
         <CardHeader>
@@ -127,16 +119,16 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
             <div className="flex items-center gap-2">
               <User className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="text-xs text-muted-foreground">{t('followUp.supervisor') || 'المشرف'}</p>
+                <p className="text-xs text-muted-foreground">{t('followUp.supervisor')}</p>
                 <p className="text-sm font-medium">
-                  {project.supervisor?.name || t('followUp.noSupervisor') || 'غير معين'}
+                  {project.supervisor?.name || t('followUp.noSupervisor')}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="text-xs text-muted-foreground">{t('followUp.students') || 'الطلاب'}</p>
+                <p className="text-xs text-muted-foreground">{t('followUp.students')}</p>
                 <p className="text-sm font-medium">
                   {project.currentStudents}/{project.maxStudents}
                 </p>
@@ -149,7 +141,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium flex items-center gap-1">
                   <TrendingUp className="h-4 w-4" />
-                  {t('followUp.progress') || 'نسبة الإنجاز'}
+                  {t('followUp.progress')}
                 </span>
                 <span className="text-lg font-bold">{progressPercentage}%</span>
               </div>
@@ -169,10 +161,10 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5 text-primary" />
-            {t('followUp.supervisorNotes') || 'ملاحظات المشرف'}
+            {t('followUp.supervisorNotes')}
           </CardTitle>
           <CardDescription>
-            {t('followUp.supervisorNotesDescription') || 'ملاحظات المشرف والرد عليها'}
+            {t('followUp.supervisorNotesDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -187,7 +179,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                       <div className="flex items-center gap-2 mb-1">
                         <User className="h-4 w-4 text-info" />
                         <p className="font-medium text-info">
-                          {t('followUp.noteFromSupervisor') || 'ملاحظة من المشرف'}
+                          {t('followUp.noteFromSupervisor')}
                         </p>
                       </div>
                       <p className="text-xs text-muted-foreground flex items-center gap-1">
@@ -201,7 +193,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                   {note.studentReplies && note.studentReplies.length > 0 && (
                     <div className="mt-3 space-y-2 border-t pt-3">
                       <p className="text-xs font-medium text-muted-foreground mb-2">
-                        {t('followUp.replies') || 'الردود'}
+                        {t('followUp.replies')}
                       </p>
                       {note.studentReplies.map((reply) => (
                         <div
@@ -221,7 +213,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                   {showReplyForm === note.id ? (
                     <div className="mt-3 space-y-2 border-t pt-3">
                       <Label htmlFor={`reply-${note.id}`}>
-                        {t('followUp.replyToNote') || 'الرد على الملاحظة'}
+                        {t('followUp.replyToNote')}
                       </Label>
                       <Textarea
                         id={`reply-${note.id}`}
@@ -229,7 +221,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                         onChange={(e) =>
                           setReplyContent((prev) => ({ ...prev, [note.id]: e.target.value }))
                         }
-                        placeholder={t('followUp.replyPlaceholder') || 'اكتب ردك هنا...'}
+                        placeholder={t('followUp.replyPlaceholder')}
                         rows={3}
                         className="resize-none"
                       />
@@ -242,12 +234,12 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                           {replyToNote.isPending ? (
                             <>
                               <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                              {t('common.sending') || 'جاري الإرسال...'}
+                              {t('common.sending')}
                             </>
                           ) : (
                             <>
                               <Send className="mr-1 h-3 w-3" />
-                              {t('common.send') || 'إرسال'}
+                              {t('common.send')}
                             </>
                           )}
                         </Button>
@@ -272,7 +264,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                       className="mt-2"
                     >
                       <MessageSquare className="mr-1 h-3 w-3" />
-                      {t('followUp.reply') || 'الرد على الملاحظة'}
+                      {t('followUp.reply')}
                     </Button>
                   )}
                 </div>
@@ -280,7 +272,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
             </div>
           ) : (
             <p className="text-muted-foreground text-center py-4">
-              {t('followUp.noNotes') || 'لا توجد ملاحظات من المشرف'}
+              {t('followUp.noNotes')}
             </p>
           )}
         </CardContent>
@@ -291,10 +283,10 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary" />
-            {t('followUp.timeline') || 'الجدول الزمني'}
+            {t('followUp.timeline')}
           </CardTitle>
           <CardDescription>
-            {t('followUp.timelineDescription') || 'التسليمات والمواعيد واللقاءات'}
+            {t('followUp.timelineDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -306,7 +298,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                 <div>
                   <h4 className="font-semibold mb-3 flex items-center gap-2">
                     <FileText className="h-4 w-4" />
-                    {t('followUp.milestones') || 'التسليمات والمواعيد'}
+                    {t('followUp.milestones')}
                   </h4>
                   <div className="space-y-3">
                     {milestones.map((milestone) => (
@@ -330,12 +322,12 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                             <div className="flex items-center gap-4 text-xs text-muted-foreground">
                               <span className="flex items-center gap-1">
                                 <Calendar className="h-3 w-3" />
-                                {t('followUp.dueDate') || 'الموعد'}: {formatDate(milestone.dueDate)}
+                                {t('followUp.dueDate')}: {formatDate(milestone.dueDate)}
                               </span>
                               {milestone.completed && milestone.completedAt && (
                                 <span className="flex items-center gap-1">
                                   <CheckCircle2 className="h-3 w-3" />
-                                  {t('followUp.completedAt') || 'تم الإكمال في'}: {formatDate(milestone.completedAt)}
+                                  {t('followUp.completedAt')}: {formatDate(milestone.completedAt)}
                                 </span>
                               )}
                             </div>
@@ -344,9 +336,9 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                             variant={milestone.completed ? 'default' : 'secondary'}
                             className={milestone.completed ? 'bg-success/10 text-success' : ''}
                           >
-                            {milestone.completed 
-                              ? (t('followUp.completed') || 'مكتمل')
-                              : (t('followUp.inProgress') || 'قيد التنفيذ')
+                            {milestone.completed
+                              ? (t('followUp.completed'))
+                              : (t('followUp.inProgress'))
                             }
                           </Badge>
                         </div>
@@ -356,7 +348,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                 </div>
               ) : (
                 <p className="text-muted-foreground text-center py-4">
-                  {t('followUp.noMilestones') || 'لم يتم تحديد أي مواعيد بعد'}
+                  {t('followUp.noMilestones')}
                 </p>
               )}
 
@@ -364,7 +356,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                 <div className="border-t pt-6">
                   <h4 className="font-semibold mb-3 flex items-center gap-2">
                     <Users className="h-4 w-4" />
-                    {t('followUp.meetings') || 'اللقاءات'}
+                    {t('followUp.meetings')}
                   </h4>
                   <div className="space-y-3">
                     {meetings.map((meeting) => (
@@ -373,20 +365,20 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                         className="p-4 bg-info/10 rounded-lg border border-info/20"
                       >
                         <p className="font-medium mb-2">
-                          {meeting.agenda || t('followUp.meetingWithSupervisor') || 'لقاء مع المشرف'}
+                          {meeting.agenda || t('followUp.meetingWithSupervisor')}
                         </p>
                         <div className="grid gap-2 text-sm text-muted-foreground">
                           <div className="flex items-center gap-1">
                             <Calendar className="h-4 w-4" />
                             <span>
-                              {t('followUp.date') || 'التاريخ'}: {formatDate(meeting.scheduledDate)}
+                              {t('followUp.date')}: {formatDate(meeting.scheduledDate)}
                             </span>
                           </div>
                           {meeting.location && (
                             <div className="flex items-center gap-1">
                               <MapPin className="h-4 w-4" />
                               <span>
-                                {t('followUp.location') || 'المكان'}: {meeting.location}
+                                {t('followUp.location')}: {meeting.location}
                               </span>
                             </div>
                           )}
@@ -394,14 +386,14 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                             <div className="flex items-center gap-1">
                               <Clock className="h-4 w-4" />
                               <span>
-                                {t('followUp.duration') || 'المدة'}: {meeting.duration} {t('followUp.minutes') || 'دقيقة'}
+                                {t('followUp.duration')}: {meeting.duration} {t('followUp.minutes')}
                               </span>
                             </div>
                           )}
                         </div>
                         {meeting.notes && (
                           <div className="mt-2 p-2 bg-card rounded border border-border">
-                            <p className="text-xs font-medium mb-1">{t('followUp.notes') || 'ملاحظات'}</p>
+                            <p className="text-xs font-medium mb-1">{t('followUp.notes')}</p>
                             <p className="text-sm text-muted-foreground whitespace-pre-wrap">{meeting.notes}</p>
                           </div>
                         )}
@@ -420,10 +412,10 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
-            {t('followUp.documentSubmission') || 'تسليم الوثائق'}
+            {t('followUp.documentSubmission')}
           </CardTitle>
           <CardDescription>
-            {t('followUp.documentSubmissionDescription') || 'رفع الوثائق المطلوبة للمشروع'}
+            {t('followUp.documentSubmissionDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -436,10 +428,10 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
-            {t('followUp.submittedDocuments') || 'الوثائق المسلمة'}
+            {t('followUp.submittedDocuments')}
           </CardTitle>
           <CardDescription>
-            {t('followUp.submittedDocumentsDescription') || 'قائمة الوثائق التي تم تسليمها'}
+            {t('followUp.submittedDocumentsDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -469,12 +461,12 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
             </div>
           ) : (
             <p className="text-muted-foreground text-center py-4">
-              {t('followUp.noDocuments') || 'لم يتم تسليم أي وثائق بعد'}
+              {t('followUp.noDocuments')}
             </p>
           )}
         </CardContent>
       </Card>
-    </div>
+    </>
   )
 }
 

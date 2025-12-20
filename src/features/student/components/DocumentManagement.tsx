@@ -73,7 +73,7 @@ export function DocumentManagement() {
   // Calculate statistics
   const stats = useMemo(() => {
     if (!documents) return { total: 0, pending: 0, approved: 0, rejected: 0 }
-    
+
     return {
       total: documents.length,
       pending: documents.filter((d) => d.reviewStatus === 'pending').length,
@@ -86,7 +86,7 @@ export function DocumentManagement() {
     isPeriodActive && selectedProjectId ? (
       <Button onClick={() => setShowUploadForm(true)}>
         <PlusCircle className="mr-2 h-4 w-4" />
-        {t('document.uploadNew') || 'رفع وثيقة جديدة'}
+        {t('document.uploadNew')}
       </Button>
     ) : null
   ), [t, isPeriodActive, selectedProjectId])
@@ -96,9 +96,9 @@ export function DocumentManagement() {
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
           <FolderOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-lg font-medium">{t('document.noProject') || 'لا يوجد مشروع مسجل'}</p>
+          <p className="text-lg font-medium">{t('document.noProject')}</p>
           <p className="text-sm text-muted-foreground mt-2">
-            {t('document.noProjectDescription') || 'يجب أن تكون مسجلاً في مشروع لتتمكن من تسليم الوثائق'}
+            {t('document.noProjectDescription')}
           </p>
         </div>
       </div>
@@ -113,7 +113,7 @@ export function DocumentManagement() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-warning" />
-              <CardTitle>{t('document.periodClosed') || 'فترة التسليم مغلقة'}</CardTitle>
+              <CardTitle>{t('document.periodClosed')}</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
@@ -121,10 +121,10 @@ export function DocumentManagement() {
               <Calendar className="h-5 w-5 text-warning mt-0.5" />
               <div>
                 <p className="text-sm font-medium text-warning-foreground">
-                  {t('document.periodClosedMessage') || 'فترة تسليم الوثائق غير مفتوحة حالياً'}
+                  {t('document.periodClosedMessage')}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {t('document.periodClosedDescription') || 'يرجى الانتظار حتى يتم فتح فترة التسليم من قبل لجنة المشاريع'}
+                  {t('document.periodClosedDescription')}
                 </p>
               </div>
             </div>
@@ -135,7 +135,7 @@ export function DocumentManagement() {
       {/* Project Info */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>{t('document.currentProject') || 'المشروع الحالي'}</CardTitle>
+          <CardTitle>{t('document.currentProject')}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="font-medium">{userProject.title}</p>
@@ -149,7 +149,7 @@ export function DocumentManagement() {
           <div className="rounded-lg border bg-card p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">{t('document.total') || 'المجموع'}</p>
+                <p className="text-sm text-muted-foreground">{t('document.total')}</p>
                 <p className="text-2xl font-bold">{stats.total}</p>
               </div>
               <FolderOpen className="h-8 w-8 text-muted-foreground" />
@@ -158,7 +158,7 @@ export function DocumentManagement() {
           <div className="rounded-lg border bg-card p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">{t('document.status.pending') || 'قيد المراجعة'}</p>
+                <p className="text-sm text-muted-foreground">{t('document.status.pending')}</p>
                 <p className="text-2xl font-bold">{stats.pending}</p>
               </div>
               <Clock className="h-8 w-8 text-warning" />
@@ -167,7 +167,7 @@ export function DocumentManagement() {
           <div className="rounded-lg border bg-card p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">{t('document.status.approved') || 'معتمد'}</p>
+                <p className="text-sm text-muted-foreground">{t('document.status.approved')}</p>
                 <p className="text-2xl font-bold">{stats.approved}</p>
               </div>
               <CheckCircle2 className="h-8 w-8 text-success" />
@@ -176,7 +176,7 @@ export function DocumentManagement() {
           <div className="rounded-lg border bg-card p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">{t('document.status.rejected') || 'مرفوض'}</p>
+                <p className="text-sm text-muted-foreground">{t('document.status.rejected')}</p>
                 <p className="text-2xl font-bold">{stats.rejected}</p>
               </div>
               <XCircle className="h-8 w-8 text-destructive" />
@@ -185,7 +185,7 @@ export function DocumentManagement() {
         </div>
       )}
 
-      <BlockContent title={t('nav.documents') || 'تسليم الوثائق'} actions={actions}>
+      <BlockContent title={t('nav.documents')} actions={actions}>
         <DataTable
           columns={columns}
           data={documents}
@@ -203,11 +203,11 @@ export function DocumentManagement() {
           onColumnFiltersChange={setColumnFilters}
           searchValue={globalFilter}
           onSearchChange={setGlobalFilter}
-          searchPlaceholder={t('document.searchPlaceholder') || 'البحث في الوثائق...'}
+          searchPlaceholder={t('document.searchPlaceholder')}
           rtl={rtl}
           enableFiltering={true}
           enableViews={true}
-          emptyMessage={t('document.noDocuments') || 'لا توجد وثائق'}
+          emptyMessage={t('document.noDocuments')}
         />
       </BlockContent>
 
@@ -215,15 +215,15 @@ export function DocumentManagement() {
         <BlockContent variant="container" className="border-destructive">
           <div className="flex items-center gap-2 text-destructive">
             <AlertCircle className="h-5 w-5" />
-            <span>{t('document.loadError') || 'حدث خطأ أثناء تحميل الوثائق'}</span>
+            <span>{t('document.loadError')}</span>
           </div>
         </BlockContent>
       )}
 
-      <ModalDialog 
-        open={showUploadForm} 
-        onOpenChange={setShowUploadForm} 
-        title={t('document.uploadNew') || 'رفع وثيقة جديدة'}
+      <ModalDialog
+        open={showUploadForm}
+        onOpenChange={setShowUploadForm}
+        title={t('document.uploadNew')}
       >
         {selectedProjectId && (
           <DocumentUpload
@@ -250,20 +250,20 @@ export function DocumentManagement() {
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <p className="text-xs text-muted-foreground">{t('document.type') || 'نوع الوثيقة'}</p>
+                  <p className="text-xs text-muted-foreground">{t('document.type')}</p>
                   <p className="text-sm font-medium">{selectedDocument.type}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">{t('document.size') || 'الحجم'}</p>
+                  <p className="text-xs text-muted-foreground">{t('document.size')}</p>
                   <p className="text-sm font-medium">{formatFileSize(selectedDocument.fileSize)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">{t('document.submittedAt') || 'تم الإرسال في'}</p>
+                  <p className="text-xs text-muted-foreground">{t('document.submittedAt')}</p>
                   <p className="text-sm font-medium">{formatDate(selectedDocument.createdAt)}</p>
                 </div>
                 {selectedDocument.reviewedAt && (
                   <div>
-                    <p className="text-xs text-muted-foreground">{t('document.reviewedAt') || 'تمت المراجعة في'}</p>
+                    <p className="text-xs text-muted-foreground">{t('document.reviewedAt')}</p>
                     <p className="text-sm font-medium">{formatDate(selectedDocument.reviewedAt)}</p>
                   </div>
                 )}
@@ -273,7 +273,7 @@ export function DocumentManagement() {
                 <div className="rounded-lg bg-muted p-4 border border-muted-foreground/20">
                   <div className="flex items-center gap-2 mb-2">
                     <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                    <h4 className="text-sm font-medium">{t('document.reviewComments') || 'ملاحظات المراجعة'}</h4>
+                    <h4 className="text-sm font-medium">{t('document.reviewComments')}</h4>
                   </div>
                   <p className="text-sm whitespace-pre-wrap">{selectedDocument.reviewComments}</p>
                 </div>
@@ -287,14 +287,14 @@ export function DocumentManagement() {
                     className="flex-1"
                   >
                     <Download className="mr-2 h-4 w-4" />
-                    {t('document.download') || 'تحميل'}
+                    {t('document.download')}
                   </Button>
                 )}
                 <Button
                   variant="outline"
                   onClick={() => setSelectedDocument(null)}
                 >
-                  {t('common.close') || 'إغلاق'}
+                  {t('common.close')}
                 </Button>
               </div>
             </div>
