@@ -66,8 +66,9 @@ export function UserManagement() {
           setShowDeleteDialog(true)
         },
         rtl,
+        t,
       }),
-    [rtl]
+    [rtl, t]
   )
 
   const handleFormSuccess = () => {

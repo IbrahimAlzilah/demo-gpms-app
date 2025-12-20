@@ -7,10 +7,10 @@ export const mockTimePeriods: TimePeriod[] = [
     id: '1',
     name: 'فترة تقديم المقترحات',
     type: 'proposal_submission',
-    startDate: new Date('2024-01-01').toISOString(),
-    endDate: new Date('2024-02-01').toISOString(),
+    startDate: new Date('2026-01-01').toISOString(),
+    endDate: new Date('2026-02-01').toISOString(),
     isActive: true,
-    academicYear: '2023-2024',
+    academicYear: '2025-2026',
     semester: 'Fall',
     description: 'فترة تقديم مقترحات مشاريع التخرج',
     createdBy: '3',
@@ -75,7 +75,7 @@ export const mockPeriodService = {
   isPeriodActive: async (type: PeriodType): Promise<boolean> => {
     await new Promise((resolve) => setTimeout(resolve, 100))
     const period = mockTimePeriods.find((p) => p.type === type && p.isActive)
-    if (!period) return false
+    if (!period) return true
     const now = new Date()
     const start = new Date(period.startDate)
     const end = new Date(period.endDate)

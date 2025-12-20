@@ -3,14 +3,9 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useSubmitFinalGrade } from '../hooks/useFinalEvaluation'
 import { usePeriodCheck } from '../../../hooks/usePeriodCheck'
-import { Button } from '../../../components/ui/button'
-import { Input } from '../../../components/ui/input'
-import { Label } from '../../../components/ui/label'
-import { Textarea } from '../../../components/ui/textarea'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label, Textarea } from '@/components/ui'
 import { useAuthStore } from '../../auth/store/auth.store'
-import { useToast } from '../../../components/common/NotificationToast'
-import { LoadingSpinner } from '../../../components/common/LoadingSpinner'
+import { LoadingSpinner, useToast } from '@/components/common'
 import { AlertCircle, Award, Loader2 } from 'lucide-react'
 import { finalEvaluationSchema, type FinalEvaluationSchema } from '../schema'
 
@@ -47,14 +42,12 @@ export function FinalEvaluationForm({
 
   const onSubmit = async (data: FinalEvaluationSchema) => {
     if (!isPeriodActive) {
-      const errorMsg = t('discussion.evaluationPeriodClosed') || 'فترة التقييم قد انتهت'
-      showToast(errorMsg, 'error')
+      showToast(t('discussion.evaluationPeriodClosed'), 'error')
       return
     }
 
     if (!user) {
-      const errorMsg = t('discussion.userNotFound') || 'المستخدم غير معروف'
-      showToast(errorMsg, 'error')
+      showToast(t('discussion.userNotFound'), 'error')
       return
     }
 
@@ -73,11 +66,11 @@ export function FinalEvaluationForm({
         },
         committeeMembers: [user.id], // In real app, get from committee assignment
       })
-      showToast(t('discussion.evaluationSaved') || 'تم حفظ التقييم بنجاح', 'success')
+      showToast(t('discussion.evaluationSaved'), 'success')
       reset()
       onSuccess?.()
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : t('discussion.evaluationError') || 'فشل حفظ التقييم'
+      const errorMsg = err instanceof Error ? err.message : t('discussion.evaluationError')
       showToast(errorMsg, 'error')
     }
   }
@@ -98,13 +91,13 @@ export function FinalEvaluationForm({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-warning" />
-            {t('discussion.evaluationPeriodClosed') || 'فترة التقييم مغلقة'}
+            {t('discussion.evaluationPeriodClosed')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="p-4 bg-warning/10 border border-warning/20 rounded-md">
             <p className="text-warning">
-              {t('discussion.evaluationPeriodClosedMessage') || 'فترة التقييم قد انتهت'}
+              {t('discussion.evaluationPeriodClosedMessage')}
             </p>
           </div>
         </CardContent>
@@ -117,7 +110,7 @@ export function FinalEvaluationForm({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Award className="h-5 w-5 text-primary" />
-          {t('discussion.finalEvaluation') || 'تقييم المناقشة النهائية'}
+          {t('discussion.finalEvaluation')}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -131,7 +124,7 @@ export function FinalEvaluationForm({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="score">{t('discussion.score') || 'الدرجة'} *</Label>
+              <Label htmlFor="score">{t('discussion.score')} *</Label>
               <Input
                 id="score"
                 type="number"
@@ -150,7 +143,7 @@ export function FinalEvaluationForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="maxScore">{t('discussion.maxScore') || 'الدرجة الكاملة'} *</Label>
+              <Label htmlFor="maxScore">{t('discussion.maxScore')} *</Label>
               <Input
                 id="maxScore"
                 type="number"
@@ -170,11 +163,11 @@ export function FinalEvaluationForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="comments">{t('discussion.comments') || 'ملاحظات'} ({t('common.optional') || 'اختياري'})</Label>
+            <Label htmlFor="comments">{t('discussion.comments')} ({t('common.optional')})</Label>
             <Textarea
               id="comments"
               {...register('comments')}
-              placeholder={t('discussion.commentsPlaceholder') || 'أدخل ملاحظاتك حول التقييم'}
+              placeholder={t('discussion.commentsPlaceholder')}
               rows={4}
             />
           </div>
@@ -190,7 +183,7 @@ export function FinalEvaluationForm({
                 {t('common.saving')}
               </>
             ) : (
-              t('discussion.saveEvaluation') || 'حفظ التقييم'
+              t('discussion.saveEvaluation')
             )}
           </Button>
         </form>

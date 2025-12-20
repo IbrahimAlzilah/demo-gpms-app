@@ -125,7 +125,7 @@ export function StudentDashboardPage() {
         <div className="grid gap-4 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>إجراءات سريعة</CardTitle>
+              <CardTitle>{t('dashboard.student.quickActions')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <Button asChild className="w-full justify-start" variant="outline">
@@ -151,17 +151,17 @@ export function StudentDashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>المشروع الحالي</CardTitle>
+              <CardTitle>{t('dashboard.student.currentProject')}</CardTitle>
             </CardHeader>
             <CardContent>
               {stats.projects.registered > 0 ? (
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">
-                    أنت مسجل في مشروع. تابع التقدم من صفحة متابعة المشروع.
+                    {t('dashboard.student.registeredInProject')}
                   </p>
                   <Button asChild variant="outline" className="w-full">
                     <Link to={ROUTES.STUDENT.FOLLOW_UP}>
-                      متابعة المشروع
+                      {t('dashboard.student.followProject')}
                       <ArrowLeft className="me-2 h-4 w-4" />
                     </Link>
                   </Button>
@@ -169,11 +169,11 @@ export function StudentDashboardPage() {
               ) : (
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">
-                    لم يتم تسجيلك في أي مشروع بعد.
+                    {t('dashboard.student.notRegisteredInProject')}
                   </p>
                   <Button asChild variant="default" className="w-full">
                     <Link to={ROUTES.STUDENT.PROJECTS}>
-                      تصفح المشاريع المتاحة
+                      {t('dashboard.student.browseAvailableProjects')}
                       <ArrowLeft className="me-2 h-4 w-4" />
                     </Link>
                   </Button>
@@ -189,9 +189,9 @@ export function StudentDashboardPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>المقترحات الأخيرة</CardTitle>
+                <CardTitle>{t('dashboard.student.recentProposals')}</CardTitle>
                 <Button asChild variant="ghost" size="sm">
-                  <Link to={ROUTES.STUDENT.PROPOSALS}>عرض الكل</Link>
+                  <Link to={ROUTES.STUDENT.PROPOSALS}>{t('common.viewAll')}</Link>
                 </Button>
               </div>
             </CardHeader>
@@ -215,7 +215,7 @@ export function StudentDashboardPage() {
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground text-center py-4">
-                  لا توجد مقترحات
+                  {t('dashboard.student.noProposals')}
                 </p>
               )}
             </CardContent>
@@ -225,9 +225,9 @@ export function StudentDashboardPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>الطلبات الأخيرة</CardTitle>
+                <CardTitle>{t('dashboard.student.recentRequests')}</CardTitle>
                 <Button asChild variant="ghost" size="sm">
-                  <Link to={ROUTES.STUDENT.REQUESTS}>عرض الكل</Link>
+                  <Link to={ROUTES.STUDENT.REQUESTS}>{t('common.viewAll')}</Link>
                 </Button>
               </div>
             </CardHeader>
@@ -241,10 +241,10 @@ export function StudentDashboardPage() {
                     >
                       <div className="flex-1 space-y-1">
                         <p className="text-sm font-medium">
-                          {request.type === 'change_supervisor' && 'تغيير المشرف'}
-                          {request.type === 'change_group' && 'تغيير المجموعة'}
-                          {request.type === 'change_project' && 'تغيير المشروع'}
-                          {request.type === 'other' && 'طلب آخر'}
+                          {request.type === 'change_supervisor' && t('request.type.changeSupervisor')}
+                          {request.type === 'change_group' && t('request.type.changeGroup')}
+                          {request.type === 'change_project' && t('request.type.changeProject')}
+                          {request.type === 'other' && t('request.type.other')}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {formatRelativeTime(request.createdAt)}
@@ -256,7 +256,7 @@ export function StudentDashboardPage() {
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground text-center py-4">
-                  لا توجد طلبات
+                  {t('request.noRequests')}
                 </p>
               )}
             </CardContent>

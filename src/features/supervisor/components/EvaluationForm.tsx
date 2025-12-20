@@ -3,13 +3,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useSubmitGrade } from '../hooks/useEvaluation'
 import { usePeriodCheck } from '../../../hooks/usePeriodCheck'
-import { Button } from '../../../components/ui/button'
-import { Input } from '../../../components/ui/input'
-import { Label } from '../../../components/ui/label'
-import { Textarea } from '../../../components/ui/textarea'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
-import { LoadingSpinner } from '../../../components/common/LoadingSpinner'
-import { useToast } from '../../../components/common/NotificationToast'
+import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label, Textarea } from '@/components/ui'
+import { LoadingSpinner, useToast } from '@/components/common'
 import { AlertCircle, Loader2, Award } from 'lucide-react'
 import { evaluationSchema, type EvaluationSchema } from '../schema'
 
@@ -41,7 +36,7 @@ export function EvaluationForm({ projectId, studentId, onSuccess }: EvaluationFo
 
   const onSubmit = async (data: EvaluationSchema) => {
     if (!isPeriodActive) {
-      const errorMsg = t('supervisor.evaluationPeriodClosed') || 'فترة التقييم قد انتهت'
+      const errorMsg = t('supervisor.evaluationPeriodClosed')
       showToast(errorMsg, 'error')
       return
     }
@@ -60,11 +55,11 @@ export function EvaluationForm({ projectId, studentId, onSuccess }: EvaluationFo
           comments: data.comments || undefined,
         },
       })
-      showToast(t('supervisor.evaluationSaved') || 'تم حفظ التقييم بنجاح', 'success')
+      showToast(t('supervisor.evaluationSaved'), 'success')
       reset()
       onSuccess?.()
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : t('supervisor.evaluationError') || 'فشل حفظ التقييم'
+      const errorMsg = err instanceof Error ? err.message : t('supervisor.evaluationError')
       showToast(errorMsg, 'error')
     }
   }
@@ -85,13 +80,13 @@ export function EvaluationForm({ projectId, studentId, onSuccess }: EvaluationFo
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-warning" />
-            {t('supervisor.evaluationPeriodClosed') || 'فترة التقييم مغلقة'}
+            {t('supervisor.evaluationPeriodClosed')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="p-4 bg-warning/10 border border-warning/20 rounded-md">
             <p className="text-warning">
-              {t('supervisor.evaluationPeriodClosedMessage') || 'فترة التقييم قد انتهت'}
+              {t('supervisor.evaluationPeriodClosedMessage')}
             </p>
           </div>
         </CardContent>
@@ -104,7 +99,7 @@ export function EvaluationForm({ projectId, studentId, onSuccess }: EvaluationFo
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Award className="h-5 w-5 text-primary" />
-          {t('supervisor.evaluateProject') || 'تقييم المشروع'}
+          {t('supervisor.evaluateProject')}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -118,7 +113,7 @@ export function EvaluationForm({ projectId, studentId, onSuccess }: EvaluationFo
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="score">{t('supervisor.score') || 'الدرجة'} *</Label>
+              <Label htmlFor="score">{t('supervisor.score')} *</Label>
               <Input
                 id="score"
                 type="number"
@@ -137,7 +132,7 @@ export function EvaluationForm({ projectId, studentId, onSuccess }: EvaluationFo
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="maxScore">{t('supervisor.maxScore') || 'الدرجة الكاملة'} *</Label>
+              <Label htmlFor="maxScore">{t('supervisor.maxScore')} *</Label>
               <Input
                 id="maxScore"
                 type="number"
@@ -157,11 +152,11 @@ export function EvaluationForm({ projectId, studentId, onSuccess }: EvaluationFo
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="comments">{t('supervisor.comments') || 'ملاحظات'} ({t('common.optional') || 'اختياري'})</Label>
+            <Label htmlFor="comments">{t('supervisor.comments')} ({t('common.optional')})</Label>
             <Textarea
               id="comments"
               {...register('comments')}
-              placeholder={t('supervisor.commentsPlaceholder') || 'أدخل ملاحظاتك حول التقييم'}
+              placeholder={t('supervisor.commentsPlaceholder')}
               rows={4}
             />
           </div>
@@ -177,7 +172,7 @@ export function EvaluationForm({ projectId, studentId, onSuccess }: EvaluationFo
                 {t('common.saving')}
               </>
             ) : (
-              t('supervisor.saveEvaluation') || 'حفظ التقييم'
+              t('supervisor.saveEvaluation')
             )}
           </Button>
         </form>

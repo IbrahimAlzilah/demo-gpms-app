@@ -5,25 +5,26 @@ import { StatusBadge } from "@/components/common/StatusBadge"
 import type { Document } from "@/types/request.types"
 import { MessageSquare, Download, File } from "lucide-react"
 import { formatRelativeTime, formatFileSize } from "@/lib/utils/format"
-import i18n from "@/lib/i18n/i18n"
 
 interface DocumentTableColumnsProps {
   onView: (document: Document) => void
   rtl?: boolean
+  t: (key: string) => string
 }
 
 export function createDocumentColumns({
   onView,
   rtl = false,
+  t,
 }: DocumentTableColumnsProps): ColumnDef<Document>[] {
   const getDocumentTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
-      proposal: i18n.t('document.type.proposal') || 'المقترح',
-      chapters: i18n.t('document.type.chapters') || 'الفصول',
-      final_report: i18n.t('document.type.finalReport') || 'التقرير النهائي',
-      code: i18n.t('document.type.code') || 'الأكواد',
-      presentation: i18n.t('document.type.presentation') || 'العرض',
-      other: i18n.t('document.type.other') || 'أخرى',
+      proposal: t('document.type.proposal'),
+      chapters: t('document.type.chapters'),
+      final_report: t('document.type.finalReport'),
+      code: t('document.type.code'),
+      presentation: t('document.type.presentation'),
+      other: t('document.type.other'),
     }
     return labels[type] || type
   }
@@ -32,7 +33,7 @@ export function createDocumentColumns({
     {
       accessorKey: "fileName",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('document.fileName') || 'اسم الملف'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('document.fileName')} rtl={rtl} />
       ),
       cell: ({ row }) => (
         <div className="font-medium flex items-center gap-2">
@@ -44,7 +45,7 @@ export function createDocumentColumns({
     {
       accessorKey: "type",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('document.type') || 'نوع الوثيقة'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('document.type')} rtl={rtl} />
       ),
       cell: ({ row }) => (
         <div className="text-sm">{getDocumentTypeLabel(row.original.type)}</div>
@@ -56,7 +57,7 @@ export function createDocumentColumns({
     {
       accessorKey: "reviewStatus",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('document.reviewStatus') || 'حالة المراجعة'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('document.reviewStatus')} rtl={rtl} />
       ),
       cell: ({ row }) => <StatusBadge status={`reviewStatus_${row.original.reviewStatus}`} />,
       filterFn: (row, id, value) => {
@@ -66,7 +67,7 @@ export function createDocumentColumns({
     {
       accessorKey: "fileSize",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('document.size') || 'الحجم'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('document.size')} rtl={rtl} />
       ),
       cell: ({ row }) => (
         <div className="text-sm text-muted-foreground">
@@ -77,7 +78,7 @@ export function createDocumentColumns({
     {
       accessorKey: "createdAt",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('document.submittedAt') || 'تاريخ التقديم'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('document.submittedAt')} rtl={rtl} />
       ),
       cell: ({ row }) => (
         <div className="text-sm text-muted-foreground">
@@ -88,12 +89,12 @@ export function createDocumentColumns({
     {
       id: "actions",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('common.actions') || 'الإجراءات'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.actions')} rtl={rtl} />
       ),
       cell: ({ row }) => {
         const document = row.original
-        const viewLabel = i18n.t('common.view') || 'عرض'
-        const downloadLabel = i18n.t('document.download') || 'تحميل'
+        const viewLabel = t('common.view')
+        const downloadLabel = t('document.download')
 
         return (
           <div className="flex items-center gap-2">

@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../../auth/store/auth.store'
-import type { Project } from '../../../types/project.types'
 import { createSupervisorProjectColumns } from './SupervisorProjectTableColumns'
 import { useDataTable } from '@/hooks/useDataTable'
 import { supervisorProjectService } from '../api/project.service'
@@ -38,13 +37,14 @@ export function ProjectList() {
     () =>
       createSupervisorProjectColumns({
         rtl,
+        t,
       }),
-    [rtl]
+    [rtl, t]
   )
 
   return (
     <>
-      <BlockContent title={t('nav.projects') || 'استعراض المشاريع'}>
+      <BlockContent title={t('nav.projects')}>
         <DataTable
           columns={columns}
           data={projects}
@@ -62,11 +62,11 @@ export function ProjectList() {
           onColumnFiltersChange={setColumnFilters}
           searchValue={globalFilter}
           onSearchChange={setGlobalFilter}
-          searchPlaceholder={t('supervisor.searchPlaceholder') || 'البحث في المشاريع...'}
+          searchPlaceholder={t('supervisor.searchPlaceholder')}
           rtl={rtl}
           enableFiltering={true}
           enableViews={true}
-          emptyMessage={t('supervisor.noProjects') || 'لا توجد مشاريع تحت إشرافك'}
+          emptyMessage={t('supervisor.noProjects')}
         />
       </BlockContent>
 
@@ -74,7 +74,7 @@ export function ProjectList() {
         <BlockContent variant="container" className="border-destructive">
           <div className="flex items-center gap-2 text-destructive">
             <AlertCircle className="h-5 w-5" />
-            <span>{t('supervisor.loadError') || 'حدث خطأ أثناء تحميل المشاريع'}</span>
+            <span>{t('supervisor.loadError')}</span>
           </div>
         </BlockContent>
       )}

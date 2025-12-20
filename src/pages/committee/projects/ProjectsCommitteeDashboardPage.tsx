@@ -1,9 +1,8 @@
+import { useTranslation } from 'react-i18next'
 import { MainLayout } from '../../../layouts/MainLayout'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
-import { useAuthStore } from '../../../features/auth/store/auth.store'
+import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
 import { ROUTES } from '../../../lib/constants'
 import { Link } from 'react-router-dom'
-import { Button } from '../../../components/ui/button'
 import {
   Calendar,
   FileText,
@@ -16,7 +15,7 @@ import {
 } from 'lucide-react'
 
 export function ProjectsCommitteeDashboardPage() {
-  const { user } = useAuthStore()
+  const { t } = useTranslation()
 
   // Mock data - in real app, fetch from API
   const stats = {
@@ -29,57 +28,49 @@ export function ProjectsCommitteeDashboardPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold">لوحة تحكم لجنة المشاريع</h1>
-          <p className="text-muted-foreground mt-2">
-            مرحباً {user?.name}، هذه نظرة عامة على نشاطك في النظام
-          </p>
-        </div>
-
         {/* Statistics Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">المقترحات</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('dashboard.committee.proposals')}</CardTitle>
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.pendingProposals}</div>
-              <p className="text-xs text-muted-foreground">مقترحات قيد المراجعة</p>
+              <p className="text-xs text-muted-foreground">{t('dashboard.committee.pendingReview')}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">الطلبات</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('dashboard.committee.requests')}</CardTitle>
               <FileCheck className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.pendingRequests}</div>
-              <p className="text-xs text-muted-foreground">طلبات معلقة</p>
+              <p className="text-xs text-muted-foreground">{t('dashboard.committee.pendingRequests')}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">المشاريع</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('dashboard.committee.projects')}</CardTitle>
               <Megaphone className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.projectsToAnnounce}</div>
-              <p className="text-xs text-muted-foreground">مشاريع للإعلان</p>
+              <p className="text-xs text-muted-foreground">{t('dashboard.committee.projectsToAnnounce')}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">المشرفين</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('dashboard.committee.supervisors')}</CardTitle>
               <UserPlus className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.supervisorsToAssign}</div>
-              <p className="text-xs text-muted-foreground">مشاريع تحتاج مشرفين</p>
+              <p className="text-xs text-muted-foreground">{t('dashboard.committee.projectsNeedSupervisors')}</p>
             </CardContent>
           </Card>
         </div>
@@ -88,49 +79,49 @@ export function ProjectsCommitteeDashboardPage() {
         <div className="grid gap-4 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>إجراءات سريعة</CardTitle>
+              <CardTitle>{t('dashboard.committee.quickActions')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <Button asChild className="w-full justify-start" variant="outline">
                 <Link to={ROUTES.PROJECTS_COMMITTEE.PERIODS}>
                   <Calendar className="ml-2 h-4 w-4" />
-                  إعلان الفترات الزمنية
+                  {t('dashboard.committee.announcePeriods')}
                 </Link>
               </Button>
               <Button asChild className="w-full justify-start" variant="outline">
                 <Link to={ROUTES.PROJECTS_COMMITTEE.PROPOSALS}>
                   <FileText className="ml-2 h-4 w-4" />
-                  إدارة المقترحات
+                  {t('dashboard.committee.manageProposals')}
                 </Link>
               </Button>
               <Button asChild className="w-full justify-start" variant="outline">
                 <Link to={ROUTES.PROJECTS_COMMITTEE.ANNOUNCE_PROJECTS}>
                   <Megaphone className="ml-2 h-4 w-4" />
-                  إعلان المشاريع
+                  {t('dashboard.committee.announceProjects')}
                 </Link>
               </Button>
               <Button asChild className="w-full justify-start" variant="outline">
                 <Link to={ROUTES.PROJECTS_COMMITTEE.ASSIGN_SUPERVISORS}>
                   <UserPlus className="ml-2 h-4 w-4" />
-                  تعيين المشرفين
+                  {t('dashboard.committee.assignSupervisors')}
                 </Link>
               </Button>
               <Button asChild className="w-full justify-start" variant="outline">
                 <Link to={ROUTES.PROJECTS_COMMITTEE.REQUESTS}>
                   <FileCheck className="ml-2 h-4 w-4" />
-                  معالجة الطلبات
+                  {t('dashboard.committee.processRequests')}
                 </Link>
               </Button>
               <Button asChild className="w-full justify-start" variant="outline">
                 <Link to={ROUTES.PROJECTS_COMMITTEE.DISTRIBUTE_COMMITTEES}>
                   <Users className="ml-2 h-4 w-4" />
-                  توزيع لجان المناقشة
+                  {t('dashboard.committee.distributeCommittees')}
                 </Link>
               </Button>
               <Button asChild className="w-full justify-start" variant="outline">
                 <Link to={ROUTES.PROJECTS_COMMITTEE.REPORTS}>
                   <FileBarChart className="ml-2 h-4 w-4" />
-                  إصدار التقارير
+                  {t('dashboard.committee.generateReports')}
                 </Link>
               </Button>
             </CardContent>
@@ -138,16 +129,16 @@ export function ProjectsCommitteeDashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>المهام العاجلة</CardTitle>
+              <CardTitle>{t('dashboard.committee.urgentTasks')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {stats.pendingProposals > 0 && (
                   <div className="flex items-center justify-between p-3 rounded-lg bg-warning/10">
-                    <span className="text-sm">لديك {stats.pendingProposals} مقترح للمراجعة</span>
+                    <span className="text-sm">{t('dashboard.committee.proposalsToReview', { count: stats.pendingProposals })}</span>
                     <Button asChild size="sm" variant="outline">
                       <Link to={ROUTES.PROJECTS_COMMITTEE.PROPOSALS}>
-                        مراجعة
+                        {t('dashboard.committee.review')}
                         <ArrowLeft className="mr-1 h-3 w-3" />
                       </Link>
                     </Button>
@@ -155,10 +146,10 @@ export function ProjectsCommitteeDashboardPage() {
                 )}
                 {stats.pendingRequests > 0 && (
                   <div className="flex items-center justify-between p-3 rounded-lg bg-info/10">
-                    <span className="text-sm">لديك {stats.pendingRequests} طلب للمعالجة</span>
+                    <span className="text-sm">{t('dashboard.committee.requestsToProcess', { count: stats.pendingRequests })}</span>
                     <Button asChild size="sm" variant="outline">
                       <Link to={ROUTES.PROJECTS_COMMITTEE.REQUESTS}>
-                        معالجة
+                        {t('dashboard.committee.process')}
                         <ArrowLeft className="mr-1 h-3 w-3" />
                       </Link>
                     </Button>

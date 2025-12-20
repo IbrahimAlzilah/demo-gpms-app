@@ -12,10 +12,10 @@ export function CommitteeRequestsPage() {
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <FileCheck className="h-8 w-8 text-primary" />
-            {t('nav.processRequests') || 'معالجة الطلبات'}
+            {t('nav.processRequests')}
           </h1>
           <p className="text-muted-foreground mt-2">
-            {t('committee.requestsDescription') || 'مراجعة ومعالجة الطلبات الواردة من الطلاب (تغيير مشرف، مجموعة، مشروع، إلخ)'}
+            {t('committee.requestsDescription')}
           </p>
         </div>
         <RequestProcessingPanel />

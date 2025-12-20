@@ -66,23 +66,23 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
   }
 
   const roleOptions: { value: UserRole; label: string }[] = [
-    { value: 'student', label: t('roles.student') || 'طالب' },
-    { value: 'supervisor', label: t('roles.supervisor') || 'مشرف' },
+    { value: 'student', label: t('roles.student') },
+    { value: 'supervisor', label: t('roles.supervisor') },
     {
       value: 'discussion_committee',
-      label: t('roles.discussion_committee') || 'لجنة المناقشة',
+      label: t('roles.discussion_committee'),
     },
     {
       value: 'projects_committee',
-      label: t('roles.projects_committee') || 'لجنة المشاريع',
+      label: t('roles.projects_committee'),
     },
-    { value: 'admin', label: t('roles.admin') || 'مدير النظام' },
+    { value: 'admin', label: t('roles.admin') },
   ]
 
   const statusOptions: { value: UserStatus; label: string }[] = [
-    { value: 'active', label: t('user.status.active') || 'نشط' },
-    { value: 'inactive', label: t('user.status.inactive') || 'غير نشط' },
-    { value: 'suspended', label: t('user.status.suspended') || 'معلق' },
+    { value: 'active', label: t('user.status.active') },
+    { value: 'inactive', label: t('user.status.inactive') },
+    { value: 'suspended', label: t('user.status.suspended') },
   ]
 
   return (
@@ -95,8 +95,8 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
         )}
         <h3 className="text-lg font-semibold">
           {isEditing
-            ? t('user.editUser') || 'تعديل المستخدم'
-            : t('user.createUser') || 'إضافة مستخدم جديد'}
+            ? t('user.editUser')
+            : t('user.createUser')}
         </h3>
       </div>
 
@@ -139,7 +139,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
           )}
           {isEditing && (
             <p className="text-xs text-muted-foreground">
-              {t('user.emailCannotBeChanged') || 'لا يمكن تغيير البريد الإلكتروني'}
+              {t('user.emailCannotBeChanged')}
             </p>
           )}
         </div>
@@ -158,7 +158,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
               id="role"
               className={errors.role ? 'border-destructive' : ''}
             >
-              <SelectValue placeholder={t('user.selectRole') || 'اختر الدور'} />
+              <SelectValue placeholder={t('user.selectRole')} />
             </SelectTrigger>
             <SelectContent>
               {roleOptions.map((option) => (
@@ -188,7 +188,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
               id="status"
               className={errors.status ? 'border-destructive' : ''}
             >
-              <SelectValue placeholder={t('user.selectStatus') || 'اختر الحالة'} />
+              <SelectValue placeholder={t('user.selectStatus')} />
             </SelectTrigger>
             <SelectContent>
               {statusOptions.map((option) => (
@@ -209,31 +209,31 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="studentId">{t('user.studentId') || 'رقم الطالب'}</Label>
+          <Label htmlFor="studentId">{t('user.studentId')}</Label>
           <Input
             id="studentId"
             {...register('studentId')}
-            placeholder={t('user.studentIdPlaceholder') || 'رقم الطالب (اختياري)'}
+            placeholder={t('user.studentIdPlaceholder')}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="department">{t('user.department') || 'القسم'}</Label>
+          <Label htmlFor="department">{t('user.department')}</Label>
           <Input
             id="department"
             {...register('department')}
-            placeholder={t('user.departmentPlaceholder') || 'القسم (اختياري)'}
+            placeholder={t('user.departmentPlaceholder')}
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="phone">{t('user.phone') || 'رقم الهاتف'}</Label>
+        <Label htmlFor="phone">{t('user.phone')}</Label>
         <Input
           id="phone"
           type="tel"
           {...register('phone')}
-          placeholder={t('user.phonePlaceholder') || 'رقم الهاتف (اختياري)'}
+          placeholder={t('user.phonePlaceholder')}
           className={errors.phone ? 'border-destructive' : ''}
         />
         {errors.phone && (
@@ -253,12 +253,12 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
           {createUser.isPending || updateUser.isPending ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {t('common.saving') || 'جاري الحفظ...'}
+              {t('common.saving')}
             </>
           ) : isEditing ? (
-            t('common.update') || 'تحديث'
+            t('common.update')
           ) : (
-            t('common.create') || 'إنشاء'
+            t('common.create')
           )}
         </Button>
         {onCancel && (

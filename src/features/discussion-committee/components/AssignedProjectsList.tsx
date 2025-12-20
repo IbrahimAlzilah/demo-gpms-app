@@ -38,13 +38,14 @@ export function AssignedProjectsList() {
     () =>
       createAssignedProjectColumns({
         rtl,
+        t,
       }),
-    [rtl]
+    [rtl, t]
   )
 
   return (
     <>
-      <BlockContent title={t('nav.projects') || 'استعراض المشاريع'}>
+      <BlockContent title={t('nav.projects')}>
         <DataTable
           columns={columns}
           data={projects}
@@ -62,11 +63,11 @@ export function AssignedProjectsList() {
           onColumnFiltersChange={setColumnFilters}
           searchValue={globalFilter}
           onSearchChange={setGlobalFilter}
-          searchPlaceholder={t('discussion.searchPlaceholder') || 'البحث في المشاريع...'}
+          searchPlaceholder={t('discussion.searchPlaceholder')}
           rtl={rtl}
           enableFiltering={true}
           enableViews={true}
-          emptyMessage={t('discussion.noProjects') || 'لا توجد مشاريع معينة لك حالياً'}
+          emptyMessage={t('discussion.noProjects')}
         />
       </BlockContent>
 
@@ -74,7 +75,7 @@ export function AssignedProjectsList() {
         <BlockContent variant="container" className="border-destructive">
           <div className="flex items-center gap-2 text-destructive">
             <AlertCircle className="h-5 w-5" />
-            <span>{t('discussion.loadError') || 'حدث خطأ أثناء تحميل المشاريع'}</span>
+            <span>{t('discussion.loadError')}</span>
           </div>
         </BlockContent>
       )}

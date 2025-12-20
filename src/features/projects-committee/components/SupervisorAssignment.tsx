@@ -1,11 +1,8 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useProjectsWithoutSupervisor, useAvailableSupervisors, useAssignSupervisor } from '../hooks/useSupervisorAssignment'
-import { Card, CardContent } from '../../../components/ui/card'
-import { Button } from '../../../components/ui/button'
-import { LoadingSpinner } from '../../../components/common/LoadingSpinner'
-import { EmptyState } from '../../../components/common/EmptyState'
-import { useToast } from '../../../components/common/NotificationToast'
+import { Card, CardContent, Button } from '@/components/ui'
+import { LoadingSpinner, EmptyState, useToast } from '@/components/common'
 import { Briefcase, UserCheck, User, Loader2, CheckCircle2 } from 'lucide-react'
 import type { Project } from '../../../types/project.types'
 
@@ -20,7 +17,7 @@ export function SupervisorAssignment() {
 
     const handleAssign = async () => {
         if (!selectedProject || !selectedSupervisor) {
-            showToast(t('committee.supervisors.selectBoth') || 'يرجى اختيار المشروع والمشرف', 'warning')
+            showToast(t('committee.supervisors.selectBoth'), 'warning')
             return
         }
 
@@ -29,12 +26,12 @@ export function SupervisorAssignment() {
                 projectId: selectedProject.id,
                 supervisorId: selectedSupervisor,
             })
-            showToast(t('committee.supervisors.assignmentSuccess') || 'تم تعيين المشرف بنجاح', 'success')
+            showToast(t('committee.supervisors.assignmentSuccess'), 'success')
             setSelectedProject(null)
             setSelectedSupervisor('')
         } catch (err) {
             showToast(
-                err instanceof Error ? err.message : t('committee.supervisors.assignmentError') || 'فشل تعيين المشرف',
+                err instanceof Error ? err.message : t('committee.supervisors.assignmentError'),
                 'error'
             )
         }
@@ -48,8 +45,8 @@ export function SupervisorAssignment() {
         return (
             <EmptyState
                 icon={Briefcase}
-                title={t('committee.supervisors.noProjects') || 'لا توجد مشاريع تحتاج إلى تعيين مشرف'}
-                description={t('committee.supervisors.noProjectsDescription') || 'جميع المشاريع المعتمدة لديها مشرفين معينين'}
+                title={t('committee.supervisors.noProjects')}
+                description={t('committee.supervisors.noProjectsDescription')}
             />
         )
     }
@@ -60,7 +57,7 @@ export function SupervisorAssignment() {
                 <div>
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <Briefcase className="h-5 w-5 text-primary" />
-                        {t('committee.supervisors.projectsWithoutSupervisor') || 'المشاريع بدون مشرف'}
+                        {t('committee.supervisors.projectsWithoutSupervisor')}
                     </h3>
                     <div className="space-y-3">
                         {projects.map((project) => (
@@ -88,14 +85,14 @@ export function SupervisorAssignment() {
                 <div>
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <UserCheck className="h-5 w-5 text-primary" />
-                        {t('committee.supervisors.availableSupervisors') || 'المشرفون المتاحون'}
+                        {t('committee.supervisors.availableSupervisors')}
                     </h3>
                     {selectedProject ? (
                         <div className="space-y-4">
                             <Card className="bg-muted">
                                 <CardContent className="p-4">
                                     <p className="text-xs text-muted-foreground mb-1">
-                                        {t('committee.supervisors.selectedProject') || 'المشروع المحدد'}
+                                        {t('committee.supervisors.selectedProject')}
                                     </p>
                                     <p className="font-medium">{selectedProject.title}</p>
                                 </CardContent>
@@ -132,8 +129,8 @@ export function SupervisorAssignment() {
                                 ) : (
                                     <EmptyState
                                         icon={User}
-                                        title={t('committee.supervisors.noSupervisors') || 'لا توجد مشرفين متاحين'}
-                                        description={t('committee.supervisors.noSupervisorsDescription') || 'لا يوجد مشرفين متاحين للتعيين'}
+                                        title={t('committee.supervisors.noSupervisors')}
+                                        description={t('committee.supervisors.noSupervisorsDescription')}
                                     />
                                 )}
                             </div>
@@ -146,12 +143,12 @@ export function SupervisorAssignment() {
                                 {assignSupervisor.isPending ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        {t('committee.supervisors.assigning') || 'جاري التعيين...'}
+                                        {t('committee.supervisors.assigning')}
                                     </>
                                 ) : (
                                     <>
                                         <UserCheck className="mr-2 h-4 w-4" />
-                                        {t('committee.supervisors.assignSupervisor') || 'تعيين المشرف'}
+                                        {t('committee.supervisors.assignSupervisor')}
                                     </>
                                 )}
                             </Button>
@@ -160,7 +157,7 @@ export function SupervisorAssignment() {
                         <Card>
                             <CardContent className="p-6 text-center">
                                 <p className="text-muted-foreground">
-                                    {t('committee.supervisors.selectProjectFirst') || 'يرجى اختيار مشروع أولاً'}
+                                    {t('committee.supervisors.selectProjectFirst')}
                                 </p>
                             </CardContent>
                         </Card>

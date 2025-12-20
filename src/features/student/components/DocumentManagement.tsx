@@ -62,8 +62,9 @@ export function DocumentManagement() {
           setSelectedDocument(document)
         },
         rtl,
+        t,
       }),
-    [rtl]
+    [rtl, t]
   )
 
   const handleFormSuccess = () => {

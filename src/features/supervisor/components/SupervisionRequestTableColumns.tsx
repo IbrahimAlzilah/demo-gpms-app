@@ -1,17 +1,16 @@
 import type { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
-import { StatusBadge } from "@/components/common/StatusBadge"
 import type { Request } from "@/types/request.types"
-import { CheckCircle2, XCircle, User, Briefcase, MessageSquare } from "lucide-react"
+import { CheckCircle2, XCircle, User, Briefcase } from "lucide-react"
 import { formatRelativeTime } from "@/lib/utils/format"
-import i18n from "@/lib/i18n/i18n"
 
 interface SupervisionRequestTableColumnsProps {
   onApprove: (request: Request) => void
   onReject: (request: Request) => void
   canAcceptMore: boolean
   rtl?: boolean
+  t: (key: string) => string
 }
 
 export function createSupervisionRequestColumns({
@@ -19,12 +18,13 @@ export function createSupervisionRequestColumns({
   onReject,
   canAcceptMore,
   rtl = false,
+  t,
 }: SupervisionRequestTableColumnsProps): ColumnDef<Request>[] {
   return [
     {
       accessorKey: "student",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('supervision.student') || 'الطالب'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('supervision.student')} rtl={rtl} />
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
@@ -36,7 +36,7 @@ export function createSupervisionRequestColumns({
     {
       accessorKey: "project",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('supervision.project') || 'المشروع'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('supervision.project')} rtl={rtl} />
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
@@ -48,7 +48,7 @@ export function createSupervisionRequestColumns({
     {
       accessorKey: "reason",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('supervision.reason') || 'السبب'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('supervision.reason')} rtl={rtl} />
       ),
       cell: ({ row }) => (
         <div className="max-w-[300px] truncate text-muted-foreground text-sm">
@@ -59,7 +59,7 @@ export function createSupervisionRequestColumns({
     {
       accessorKey: "createdAt",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('request.submittedAt') || 'تاريخ التقديم'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('request.submittedAt')} rtl={rtl} />
       ),
       cell: ({ row }) => (
         <div className="text-sm text-muted-foreground">
@@ -70,12 +70,12 @@ export function createSupervisionRequestColumns({
     {
       id: "actions",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('common.actions') || 'الإجراءات'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.actions')} rtl={rtl} />
       ),
       cell: ({ row }) => {
         const request = row.original
-        const approveLabel = i18n.t('common.accept') || 'قبول'
-        const rejectLabel = i18n.t('common.reject') || 'رفض'
+        const approveLabel = t('common.accept')
+        const rejectLabel = t('common.reject')
 
         return (
           <div className="flex items-center gap-2">

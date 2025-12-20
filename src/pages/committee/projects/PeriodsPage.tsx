@@ -12,10 +12,10 @@ export function PeriodsPage() {
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <Calendar className="h-8 w-8 text-primary" />
-            {t('nav.periods') || 'إعلان الفترات الزمنية'}
+            {t('nav.periods')}
           </h1>
           <p className="text-muted-foreground mt-2">
-            {t('committee.periodsDescription') || 'إدارة الفترات الزمنية للمشاريع (تقديم المقترحات، التسجيل، تسليم الوثائق، التقييم، إلخ)'}
+            {t('committee.periodsDescription')}
           </p>
         </div>
         <TimePeriodManager />

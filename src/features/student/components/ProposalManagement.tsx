@@ -51,8 +51,9 @@ export function ProposalManagement() {
           setSelectedProposal(proposal)
         },
         rtl,
+        t,
       }),
-    [rtl]
+    [rtl, t]
   )
 
   const handleFormSuccess = () => {
@@ -141,7 +142,6 @@ export function ProposalManagement() {
           onColumnFiltersChange={setColumnFilters}
           searchValue={globalFilter}
           onSearchChange={setGlobalFilter}
-          searchPlaceholder={t('proposal.searchPlaceholder')}
           rtl={rtl}
           enableFiltering={true}
           enableViews={true}

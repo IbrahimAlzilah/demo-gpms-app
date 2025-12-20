@@ -1,13 +1,19 @@
 import { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useApproveProposal, useRejectProposal, useRequestModification } from '../hooks/useProposalManagement'
-import { DataTable } from '@/components/ui/data-table'
+import { DataTable } from '@/components/ui'
+import { BlockContent } from '@/components/common'
 import { createProposalColumns } from './ProposalTableColumns'
 import { useDataTable } from '@/hooks/useDataTable'
 import { committeeProposalService } from '../api/proposal.service'
 import { ProposalReviewDialog } from './ProposalReviewDialog'
 import type { Proposal } from '@/types/project.types'
+import { AlertCircle } from 'lucide-react'
+import { useToast } from '@/components/common'
 
 export function ProposalReviewPanel() {
+  const { t } = useTranslation()
+  const { showToast } = useToast()
   const approveProposal = useApproveProposal()
   const rejectProposal = useRejectProposal()
   const requestModification = useRequestModification()
@@ -64,19 +70,23 @@ export function ProposalReviewPanel() {
     try {
       if (actionType === 'approve') {
         await approveProposal.mutateAsync({ id: proposalId })
+        showToast(t('committee.proposal.approveSuccess'), 'success')
       } else if (actionType === 'reject') {
         await rejectProposal.mutateAsync({ id: proposalId, reviewNotes: notes })
+        showToast(t('committee.proposal.rejectSuccess'), 'success')
       } else if (actionType === 'modify') {
         if (!notes) {
-          alert('يرجى إدخال ملاحظات التعديل')
+          showToast(t('committee.proposal.modificationsRequired'), 'error')
           return
         }
         await requestModification.mutateAsync({ id: proposalId, reviewNotes: notes })
+        showToast(t('committee.proposal.modifySuccess'), 'success')
       }
       setSelectedProposal(null)
       setAction(null)
     } catch (err) {
-      console.error('Error processing proposal:', err)
+      const errorMsg = err instanceof Error ? err.message : t('committee.proposal.processError')
+      showToast(errorMsg, 'error')
     }
   }
 
@@ -85,29 +95,41 @@ export function ProposalReviewPanel() {
 
   return (
     <>
-      <DataTable
-        columns={columns}
-        data={proposals}
-        isLoading={isLoading}
-        error={error}
-        pageCount={pageCount}
-        pageIndex={pagination.pageIndex}
-        pageSize={pagination.pageSize}
-        onPaginationChange={(pageIndex, pageSize) => {
-          setPagination({ pageIndex, pageSize })
-        }}
-        sorting={sorting}
-        onSortingChange={setSorting}
-        columnFilters={columnFilters}
-        onColumnFiltersChange={setColumnFilters}
-        searchValue={globalFilter}
-        onSearchChange={setGlobalFilter}
-        searchPlaceholder="البحث في المقترحات..."
-        rtl={rtl}
-        enableFiltering={true}
-        enableViews={true}
-        emptyMessage="لا توجد مقترحات جديدة للمراجعة"
-      />
+      <BlockContent title={t('committee.proposal.reviewPanel')}>
+        <DataTable
+          columns={columns}
+          data={proposals}
+          isLoading={isLoading}
+          error={error}
+          pageCount={pageCount}
+          pageIndex={pagination.pageIndex}
+          pageSize={pagination.pageSize}
+          onPaginationChange={(pageIndex, pageSize) => {
+            setPagination({ pageIndex, pageSize })
+          }}
+          sorting={sorting}
+          onSortingChange={setSorting}
+          columnFilters={columnFilters}
+          onColumnFiltersChange={setColumnFilters}
+          searchValue={globalFilter}
+          onSearchChange={setGlobalFilter}
+          searchPlaceholder={t('committee.proposal.searchPlaceholder')}
+          rtl={rtl}
+          enableFiltering={true}
+          enableViews={true}
+          emptyMessage={t('committee.proposal.noProposals')}
+        />
+      </BlockContent>
+
+      {error && (
+        <BlockContent variant="container" className="border-destructive">
+          <div className="flex items-center gap-2 text-destructive">
+            <AlertCircle className="h-5 w-5" />
+            <span>{t('committee.proposal.loadError')}</span>
+          </div>
+        </BlockContent>
+      )}
+
       <ProposalReviewDialog
         proposal={selectedProposal}
         action={action}

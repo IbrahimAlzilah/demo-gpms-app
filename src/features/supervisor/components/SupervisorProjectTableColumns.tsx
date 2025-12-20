@@ -6,27 +6,28 @@ import type { Project } from "@/types/project.types"
 import { Eye, Users } from "lucide-react"
 import { Link } from "react-router-dom"
 import { ROUTES } from "@/lib/constants"
-import i18n from "@/lib/i18n/i18n"
 
 interface SupervisorProjectTableColumnsProps {
   rtl?: boolean
+  t: (key: string) => string
 }
 
 export function createSupervisorProjectColumns({
   rtl = false,
+  t,
 }: SupervisorProjectTableColumnsProps): ColumnDef<Project>[] {
   return [
     {
       accessorKey: "title",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('project.title') || 'العنوان'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('project.title')} rtl={rtl} />
       ),
       cell: ({ row }) => <div className="font-medium max-w-[300px] truncate">{row.original.title}</div>,
     },
     {
       accessorKey: "description",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('project.description') || 'الوصف'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('project.description')} rtl={rtl} />
       ),
       cell: ({ row }) => (
         <div className="max-w-[400px] truncate text-muted-foreground text-sm">
@@ -37,7 +38,7 @@ export function createSupervisorProjectColumns({
     {
       accessorKey: "currentStudents",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('common.students') || 'الطلاب'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.students')} rtl={rtl} />
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
@@ -51,7 +52,7 @@ export function createSupervisorProjectColumns({
     {
       accessorKey: "status",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('common.status') || 'الحالة'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.status')} rtl={rtl} />
       ),
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
       filterFn: (row, id, value) => {
@@ -61,11 +62,11 @@ export function createSupervisorProjectColumns({
     {
       id: "actions",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('common.actions') || 'الإجراءات'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.actions')} rtl={rtl} />
       ),
       cell: ({ row }) => {
         const project = row.original
-        const viewLabel = i18n.t('common.viewDetails') || 'عرض التفاصيل'
+        const viewLabel = t('common.viewDetails')
 
         return (
           <Link to={`${ROUTES.SUPERVISOR.PROJECTS}/${project.id}`}>

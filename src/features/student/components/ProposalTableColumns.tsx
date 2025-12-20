@@ -5,16 +5,17 @@ import { StatusBadge } from "@/components/common/StatusBadge"
 import type { Proposal } from "@/types/project.types"
 import { Eye, CheckCircle2, XCircle, Clock, AlertCircle } from "lucide-react"
 import { formatRelativeTime } from "@/lib/utils/format"
-import i18n from "@/lib/i18n/i18n"
 
 interface ProposalTableColumnsProps {
   onView: (proposal: Proposal) => void
   rtl?: boolean
+  t: (key: string) => string
 }
 
 export function createProposalColumns({
   onView,
   rtl = false,
+  t,
 }: ProposalTableColumnsProps): ColumnDef<Proposal>[] {
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -33,7 +34,7 @@ export function createProposalColumns({
     {
       accessorKey: "title",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('proposal.title') || 'العنوان'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('proposal.title')} rtl={rtl} />
       ),
       cell: ({ row }) => (
         <div className="font-medium flex items-center gap-2">
@@ -45,7 +46,7 @@ export function createProposalColumns({
     {
       accessorKey: "description",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('proposal.description') || 'الوصف'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('proposal.description')} rtl={rtl} />
       ),
       cell: ({ row }) => (
         <div className="max-w-[400px] truncate text-muted-foreground text-sm">
@@ -56,7 +57,7 @@ export function createProposalColumns({
     {
       accessorKey: "status",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('common.status') || 'الحالة'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.status')} rtl={rtl} />
       ),
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
       filterFn: (row, id, value) => {
@@ -66,7 +67,7 @@ export function createProposalColumns({
     {
       accessorKey: "createdAt",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('proposal.submittedAt') || 'تاريخ التقديم'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('proposal.submittedAt')} rtl={rtl} />
       ),
       cell: ({ row }) => (
         <div className="text-sm text-muted-foreground">
@@ -77,7 +78,7 @@ export function createProposalColumns({
     {
       accessorKey: "reviewedAt",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('proposal.reviewedAt') || 'تاريخ المراجعة'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('proposal.reviewedAt')} rtl={rtl} />
       ),
       cell: ({ row }) => (
         <div className="text-sm text-muted-foreground">
@@ -88,11 +89,11 @@ export function createProposalColumns({
     {
       id: "actions",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('common.actions') || 'الإجراءات'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.actions')} rtl={rtl} />
       ),
       cell: ({ row }) => {
         const proposal = row.original
-        const viewLabel = i18n.t('common.view') || 'عرض'
+        const viewLabel = t('common.view')
 
         return (
           <div className="flex items-center gap-2">

@@ -3,28 +3,29 @@ import { Button } from "@/components/ui/button"
 import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
 import { StatusBadge } from "@/components/common/StatusBadge"
 import type { Request } from "@/types/request.types"
-import { CheckCircle2, XCircle, User, Briefcase, MessageSquare, AlertTriangle, CheckCircle } from "lucide-react"
+import { CheckCircle2, XCircle, User, AlertTriangle, CheckCircle } from "lucide-react"
 import { formatRelativeTime } from "@/lib/utils/format"
-import i18n from "@/lib/i18n/i18n"
 import { requiresSupervisorApproval } from "../../common/utils/requestRouting"
 
 interface RequestProcessingTableColumnsProps {
   onApprove: (request: Request) => void
   onReject: (request: Request) => void
   rtl?: boolean
+  t: (key: string) => string
 }
 
 export function createRequestProcessingColumns({
   onApprove,
   onReject,
   rtl = false,
+  t,
 }: RequestProcessingTableColumnsProps): ColumnDef<Request>[] {
   const getRequestTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
-      change_supervisor: i18n.t('requests.change_supervisor') || 'تغيير المشرف',
-      change_group: i18n.t('requests.change_group') || 'تغيير المجموعة',
-      change_project: i18n.t('requests.change_project') || 'تغيير المشروع',
-      other: i18n.t('requests.other') || 'أخرى',
+      change_supervisor: t('requests.change_supervisor'),
+      change_group: t('requests.change_group'),
+      change_project: t('requests.change_project'),
+      other: t('requests.other'),
     }
     return labels[type] || type
   }
@@ -33,7 +34,7 @@ export function createRequestProcessingColumns({
     {
       accessorKey: "student",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('committee.requests.student') || 'الطالب'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('committee.requests.student')} rtl={rtl} />
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
@@ -45,7 +46,7 @@ export function createRequestProcessingColumns({
     {
       accessorKey: "type",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('request.type') || 'نوع الطلب'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('request.type')} rtl={rtl} />
       ),
       cell: ({ row }) => (
         <div className="font-medium">{getRequestTypeLabel(row.original.type)}</div>
@@ -57,7 +58,7 @@ export function createRequestProcessingColumns({
     {
       accessorKey: "reason",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('request.reason') || 'السبب'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('request.reason')} rtl={rtl} />
       ),
       cell: ({ row }) => (
         <div className="max-w-[300px] truncate text-muted-foreground text-sm">
@@ -68,7 +69,7 @@ export function createRequestProcessingColumns({
     {
       accessorKey: "status",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('common.status') || 'الحالة'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.status')} rtl={rtl} />
       ),
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
       filterFn: (row, id, value) => {
@@ -78,7 +79,7 @@ export function createRequestProcessingColumns({
     {
       id: "supervisorDecision",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('committee.requests.supervisorDecision') || 'قرار المشرف'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('committee.requests.supervisorDecision')} rtl={rtl} />
       ),
       cell: ({ row }) => {
         const request = row.original
@@ -101,8 +102,8 @@ export function createRequestProcessingColumns({
                 <XCircle className="h-3 w-3" />
               )}
               {request.supervisorApproval.approved
-                ? (i18n.t('common.approved') || 'موافق')
-                : (i18n.t('common.rejected') || 'مرفوض')
+                ? t('common.approved')
+                : t('common.rejected')
               }
             </div>
           )
@@ -111,7 +112,7 @@ export function createRequestProcessingColumns({
         return (
           <div className="flex items-center gap-1 px-2 py-1 rounded bg-warning/10 text-warning text-xs">
             <AlertTriangle className="h-3 w-3" />
-            {i18n.t('committee.requests.needsSupervisorApproval') || 'يتطلب موافقة المشرف'}
+            {t('committee.requests.needsSupervisorApproval')}
           </div>
         )
       },
@@ -119,7 +120,7 @@ export function createRequestProcessingColumns({
     {
       accessorKey: "createdAt",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('request.submittedAt') || 'تاريخ التقديم'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('request.submittedAt')} rtl={rtl} />
       ),
       cell: ({ row }) => (
         <div className="text-sm text-muted-foreground">
@@ -130,15 +131,15 @@ export function createRequestProcessingColumns({
     {
       id: "actions",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('common.actions') || 'الإجراءات'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.actions')} rtl={rtl} />
       ),
       cell: ({ row }) => {
         const request = row.original
         const needsSupervisor = requiresSupervisorApproval(request.type)
         const isFromSupervisor = request.status === 'supervisor_approved'
         const canProcess = request.status === 'pending' || isFromSupervisor
-        const approveLabel = i18n.t('common.accept') || 'قبول'
-        const rejectLabel = i18n.t('common.reject') || 'رفض'
+        const approveLabel = t('common.accept')
+        const rejectLabel = t('common.reject')
 
         if (!canProcess) {
           return <span className="text-xs text-muted-foreground">-</span>

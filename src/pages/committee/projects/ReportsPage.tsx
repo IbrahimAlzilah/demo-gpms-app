@@ -12,10 +12,10 @@ export function CommitteeReportsPage() {
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <FileBarChart className="h-8 w-8 text-primary" />
-            {t('nav.reports') || 'إصدار التقارير'}
+            {t('nav.reports')}
           </h1>
           <p className="text-muted-foreground mt-2">
-            {t('committee.reportsDescription') || 'إنشاء وتصدير التقارير المختلفة عن المشاريع والطلاب والمشرفين'}
+            {t('committee.reportsDescription')}
           </p>
         </div>
         <ReportGenerator />

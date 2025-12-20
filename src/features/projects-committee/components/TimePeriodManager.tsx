@@ -40,7 +40,7 @@ export function TimePeriodManager() {
         isActive: true,
       })
       setSuccess(true)
-      showToast(t('committee.periods.periodCreated') || 'تم إعلان الفترة الزمنية بنجاح', 'success')
+      showToast(t('committee.periods.periodCreated'), 'success')
       reset()
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : t('committee.periods.createError')

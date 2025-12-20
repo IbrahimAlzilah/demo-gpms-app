@@ -16,10 +16,10 @@ export function DiscussionEvaluationPage() {
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <Award className="h-8 w-8 text-primary" />
-            {t('nav.finalEvaluation') || 'تقييم المناقشة النهائية'}
+            {t('nav.finalEvaluation')}
           </h1>
           <p className="text-muted-foreground mt-2">
-            {t('discussion.evaluationDescription') || 'تقييم المشروع ووضع الدرجات النهائية بعد المناقشة'}
+            {t('discussion.evaluationDescription')}
           </p>
         </div>
         <FinalEvaluationForm projectId={defaultProjectId} studentId={defaultStudentId} />

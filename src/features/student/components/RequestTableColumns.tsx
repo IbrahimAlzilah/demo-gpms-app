@@ -5,25 +5,26 @@ import { StatusBadge } from "@/components/common/StatusBadge"
 import type { Request } from "@/types/request.types"
 import { Eye, X, User, Users, Briefcase, FileCheck, CheckCircle2, XCircle, Clock } from "lucide-react"
 import { formatRelativeTime } from "@/lib/utils/format"
-import i18n from "@/lib/i18n/i18n"
 
 interface RequestTableColumnsProps {
   onView: (request: Request) => void
   onCancel?: (request: Request) => void
   rtl?: boolean
+  t: (key: string) => string
 }
 
 export function createRequestColumns({
   onView,
   onCancel,
   rtl = false,
+  t,
 }: RequestTableColumnsProps): ColumnDef<Request>[] {
   const getRequestTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
-      change_supervisor: i18n.t('request.type.changeSupervisor') || 'تغيير المشرف',
-      change_group: i18n.t('request.type.changeGroup') || 'تغيير المجموعة',
-      change_project: i18n.t('request.type.changeProject') || 'تغيير المشروع',
-      other: i18n.t('request.type.other') || 'طلب آخر',
+      change_supervisor: t('request.type.changeSupervisor'),
+      change_group: t('request.type.changeGroup'),
+      change_project: t('request.type.changeProject'),
+      other: t('request.type.other'),
     }
     return labels[type] || type
   }
@@ -45,7 +46,7 @@ export function createRequestColumns({
     {
       accessorKey: "type",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('request.type') || 'نوع الطلب'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('request.type')} rtl={rtl} />
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
@@ -60,7 +61,7 @@ export function createRequestColumns({
     {
       accessorKey: "reason",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('request.reason') || 'السبب'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('request.reason')} rtl={rtl} />
       ),
       cell: ({ row }) => (
         <div className="max-w-[300px] truncate text-muted-foreground text-sm">
@@ -71,7 +72,7 @@ export function createRequestColumns({
     {
       accessorKey: "status",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('common.status') || 'الحالة'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.status')} rtl={rtl} />
       ),
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
       filterFn: (row, id, value) => {
@@ -81,7 +82,7 @@ export function createRequestColumns({
     {
       id: "workflow",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('request.workflow') || 'مسار الطلب'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('request.workflow')} rtl={rtl} />
       ),
       cell: ({ row }) => {
         const request = row.original
@@ -98,12 +99,12 @@ export function createRequestColumns({
                 ) : (
                   <XCircle className="h-3 w-3" />
                 )}
-                {i18n.t('request.supervisorDecision') || 'قرار المشرف'}
+                {t('request.supervisorDecision')}
               </div>
             ) : (
               <div className="flex items-center gap-1 px-2 py-1 rounded bg-muted text-muted-foreground">
                 <Clock className="h-3 w-3" />
-                {i18n.t('request.awaitingSupervisor') || 'في انتظار المشرف'}
+                {t('request.awaitingSupervisor')}
               </div>
             )}
             {request.committeeApproval ? (
@@ -117,12 +118,12 @@ export function createRequestColumns({
                 ) : (
                   <XCircle className="h-3 w-3" />
                 )}
-                {i18n.t('request.committeeDecision') || 'قرار اللجنة'}
+                {t('request.committeeDecision')}
               </div>
             ) : request.supervisorApproval?.approved && (
               <div className="flex items-center gap-1 px-2 py-1 rounded bg-muted text-muted-foreground">
                 <Clock className="h-3 w-3" />
-                {i18n.t('request.awaitingCommittee') || 'في انتظار اللجنة'}
+                {t('request.awaitingCommittee')}
               </div>
             )}
           </div>
@@ -132,7 +133,7 @@ export function createRequestColumns({
     {
       accessorKey: "createdAt",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('request.submittedAt') || 'تاريخ التقديم'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('request.submittedAt')} rtl={rtl} />
       ),
       cell: ({ row }) => (
         <div className="text-sm text-muted-foreground">
@@ -143,12 +144,12 @@ export function createRequestColumns({
     {
       id: "actions",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('common.actions') || 'الإجراءات'} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.actions')} rtl={rtl} />
       ),
       cell: ({ row }) => {
         const request = row.original
-        const viewLabel = i18n.t('common.view') || 'عرض'
-        const cancelLabel = i18n.t('request.cancel') || 'إلغاء'
+        const viewLabel = t('common.view')
+        const cancelLabel = t('request.cancel')
 
         return (
           <div className="flex items-center gap-2">

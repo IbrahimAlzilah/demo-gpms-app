@@ -50,12 +50,12 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
 
   const onSubmit = async (data: ProposalSchema) => {
     if (!user) {
-      setError(t('proposal.authRequired') || 'يجب تسجيل الدخول أولاً')
+      setError(t('proposal.authRequired'))
       return
     }
 
     if (!isPeriodActive) {
-      setError(t('proposal.periodClosed') || 'فترة تقديم المقترحات غير مفتوحة حالياً')
+      setError(t('proposal.periodClosed'))
       return
     }
 
@@ -80,7 +80,7 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
       setError(
         err instanceof Error 
           ? err.message 
-          : t('proposal.submitError') || 'حدث خطأ أثناء إرسال المقترح'
+          : t('proposal.submitError')
       )
     }
   }
@@ -106,7 +106,7 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
         <CardHeader>
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-warning" />
-            <CardTitle>{t('proposal.periodClosed') || 'فترة التقديم مغلقة'}</CardTitle>
+            <CardTitle>{t('proposal.periodClosed')}</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -114,10 +114,10 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
             <Calendar className="h-5 w-5 text-warning mt-0.5" />
             <div>
               <p className="text-sm font-medium text-warning-foreground">
-                {t('proposal.periodClosedMessage') || 'فترة تقديم المقترحات غير مفتوحة حالياً'}
+                {t('proposal.periodClosedMessage')}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                {t('proposal.periodClosedDescription') || 'يرجى الانتظار حتى يتم فتح فترة التقديم من قبل لجنة المشاريع'}
+                {t('proposal.periodClosedDescription')}
               </p>
             </div>
           </div>
@@ -132,9 +132,9 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
         <div className="flex items-center gap-2">
           <FileText className="h-5 w-5 text-primary" />
           <div>
-            <CardTitle>{t('proposal.submitNew') || 'تقديم مقترح جديد'}</CardTitle>
+            <CardTitle>{t('proposal.submitNew')}</CardTitle>
             <CardDescription>
-              {t('proposal.submitDescription') || 'املأ النموذج أدناه لتقديم مقترح مشروع تخرج'}
+              {t('proposal.submitDescription')}
             </CardDescription>
           </div>
         </div>
@@ -150,12 +150,12 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="title">
-              {t('proposal.title') || 'عنوان المقترح'} <span className="text-destructive">*</span>
+              {t('proposal.title')} <span className="text-destructive">*</span>
             </Label>
             <Input
               id="title"
               {...register('title')}
-              placeholder={t('proposal.titlePlaceholder') || 'أدخل عنوان المقترح'}
+              placeholder={t('proposal.titlePlaceholder')}
               className={errors.title ? 'border-destructive' : ''}
               aria-invalid={!!errors.title}
             />
@@ -166,18 +166,18 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
               </p>
             )}
             <p className="text-xs text-muted-foreground">
-              {title?.length || 0} / 200 {t('common.characters') || 'حرف'}
+              {title?.length || 0} / 200 {t('common.characters')}
             </p>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="description">
-              {t('proposal.description') || 'الوصف'} <span className="text-destructive">*</span>
+              {t('proposal.description')} <span className="text-destructive">*</span>
             </Label>
             <Textarea
               id="description"
               {...register('description')}
-              placeholder={t('proposal.descriptionPlaceholder') || 'أدخل وصفاً مفصلاً للمقترح'}
+              placeholder={t('proposal.descriptionPlaceholder')}
               rows={5}
               className={errors.description ? 'border-destructive' : ''}
               aria-invalid={!!errors.description}
@@ -189,18 +189,18 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
               </p>
             )}
             <p className="text-xs text-muted-foreground">
-              {description?.length || 0} {t('common.characters') || 'حرف'}
+              {description?.length || 0} {t('common.characters')}
             </p>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="objectives">
-              {t('proposal.objectives') || 'الأهداف'} <span className="text-destructive">*</span>
+              {t('proposal.objectives')} <span className="text-destructive">*</span>
             </Label>
             <Textarea
               id="objectives"
               {...register('objectives')}
-              placeholder={t('proposal.objectivesPlaceholder') || 'اذكر أهداف المشروع'}
+              placeholder={t('proposal.objectivesPlaceholder')}
               rows={4}
               className={errors.objectives ? 'border-destructive' : ''}
               aria-invalid={!!errors.objectives}
@@ -212,37 +212,37 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
               </p>
             )}
             <p className="text-xs text-muted-foreground">
-              {objectives?.length || 0} {t('common.characters') || 'حرف'}
+              {objectives?.length || 0} {t('common.characters')}
             </p>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="methodology">
-              {t('proposal.methodology') || 'المنهجية'} ({t('common.optional') || 'اختياري'})
+              {t('proposal.methodology')} ({t('common.optional')})
             </Label>
             <Textarea
               id="methodology"
               {...register('methodology')}
-              placeholder={t('proposal.methodologyPlaceholder') || 'اذكر المنهجية المتبعة (اختياري)'}
+              placeholder={t('proposal.methodologyPlaceholder')}
               rows={4}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="expectedOutcomes">
-              {t('proposal.expectedOutcomes') || 'النتائج المتوقعة'} ({t('common.optional') || 'اختياري'})
+              {t('proposal.expectedOutcomes')} ({t('common.optional')})
             </Label>
             <Textarea
               id="expectedOutcomes"
               {...register('expectedOutcomes')}
-              placeholder={t('proposal.expectedOutcomesPlaceholder') || 'اذكر النتائج المتوقعة (اختياري)'}
+              placeholder={t('proposal.expectedOutcomesPlaceholder')}
               rows={4}
             />
           </div>
 
           <div className="space-y-2">
             <Label>
-              {t('proposal.attachments') || 'المرفقات'} ({t('common.optional') || 'اختياري'})
+              {t('proposal.attachments')} ({t('common.optional')})
             </Label>
             <FileUpload
               value={attachedFiles}
@@ -252,7 +252,7 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
               multiple={true}
             />
             <p className="text-xs text-muted-foreground">
-              {t('proposal.fileUploadHint') || 'يمكن رفع ملفات PDF, Word, أو نص. الحد الأقصى 10MB لكل ملف'}
+              {t('proposal.fileUploadHint')}
             </p>
           </div>
 
@@ -276,12 +276,12 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
               {createProposal.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t('proposal.submitting') || 'جاري الإرسال...'}
+                  {t('proposal.submitting')}
                 </>
               ) : (
                 <>
                   <FileText className="mr-2 h-4 w-4" />
-                  {t('proposal.submit') || 'إرسال المقترح'}
+                  {t('proposal.submit')}
                 </>
               )}
             </Button>

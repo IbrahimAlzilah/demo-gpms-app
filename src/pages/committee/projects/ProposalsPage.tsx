@@ -12,10 +12,10 @@ export function ProposalsPage() {
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <FileText className="h-8 w-8 text-primary" />
-            {t('nav.proposals') || 'إدارة المقترحات'}
+            {t('nav.proposals')}
           </h1>
           <p className="text-muted-foreground mt-2">
-            {t('committee.proposalsDescription') || 'مراجعة المقترحات المقدمة من الطلاب وقبولها أو رفضها أو طلب تعديلها'}
+            {t('committee.proposalsDescription')}
           </p>
         </div>
         <ProposalReviewPanel />

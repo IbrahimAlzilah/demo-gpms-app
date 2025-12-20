@@ -12,10 +12,10 @@ export function AnnounceProjectsPage() {
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <Megaphone className="h-8 w-8 text-primary" />
-            {t('nav.announceProjects') || 'إعلان المشاريع المعتمدة'}
+            {t('nav.announceProjects')}
           </h1>
           <p className="text-muted-foreground mt-2">
-            {t('committee.announceDescription') || 'إعلان المشاريع المعتمدة للطلاب للتسجيل فيها'}
+            {t('committee.announceDescription')}
           </p>
         </div>
         <ProjectAnnouncement />

@@ -4,24 +4,25 @@ import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-col
 import { StatusBadge } from "@/components/common/StatusBadge"
 import type { User } from "@/types/user.types"
 import { Pencil, Trash2, Mail, Building2 } from "lucide-react"
-import i18n from "@/lib/i18n/i18n"
 
 interface UserTableColumnsProps {
   onEdit: (user: User) => void
   onDelete: (user: User) => void
   rtl?: boolean
+  t: (key: string) => string
 }
 
 export function createUserColumns({
   onEdit,
   onDelete,
   rtl = false,
+  t,
 }: UserTableColumnsProps): ColumnDef<User>[] {
   return [
     {
       accessorKey: "name",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('common.name')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.name')} rtl={rtl} />
       ),
       cell: ({ row }) => (
         <div className="font-medium flex items-center gap-2">
@@ -42,7 +43,7 @@ export function createUserColumns({
     {
       accessorKey: "email",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('common.email')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.email')} rtl={rtl} />
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
@@ -54,13 +55,13 @@ export function createUserColumns({
     {
       accessorKey: "role",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('user.role')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('user.role')} rtl={rtl} />
       ),
       cell: ({ row }) => {
         return (
           <div className="flex items-center gap-2">
             <span className="px-2 py-1 text-xs font-medium rounded-md bg-primary/10 text-primary">
-              {i18n.t(`roles.${row.original.role}`) || row.original.role}
+              {t(`roles.${row.original.role}`) || row.original.role}
             </span>
           </div>
         )
@@ -72,7 +73,7 @@ export function createUserColumns({
     {
       accessorKey: "status",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('common.status')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.status')} rtl={rtl} />
       ),
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
       filterFn: (row, id, value) => {
@@ -82,7 +83,7 @@ export function createUserColumns({
     {
       accessorKey: "department",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('user.department')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('user.department')} rtl={rtl} />
       ),
       cell: ({ row }) => (
         row.original.department ? (
@@ -98,12 +99,12 @@ export function createUserColumns({
     {
       id: "actions",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={i18n.t('common.actions')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.actions')} rtl={rtl} />
       ),
       cell: ({ row }) => {
         const user = row.original
-        const editLabel = i18n.t('common.edit')
-        const deleteLabel = i18n.t('common.delete')
+        const editLabel = t('common.edit')
+        const deleteLabel = t('common.delete')
 
         return (
           <div className="flex items-center gap-2">

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../../auth/store/auth.store'
 import { useApproveSupervisionRequest, useRejectSupervisionRequest } from '../hooks/useSupervisionRequests'
@@ -6,12 +6,10 @@ import type { Request } from '../../../types/request.types'
 import { createSupervisionRequestColumns } from './SupervisionRequestTableColumns'
 import { useDataTable } from '@/hooks/useDataTable'
 import { supervisionService } from '../api/supervision.service'
-import { DataTable, Card, CardContent } from '@/components/ui'
+import { DataTable, Card, CardContent, Label, Textarea } from '@/components/ui'
 import { BlockContent, ConfirmDialog } from '@/components/common'
-import { AlertCircle, CheckCircle2, XCircle, AlertTriangle, User, Briefcase, MessageSquare } from 'lucide-react'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { useToast } from '@/components/common/NotificationToast'
+import { AlertCircle, CheckCircle2, AlertTriangle, User, Briefcase, MessageSquare } from 'lucide-react'
+import { useToast } from '@/components/common'
 
 const MAX_PROJECTS_PER_SUPERVISOR = 5 // This should come from config
 
@@ -54,19 +52,19 @@ export function SupervisionRequestsList() {
   const handleApprove = async () => {
     if (!selectedRequest) return
     if (currentProjectCount >= MAX_PROJECTS_PER_SUPERVISOR) {
-      showToast(t('supervision.maxProjectsReached') || `لا يمكن قبول الطلب. الحد الأقصى للمشاريع هو ${MAX_PROJECTS_PER_SUPERVISOR} مشروع`, 'error')
+      showToast(t('supervision.maxProjectsReached'), 'error')
       return
     }
 
     try {
       await approveRequest.mutateAsync(selectedRequest.id)
-      showToast(t('supervision.approveSuccess') || 'تم قبول الطلب بنجاح', 'success')
+      showToast(t('supervision.approveSuccess'), 'success')
       setComments('')
       setSelectedRequest(null)
       setAction(null)
       setShowConfirmDialog(false)
     } catch (err) {
-      showToast(err instanceof Error ? err.message : t('supervision.approveError') || 'فشل قبول الطلب', 'error')
+      showToast(err instanceof Error ? err.message : t('supervision.approveError'), 'error')
     }
   }
 
@@ -74,31 +72,31 @@ export function SupervisionRequestsList() {
     if (!selectedRequest) return
     try {
       await rejectRequest.mutateAsync({ requestId: selectedRequest.id, comments: comments || undefined })
-      showToast(t('supervision.rejectSuccess') || 'تم رفض الطلب بنجاح', 'success')
+      showToast(t('supervision.rejectSuccess'), 'success')
       setComments('')
       setSelectedRequest(null)
       setAction(null)
       setShowConfirmDialog(false)
     } catch (err) {
-      showToast(err instanceof Error ? err.message : t('supervision.rejectError') || 'فشل رفض الطلب', 'error')
+      showToast(err instanceof Error ? err.message : t('supervision.rejectError'), 'error')
     }
   }
 
-  const handleApproveClick = (request: Request) => {
+  const handleApproveClick = useCallback((request: Request) => {
     if (currentProjectCount >= MAX_PROJECTS_PER_SUPERVISOR) {
-      showToast(t('supervision.maxProjectsReached') || `لا يمكن قبول الطلب. الحد الأقصى للمشاريع هو ${MAX_PROJECTS_PER_SUPERVISOR} مشروع`, 'error')
+      showToast(t('supervision.maxProjectsReached'), 'error')
       return
     }
     setSelectedRequest(request)
     setAction('approve')
     setShowConfirmDialog(true)
-  }
+  }, [currentProjectCount, showToast, t])
 
-  const handleRejectClick = (request: Request) => {
+  const handleRejectClick = useCallback((request: Request) => {
     setSelectedRequest(request)
     setAction('reject')
     setShowConfirmDialog(true)
-  }
+  }, [])
 
   const columns = useMemo(
     () =>
@@ -107,8 +105,9 @@ export function SupervisionRequestsList() {
         onReject: handleRejectClick,
         canAcceptMore,
         rtl,
+        t,
       }),
-    [canAcceptMore, rtl]
+    [handleApproveClick, handleRejectClick, canAcceptMore, rtl, t]
   )
 
   return (
@@ -119,7 +118,7 @@ export function SupervisionRequestsList() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium">
-                {t('supervision.currentProjects') || 'عدد المشاريع الحالية'}
+                {t('supervision.currentProjects')}
               </p>
               <p className="text-2xl font-bold">
                 {currentProjectCount} / {MAX_PROJECTS_PER_SUPERVISOR}
@@ -133,13 +132,13 @@ export function SupervisionRequestsList() {
           </div>
           {!canAcceptMore && (
             <p className="text-xs text-warning mt-2">
-              {t('supervision.maxProjectsReached') || 'تم الوصول إلى الحد الأقصى للمشاريع'}
+              {t('supervision.maxProjectsReached')}
             </p>
           )}
         </CardContent>
       </Card>
 
-      <BlockContent title={t('nav.supervisionRequests') || 'معالجة طلبات الإشراف'}>
+      <BlockContent title={t('nav.supervisionRequests')}>
         <DataTable
           columns={columns}
           data={requests}
@@ -157,11 +156,11 @@ export function SupervisionRequestsList() {
           onColumnFiltersChange={setColumnFilters}
           searchValue={globalFilter}
           onSearchChange={setGlobalFilter}
-          searchPlaceholder={t('supervision.searchPlaceholder') || 'البحث في طلبات الإشراف...'}
+          searchPlaceholder={t('supervision.searchPlaceholder')}
           rtl={rtl}
           enableFiltering={true}
           enableViews={true}
-          emptyMessage={t('supervision.noRequests') || 'لا توجد طلبات إشراف للمراجعة'}
+          emptyMessage={t('supervision.noRequests')}
         />
       </BlockContent>
 
@@ -169,7 +168,7 @@ export function SupervisionRequestsList() {
         <BlockContent variant="container" className="border-destructive">
           <div className="flex items-center gap-2 text-destructive">
             <AlertCircle className="h-5 w-5" />
-            <span>{t('supervision.loadError') || 'حدث خطأ أثناء تحميل طلبات الإشراف'}</span>
+            <span>{t('supervision.loadError')}</span>
           </div>
         </BlockContent>
       )}
@@ -191,17 +190,13 @@ export function SupervisionRequestsList() {
           }
         }}
         title={
-          action === 'approve'
-            ? (t('supervision.confirmApprove') || 'تأكيد قبول طلب الإشراف')
-            : (t('supervision.confirmReject') || 'تأكيد رفض طلب الإشراف')
+          action === 'approve' ? (t('supervision.confirmApprove')) : (t('supervision.confirmReject'))
         }
         description={
-          action === 'approve'
-            ? (t('supervision.confirmApproveDescription') || 'هل أنت متأكد من قبول هذا طلب الإشراف؟')
-            : (t('supervision.confirmRejectDescription') || 'هل أنت متأكد من رفض هذا طلب الإشراف؟')
+          action === 'approve' ? (t('supervision.confirmApproveDescription')) : (t('supervision.confirmRejectDescription'))
         }
-        confirmLabel={t('common.confirm') || 'تأكيد'}
-        cancelLabel={t('common.cancel') || 'إلغاء'}
+        confirmLabel={t('common.confirm')}
+        cancelLabel={t('common.cancel')}
         variant={action === 'reject' ? 'destructive' : 'default'}
       >
         {selectedRequest && (
@@ -211,7 +206,7 @@ export function SupervisionRequestsList() {
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4 text-muted-foreground" />
                   <span>
-                    <span className="font-medium">{t('supervision.student') || 'الطالب'}:</span> {selectedRequest.student.name}
+                    <span className="font-medium">{t('supervision.student')}:</span> {selectedRequest.student.name}
                   </span>
                 </div>
               )}
@@ -219,7 +214,7 @@ export function SupervisionRequestsList() {
                 <div className="flex items-center gap-2">
                   <Briefcase className="h-4 w-4 text-muted-foreground" />
                   <span>
-                    <span className="font-medium">{t('supervision.project') || 'المشروع'}:</span> {selectedRequest.project.title}
+                    <span className="font-medium">{t('supervision.project')}:</span> {selectedRequest.project.title}
                   </span>
                 </div>
               )}
@@ -227,20 +222,20 @@ export function SupervisionRequestsList() {
             <div>
               <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1">
                 <MessageSquare className="h-3 w-3" />
-                {t('supervision.reason') || 'السبب'}
+                {t('supervision.reason')}
               </p>
               <p className="text-sm whitespace-pre-wrap">{selectedRequest.reason}</p>
             </div>
             {(action === 'approve' || action === 'reject') && (
               <div className="space-y-2">
                 <Label htmlFor="comments">
-                  {t('supervision.comments') || 'ملاحظات'} ({t('common.optional') || 'اختياري'})
+                  {t('supervision.comments')} ({t('common.optional')})
                 </Label>
                 <Textarea
                   id="comments"
                   value={comments}
                   onChange={(e) => setComments(e.target.value)}
-                  placeholder={t('supervision.commentsPlaceholder') || 'أدخل ملاحظاتك حول القرار (اختياري)'}
+                  placeholder={t('supervision.commentsPlaceholder')}
                   rows={3}
                   className="resize-none"
                 />

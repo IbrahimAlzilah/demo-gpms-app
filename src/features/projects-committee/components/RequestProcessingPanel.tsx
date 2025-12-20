@@ -9,9 +9,8 @@ import { committeeRequestService } from '../api/request.service'
 import { DataTable } from '@/components/ui'
 import { BlockContent, ConfirmDialog } from '@/components/common'
 import { AlertCircle, User, Briefcase, MessageSquare, AlertTriangle, CheckCircle2 } from 'lucide-react'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { useToast } from '@/components/common/NotificationToast'
+import { Textarea, Label } from '@/components/ui'
+import { useToast } from '@/components/common'
 
 export function RequestProcessingPanel() {
   const { t } = useTranslation()
@@ -48,14 +47,14 @@ export function RequestProcessingPanel() {
     if (!selectedRequest) return
     try {
       await approveRequest.mutateAsync({ id: selectedRequest.id, comments: comments || undefined })
-      showToast(t('committee.requests.approveSuccess') || 'تم قبول الطلب بنجاح', 'success')
+      showToast(t('committee.requests.approveSuccess'), 'success')
       setComments('')
       setSelectedRequest(null)
       setAction(null)
       setShowConfirmDialog(false)
     } catch (err) {
       showToast(
-        err instanceof Error ? err.message : t('committee.requests.processingError') || 'فشل معالجة الطلب',
+        err instanceof Error ? err.message : t('committee.requests.processingError'),
         'error'
       )
     }
@@ -65,14 +64,14 @@ export function RequestProcessingPanel() {
     if (!selectedRequest) return
     try {
       await rejectRequest.mutateAsync({ id: selectedRequest.id, comments: comments || undefined })
-      showToast(t('committee.requests.rejectSuccess') || 'تم رفض الطلب بنجاح', 'success')
+      showToast(t('committee.requests.rejectSuccess'), 'success')
       setComments('')
       setSelectedRequest(null)
       setAction(null)
       setShowConfirmDialog(false)
     } catch (err) {
       showToast(
-        err instanceof Error ? err.message : t('committee.requests.processingError') || 'فشل معالجة الطلب',
+        err instanceof Error ? err.message : t('committee.requests.processingError'),
         'error'
       )
     }
@@ -96,13 +95,14 @@ export function RequestProcessingPanel() {
         onApprove: handleApproveClick,
         onReject: handleRejectClick,
         rtl,
+        t,
       }),
-    [rtl]
+    [rtl, t]
   )
 
   return (
     <>
-      <BlockContent title={t('nav.processRequests') || 'معالجة الطلبات'}>
+      <BlockContent title={t('nav.processRequests')}>
         <DataTable
           columns={columns}
           data={requests}
@@ -120,11 +120,11 @@ export function RequestProcessingPanel() {
           onColumnFiltersChange={setColumnFilters}
           searchValue={globalFilter}
           onSearchChange={setGlobalFilter}
-          searchPlaceholder={t('committee.requests.searchPlaceholder') || 'البحث في الطلبات...'}
+          searchPlaceholder={t('committee.requests.searchPlaceholder')}
           rtl={rtl}
           enableFiltering={true}
           enableViews={true}
-          emptyMessage={t('committee.requests.noRequests') || 'لا توجد طلبات قيد المعالجة حالياً'}
+          emptyMessage={t('committee.requests.noRequests')}
         />
       </BlockContent>
 
@@ -132,7 +132,7 @@ export function RequestProcessingPanel() {
         <BlockContent variant="container" className="border-destructive">
           <div className="flex items-center gap-2 text-destructive">
             <AlertCircle className="h-5 w-5" />
-            <span>{t('committee.requests.loadError') || 'حدث خطأ أثناء تحميل الطلبات'}</span>
+            <span>{t('committee.requests.loadError')}</span>
           </div>
         </BlockContent>
       )}
@@ -154,16 +154,16 @@ export function RequestProcessingPanel() {
         }}
         title={
           action === 'approve'
-            ? (t('committee.requests.confirmApprove') || 'تأكيد قبول الطلب')
-            : (t('committee.requests.confirmReject') || 'تأكيد رفض الطلب')
+            ? t('committee.requests.confirmApprove')
+            : t('committee.requests.confirmReject')
         }
         description={
           action === 'approve'
-            ? (t('committee.requests.confirmApproveDescription') || 'هل أنت متأكد من قبول هذا الطلب؟')
-            : (t('committee.requests.confirmRejectDescription') || 'هل أنت متأكد من رفض هذا الطلب؟')
+            ? t('committee.requests.confirmApproveDescription')
+            : t('committee.requests.confirmRejectDescription')
         }
-        confirmLabel={t('common.confirm') || 'تأكيد'}
-        cancelLabel={t('common.cancel') || 'إلغاء'}
+        confirmLabel={t('common.confirm')}
+        cancelLabel={t('common.cancel')}
         variant={action === 'reject' ? 'destructive' : 'default'}
       >
         {selectedRequest && (
@@ -173,7 +173,7 @@ export function RequestProcessingPanel() {
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4 text-muted-foreground" />
                   <span>
-                    <span className="font-medium">{t('committee.requests.student') || 'الطالب'}:</span> {selectedRequest.student.name}
+                    <span className="font-medium">{t('committee.requests.student')}:</span> {selectedRequest.student.name}
                   </span>
                 </div>
               )}
@@ -182,11 +182,11 @@ export function RequestProcessingPanel() {
                   <div className="flex items-center gap-2 mb-1">
                     <MessageSquare className="h-4 w-4 text-info" />
                     <p className="font-medium text-info">
-                      {t('committee.requests.supervisorDecision') || 'قرار المشرف'}:{' '}
+                      {t('committee.requests.supervisorDecision')}:{' '}
                       <span className={selectedRequest.supervisorApproval.approved ? 'text-success' : 'text-destructive'}>
                         {selectedRequest.supervisorApproval.approved 
-                          ? (t('common.approved') || 'موافق') 
-                          : (t('common.rejected') || 'مرفوض')
+                          ? t('common.approved')
+                          : t('common.rejected')
                         }
                       </span>
                     </p>
@@ -202,7 +202,7 @@ export function RequestProcessingPanel() {
                 <div className="flex items-start gap-2 p-2 bg-warning/10 rounded border border-warning/20">
                   <AlertTriangle className="h-4 w-4 text-warning mt-0.5 shrink-0" />
                   <p className="text-xs text-warning-foreground">
-                    {t('committee.requests.needsSupervisorApproval') || 'هذا الطلب يتطلب موافقة المشرف أولاً'}
+                    {t('committee.requests.needsSupervisorApproval')}
                   </p>
                 </div>
               )}
@@ -210,7 +210,7 @@ export function RequestProcessingPanel() {
                 <div className="flex items-start gap-2 p-2 bg-info/10 rounded border border-info/20">
                   <CheckCircle2 className="h-4 w-4 text-info mt-0.5 shrink-0" />
                   <p className="text-xs text-info-foreground">
-                    {t('committee.requests.supervisorApproved') || 'تمت موافقة المشرف، جاهز لمراجعة اللجنة'}
+                    {t('committee.requests.supervisorApproved')}
                   </p>
                 </div>
               )}
@@ -218,19 +218,19 @@ export function RequestProcessingPanel() {
             <div>
               <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1">
                 <MessageSquare className="h-3 w-3" />
-                {t('request.reason') || 'السبب'}
+                {t('request.reason')}
               </p>
               <p className="text-sm whitespace-pre-wrap">{selectedRequest.reason}</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="comments">
-                {t('committee.requests.comments') || 'ملاحظات'} ({t('common.optional') || 'اختياري'})
+                {t('committee.requests.comments')} ({t('common.optional')})
               </Label>
               <Textarea
                 id="comments"
                 value={comments}
                 onChange={(e) => setComments(e.target.value)}
-                placeholder={t('committee.requests.commentsPlaceholder') || 'أدخل ملاحظاتك حول القرار'}
+                placeholder={t('committee.requests.commentsPlaceholder')}
                 rows={3}
                 className="resize-none"
               />
