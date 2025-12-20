@@ -1,14 +1,9 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useProjectsReadyForDiscussion, useDiscussionCommitteeMembers, useDistributeProjects } from '../hooks/useCommitteeDistribution'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
-import { Button } from '../../../components/ui/button'
-import { LoadingSpinner } from '../../../components/common/LoadingSpinner'
-import { EmptyState } from '../../../components/common/EmptyState'
-import { useToast } from '../../../components/common/NotificationToast'
+import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
+import { LoadingSpinner, EmptyState, useToast } from '@/components/common'
 import { Briefcase, Users, CheckCircle2, Loader2, UserCheck } from 'lucide-react'
-import type { Project } from '../../../types/project.types'
-import type { User } from '../../../types/user.types'
 import type { CommitteeAssignment } from '../api/committee.service'
 
 export function CommitteeDistribution() {
@@ -22,7 +17,7 @@ export function CommitteeDistribution() {
   const toggleMember = (projectId: string, memberId: string) => {
     const newAssignments = new Map(assignments)
     const currentMembers = newAssignments.get(projectId) || []
-    
+
     if (currentMembers.includes(memberId)) {
       newAssignments.set(
         projectId,
@@ -31,13 +26,13 @@ export function CommitteeDistribution() {
     } else {
       newAssignments.set(projectId, [...currentMembers, memberId])
     }
-    
+
     setAssignments(newAssignments)
   }
 
   const handleDistribute = async () => {
     if (assignments.size === 0) {
-      showToast(t('committee.distribute.selectAtLeastOne') || 'يرجى تعيين لجنة مناقشة لمشروع واحد على الأقل', 'warning')
+      showToast(t('committee.distribute.selectAtLeastOne'), 'warning')
       return
     }
 
@@ -50,11 +45,11 @@ export function CommitteeDistribution() {
 
     try {
       await distributeProjects.mutateAsync(assignmentArray)
-      showToast(t('committee.distribute.success') || 'تم توزيع المشاريع على اللجان بنجاح', 'success')
+      showToast(t('committee.distribute.success'), 'success')
       setAssignments(new Map())
     } catch (err) {
       showToast(
-        err instanceof Error ? err.message : t('committee.distribute.error') || 'فشل توزيع المشاريع',
+        err instanceof Error ? err.message : t('committee.distribute.error'),
         'error'
       )
     }
@@ -68,8 +63,8 @@ export function CommitteeDistribution() {
     return (
       <EmptyState
         icon={Briefcase}
-        title={t('committee.distribute.noProjects') || 'لا توجد مشاريع جاهزة للمناقشة'}
-        description={t('committee.distribute.noProjectsDescription') || 'لا توجد مشاريع جاهزة لتوزيعها على لجان المناقشة'}
+        title={t('committee.distribute.noProjects')}
+        description={t('committee.distribute.noProjectsDescription')}
       />
     )
   }
@@ -85,12 +80,12 @@ export function CommitteeDistribution() {
           {distributeProjects.isPending ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {t('committee.distribute.distributing') || 'جاري التوزيع...'}
+              {t('committee.distribute.distributing')}
             </>
           ) : (
             <>
               <Users className="mr-2 h-4 w-4" />
-              {t('committee.distribute.distributeProjects') || 'توزيع المشاريع'}
+              {t('committee.distribute.distributeProjects')}
             </>
           )}
         </Button>
@@ -110,18 +105,17 @@ export function CommitteeDistribution() {
                 <div>
                   <h4 className="font-medium mb-3 flex items-center gap-2">
                     <UserCheck className="h-4 w-4 text-primary" />
-                    {t('committee.distribute.selectMembers') || 'اختر أعضاء لجنة المناقشة'}
+                    {t('committee.distribute.selectMembers')}
                   </h4>
                   <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
                     {members && members.length > 0 ? (
                       members.map((member) => (
                         <Card
                           key={member.id}
-                          className={`cursor-pointer transition-all ${
-                            assignedMembers.includes(member.id)
-                              ? 'border-primary bg-primary/5 shadow-md'
-                              : 'hover:bg-muted hover:shadow-sm'
-                          }`}
+                          className={`cursor-pointer transition-all ${assignedMembers.includes(member.id)
+                            ? 'border-primary bg-primary/5 shadow-md'
+                            : 'hover:bg-muted hover:shadow-sm'
+                            }`}
                           onClick={() => toggleMember(project.id, member.id)}
                         >
                           <CardContent className="p-3">
@@ -150,15 +144,15 @@ export function CommitteeDistribution() {
                     ) : (
                       <EmptyState
                         icon={Users}
-                        title={t('committee.distribute.noMembers') || 'لا توجد أعضاء لجنة مناقشة متاحين'}
-                        description={t('committee.distribute.noMembersDescription') || 'لا يوجد أعضاء لجنة مناقشة متاحين للتعيين'}
+                        title={t('committee.distribute.noMembers')}
+                        description={t('committee.distribute.noMembersDescription')}
                       />
                     )}
                   </div>
                   {assignedMembers.length > 0 && (
                     <p className="text-sm text-primary mt-3 flex items-center gap-1">
                       <CheckCircle2 className="h-4 w-4" />
-                      {t('committee.distribute.membersSelected', { count: assignedMembers.length }) || `${assignedMembers.length} عضو محدد`}
+                      {t('committee.distribute.membersSelected', { count: assignedMembers.length })}
                     </p>
                   )}
                 </div>

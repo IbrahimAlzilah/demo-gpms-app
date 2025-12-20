@@ -49,7 +49,9 @@
     "home": "Home",
     "notSet": "Not set",
     "unassigned": "Unassigned",
-    "students": "Students"
+    "students": "Students",
+    "approved": "Approved",
+    "rejected": "Rejected"
   },
   "app": {
     "name": "Graduation Project Management System",
@@ -144,10 +146,57 @@
       "registeredInProject": "You are registered in a project. Follow progress from the follow-up page.",
       "followProject": "Follow Project",
       "notRegistered": "You are not registered in any project yet.",
+      "notRegisteredInProject": "You are not registered in any project yet.",
       "recentProposals": "Recent Proposals",
       "recentRequests": "Recent Requests",
       "noProposals": "No proposals",
       "noRequests": "No requests"
+    },
+    "admin": {
+      "totalUsers": "Total Users",
+      "activeUsers": "{{count}} active users",
+      "projects": "Projects",
+      "registeredProjects": "registered projects",
+      "proposals": "Proposals",
+      "submittedProposals": "submitted proposals",
+      "systemStatus": "System Status",
+      "stable": "Stable",
+      "allSystemsOperational": "All systems operational",
+      "quickActions": "Quick Actions",
+      "manageUsers": "Manage Users",
+      "generateReports": "Generate Reports"
+    },
+    "discussion": {
+      "assignedProjects": "Assigned Projects",
+      "assignedToCommittee": "projects assigned to committee",
+      "pendingEvaluations": "Pending Evaluations",
+      "awaitingReview": "awaiting review",
+      "quickActions": "Quick Actions",
+      "viewProjects": "View Projects",
+      "finalEvaluation": "Final Evaluation"
+    },
+    "committee": {
+      "proposals": "Proposals",
+      "pendingReview": "pending review",
+      "requests": "Requests",
+      "pendingRequests": "pending requests",
+      "projects": "Projects",
+      "projectsToAnnounce": "projects to announce",
+      "supervisors": "Supervisors",
+      "projectsNeedSupervisors": "projects need supervisors",
+      "quickActions": "Quick Actions",
+      "announcePeriods": "Announce Time Periods",
+      "manageProposals": "Manage Proposals",
+      "announceProjects": "Announce Projects",
+      "assignSupervisors": "Assign Supervisors",
+      "processRequests": "Process Requests",
+      "distributeCommittees": "Distribute Committees",
+      "generateReports": "Generate Reports",
+      "urgentTasks": "Urgent Tasks",
+      "proposalsToReview": "{{count}} proposals need review",
+      "review": "Review",
+      "requestsToProcess": "{{count}} requests need processing",
+      "process": "Process"
     }
   },
   "status": {
@@ -332,7 +381,8 @@
     "needProjectFirst": "Please register in a project first",
     "validation": {
       "studentIdRequired": "Please enter student ID",
-      "groupIdRequired": "Please enter group ID"
+      "groupIdRequired": "Please enter group ID",
+      "groupRequired": "Group is required"
     },
     "confirmRemove": "Are you sure you want to remove this member from the group?",
     "confirmLeave": "Are you sure you want to leave the group?"
@@ -509,6 +559,8 @@
     "evaluationDescription": "Enter grades and evaluations for students in projects you supervise",
     "noProjects": "No projects under your supervision",
     "noProjectsDescription": "No projects have been assigned to you yet",
+    "searchPlaceholder": "Search projects...",
+    "loadError": "An error occurred while loading projects",
     "addNotes": "Add Notes",
     "notes": "Notes",
     "notesPlaceholder": "Enter your notes about project progress",
@@ -529,7 +581,13 @@
     "maxScore": "Full Score",
     "comments": "Comments",
     "commentsPlaceholder": "Enter your comments about the evaluation",
-    "saveEvaluation": "Save Evaluation"
+    "saveEvaluation": "Save Evaluation",
+    "validation": {
+      "scoreRequired": "Score is required",
+      "scoreInvalid": "Invalid score",
+      "maxScoreRequired": "Max score is required",
+      "maxScoreInvalid": "Invalid max score"
+    }
   },
   "discussion": {
     "projectsDescription": "Browse projects assigned to the committee and access their details and documents",
@@ -549,7 +607,15 @@
     "maxScore": "Full Score",
     "comments": "Comments",
     "commentsPlaceholder": "Enter your comments about the evaluation",
-    "saveEvaluation": "Save Evaluation"
+    "saveEvaluation": "Save Evaluation",
+    "searchPlaceholder": "Search projects...",
+    "loadError": "An error occurred while loading projects",
+    "validation": {
+      "scoreRequired": "Score is required",
+      "scoreInvalid": "Invalid score",
+      "maxScoreRequired": "Max score is required",
+      "maxScoreInvalid": "Invalid max score"
+    }
   },
   "committee": {
     "periodsDescription": "Manage project time periods (proposal submission, registration, document submission, evaluation, etc.)",
@@ -638,7 +704,13 @@
       "processingError": "Failed to process request",
       "supervisorRejected": "Request rejected by supervisor",
       "approved": "Request approved",
-      "rejected": "Request rejected"
+      "rejected": "Request rejected",
+      "searchPlaceholder": "Search requests...",
+      "loadError": "An error occurred while loading requests",
+      "confirmApprove": "Confirm Request Approval",
+      "confirmReject": "Confirm Request Rejection",
+      "confirmApproveDescription": "Are you sure you want to approve this request?",
+      "confirmRejectDescription": "Are you sure you want to reject this request?"
     },
     "distribute": {
       "selectAtLeastOne": "Please assign a discussion committee to at least one project",

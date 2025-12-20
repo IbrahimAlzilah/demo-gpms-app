@@ -9,7 +9,6 @@ import { proposalService } from '../api/proposal.service'
 import { DataTable, Button } from '@/components/ui'
 import { BlockContent, ModalDialog, StatusBadge, useToast } from '@/components/common'
 import { AlertCircle, PlusCircle, FileText, MessageSquare } from 'lucide-react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui'
 import { formatDate } from '@/lib/utils/format'
 
 export function ProposalManagement() {
@@ -64,7 +63,7 @@ export function ProposalManagement() {
   // Calculate statistics
   const stats = useMemo(() => {
     if (!proposals) return { total: 0, pending: 0, approved: 0, rejected: 0 }
-    
+
     return {
       total: proposals.length,
       pending: proposals.filter((p: Proposal) => p.status === 'pending_review').length,
@@ -166,73 +165,65 @@ export function ProposalManagement() {
 
       {/* Proposal Detail Dialog */}
       {selectedProposal && (
-        <Dialog open={!!selectedProposal} onOpenChange={(open) => !open && setSelectedProposal(null)}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-primary" />
-                {selectedProposal?.title}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="flex items-center gap-4 text-sm">
-                <StatusBadge status={selectedProposal?.status} />
-                <span className="text-muted-foreground">
-                  {t('proposal.submittedAt')} {formatDate(selectedProposal?.createdAt)}
-                </span>
-              </div>
+        <ModalDialog open={!!selectedProposal} onOpenChange={(open) => !open && setSelectedProposal(null)} title={selectedProposal?.title}>
+          <div className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center gap-4 text-sm">
+              <StatusBadge status={selectedProposal?.status} />
+              <span className="text-muted-foreground">
+                {t('proposal.submittedAt')} {formatDate(selectedProposal?.createdAt)}
+              </span>
+            </div>
 
+            <div>
+              <h4 className="text-sm font-medium mb-2">{t('proposal.description')}</h4>
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                {selectedProposal?.description}
+              </p>
+            </div>
+
+            {selectedProposal?.objectives && (
               <div>
-                <h4 className="text-sm font-medium mb-2">{t('proposal.description')}</h4>
+                <h4 className="text-sm font-medium mb-2">{t('proposal.objectives')}</h4>
                 <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {selectedProposal?.description}
+                  {selectedProposal?.objectives}
                 </p>
               </div>
+            )}
 
-              {selectedProposal?.objectives && (
-                <div>
-                  <h4 className="text-sm font-medium mb-2">{t('proposal.objectives')}</h4>
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                    {selectedProposal?.objectives}
+            {selectedProposal?.methodology && (
+              <div>
+                <h4 className="text-sm font-medium mb-2">{t('proposal.methodology')}</h4>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                  {selectedProposal?.methodology}
+                </p>
+              </div>
+            )}
+
+            {selectedProposal?.expectedOutcomes && (
+              <div>
+                <h4 className="text-sm font-medium mb-2">{t('proposal.expectedOutcomes')}</h4>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                  {selectedProposal?.expectedOutcomes}
+                </p>
+              </div>
+            )}
+
+            {selectedProposal?.reviewNotes && (
+              <div className="rounded-lg bg-muted p-4 border border-muted-foreground/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                  <h4 className="text-sm font-medium">{t('proposal.reviewNotes')}</h4>
+                </div>
+                <p className="text-sm whitespace-pre-wrap">{selectedProposal?.reviewNotes}</p>
+                {selectedProposal?.reviewedAt && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {t('proposal.reviewedAt')} {formatDate(selectedProposal?.reviewedAt)}
                   </p>
-                </div>
-              )}
-
-              {selectedProposal?.methodology && (
-                <div>
-                  <h4 className="text-sm font-medium mb-2">{t('proposal.methodology')}</h4>
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                    {selectedProposal?.methodology}
-                  </p>
-                </div>
-              )}
-
-              {selectedProposal?.expectedOutcomes && (
-                <div>
-                  <h4 className="text-sm font-medium mb-2">{t('proposal.expectedOutcomes')}</h4>
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                    {selectedProposal?.expectedOutcomes}
-                  </p>
-                </div>
-              )}
-
-              {selectedProposal?.reviewNotes && (
-                <div className="rounded-lg bg-muted p-4 border border-muted-foreground/20">
-                  <div className="flex items-center gap-2 mb-2">
-                    <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                    <h4 className="text-sm font-medium">{t('proposal.reviewNotes')}</h4>
-                  </div>
-                  <p className="text-sm whitespace-pre-wrap">{selectedProposal?.reviewNotes}</p>
-                  {selectedProposal?.reviewedAt && (
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {t('proposal.reviewedAt')} {formatDate(selectedProposal?.reviewedAt)}
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
+                )}
+              </div>
+            )}
+          </div>
+        </ModalDialog>
       )}
     </>
   )

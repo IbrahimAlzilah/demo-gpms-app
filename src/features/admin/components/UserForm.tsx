@@ -2,16 +2,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
 import { useCreateUser, useUpdateUser } from '../hooks/useUsers'
-import { Button } from '../../../components/ui/button'
-import { Input } from '../../../components/ui/input'
-import { Label } from '../../../components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../../../components/ui/select'
+import { Button, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { AlertCircle, Loader2, UserPlus, UserCog } from 'lucide-react'
 import type { User, UserRole, UserStatus } from '../../../types/user.types'
 import { userSchema, type UserSchema } from '../schema'

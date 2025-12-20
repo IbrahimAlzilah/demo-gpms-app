@@ -23,7 +23,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
   const breadcrumbItems: BreadcrumbItem[] = items || (() => {
     const paths = location.pathname.split('/').filter(Boolean)
     const generated: BreadcrumbItem[] = [
-      { label: t('nav.home') || 'الرئيسية', href: '/' }
+      { label: t('nav.home'), href: '/' }
     ]
 
     let currentPath = ''
@@ -46,7 +46,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
 
   return (
     <nav
-      aria-label={t('common.breadcrumbs') || 'مسار التنقل'}
+      aria-label={t('common.breadcrumbs')}
       className={cn('flex items-center gap-2 text-sm text-muted-foreground', className)}
     >
       <ol className="flex items-center gap-2" itemScope itemType="https://schema.org/BreadcrumbList">
@@ -65,13 +65,12 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
                 <Link
                   to={item.href || '/'}
                   className={cn(
-                    'flex items-center gap-1 hover:text-foreground transition-colors',
+                    'flex items-center gap-1 text-primary hover:text-foreground transition-colors',
                     isLast && 'text-foreground font-medium'
                   )}
                   itemProp="item"
                 >
                   <Home className="h-4 w-4" />
-                  <span itemProp="name">{item.label}</span>
                 </Link>
               ) : (
                 <>

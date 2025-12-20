@@ -1,12 +1,9 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useProjectsReport } from '../hooks/useReports'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
-import { Button } from '../../../components/ui/button'
-import { LoadingSpinner } from '../../../components/common/LoadingSpinner'
-import { EmptyState } from '../../../components/common/EmptyState'
+import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
+import { LoadingSpinner, EmptyState, StatusBadge } from '@/components/common'
 import { FileBarChart, Download, Loader2, RefreshCw } from 'lucide-react'
-import { StatusBadge } from '../../../components/common/StatusBadge'
 
 export function ReportGenerator() {
   const { t } = useTranslation()
@@ -24,35 +21,35 @@ export function ReportGenerator() {
 
   const handleDownload = () => {
     if (!report) return
-    
+
     const reportText = `
-${t('committee.reports.title') || 'تقرير المشاريع'}
+${t('committee.reports.title')}
 ${'='.repeat(30)}
 
-${t('committee.reports.projects') || 'المشاريع'}:
-  - ${t('committee.reports.total') || 'الإجمالي'}: ${report.projects.total}
-  - ${t('committee.reports.byStatus') || 'حسب الحالة'}:
+${t('committee.reports.projects')}:
+  - ${t('committee.reports.total')}: ${report.projects.total}
+  - ${t('committee.reports.byStatus')}:
 ${Object.entries(report.projects.byStatus)
-  .map(([status, count]) => `    - ${status}: ${count}`)
-  .join('\n')}
+        .map(([status, count]) => `    - ${status}: ${count}`)
+        .join('\n')}
 
-${t('committee.reports.proposals') || 'المقترحات'}:
-  - ${t('committee.reports.total') || 'الإجمالي'}: ${report.proposals.total}
-  - ${t('committee.reports.byStatus') || 'حسب الحالة'}:
+${t('committee.reports.proposals')}:
+  - ${t('committee.reports.total')}: ${report.proposals.total}
+  - ${t('committee.reports.byStatus')}:
 ${Object.entries(report.proposals.byStatus)
-  .map(([status, count]) => `    - ${status}: ${count}`)
-  .join('\n')}
+        .map(([status, count]) => `    - ${status}: ${count}`)
+        .join('\n')}
 
-${t('committee.reports.requests') || 'الطلبات'}:
-  - ${t('committee.reports.total') || 'الإجمالي'}: ${report.requests.total}
-  - ${t('committee.reports.byStatus') || 'حسب الحالة'}:
+${t('committee.reports.requests')}:
+  - ${t('committee.reports.total')}: ${report.requests.total}
+  - ${t('committee.reports.byStatus')}:
 ${Object.entries(report.requests.byStatus)
-  .map(([status, count]) => `    - ${status}: ${count}`)
-  .join('\n')}
+        .map(([status, count]) => `    - ${status}: ${count}`)
+        .join('\n')}
 
-${t('committee.reports.evaluations') || 'التقييمات'}:
-  - ${t('committee.reports.total') || 'الإجمالي'}: ${report.evaluations.total}
-  - ${t('committee.reports.averageGrade') || 'متوسط الدرجات'}: ${report.evaluations.averageGrade}
+${t('committee.reports.evaluations')}:
+  - ${t('committee.reports.total')}: ${report.evaluations.total}
+  - ${t('committee.reports.averageGrade')}: ${report.evaluations.averageGrade}
 `
 
     const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' })
@@ -69,27 +66,27 @@ ${t('committee.reports.evaluations') || 'التقييمات'}:
   return (
     <div className="space-y-6">
       <div className="flex gap-2">
-        <Button 
-          onClick={handleGenerate} 
+        <Button
+          onClick={handleGenerate}
           disabled={isLoading || isGenerating}
           className="w-full sm:w-auto"
         >
           {isGenerating || isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {t('committee.reports.generating') || 'جاري التوليد...'}
+              {t('committee.reports.generating')}
             </>
           ) : (
             <>
               <RefreshCw className="mr-2 h-4 w-4" />
-              {t('committee.reports.generate') || 'توليد التقرير'}
+              {t('committee.reports.generate')}
             </>
           )}
         </Button>
         {report && (
           <Button onClick={handleDownload} variant="outline" className="w-full sm:w-auto">
             <Download className="mr-2 h-4 w-4" />
-            {t('committee.reports.download') || 'تحميل التقرير'}
+            {t('committee.reports.download')}
           </Button>
         )}
       </div>
@@ -102,13 +99,13 @@ ${t('committee.reports.evaluations') || 'التقييمات'}:
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileBarChart className="h-5 w-5 text-primary" />
-                {t('committee.reports.projects') || 'المشاريع'}
+                {t('committee.reports.projects')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <p className="text-2xl font-bold">{report.projects.total}</p>
-                <p className="text-sm text-muted-foreground">{t('committee.reports.totalProjects') || 'إجمالي المشاريع'}</p>
+                <p className="text-sm text-muted-foreground">{t('committee.reports.totalProjects')}</p>
                 <div className="mt-4 space-y-2">
                   {Object.entries(report.projects.byStatus).map(([status, count]) => (
                     <div key={status} className="flex items-center justify-between text-sm">
@@ -125,13 +122,13 @@ ${t('committee.reports.evaluations') || 'التقييمات'}:
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileBarChart className="h-5 w-5 text-primary" />
-                {t('committee.reports.proposals') || 'المقترحات'}
+                {t('committee.reports.proposals')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <p className="text-2xl font-bold">{report.proposals.total}</p>
-                <p className="text-sm text-muted-foreground">{t('committee.reports.totalProposals') || 'إجمالي المقترحات'}</p>
+                <p className="text-sm text-muted-foreground">{t('committee.reports.totalProposals')}</p>
                 <div className="mt-4 space-y-2">
                   {Object.entries(report.proposals.byStatus).map(([status, count]) => (
                     <div key={status} className="flex items-center justify-between text-sm">
@@ -148,13 +145,13 @@ ${t('committee.reports.evaluations') || 'التقييمات'}:
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileBarChart className="h-5 w-5 text-primary" />
-                {t('committee.reports.requests') || 'الطلبات'}
+                {t('committee.reports.requests')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <p className="text-2xl font-bold">{report.requests.total}</p>
-                <p className="text-sm text-muted-foreground">{t('committee.reports.totalRequests') || 'إجمالي الطلبات'}</p>
+                <p className="text-sm text-muted-foreground">{t('committee.reports.totalRequests')}</p>
                 <div className="mt-4 space-y-2">
                   {Object.entries(report.requests.byStatus).map(([status, count]) => (
                     <div key={status} className="flex items-center justify-between text-sm">
@@ -171,16 +168,16 @@ ${t('committee.reports.evaluations') || 'التقييمات'}:
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileBarChart className="h-5 w-5 text-primary" />
-                {t('committee.reports.evaluations') || 'التقييمات'}
+                {t('committee.reports.evaluations')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <p className="text-2xl font-bold">{report.evaluations.total}</p>
-                <p className="text-sm text-muted-foreground">{t('committee.reports.totalEvaluations') || 'إجمالي التقييمات'}</p>
+                <p className="text-sm text-muted-foreground">{t('committee.reports.totalEvaluations')}</p>
                 <div className="mt-4">
                   <p className="text-lg font-semibold">
-                    {t('committee.reports.averageGrade') || 'متوسط الدرجات'}: {report.evaluations.averageGrade}
+                    {t('committee.reports.averageGrade')}: {report.evaluations.averageGrade}
                   </p>
                 </div>
               </div>
@@ -190,8 +187,8 @@ ${t('committee.reports.evaluations') || 'التقييمات'}:
       ) : (
         <EmptyState
           icon={FileBarChart}
-          title={t('committee.reports.noReport') || 'لا يوجد تقرير'}
-          description={t('committee.reports.generateFirst') || 'اضغط على "توليد التقرير" لعرض البيانات'}
+          title={t('committee.reports.noReport')}
+          description={t('committee.reports.generateFirst')}
         />
       )}
     </div>

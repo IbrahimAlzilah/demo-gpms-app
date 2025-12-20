@@ -57,7 +57,7 @@ export function RootRouter() {
 
         {/* Protected routes - Student */}
         <Route
-          path="/student/*"
+          path="*"
           element={
             <ProtectedRoute>
               <RoleGuard allowedRoles={['student']}>

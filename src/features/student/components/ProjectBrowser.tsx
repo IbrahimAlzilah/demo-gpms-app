@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { Project } from '../../../types/project.types'
+import type { Project } from '@/types/project.types'
 import { DataTable } from '@/components/ui/data-table'
 import { createProjectColumns } from './ProjectTableColumns'
 import { useDataTable } from '@/hooks/useDataTable'
@@ -64,7 +64,6 @@ export function ProjectBrowser({ onSelectProject }: ProjectBrowserProps) {
       onColumnFiltersChange={setColumnFilters}
       searchValue={globalFilter}
       onSearchChange={setGlobalFilter}
-      searchPlaceholder={t('project.searchPlaceholder')}
       rtl={rtl}
       enableFiltering={true}
       enableViews={true}

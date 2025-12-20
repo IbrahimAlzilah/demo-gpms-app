@@ -7,7 +7,7 @@ export const mockTimePeriods: TimePeriod[] = [
     id: '1',
     name: 'فترة تقديم المقترحات',
     type: 'proposal_submission',
-    startDate: new Date('2026-01-01').toISOString(),
+    startDate: new Date('2022-12-20').toISOString(),
     endDate: new Date('2026-02-01').toISOString(),
     isActive: true,
     academicYear: '2025-2026',
