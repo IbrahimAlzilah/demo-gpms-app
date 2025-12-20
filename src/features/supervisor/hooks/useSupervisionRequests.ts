@@ -25,6 +25,8 @@ export function useApproveSupervisionRequest() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['supervision-requests'] })
+      queryClient.invalidateQueries({ queryKey: ['supervision-requests-table'] })
+      queryClient.invalidateQueries({ queryKey: ['requests'] })
     },
   })
 }
@@ -40,6 +42,8 @@ export function useRejectSupervisionRequest() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['supervision-requests'] })
+      queryClient.invalidateQueries({ queryKey: ['supervision-requests-table'] })
+      queryClient.invalidateQueries({ queryKey: ['requests'] })
     },
   })
 }

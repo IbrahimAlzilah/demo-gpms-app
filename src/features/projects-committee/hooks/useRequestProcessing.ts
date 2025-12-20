@@ -28,7 +28,9 @@ export function useApproveRequest() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['committee-requests'] })
+      queryClient.invalidateQueries({ queryKey: ['committee-requests-table'] })
       queryClient.invalidateQueries({ queryKey: ['requests'] })
+      queryClient.invalidateQueries({ queryKey: ['student-requests-table'] })
     },
   })
 }
@@ -44,7 +46,9 @@ export function useRejectRequest() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['committee-requests'] })
+      queryClient.invalidateQueries({ queryKey: ['committee-requests-table'] })
       queryClient.invalidateQueries({ queryKey: ['requests'] })
+      queryClient.invalidateQueries({ queryKey: ['student-requests-table'] })
     },
   })
 }

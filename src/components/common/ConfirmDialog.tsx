@@ -15,6 +15,7 @@ interface ConfirmDialogProps {
   cancelLabel?: string
   variant?: 'default' | 'destructive'
   icon?: ReactNode
+  children?: ReactNode
 }
 
 export function ConfirmDialog({
@@ -28,6 +29,7 @@ export function ConfirmDialog({
   cancelLabel,
   variant = 'default',
   icon,
+  children,
 }: ConfirmDialogProps) {
   const { t } = useTranslation()
   const defaultConfirmLabel = confirmLabel || t('common.confirm')
@@ -56,6 +58,7 @@ export function ConfirmDialog({
           </div>
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
+        {children && <div className="py-4">{children}</div>}
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={handleClose}>
             {defaultCancelLabel}

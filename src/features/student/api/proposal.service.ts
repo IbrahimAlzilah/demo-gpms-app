@@ -7,6 +7,7 @@ function applyProposalFilters(proposals: Proposal[], filters?: Record<string, un
   
   return proposals.filter((proposal) => {
     if (filters.status && proposal.status !== filters.status) return false
+    if (filters.submitterId && proposal.submitterId !== filters.submitterId) return false
     return true
   })
 }

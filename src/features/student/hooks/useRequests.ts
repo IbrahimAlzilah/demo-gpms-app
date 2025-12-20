@@ -39,6 +39,7 @@ export function useCreateRequest() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requests'] })
+      queryClient.invalidateQueries({ queryKey: ['student-requests-table'] })
     },
   })
 }
@@ -50,6 +51,7 @@ export function useCancelRequest() {
     mutationFn: (id: string) => requestService.cancel(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requests'] })
+      queryClient.invalidateQueries({ queryKey: ['student-requests-table'] })
     },
   })
 }

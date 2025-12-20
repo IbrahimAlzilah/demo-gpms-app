@@ -1,119 +1,120 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSupervisionRequests, useApproveSupervisionRequest, useRejectSupervisionRequest } from '../hooks/useSupervisionRequests'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../components/ui/card'
-import { Button } from '../../../components/ui/button'
-import { Textarea } from '../../../components/ui/textarea'
-import { Label } from '../../../components/ui/label'
-import { LoadingSpinner } from '../../../components/common/LoadingSpinner'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../../../components/ui/dialog'
-import { EmptyState } from '../../../components/common/EmptyState'
-import { AlertCircle, CheckCircle2, XCircle, User, Briefcase, MessageSquare, Loader2, AlertTriangle, Clock, UserCheck } from 'lucide-react'
-import { formatRelativeTime } from '../../../lib/utils/format'
-import { ConfirmDialog } from '../../../components/common/ConfirmDialog'
+import { useAuthStore } from '../../auth/store/auth.store'
+import { useApproveSupervisionRequest, useRejectSupervisionRequest } from '../hooks/useSupervisionRequests'
+import type { Request } from '../../../types/request.types'
+import { createSupervisionRequestColumns } from './SupervisionRequestTableColumns'
+import { useDataTable } from '@/hooks/useDataTable'
+import { supervisionService } from '../api/supervision.service'
+import { DataTable, Card, CardContent } from '@/components/ui'
+import { BlockContent, ConfirmDialog } from '@/components/common'
+import { AlertCircle, CheckCircle2, XCircle, AlertTriangle, User, Briefcase, MessageSquare } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { useToast } from '@/components/common/NotificationToast'
 
 const MAX_PROJECTS_PER_SUPERVISOR = 5 // This should come from config
 
 export function SupervisionRequestsList() {
   const { t } = useTranslation()
-  const { data: requests, isLoading } = useSupervisionRequests()
+  const { user } = useAuthStore()
+  const { showToast } = useToast()
   const approveRequest = useApproveSupervisionRequest()
   const rejectRequest = useRejectSupervisionRequest()
-  const [selectedRequest, setSelectedRequest] = useState<string | null>(null)
+  const [selectedRequest, setSelectedRequest] = useState<Request | null>(null)
   const [comments, setComments] = useState('')
   const [action, setAction] = useState<'approve' | 'reject' | null>(null)
-  const [error, setError] = useState('')
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
-  const [requestToProcess, setRequestToProcess] = useState<string | null>(null)
 
   // In real app, get current project count from API
   const currentProjectCount = 3 // Mock value
   const canAcceptMore = currentProjectCount < MAX_PROJECTS_PER_SUPERVISOR
 
-  const handleApprove = async (requestId: string) => {
-    setError('')
+  const {
+    data: requests,
+    pageCount,
+    isLoading,
+    error,
+    sorting,
+    setSorting,
+    columnFilters,
+    setColumnFilters,
+    globalFilter,
+    setGlobalFilter,
+    pagination,
+    setPagination,
+    rtl,
+  } = useDataTable({
+    queryKey: ['supervision-requests-table'],
+    queryFn: (params) => supervisionService.getTableData(params, user?.id),
+    initialPageSize: 10,
+    enableServerSide: true,
+  })
+
+  const handleApprove = async () => {
+    if (!selectedRequest) return
     if (currentProjectCount >= MAX_PROJECTS_PER_SUPERVISOR) {
-      setError(t('supervision.maxProjectsReached') || `لا يمكن قبول الطلب. الحد الأقصى للمشاريع هو ${MAX_PROJECTS_PER_SUPERVISOR} مشروع`)
+      showToast(t('supervision.maxProjectsReached') || `لا يمكن قبول الطلب. الحد الأقصى للمشاريع هو ${MAX_PROJECTS_PER_SUPERVISOR} مشروع`, 'error')
       return
     }
 
     try {
-      await approveRequest.mutateAsync(requestId)
+      await approveRequest.mutateAsync(selectedRequest.id)
+      showToast(t('supervision.approveSuccess') || 'تم قبول الطلب بنجاح', 'success')
       setComments('')
       setSelectedRequest(null)
       setAction(null)
       setShowConfirmDialog(false)
-      setRequestToProcess(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('supervision.approveError') || 'فشل قبول الطلب')
+      showToast(err instanceof Error ? err.message : t('supervision.approveError') || 'فشل قبول الطلب', 'error')
     }
   }
 
-  const handleReject = async (requestId: string) => {
-    setError('')
+  const handleReject = async () => {
+    if (!selectedRequest) return
     try {
-      await rejectRequest.mutateAsync({ requestId, comments: comments || undefined })
+      await rejectRequest.mutateAsync({ requestId: selectedRequest.id, comments: comments || undefined })
+      showToast(t('supervision.rejectSuccess') || 'تم رفض الطلب بنجاح', 'success')
       setComments('')
       setSelectedRequest(null)
       setAction(null)
       setShowConfirmDialog(false)
-      setRequestToProcess(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('supervision.rejectError') || 'فشل رفض الطلب')
+      showToast(err instanceof Error ? err.message : t('supervision.rejectError') || 'فشل رفض الطلب', 'error')
     }
   }
 
-  const handleApproveClick = (requestId: string) => {
+  const handleApproveClick = (request: Request) => {
     if (currentProjectCount >= MAX_PROJECTS_PER_SUPERVISOR) {
-      setError(t('supervision.maxProjectsReached') || `لا يمكن قبول الطلب. الحد الأقصى للمشاريع هو ${MAX_PROJECTS_PER_SUPERVISOR} مشروع`)
+      showToast(t('supervision.maxProjectsReached') || `لا يمكن قبول الطلب. الحد الأقصى للمشاريع هو ${MAX_PROJECTS_PER_SUPERVISOR} مشروع`, 'error')
       return
     }
-    setRequestToProcess(requestId)
+    setSelectedRequest(request)
     setAction('approve')
     setShowConfirmDialog(true)
   }
 
-  const handleRejectClick = (requestId: string) => {
-    setRequestToProcess(requestId)
+  const handleRejectClick = (request: Request) => {
+    setSelectedRequest(request)
     setAction('reject')
     setShowConfirmDialog(true)
   }
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardContent className="pt-6">
-          <LoadingSpinner />
-        </CardContent>
-      </Card>
-    )
-  }
-
-  if (!requests || requests.length === 0) {
-    return (
-      <EmptyState
-        icon={UserCheck}
-        title={t('supervision.noRequests') || 'لا توجد طلبات إشراف للمراجعة'}
-        description={t('supervision.noRequestsDescription') || 'لا توجد طلبات إشراف جديدة في الوقت الحالي'}
-      />
-    )
-  }
+  const columns = useMemo(
+    () =>
+      createSupervisionRequestColumns({
+        onApprove: handleApproveClick,
+        onReject: handleRejectClick,
+        canAcceptMore,
+        rtl,
+      }),
+    [canAcceptMore, rtl]
+  )
 
   return (
-    <div className="space-y-6">
-      {error && (
-        <Card className="border-destructive">
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-2 text-destructive">
-              <AlertCircle className="h-5 w-5 mt-0.5" />
-              <span>{error}</span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
+    <>
       {/* Project Count Info */}
-      <Card className={canAcceptMore ? 'border-info' : 'border-warning'}>
+      <Card className={canAcceptMore ? 'border-info mb-6' : 'border-warning mb-6'}>
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
@@ -138,169 +139,55 @@ export function SupervisionRequestsList() {
         </CardContent>
       </Card>
 
-      {/* Requests List */}
-      <div className="space-y-4">
-        {requests.map((request) => (
-          <Card key={request.id} className="hover:shadow-md transition-shadow">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <CardTitle className="flex items-center gap-2 mb-2">
-                    <UserCheck className="h-5 w-5 text-primary" />
-                    {t('supervision.supervisionRequest') || 'طلب إشراف'}
-                  </CardTitle>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      {formatRelativeTime(request.createdAt)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                {request.student && (
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">{t('supervision.student') || 'الطالب'}</p>
-                      <p className="text-sm font-medium">{request.student.name}</p>
-                    </div>
-                  </div>
-                )}
-                {request.project && (
-                  <div className="flex items-center gap-2">
-                    <Briefcase className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">{t('supervision.project') || 'المشروع'}</p>
-                      <p className="text-sm font-medium">{request.project.title}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
+      <BlockContent title={t('nav.supervisionRequests') || 'معالجة طلبات الإشراف'}>
+        <DataTable
+          columns={columns}
+          data={requests}
+          isLoading={isLoading}
+          error={error}
+          pageCount={pageCount}
+          pageIndex={pagination.pageIndex}
+          pageSize={pagination.pageSize}
+          onPaginationChange={(pageIndex, pageSize) => {
+            setPagination({ pageIndex, pageSize })
+          }}
+          sorting={sorting}
+          onSortingChange={setSorting}
+          columnFilters={columnFilters}
+          onColumnFiltersChange={setColumnFilters}
+          searchValue={globalFilter}
+          onSearchChange={setGlobalFilter}
+          searchPlaceholder={t('supervision.searchPlaceholder') || 'البحث في طلبات الإشراف...'}
+          rtl={rtl}
+          enableFiltering={true}
+          enableViews={true}
+          emptyMessage={t('supervision.noRequests') || 'لا توجد طلبات إشراف للمراجعة'}
+        />
+      </BlockContent>
 
-              <div>
-                <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1">
-                  <MessageSquare className="h-3 w-3" />
-                  {t('supervision.reason') || 'السبب'}
-                </p>
-                <p className="text-sm whitespace-pre-wrap">{request.reason}</p>
-              </div>
+      {error && (
+        <BlockContent variant="container" className="border-destructive">
+          <div className="flex items-center gap-2 text-destructive">
+            <AlertCircle className="h-5 w-5" />
+            <span>{t('supervision.loadError') || 'حدث خطأ أثناء تحميل طلبات الإشراف'}</span>
+          </div>
+        </BlockContent>
+      )}
 
-              {selectedRequest === request.id && (
-                <div className="space-y-2 p-4 bg-muted rounded-lg border">
-                  <Label htmlFor={`comments-${request.id}`}>
-                    {t('supervision.comments') || 'ملاحظات'} ({t('common.optional') || 'اختياري'})
-                  </Label>
-                  <Textarea
-                    id={`comments-${request.id}`}
-                    value={comments}
-                    onChange={(e) => setComments(e.target.value)}
-                    placeholder={t('supervision.commentsPlaceholder') || 'أدخل ملاحظاتك حول القرار (اختياري)'}
-                    rows={3}
-                    className="resize-none"
-                  />
-                </div>
-              )}
-
-              <div className="flex gap-2 pt-4 border-t">
-                <Button
-                  onClick={() => {
-                    setSelectedRequest(request.id)
-                    setAction('approve')
-                  }}
-                  disabled={
-                    approveRequest.isPending ||
-                    rejectRequest.isPending ||
-                    (selectedRequest === request.id && action !== 'approve') ||
-                    !canAcceptMore
-                  }
-                  variant="default"
-                  className="flex-1"
-                >
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
-                  {t('common.accept') || 'قبول'}
-                </Button>
-                {selectedRequest === request.id && action === 'approve' && (
-                  <Button
-                    onClick={() => handleApproveClick(request.id)}
-                    disabled={approveRequest.isPending || !canAcceptMore}
-                    className="flex-1"
-                  >
-                    {approveRequest.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {t('common.processing') || 'جاري المعالجة...'}
-                      </>
-                    ) : (
-                      t('common.confirm') || 'تأكيد القبول'
-                    )}
-                  </Button>
-                )}
-                <Button
-                  onClick={() => {
-                    setSelectedRequest(request.id)
-                    setAction('reject')
-                  }}
-                  disabled={
-                    approveRequest.isPending ||
-                    rejectRequest.isPending ||
-                    (selectedRequest === request.id && action !== 'reject')
-                  }
-                  variant="destructive"
-                  className="flex-1"
-                >
-                  <XCircle className="mr-2 h-4 w-4" />
-                  {t('common.reject') || 'رفض'}
-                </Button>
-                {selectedRequest === request.id && action === 'reject' && (
-                  <Button
-                    onClick={() => handleRejectClick(request.id)}
-                    disabled={rejectRequest.isPending}
-                    variant="destructive"
-                    className="flex-1"
-                  >
-                    {rejectRequest.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {t('common.processing') || 'جاري المعالجة...'}
-                      </>
-                    ) : (
-                      t('common.confirm') || 'تأكيد الرفض'
-                    )}
-                  </Button>
-                )}
-              </div>
-
-              {!canAcceptMore && (
-                <div className="flex items-start gap-2 p-3 bg-warning/10 border border-warning/20 rounded-lg">
-                  <AlertTriangle className="h-4 w-4 text-warning mt-0.5" />
-                  <p className="text-xs text-warning-foreground">
-                    {t('supervision.maxProjectsReached') || `تم الوصول إلى الحد الأقصى للمشاريع (${MAX_PROJECTS_PER_SUPERVISOR})`}
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Confirm Dialog */}
+      {/* Confirm Dialog with Comments */}
       <ConfirmDialog
         open={showConfirmDialog}
         onClose={() => {
           setShowConfirmDialog(false)
-          setRequestToProcess(null)
+          setSelectedRequest(null)
           setAction(null)
+          setComments('')
         }}
         onConfirm={() => {
-          if (requestToProcess) {
-            if (action === 'approve') {
-              handleApprove(requestToProcess)
-            } else if (action === 'reject') {
-              handleReject(requestToProcess)
-            }
+          if (action === 'approve') {
+            handleApprove()
+          } else if (action === 'reject') {
+            handleReject()
           }
         }}
         title={
@@ -316,8 +203,53 @@ export function SupervisionRequestsList() {
         confirmLabel={t('common.confirm') || 'تأكيد'}
         cancelLabel={t('common.cancel') || 'إلغاء'}
         variant={action === 'reject' ? 'destructive' : 'default'}
-      />
-    </div>
+      >
+        {selectedRequest && (
+          <div className="space-y-4">
+            <div className="text-sm space-y-2">
+              {selectedRequest.student && (
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  <span>
+                    <span className="font-medium">{t('supervision.student') || 'الطالب'}:</span> {selectedRequest.student.name}
+                  </span>
+                </div>
+              )}
+              {selectedRequest.project && (
+                <div className="flex items-center gap-2">
+                  <Briefcase className="h-4 w-4 text-muted-foreground" />
+                  <span>
+                    <span className="font-medium">{t('supervision.project') || 'المشروع'}:</span> {selectedRequest.project.title}
+                  </span>
+                </div>
+              )}
+            </div>
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1">
+                <MessageSquare className="h-3 w-3" />
+                {t('supervision.reason') || 'السبب'}
+              </p>
+              <p className="text-sm whitespace-pre-wrap">{selectedRequest.reason}</p>
+            </div>
+            {(action === 'approve' || action === 'reject') && (
+              <div className="space-y-2">
+                <Label htmlFor="comments">
+                  {t('supervision.comments') || 'ملاحظات'} ({t('common.optional') || 'اختياري'})
+                </Label>
+                <Textarea
+                  id="comments"
+                  value={comments}
+                  onChange={(e) => setComments(e.target.value)}
+                  placeholder={t('supervision.commentsPlaceholder') || 'أدخل ملاحظاتك حول القرار (اختياري)'}
+                  rows={3}
+                  className="resize-none"
+                />
+              </div>
+            )}
+          </div>
+        )}
+      </ConfirmDialog>
+    </>
   )
 }
 

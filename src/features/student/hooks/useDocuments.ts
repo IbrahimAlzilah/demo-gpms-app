@@ -37,6 +37,7 @@ export function useUploadDocument() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['documents', variables.projectId] })
+      queryClient.invalidateQueries({ queryKey: ['student-documents-table'] })
     },
   })
 }
@@ -48,6 +49,7 @@ export function useDeleteDocument() {
     mutationFn: (id: string) => documentService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents'] })
+      queryClient.invalidateQueries({ queryKey: ['student-documents-table'] })
     },
   })
 }

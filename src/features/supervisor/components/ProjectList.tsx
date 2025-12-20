@@ -1,62 +1,84 @@
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSupervisorProjects } from '../hooks/useSupervisorProjects'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
-import { Button } from '../../../components/ui/button'
-import { LoadingSpinner } from '../../../components/common/LoadingSpinner'
-import { EmptyState } from '../../../components/common/EmptyState'
-import { StatusBadge } from '../../../components/common/StatusBadge'
-import { Link } from 'react-router-dom'
-import { ROUTES } from '../../../lib/constants'
-import { Briefcase, Users, Eye } from 'lucide-react'
+import { useAuthStore } from '../../auth/store/auth.store'
+import type { Project } from '../../../types/project.types'
+import { createSupervisorProjectColumns } from './SupervisorProjectTableColumns'
+import { useDataTable } from '@/hooks/useDataTable'
+import { supervisorProjectService } from '../api/project.service'
+import { DataTable } from '@/components/ui'
+import { BlockContent } from '@/components/common'
+import { AlertCircle } from 'lucide-react'
 
 export function ProjectList() {
   const { t } = useTranslation()
-  const { data: projects, isLoading } = useSupervisorProjects()
+  const { user } = useAuthStore()
 
-  if (isLoading) {
-    return <LoadingSpinner />
-  }
+  const {
+    data: projects,
+    pageCount,
+    isLoading,
+    error,
+    sorting,
+    setSorting,
+    columnFilters,
+    setColumnFilters,
+    globalFilter,
+    setGlobalFilter,
+    pagination,
+    setPagination,
+    rtl,
+  } = useDataTable({
+    queryKey: ['supervisor-projects-table'],
+    queryFn: (params) => supervisorProjectService.getTableData(params, user?.id),
+    initialPageSize: 10,
+    enableServerSide: true,
+  })
 
-  if (!projects || projects.length === 0) {
-    return (
-      <EmptyState
-        icon={Briefcase}
-        title={t('supervisor.noProjects') || 'لا توجد مشاريع تحت إشرافك'}
-        description={t('supervisor.noProjectsDescription') || 'لم يتم تعيين أي مشاريع لك بعد'}
-      />
-    )
-  }
+  const columns = useMemo(
+    () =>
+      createSupervisorProjectColumns({
+        rtl,
+      }),
+    [rtl]
+  )
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {projects.map((project) => (
-        <Card key={project.id} className="hover:shadow-md transition-shadow">
-          <CardHeader>
-            <CardTitle className="line-clamp-2">{project.title}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground line-clamp-3">
-              {project.description}
-            </p>
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Users className="h-4 w-4" />
-                <span>
-                  {project.currentStudents}/{project.maxStudents} {t('common.students') || 'طالب'}
-                </span>
-              </div>
-              <StatusBadge status={project.status} />
-            </div>
-            <Link to={`${ROUTES.SUPERVISOR.PROJECTS}/${project.id}`}>
-              <Button variant="outline" className="w-full">
-                <Eye className="ml-2 h-4 w-4" />
-                {t('common.viewDetails') || 'عرض التفاصيل'}
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+    <>
+      <BlockContent title={t('nav.projects') || 'استعراض المشاريع'}>
+        <DataTable
+          columns={columns}
+          data={projects}
+          isLoading={isLoading}
+          error={error}
+          pageCount={pageCount}
+          pageIndex={pagination.pageIndex}
+          pageSize={pagination.pageSize}
+          onPaginationChange={(pageIndex, pageSize) => {
+            setPagination({ pageIndex, pageSize })
+          }}
+          sorting={sorting}
+          onSortingChange={setSorting}
+          columnFilters={columnFilters}
+          onColumnFiltersChange={setColumnFilters}
+          searchValue={globalFilter}
+          onSearchChange={setGlobalFilter}
+          searchPlaceholder={t('supervisor.searchPlaceholder') || 'البحث في المشاريع...'}
+          rtl={rtl}
+          enableFiltering={true}
+          enableViews={true}
+          emptyMessage={t('supervisor.noProjects') || 'لا توجد مشاريع تحت إشرافك'}
+        />
+      </BlockContent>
+
+      {error && (
+        <BlockContent variant="container" className="border-destructive">
+          <div className="flex items-center gap-2 text-destructive">
+            <AlertCircle className="h-5 w-5" />
+            <span>{t('supervisor.loadError') || 'حدث خطأ أثناء تحميل المشاريع'}</span>
+          </div>
+        </BlockContent>
+      )}
+    </>
   )
 }
 

@@ -25,6 +25,7 @@ export function useCreateProposal() {
       proposalService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['proposals'] })
+      queryClient.invalidateQueries({ queryKey: ['student-proposals-table'] })
     },
   })
 }
@@ -38,6 +39,7 @@ export function useUpdateProposal() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['proposals'] })
       queryClient.invalidateQueries({ queryKey: ['proposals', variables.id] })
+      queryClient.invalidateQueries({ queryKey: ['student-proposals-table'] })
     },
   })
 }
