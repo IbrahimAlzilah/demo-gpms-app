@@ -9,14 +9,12 @@ import { formatRelativeTime } from "@/lib/utils/format"
 interface RequestTableColumnsProps {
   onView: (request: Request) => void
   onCancel?: (request: Request) => void
-  rtl?: boolean
   t: (key: string) => string
 }
 
 export function createRequestColumns({
   onView,
   onCancel,
-  rtl = false,
   t,
 }: RequestTableColumnsProps): ColumnDef<Request>[] {
   const getRequestTypeLabel = (type: string) => {
@@ -46,7 +44,7 @@ export function createRequestColumns({
     {
       accessorKey: "type",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('request.type')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('request.type')} />
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
@@ -61,7 +59,7 @@ export function createRequestColumns({
     {
       accessorKey: "reason",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('request.reason')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('request.reason')} />
       ),
       cell: ({ row }) => (
         <div className="max-w-[300px] truncate text-muted-foreground text-sm">
@@ -72,7 +70,7 @@ export function createRequestColumns({
     {
       accessorKey: "status",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.status')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.status')} />
       ),
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
       filterFn: (row, id, value) => {
@@ -82,7 +80,7 @@ export function createRequestColumns({
     {
       id: "workflow",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('request.workflow')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('request.workflow')} />
       ),
       cell: ({ row }) => {
         const request = row.original
@@ -133,7 +131,7 @@ export function createRequestColumns({
     {
       accessorKey: "createdAt",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('request.submittedAt')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('request.submittedAt')} />
       ),
       cell: ({ row }) => (
         <div className="text-sm text-muted-foreground">
@@ -144,7 +142,7 @@ export function createRequestColumns({
     {
       id: "actions",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.actions')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.actions')} />
       ),
       cell: ({ row }) => {
         const request = row.original

@@ -34,7 +34,6 @@ export function UserManagement() {
     setGlobalFilter,
     pagination,
     setPagination,
-    rtl,
   } = useDataTable({
     queryKey: ['admin-users-table'],
     queryFn: (params) => userService.getTableData(params),
@@ -65,10 +64,9 @@ export function UserManagement() {
           setUserToDelete(user)
           setShowDeleteDialog(true)
         },
-        rtl,
         t,
       }),
-    [rtl, t]
+    [t]
   )
 
   const handleFormSuccess = () => {
@@ -116,7 +114,6 @@ export function UserManagement() {
           searchValue={globalFilter}
           onSearchChange={setGlobalFilter}
           searchPlaceholder={t('user.searchPlaceholder')}
-          rtl={rtl}
           enableFiltering={true}
           enableViews={true}
         />

@@ -35,7 +35,6 @@ export function RequestProcessingPanel() {
     setGlobalFilter,
     pagination,
     setPagination,
-    rtl,
   } = useDataTable({
     queryKey: ['committee-requests-table'],
     queryFn: (params) => committeeRequestService.getTableData(params),
@@ -94,10 +93,9 @@ export function RequestProcessingPanel() {
       createRequestProcessingColumns({
         onApprove: handleApproveClick,
         onReject: handleRejectClick,
-        rtl,
         t,
       }),
-    [rtl, t]
+    [t]
   )
 
   return (
@@ -121,7 +119,6 @@ export function RequestProcessingPanel() {
           searchValue={globalFilter}
           onSearchChange={setGlobalFilter}
           searchPlaceholder={t('committee.requests.searchPlaceholder')}
-          rtl={rtl}
           enableFiltering={true}
           enableViews={true}
           emptyMessage={t('committee.requests.noRequests')}

@@ -29,8 +29,6 @@ export interface DataTableProps<TData, TValue> {
   enableViews?: boolean
   defaultView?: string
   onViewChange?: (viewId: string) => void
-  // RTL support
-  rtl?: boolean
   // Empty state
   emptyMessage?: string
   // Loading state

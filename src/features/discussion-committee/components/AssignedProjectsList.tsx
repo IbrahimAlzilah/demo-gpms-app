@@ -26,7 +26,6 @@ export function AssignedProjectsList() {
     setGlobalFilter,
     pagination,
     setPagination,
-    rtl,
   } = useDataTable({
     queryKey: ['discussion-committee-projects-table'],
     queryFn: (params) => discussionCommitteeProjectService.getTableData(params, user?.id),
@@ -37,10 +36,9 @@ export function AssignedProjectsList() {
   const columns = useMemo(
     () =>
       createAssignedProjectColumns({
-        rtl,
         t,
       }),
-    [rtl, t]
+    [t]
   )
 
   return (
@@ -64,7 +62,6 @@ export function AssignedProjectsList() {
           searchValue={globalFilter}
           onSearchChange={setGlobalFilter}
           searchPlaceholder={t('discussion.searchPlaceholder')}
-          rtl={rtl}
           enableFiltering={true}
           enableViews={true}
           emptyMessage={t('discussion.noProjects')}

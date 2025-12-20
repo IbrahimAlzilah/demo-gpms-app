@@ -10,27 +10,25 @@ interface ProposalTableColumnsProps {
   onApprove: (proposal: Proposal) => void
   onReject: (proposal: Proposal) => void
   onRequestModification: (proposal: Proposal) => void
-  rtl?: boolean
 }
 
 export function createProposalColumns({
   onApprove,
   onReject,
   onRequestModification,
-  rtl = false,
 }: ProposalTableColumnsProps): ColumnDef<Proposal>[] {
   return [
     {
       accessorKey: "title",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="العنوان" rtl={rtl} />
+        <DataTableColumnHeader column={column} title="العنوان" />
       ),
       cell: ({ row }) => <div className="font-medium max-w-[300px] truncate">{row.original.title}</div>,
     },
     {
       accessorKey: "description",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="الوصف" rtl={rtl} />
+        <DataTableColumnHeader column={column} title="الوصف" />
       ),
       cell: ({ row }) => (
         <div className="max-w-[400px] truncate text-muted-foreground">
@@ -41,14 +39,14 @@ export function createProposalColumns({
     {
       accessorKey: "createdAt",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="تاريخ التقديم" rtl={rtl} />
+        <DataTableColumnHeader column={column} title="تاريخ التقديم" />
       ),
       cell: ({ row }) => <div>{formatDate(row.original.createdAt)}</div>,
     },
     {
       accessorKey: "status",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="الحالة" rtl={rtl} />
+        <DataTableColumnHeader column={column} title="الحالة" />
       ),
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
     },

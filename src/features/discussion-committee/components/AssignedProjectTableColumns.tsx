@@ -8,26 +8,24 @@ import { Link } from "react-router-dom"
 import { ROUTES } from "@/lib/constants"
 
 interface AssignedProjectTableColumnsProps {
-  rtl?: boolean
   t: (key: string) => string
 }
 
 export function createAssignedProjectColumns({
-  rtl = false,
   t,
 }: AssignedProjectTableColumnsProps): ColumnDef<Project>[] {
   return [
     {
       accessorKey: "title",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('project.title')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('project.title')} />
       ),
       cell: ({ row }) => <div className="font-medium max-w-[300px] truncate">{row.original.title}</div>,
     },
     {
       accessorKey: "description",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('project.description')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('project.description')} />
       ),
       cell: ({ row }) => (
         <div className="max-w-[400px] truncate text-muted-foreground text-sm">
@@ -38,7 +36,7 @@ export function createAssignedProjectColumns({
     {
       accessorKey: "supervisor",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('discussion.supervisor')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('discussion.supervisor')} />
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
@@ -50,7 +48,7 @@ export function createAssignedProjectColumns({
     {
       accessorKey: "currentStudents",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.students')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.students')} />
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
@@ -64,7 +62,7 @@ export function createAssignedProjectColumns({
     {
       accessorKey: "status",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.status')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.status')} />
       ),
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
       filterFn: (row, id, value) => {
@@ -74,7 +72,7 @@ export function createAssignedProjectColumns({
     {
       id: "actions",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.actions')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.actions')} />
       ),
       cell: ({ row }) => {
         const project = row.original

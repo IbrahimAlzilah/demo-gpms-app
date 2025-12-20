@@ -41,7 +41,6 @@ export function SupervisionRequestsList() {
     setGlobalFilter,
     pagination,
     setPagination,
-    rtl,
   } = useDataTable({
     queryKey: ['supervision-requests-table'],
     queryFn: (params) => supervisionService.getTableData(params, user?.id),
@@ -104,10 +103,9 @@ export function SupervisionRequestsList() {
         onApprove: handleApproveClick,
         onReject: handleRejectClick,
         canAcceptMore,
-        rtl,
         t,
       }),
-    [handleApproveClick, handleRejectClick, canAcceptMore, rtl, t]
+    [handleApproveClick, handleRejectClick, canAcceptMore, t]
   )
 
   return (
@@ -156,7 +154,6 @@ export function SupervisionRequestsList() {
           onColumnFiltersChange={setColumnFilters}
           searchValue={globalFilter}
           onSearchChange={setGlobalFilter}
-          rtl={rtl}
           enableFiltering={true}
           enableViews={true}
           emptyMessage={t('supervision.noRequests')}

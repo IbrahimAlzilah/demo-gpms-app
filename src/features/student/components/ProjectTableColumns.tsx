@@ -7,25 +7,23 @@ import { Eye } from "lucide-react"
 
 interface ProjectTableColumnsProps {
   onSelectProject?: (project: Project) => void
-  rtl?: boolean
 }
 
 export function createProjectColumns({
   onSelectProject,
-  rtl = false,
 }: ProjectTableColumnsProps): ColumnDef<Project>[] {
   return [
     {
       accessorKey: "title",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="العنوان" rtl={rtl} />
+        <DataTableColumnHeader column={column} title="العنوان" />
       ),
       cell: ({ row }) => <div className="font-medium">{row.original.title}</div>,
     },
     {
       accessorKey: "description",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="الوصف" rtl={rtl} />
+        <DataTableColumnHeader column={column} title="الوصف" />
       ),
       cell: ({ row }) => (
         <div className="max-w-[400px] truncate text-muted-foreground">
@@ -43,7 +41,7 @@ export function createProjectColumns({
     {
       accessorKey: "currentStudents",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="الطلاب" rtl={rtl} />
+        <DataTableColumnHeader column={column} title="الطلاب" />
       ),
       cell: ({ row }) => (
         <div>
@@ -54,7 +52,7 @@ export function createProjectColumns({
     {
       accessorKey: "status",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="الحالة" rtl={rtl} />
+        <DataTableColumnHeader column={column} title="الحالة" />
       ),
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
       filterFn: (row, id, value) => {
@@ -74,8 +72,7 @@ export function createProjectColumns({
                   size="sm"
                   onClick={() => onSelectProject(project)}
                 >
-                  <Eye className="ml-2 h-4 w-4" />
-                  عرض التفاصيل
+                  <Eye className="size-4" />
                 </Button>
               )
             },

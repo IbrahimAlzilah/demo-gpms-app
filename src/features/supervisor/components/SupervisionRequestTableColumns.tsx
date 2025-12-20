@@ -9,7 +9,6 @@ interface SupervisionRequestTableColumnsProps {
   onApprove: (request: Request) => void
   onReject: (request: Request) => void
   canAcceptMore: boolean
-  rtl?: boolean
   t: (key: string) => string
 }
 
@@ -17,14 +16,13 @@ export function createSupervisionRequestColumns({
   onApprove,
   onReject,
   canAcceptMore,
-  rtl = false,
   t,
 }: SupervisionRequestTableColumnsProps): ColumnDef<Request>[] {
   return [
     {
       accessorKey: "student",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('supervision.student')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('supervision.student')} />
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
@@ -36,7 +34,7 @@ export function createSupervisionRequestColumns({
     {
       accessorKey: "project",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('supervision.project')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('supervision.project')} />
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
@@ -48,7 +46,7 @@ export function createSupervisionRequestColumns({
     {
       accessorKey: "reason",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('supervision.reason')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('supervision.reason')} />
       ),
       cell: ({ row }) => (
         <div className="max-w-[300px] truncate text-muted-foreground text-sm">
@@ -59,7 +57,7 @@ export function createSupervisionRequestColumns({
     {
       accessorKey: "createdAt",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('request.submittedAt')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('request.submittedAt')} />
       ),
       cell: ({ row }) => (
         <div className="text-sm text-muted-foreground">
@@ -70,7 +68,7 @@ export function createSupervisionRequestColumns({
     {
       id: "actions",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.actions')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.actions')} />
       ),
       cell: ({ row }) => {
         const request = row.original

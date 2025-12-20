@@ -34,7 +34,6 @@ export function ProposalReviewPanel() {
     setGlobalFilter,
     pagination,
     setPagination,
-    rtl,
   } = useDataTable({
     queryKey: ['committee-proposals-table', 'pending'],
     queryFn: (params) => committeeProposalService.getTableData(params, 'pending_review'),
@@ -57,9 +56,8 @@ export function ProposalReviewPanel() {
           setSelectedProposal(proposal)
           setAction('modify')
         },
-        rtl,
       }),
-    [rtl]
+    []
   )
 
   const handleConfirm = async (
@@ -114,7 +112,6 @@ export function ProposalReviewPanel() {
           searchValue={globalFilter}
           onSearchChange={setGlobalFilter}
           searchPlaceholder={t('committee.proposal.searchPlaceholder')}
-          rtl={rtl}
           enableFiltering={true}
           enableViews={true}
           emptyMessage={t('committee.proposal.noProposals')}

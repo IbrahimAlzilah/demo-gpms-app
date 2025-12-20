@@ -8,13 +8,11 @@ import { formatRelativeTime, formatFileSize } from "@/lib/utils/format"
 
 interface DocumentTableColumnsProps {
   onView: (document: Document) => void
-  rtl?: boolean
   t: (key: string) => string
 }
 
 export function createDocumentColumns({
   onView,
-  rtl = false,
   t,
 }: DocumentTableColumnsProps): ColumnDef<Document>[] {
   const getDocumentTypeLabel = (type: string) => {
@@ -33,7 +31,7 @@ export function createDocumentColumns({
     {
       accessorKey: "fileName",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('document.fileName')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('document.fileName')} />
       ),
       cell: ({ row }) => (
         <div className="font-medium flex items-center gap-2">
@@ -45,7 +43,7 @@ export function createDocumentColumns({
     {
       accessorKey: "type",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('document.type')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('document.type')} />
       ),
       cell: ({ row }) => (
         <div className="text-sm">{getDocumentTypeLabel(row.original.type)}</div>
@@ -57,7 +55,7 @@ export function createDocumentColumns({
     {
       accessorKey: "reviewStatus",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('document.reviewStatus')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('document.reviewStatus')} />
       ),
       cell: ({ row }) => <StatusBadge status={`reviewStatus_${row.original.reviewStatus}`} />,
       filterFn: (row, id, value) => {
@@ -67,7 +65,7 @@ export function createDocumentColumns({
     {
       accessorKey: "fileSize",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('document.size')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('document.size')} />
       ),
       cell: ({ row }) => (
         <div className="text-sm text-muted-foreground">
@@ -78,7 +76,7 @@ export function createDocumentColumns({
     {
       accessorKey: "createdAt",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('document.submittedAt')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('document.submittedAt')} />
       ),
       cell: ({ row }) => (
         <div className="text-sm text-muted-foreground">
@@ -89,7 +87,7 @@ export function createDocumentColumns({
     {
       id: "actions",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.actions')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.actions')} />
       ),
       cell: ({ row }) => {
         const document = row.original

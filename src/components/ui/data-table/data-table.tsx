@@ -25,7 +25,7 @@ import { DataTableToolbar } from "./data-table-toolbar"
 import { DataTableViewOptions } from "./data-table-view-options"
 import { LoadingSpinner } from "@/components/common/LoadingSpinner"
 import { EmptyState } from "@/components/common/EmptyState"
-import { cn } from "@/lib/utils"
+import { useTranslation } from "react-i18next"
 import type { DataTableProps } from "./types"
 
 export function DataTable<TData, TValue>({
@@ -49,10 +49,12 @@ export function DataTable<TData, TValue>({
     onSearchChange,
     searchPlaceholder,
     enableViews = true,
-    rtl = false,
-    emptyMessage = "لا توجد نتائج للعرض",
-    loadingMessage = "جاري التحميل...",
+    emptyMessage,
+    loadingMessage,
 }: DataTableProps<TData, TValue>) {
+    const { t } = useTranslation()
+    const defaultEmptyMessage = emptyMessage ?? t('dataTable.emptyMessage')
+    const defaultLoadingMessage = loadingMessage ?? t('dataTable.loadingMessage')
     const [internalSorting, setInternalSorting] = React.useState<SortingState>([])
     const [internalColumnFilters, setInternalColumnFilters] =
         React.useState<ColumnFiltersState>([])
@@ -132,14 +134,14 @@ export function DataTable<TData, TValue>({
         return (
             <div className="rounded-md border border-destructive/50 bg-destructive/10 p-4 text-center">
                 <p className="text-sm text-destructive">
-                    حدث خطأ أثناء تحميل البيانات: {error.message}
+                    {t('dataTable.errorMessage')}: {error.message}
                 </p>
             </div>
         )
     }
 
     return (
-        <div className="space-y-4" dir={rtl ? "rtl" : "ltr"}>
+        <div className="space-y-4">
             {(enableFiltering || enableViews) && (
                 <div className="flex items-center justify-between">
                     {enableFiltering && (
@@ -148,11 +150,10 @@ export function DataTable<TData, TValue>({
                             searchValue={searchValue}
                             onSearchChange={onSearchChange}
                             searchPlaceholder={searchPlaceholder}
-                            rtl={rtl}
                         />
                     )}
                     {enableViews && (
-                        <DataTableViewOptions table={table} rtl={rtl} />
+                        <DataTableViewOptions table={table} />
                     )}
                 </div>
             )}
@@ -165,7 +166,6 @@ export function DataTable<TData, TValue>({
                                     return (
                                         <TableHead
                                             key={header.id}
-                                            className={cn(rtl && "text-right")}
                                         >
                                             {header.isPlaceholder
                                                 ? null
@@ -188,7 +188,7 @@ export function DataTable<TData, TValue>({
                                 >
                                     <LoadingSpinner />
                                     <p className="mt-2 text-sm text-muted-foreground">
-                                        {loadingMessage}
+                                        {defaultLoadingMessage}
                                     </p>
                                 </TableCell>
                             </TableRow>
@@ -201,7 +201,6 @@ export function DataTable<TData, TValue>({
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell
                                             key={cell.id}
-                                            className={cn(rtl && "text-right")}
                                         >
                                             {flexRender(
                                                 cell.column.columnDef.cell,
@@ -218,8 +217,8 @@ export function DataTable<TData, TValue>({
                                     className="h-24 text-center"
                                 >
                                     <EmptyState
-                                        title="لا توجد نتائج"
-                                        description={emptyMessage}
+                                        title={t('dataTable.noResults')}
+                                        description={defaultEmptyMessage}
                                     />
                                 </TableCell>
                             </TableRow>
@@ -227,7 +226,7 @@ export function DataTable<TData, TValue>({
                     </TableBody>
                 </Table>
             </div>
-            <DataTablePagination table={table} rtl={rtl} />
+            <DataTablePagination table={table} />
         </div>
     )
 }

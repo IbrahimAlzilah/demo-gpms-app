@@ -47,7 +47,6 @@ export function DocumentManagement() {
     setGlobalFilter,
     pagination,
     setPagination,
-    rtl,
   } = useDataTable({
     queryKey: ['student-documents-table', selectedProjectId || ''],
     queryFn: (params) => documentService.getTableData(params, selectedProjectId),
@@ -61,10 +60,9 @@ export function DocumentManagement() {
         onView: (document) => {
           setSelectedDocument(document)
         },
-        rtl,
         t,
       }),
-    [rtl, t]
+    [t]
   )
 
   const handleFormSuccess = () => {
@@ -204,7 +202,6 @@ export function DocumentManagement() {
           onColumnFiltersChange={setColumnFilters}
           searchValue={globalFilter}
           onSearchChange={setGlobalFilter}
-          rtl={rtl}
           enableFiltering={true}
           enableViews={true}
           emptyMessage={t('document.noDocuments')}

@@ -35,7 +35,6 @@ export function RequestManagement() {
     setGlobalFilter,
     pagination,
     setPagination,
-    rtl,
   } = useDataTable({
     queryKey: ['student-requests-table'],
     queryFn: (params) => requestService.getTableData(params, user?.id),
@@ -65,10 +64,9 @@ export function RequestManagement() {
           setRequestToCancel(request)
           setShowCancelDialog(true)
         },
-        rtl,
         t,
       }),
-    [rtl, t]
+    [t]
   )
 
   const handleFormSuccess = () => {
@@ -156,7 +154,6 @@ export function RequestManagement() {
           onColumnFiltersChange={setColumnFilters}
           searchValue={globalFilter}
           onSearchChange={setGlobalFilter}
-          rtl={rtl}
           enableFiltering={true}
           enableViews={true}
           emptyMessage={t('request.noRequests')}

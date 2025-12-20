@@ -8,21 +8,19 @@ import { Pencil, Trash2, Mail, Building2 } from "lucide-react"
 interface UserTableColumnsProps {
   onEdit: (user: User) => void
   onDelete: (user: User) => void
-  rtl?: boolean
   t: (key: string) => string
 }
 
 export function createUserColumns({
   onEdit,
   onDelete,
-  rtl = false,
   t,
 }: UserTableColumnsProps): ColumnDef<User>[] {
   return [
     {
       accessorKey: "name",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.name')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.name')} />
       ),
       cell: ({ row }) => (
         <div className="font-medium flex items-center gap-2">
@@ -43,7 +41,7 @@ export function createUserColumns({
     {
       accessorKey: "email",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.email')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.email')} />
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
@@ -55,7 +53,7 @@ export function createUserColumns({
     {
       accessorKey: "role",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('user.role')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('user.role')} />
       ),
       cell: ({ row }) => {
         return (
@@ -73,7 +71,7 @@ export function createUserColumns({
     {
       accessorKey: "status",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.status')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.status')} />
       ),
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
       filterFn: (row, id, value) => {
@@ -83,7 +81,7 @@ export function createUserColumns({
     {
       accessorKey: "department",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('user.department')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('user.department')} />
       ),
       cell: ({ row }) => (
         row.original.department ? (
@@ -99,7 +97,7 @@ export function createUserColumns({
     {
       id: "actions",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.actions')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.actions')} />
       ),
       cell: ({ row }) => {
         const user = row.original

@@ -819,5 +819,28 @@
     "maxSize": "Max size:",
     "selectFiles": "Select Files",
     "fileExceedsSize": "File {{name}} exceeds maximum size ({{size}})"
+  },
+  "dataTable": {
+    "emptyMessage": "No results to display",
+    "loadingMessage": "Loading...",
+    "errorMessage": "An error occurred while loading data",
+    "noResults": "No results",
+    "searchPlaceholder": "Search...",
+    "resetFilters": "Reset",
+    "sortAscending": "Ascending",
+    "sortDescending": "Descending",
+    "hideColumn": "Hide",
+    "view": "View",
+    "toggleColumns": "Toggle columns",
+    "rowsPerPage": "Rows per page",
+    "pageInfo": "Page {{page}} of {{total}}",
+    "rowsInfo": "Showing {{start}} to {{end}} of {{total}} rows",
+    "selected": "selected",
+    "clearFilters": "Clear filters",
+    "noResultsFound": "No results found.",
+    "goToFirstPage": "Go to first page",
+    "goToPreviousPage": "Go to previous page",
+    "goToNextPage": "Go to next page",
+    "goToLastPage": "Go to last page"
   }
 }

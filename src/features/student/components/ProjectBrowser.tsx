@@ -25,7 +25,6 @@ export function ProjectBrowser({ onSelectProject }: ProjectBrowserProps) {
     setGlobalFilter,
     pagination,
     setPagination,
-    rtl,
   } = useDataTable({
     queryKey: ['available-projects-table'],
     queryFn: (params) => {
@@ -39,11 +38,10 @@ export function ProjectBrowser({ onSelectProject }: ProjectBrowserProps) {
 
   const columns = useMemo(
     () =>
-      createProjectColumns({
-        onSelectProject,
-        rtl,
-      }),
-    [onSelectProject, rtl]
+        createProjectColumns({
+          onSelectProject,
+        }),
+    [onSelectProject]
   )
 
   return (
@@ -64,7 +62,6 @@ export function ProjectBrowser({ onSelectProject }: ProjectBrowserProps) {
       onColumnFiltersChange={setColumnFilters}
       searchValue={globalFilter}
       onSearchChange={setGlobalFilter}
-      rtl={rtl}
       enableFiltering={true}
       enableViews={true}
       emptyMessage={t('project.noAvailableProjects')}

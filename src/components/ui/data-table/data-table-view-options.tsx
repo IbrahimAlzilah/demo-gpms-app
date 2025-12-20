@@ -1,4 +1,5 @@
 import type { useReactTable } from "@tanstack/react-table"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
@@ -9,31 +10,30 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Settings2 } from "lucide-react"
-import { cn } from "@/lib/utils"
 
 interface DataTableViewOptionsProps<TData> {
     table: ReturnType<typeof useReactTable<TData>>
-    rtl?: boolean
 }
 
 export function DataTableViewOptions<TData>({
     table,
-    rtl = false,
 }: DataTableViewOptionsProps<TData>) {
+    const { t } = useTranslation()
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button
                     variant="outline"
                     size="sm"
-                    className={cn("ml-auto hidden h-8 lg:flex", rtl && "mr-auto ml-0")}
+                    className="ms-auto h-8"
                 >
-                    <Settings2 className="ml-2 h-4 w-4" />
-                    عرض
+                    <Settings2 className="size-4" />
+                    {t('dataTable.view')}
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align={rtl ? "end" : "start"} className="w-[150px]">
-                <DropdownMenuLabel>تبديل الأعمدة</DropdownMenuLabel>
+            <DropdownMenuContent align="start" className="w-[150px]">
+                <DropdownMenuLabel>{t('dataTable.toggleColumns')}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {table
                     .getAllColumns()

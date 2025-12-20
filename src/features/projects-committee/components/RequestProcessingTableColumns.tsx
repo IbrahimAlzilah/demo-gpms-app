@@ -10,14 +10,12 @@ import { requiresSupervisorApproval } from "../../common/utils/requestRouting"
 interface RequestProcessingTableColumnsProps {
   onApprove: (request: Request) => void
   onReject: (request: Request) => void
-  rtl?: boolean
   t: (key: string) => string
 }
 
 export function createRequestProcessingColumns({
   onApprove,
   onReject,
-  rtl = false,
   t,
 }: RequestProcessingTableColumnsProps): ColumnDef<Request>[] {
   const getRequestTypeLabel = (type: string) => {
@@ -34,7 +32,7 @@ export function createRequestProcessingColumns({
     {
       accessorKey: "student",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('committee.requests.student')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('committee.requests.student')} />
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
@@ -46,7 +44,7 @@ export function createRequestProcessingColumns({
     {
       accessorKey: "type",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('request.type')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('request.type')} />
       ),
       cell: ({ row }) => (
         <div className="font-medium">{getRequestTypeLabel(row.original.type)}</div>
@@ -58,7 +56,7 @@ export function createRequestProcessingColumns({
     {
       accessorKey: "reason",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('request.reason')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('request.reason')} />
       ),
       cell: ({ row }) => (
         <div className="max-w-[300px] truncate text-muted-foreground text-sm">
@@ -69,7 +67,7 @@ export function createRequestProcessingColumns({
     {
       accessorKey: "status",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.status')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.status')} />
       ),
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
       filterFn: (row, id, value) => {
@@ -79,7 +77,7 @@ export function createRequestProcessingColumns({
     {
       id: "supervisorDecision",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('committee.requests.supervisorDecision')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('committee.requests.supervisorDecision')} />
       ),
       cell: ({ row }) => {
         const request = row.original
@@ -120,7 +118,7 @@ export function createRequestProcessingColumns({
     {
       accessorKey: "createdAt",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('request.submittedAt')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('request.submittedAt')} />
       ),
       cell: ({ row }) => (
         <div className="text-sm text-muted-foreground">
@@ -131,7 +129,7 @@ export function createRequestProcessingColumns({
     {
       id: "actions",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.actions')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.actions')} />
       ),
       cell: ({ row }) => {
         const request = row.original

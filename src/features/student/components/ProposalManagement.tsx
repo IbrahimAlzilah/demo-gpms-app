@@ -31,7 +31,6 @@ export function ProposalManagement() {
     setGlobalFilter,
     pagination,
     setPagination,
-    rtl,
   } = useDataTable({
     queryKey: ['student-proposals-table'],
     queryFn: (params) => {
@@ -49,10 +48,9 @@ export function ProposalManagement() {
         onView: (proposal) => {
           setSelectedProposal(proposal)
         },
-        rtl,
         t,
       }),
-    [rtl, t]
+    [t]
   )
 
   const handleFormSuccess = () => {
@@ -141,7 +139,6 @@ export function ProposalManagement() {
           onColumnFiltersChange={setColumnFilters}
           searchValue={globalFilter}
           onSearchChange={setGlobalFilter}
-          rtl={rtl}
           enableFiltering={true}
           enableViews={true}
           emptyMessage={t('proposal.noProposals')}

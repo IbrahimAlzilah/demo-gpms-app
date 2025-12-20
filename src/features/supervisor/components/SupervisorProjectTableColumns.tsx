@@ -8,26 +8,24 @@ import { Link } from "react-router-dom"
 import { ROUTES } from "@/lib/constants"
 
 interface SupervisorProjectTableColumnsProps {
-  rtl?: boolean
   t: (key: string) => string
 }
 
 export function createSupervisorProjectColumns({
-  rtl = false,
   t,
 }: SupervisorProjectTableColumnsProps): ColumnDef<Project>[] {
   return [
     {
       accessorKey: "title",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('project.title')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('project.title')} />
       ),
       cell: ({ row }) => <div className="font-medium max-w-[300px] truncate">{row.original.title}</div>,
     },
     {
       accessorKey: "description",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('project.description')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('project.description')} />
       ),
       cell: ({ row }) => (
         <div className="max-w-[400px] truncate text-muted-foreground text-sm">
@@ -38,7 +36,7 @@ export function createSupervisorProjectColumns({
     {
       accessorKey: "currentStudents",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.students')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.students')} />
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
@@ -52,7 +50,7 @@ export function createSupervisorProjectColumns({
     {
       accessorKey: "status",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.status')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.status')} />
       ),
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
       filterFn: (row, id, value) => {
@@ -62,17 +60,15 @@ export function createSupervisorProjectColumns({
     {
       id: "actions",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.actions')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.actions')} />
       ),
       cell: ({ row }) => {
         const project = row.original
-        const viewLabel = t('common.viewDetails')
 
         return (
           <Link to={`${ROUTES.SUPERVISOR.PROJECTS}/${project.id}`}>
             <Button variant="outline" size="sm">
-              <Eye className="ml-2 h-4 w-4" />
-              {viewLabel}
+              <Eye className="size-4" />
             </Button>
           </Link>
         )

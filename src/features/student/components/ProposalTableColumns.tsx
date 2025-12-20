@@ -8,13 +8,11 @@ import { formatRelativeTime } from "@/lib/utils/format"
 
 interface ProposalTableColumnsProps {
   onView: (proposal: Proposal) => void
-  rtl?: boolean
   t: (key: string) => string
 }
 
 export function createProposalColumns({
   onView,
-  rtl = false,
   t,
 }: ProposalTableColumnsProps): ColumnDef<Proposal>[] {
   const getStatusIcon = (status: string) => {
@@ -34,7 +32,7 @@ export function createProposalColumns({
     {
       accessorKey: "title",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('proposal.title')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('proposal.title')} />
       ),
       cell: ({ row }) => (
         <div className="font-medium flex items-center gap-2">
@@ -46,7 +44,7 @@ export function createProposalColumns({
     {
       accessorKey: "description",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('proposal.description')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('proposal.description')} />
       ),
       cell: ({ row }) => (
         <div className="max-w-[400px] truncate text-muted-foreground text-sm">
@@ -57,7 +55,7 @@ export function createProposalColumns({
     {
       accessorKey: "status",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.status')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.status')} />
       ),
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
       filterFn: (row, id, value) => {
@@ -67,7 +65,7 @@ export function createProposalColumns({
     {
       accessorKey: "createdAt",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('proposal.submittedAt')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('proposal.submittedAt')} />
       ),
       cell: ({ row }) => (
         <div className="text-sm text-muted-foreground">
@@ -78,7 +76,7 @@ export function createProposalColumns({
     {
       accessorKey: "reviewedAt",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('proposal.reviewedAt')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('proposal.reviewedAt')} />
       ),
       cell: ({ row }) => (
         <div className="text-sm text-muted-foreground">
@@ -89,7 +87,7 @@ export function createProposalColumns({
     {
       id: "actions",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.actions')} rtl={rtl} />
+        <DataTableColumnHeader column={column} title={t('common.actions')} />
       ),
       cell: ({ row }) => {
         const proposal = row.original

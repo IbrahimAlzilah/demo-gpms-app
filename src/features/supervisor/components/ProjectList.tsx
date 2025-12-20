@@ -25,7 +25,6 @@ export function ProjectList() {
     setGlobalFilter,
     pagination,
     setPagination,
-    rtl,
   } = useDataTable({
     queryKey: ['supervisor-projects-table'],
     queryFn: (params) => supervisorProjectService.getTableData(params, user?.id),
@@ -34,12 +33,8 @@ export function ProjectList() {
   })
 
   const columns = useMemo(
-    () =>
-      createSupervisorProjectColumns({
-        rtl,
-        t,
-      }),
-    [rtl, t]
+    () => createSupervisorProjectColumns({ t }),
+    [t]
   )
 
   return (
@@ -62,7 +57,6 @@ export function ProjectList() {
           onColumnFiltersChange={setColumnFilters}
           searchValue={globalFilter}
           onSearchChange={setGlobalFilter}
-          rtl={rtl}
           enableFiltering={true}
           enableViews={true}
           emptyMessage={t('supervisor.noProjects')}

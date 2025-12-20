@@ -819,5 +819,28 @@
     "maxSize": "الحد الأقصى:",
     "selectFiles": "اختر الملفات",
     "fileExceedsSize": "الملف {{name}} يتجاوز الحد الأقصى للحجم ({{size}})"
+  },
+  "dataTable": {
+    "emptyMessage": "لا توجد نتائج للعرض",
+    "loadingMessage": "جاري التحميل...",
+    "errorMessage": "حدث خطأ أثناء تحميل البيانات",
+    "noResults": "لا توجد نتائج",
+    "searchPlaceholder": "البحث...",
+    "resetFilters": "إعادة تعيين",
+    "sortAscending": "تصاعدي",
+    "sortDescending": "تنازلي",
+    "hideColumn": "إخفاء",
+    "view": "عرض",
+    "toggleColumns": "تبديل الأعمدة",
+    "rowsPerPage": "صفوف لكل صفحة",
+    "pageInfo": "صفحة {{page}} من {{total}}",
+    "rowsInfo": "عرض {{start}} إلى {{end}} من {{total}} صف",
+    "selected": "محددة",
+    "clearFilters": "مسح المرشحات",
+    "noResultsFound": "لا توجد نتائج.",
+    "goToFirstPage": "الانتقال إلى الصفحة الأولى",
+    "goToPreviousPage": "الانتقال إلى الصفحة السابقة",
+    "goToNextPage": "الانتقال إلى الصفحة التالية",
+    "goToLastPage": "الانتقال إلى الصفحة الأخيرة"
   }
 }
