@@ -3,17 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useCreateRequest } from '../hooks/useRequests'
-import { Button } from '../../../components/ui/button'
-import { Input } from '../../../components/ui/input'
-import { Label } from '../../../components/ui/label'
-import { Textarea } from '../../../components/ui/textarea'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../../../components/ui/select'
+import { Button, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { AlertCircle, FileCheck, Loader2, User, Users, Briefcase, MoreHorizontal } from 'lucide-react'
 import { requestSubmissionSchema, type RequestSubmissionSchema } from '../schema'
 
@@ -44,25 +34,25 @@ export function RequestSubmissionForm({ onSuccess }: RequestSubmissionFormProps)
   const selectedType = watch('type')
   const reason = watch('reason')
 
-  const requestTypes: { value: RequestType; label: string; icon: React.ReactNode }[] = [
+  const requestTypes: { value: string; label: string; icon: React.ReactNode }[] = [
     {
       value: 'change_supervisor',
-      label: t('request.type.changeSupervisor') || 'تغيير المشرف',
+      label: t('request.type.changeSupervisor'),
       icon: <User className="h-4 w-4" />,
     },
     {
       value: 'change_group',
-      label: t('request.type.changeGroup') || 'تغيير المجموعة',
+      label: t('request.type.changeGroup'),
       icon: <Users className="h-4 w-4" />,
     },
     {
       value: 'change_project',
-      label: t('request.type.changeProject') || 'تغيير المشروع',
+      label: t('request.type.changeProject'),
       icon: <Briefcase className="h-4 w-4" />,
     },
     {
       value: 'other',
-      label: t('request.type.other') || 'طلب آخر',
+      label: t('request.type.other'),
       icon: <MoreHorizontal className="h-4 w-4" />,
     },
   ]
@@ -84,9 +74,9 @@ export function RequestSubmissionForm({ onSuccess }: RequestSubmissionFormProps)
       }, 2000)
     } catch (err) {
       setError(
-        err instanceof Error 
-          ? err.message 
-          : t('request.submitError') || 'فشل تقديم الطلب'
+        err instanceof Error
+          ? err.message
+          : t('request.submitError')
       )
     }
   }
@@ -104,24 +94,24 @@ export function RequestSubmissionForm({ onSuccess }: RequestSubmissionFormProps)
         <div className="flex items-start gap-2 p-3 text-sm text-success bg-success/10 border border-success/20 rounded-md">
           <FileCheck className="h-4 w-4 mt-0.5 shrink-0" />
           <span>
-            {t('request.submitSuccess') || 'تم إرسال الطلب بنجاح، وسيتم مراجعته'}
+            {t('request.submitSuccess')}
           </span>
         </div>
       )}
 
       <div className="space-y-2">
         <Label htmlFor="type">
-          {t('request.type') || 'نوع الطلب'} <span className="text-destructive">*</span>
+          {t('request.type')} <span className="text-destructive">*</span>
         </Label>
         <Select
           value={selectedType}
-          onValueChange={(value) => setValue('type', value as RequestType)}
+          onValueChange={(value) => setValue('type', value as "change_supervisor" | "change_group" | "change_project" | "other")}
         >
           <SelectTrigger
             id="type"
             className={errors.type ? 'border-destructive' : ''}
           >
-            <SelectValue placeholder={t('request.selectType') || 'اختر نوع الطلب'} />
+            <SelectValue placeholder={t('request.selectType')} />
           </SelectTrigger>
           <SelectContent>
             {requestTypes.map((type) => (
@@ -144,12 +134,12 @@ export function RequestSubmissionForm({ onSuccess }: RequestSubmissionFormProps)
 
       <div className="space-y-2">
         <Label htmlFor="reason">
-          {t('request.reason') || 'سبب الطلب'} <span className="text-destructive">*</span>
+          {t('request.reason')} <span className="text-destructive">*</span>
         </Label>
         <Textarea
           id="reason"
           {...register('reason')}
-          placeholder={t('request.reasonPlaceholder') || 'اذكر سبب تقديم الطلب بالتفصيل'}
+          placeholder={t('request.reasonPlaceholder')}
           rows={5}
           className={errors.reason ? 'border-destructive' : ''}
           aria-invalid={!!errors.reason}
@@ -161,7 +151,7 @@ export function RequestSubmissionForm({ onSuccess }: RequestSubmissionFormProps)
           </p>
         )}
         <p className="text-xs text-muted-foreground">
-          {reason?.length || 0} / 20 {t('common.characters') || 'حرف'}
+          {reason?.length || 0} / 20 {t('common.characters')}
         </p>
       </div>
 
@@ -177,7 +167,7 @@ export function RequestSubmissionForm({ onSuccess }: RequestSubmissionFormProps)
           disabled={createRequest.isPending}
           className="flex-1"
         >
-          {t('common.reset') || 'إعادة تعيين'}
+          {t('common.reset')}
         </Button>
         <Button
           type="submit"
@@ -187,12 +177,12 @@ export function RequestSubmissionForm({ onSuccess }: RequestSubmissionFormProps)
           {createRequest.isPending ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {t('request.submitting') || 'جاري الإرسال...'}
+              {t('request.submitting')}
             </>
           ) : (
             <>
               <FileCheck className="mr-2 h-4 w-4" />
-              {t('request.submit') || 'تقديم الطلب'}
+              {t('request.submit')}
             </>
           )}
         </Button>

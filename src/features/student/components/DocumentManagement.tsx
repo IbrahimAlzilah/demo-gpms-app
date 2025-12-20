@@ -8,9 +8,9 @@ import type { Document } from '../../../types/request.types'
 import { createDocumentColumns } from './DocumentTableColumns'
 import { useDataTable } from '@/hooks/useDataTable'
 import { documentService } from '../api/document.service'
-import { DataTable, Button, Card, CardContent, CardHeader, CardTitle, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui'
+import { DataTable, Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { BlockContent, ModalDialog, StatusBadge } from '@/components/common'
-import { AlertCircle, PlusCircle, FolderOpen, File, CheckCircle2, XCircle, Clock, Calendar, AlertTriangle, Download, MessageSquare } from 'lucide-react'
+import { AlertCircle, PlusCircle, FolderOpen, CheckCircle2, XCircle, Clock, Calendar, AlertTriangle, Download, MessageSquare } from 'lucide-react'
 import { formatDate, formatFileSize } from '@/lib/utils/format'
 
 export function DocumentManagement() {
@@ -204,7 +204,6 @@ export function DocumentManagement() {
           onColumnFiltersChange={setColumnFilters}
           searchValue={globalFilter}
           onSearchChange={setGlobalFilter}
-          searchPlaceholder={t('document.searchPlaceholder')}
           rtl={rtl}
           enableFiltering={true}
           enableViews={true}
@@ -236,14 +235,8 @@ export function DocumentManagement() {
 
       {/* Document Detail Dialog */}
       {selectedDocument && (
-        <Dialog open={!!selectedDocument} onOpenChange={(open) => !open && setSelectedDocument(null)}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <File className="h-5 w-5 text-primary" />
-                {selectedDocument.fileName}
-              </DialogTitle>
-            </DialogHeader>
+        <ModalDialog open={!!selectedDocument} onOpenChange={(open) => !open && setSelectedDocument(null)} title={selectedDocument.fileName}>
+          <div className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <div className="space-y-4">
               <div className="flex items-center gap-4">
                 <StatusBadge status={`reviewStatus_${selectedDocument.reviewStatus}`} />
@@ -299,8 +292,8 @@ export function DocumentManagement() {
                 </Button>
               </div>
             </div>
-          </DialogContent>
-        </Dialog>
+          </div>
+        </ModalDialog>
       )}
     </>
   )

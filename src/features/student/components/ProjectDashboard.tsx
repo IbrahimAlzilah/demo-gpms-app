@@ -75,24 +75,20 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
 
   if (projectLoading) {
     return (
-      <Card>
-        <CardContent className="pt-6">
-          <LoadingSpinner />
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-center p-8">
+        <LoadingSpinner />
+      </div>
     )
   }
 
   if (!project) {
     return (
-      <Card className="border-destructive">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-2 text-destructive">
-            <AlertCircle className="h-5 w-5" />
-            <span>{t('followUp.projectNotFound')}</span>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex items-center gap-2 text-destructive">
+        <div className="flex items-center gap-2 text-destructive">
+          <AlertCircle className="h-5 w-5" />
+          <span>{t('followUp.projectNotFound')}</span>
+        </div>
+      </div>
     )
   }
 

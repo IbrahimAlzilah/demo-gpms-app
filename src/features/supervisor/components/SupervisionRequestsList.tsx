@@ -156,7 +156,6 @@ export function SupervisionRequestsList() {
           onColumnFiltersChange={setColumnFilters}
           searchValue={globalFilter}
           onSearchChange={setGlobalFilter}
-          searchPlaceholder={t('supervision.searchPlaceholder')}
           rtl={rtl}
           enableFiltering={true}
           enableViews={true}

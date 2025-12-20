@@ -106,7 +106,7 @@ export function RootRouter() {
 
         {/* Protected routes - Supervisor */}
         <Route
-          path="/supervisor/*"
+          path="/*"
           element={
             <ProtectedRoute>
               <RoleGuard allowedRoles={['supervisor']}>

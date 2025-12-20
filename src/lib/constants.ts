@@ -29,11 +29,11 @@ export const ROUTES = {
   },
   // Supervisor routes
   SUPERVISOR: {
-    DASHBOARD: "/supervisor/dashboard",
-    SUPERVISION_REQUESTS: "/supervisor/supervision-requests",
-    PROJECTS: "/supervisor/projects",
-    PROGRESS: "/supervisor/progress",
-    EVALUATION: "/supervisor/evaluation",
+    DASHBOARD: "/dashboard",
+    SUPERVISION_REQUESTS: "/supervision-requests",
+    PROJECTS: "/projects",
+    PROGRESS: "/progress",
+    EVALUATION: "/evaluation",
   },
   // Discussion Committee routes
   DISCUSSION_COMMITTEE: {

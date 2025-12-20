@@ -62,7 +62,6 @@ export function ProjectList() {
           onColumnFiltersChange={setColumnFilters}
           searchValue={globalFilter}
           onSearchChange={setGlobalFilter}
-          searchPlaceholder={t('supervisor.searchPlaceholder')}
           rtl={rtl}
           enableFiltering={true}
           enableViews={true}
