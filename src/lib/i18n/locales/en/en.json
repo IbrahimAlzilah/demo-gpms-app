@@ -801,7 +801,11 @@
       "message": "An unexpected error occurred"
     },
     "notFound": {
-      "title": "404 - Page Not Found"
+      "title": "404 - Page Not Found",
+      "heading": "Oops! The page you're looking for doesn't exist",
+      "message": "The page you're trying to access may have been moved, deleted, or never existed.",
+      "backHome": "Back to Home",
+      "back": "Go Back"
     },
     "unauthorized": {
       "title": "403",

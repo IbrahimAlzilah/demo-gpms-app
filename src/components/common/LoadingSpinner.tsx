@@ -13,7 +13,7 @@ const sizeClasses = {
 
 export function LoadingSpinner({ className, size = 'md' }: LoadingSpinnerProps) {
   return (
-    <div className={cn('flex items-center justify-center p-8', className)}>
+    <div className={cn('flex items-center justify-center min-h-screen p-8', className)}>
       <div
         className={cn(
           'animate-spin rounded-full border-muted border-t-primary',

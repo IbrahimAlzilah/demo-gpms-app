@@ -1,4 +1,4 @@
-import { RootRouter } from './routes/Router'
+import { RootRouter } from './routes'
 import { ThemeProvider } from './context/theme-provider.tsx'
 import { DirectionProvider } from './context/direction-provider.tsx'
 
