@@ -1,5 +1,7 @@
-import { useState, useRef } from 'react'
+import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useUploadDocument } from '../hooks/useDocuments'
 import { usePeriodCheck } from '../../../hooks/usePeriodCheck'
 import { Button } from '../../../components/ui/button'
@@ -13,6 +15,7 @@ import {
 } from '../../../components/ui/select'
 import { AlertCircle, Upload, File, Loader2, CheckCircle2, Calendar, AlertTriangle } from 'lucide-react'
 import { formatFileSize } from '../../../lib/utils/format'
+import { documentUploadSchema, type DocumentUploadSchema } from '../schema'
 import type { DocumentType } from '../../../types/request.types'
 
 interface DocumentUploadProps {
@@ -22,13 +25,26 @@ interface DocumentUploadProps {
 
 export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
   const { t } = useTranslation()
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [documentType, setDocumentType] = useState<DocumentType>('chapters')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const uploadDocument = useUploadDocument()
   const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('document_submission')
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
+  
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+    setValue,
+    reset,
+  } = useForm<DocumentUploadSchema>({
+    resolver: zodResolver(documentUploadSchema(t)),
+    defaultValues: {
+      documentType: 'chapters',
+    },
+  })
+
+  const selectedFile = watch('file')
+  const documentType = watch('documentType')
 
   const documentTypeOptions: { value: DocumentType; label: string }[] = [
     { value: 'chapters', label: t('document.type.chapters') || 'فصول المشروع' },
@@ -41,38 +57,24 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      const maxSize = 10 * 1024 * 1024 // 10MB
-      if (file.size > maxSize) {
-        setError(t('document.fileTooLarge') || `الملف كبير جداً (الحد الأقصى ${formatFileSize(maxSize)})`)
-        return
-      }
-      setSelectedFile(file)
-      setError('')
+      setValue('file', file, { shouldValidate: true })
+    } else {
+      setValue('file', undefined as any, { shouldValidate: true })
     }
   }
 
-  const handleSubmit = async () => {
+  const onSubmit = async (data: DocumentUploadSchema) => {
     if (!isPeriodActive) {
-      setError(t('document.periodClosed') || 'فترة تسليم الوثائق غير مفتوحة حالياً')
       return
     }
-
-    if (!selectedFile) {
-      setError(t('document.validation.fileRequired') || 'يرجى اختيار ملف')
-      return
-    }
-
-    setError('')
-    setSuccess(false)
 
     try {
       await uploadDocument.mutateAsync({
         projectId,
-        file: selectedFile,
-        type: documentType,
+        file: data.file,
+        type: data.documentType,
       })
-      setSuccess(true)
-      setSelectedFile(null)
+      reset()
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
@@ -80,11 +82,7 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
         onSuccess?.()
       }, 2000)
     } catch (err) {
-      setError(
-        err instanceof Error 
-          ? err.message 
-          : t('document.uploadError') || 'فشل رفع الملف'
-      )
+      // Error will be handled by react-hook-form
     }
   }
 
@@ -113,20 +111,11 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
   }
 
   return (
-    <div className="space-y-4">
-      {error && (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {errors.file && (
         <div className="flex items-start gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
           <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-          <span>{error}</span>
-        </div>
-      )}
-
-      {success && (
-        <div className="flex items-start gap-2 p-3 text-sm text-success bg-success/10 border border-success/20 rounded-md">
-          <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" />
-          <span>
-            {t('document.uploadSuccess') || 'تم رفع الملف بنجاح وسيتم مراجعته من قبل المشرف'}
-          </span>
+          <span>{errors.file.message}</span>
         </div>
       )}
 
@@ -136,9 +125,12 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
         </Label>
         <Select
           value={documentType}
-          onValueChange={(value) => setDocumentType(value as DocumentType)}
+          onValueChange={(value) => setValue('documentType', value as DocumentUploadSchema['documentType'])}
         >
-          <SelectTrigger id="documentType">
+          <SelectTrigger 
+            id="documentType"
+            className={errors.documentType ? 'border-destructive' : ''}
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -149,6 +141,12 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
             ))}
           </SelectContent>
         </Select>
+        {errors.documentType && (
+          <p className="text-sm text-destructive flex items-center gap-1">
+            <AlertCircle className="h-3 w-3" />
+            {errors.documentType.message}
+          </p>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -160,10 +158,12 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
             ref={fileInputRef}
             id="file"
             type="file"
-            onChange={handleFileChange}
+            {...register('file', {
+              onChange: handleFileChange,
+            })}
             className="flex-1 h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium"
             accept=".pdf,.doc,.docx,.zip,.rar"
-            aria-invalid={!!error}
+            aria-invalid={!!errors.file}
           />
         </div>
         {selectedFile && (
@@ -184,8 +184,8 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
       </div>
 
       <Button
-        onClick={handleSubmit}
-        disabled={!selectedFile || uploadDocument.isPending || !isPeriodActive}
+        type="submit"
+        disabled={uploadDocument.isPending || !isPeriodActive}
         className="w-full"
       >
         {uploadDocument.isPending ? (
@@ -200,7 +200,7 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
           </>
         )}
       </Button>
-    </div>
+    </form>
   )
 }
 

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useCreateRequest } from '../hooks/useRequests'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
@@ -14,13 +15,7 @@ import {
   SelectValue,
 } from '../../../components/ui/select'
 import { AlertCircle, FileCheck, Loader2, User, Users, Briefcase, MoreHorizontal } from 'lucide-react'
-import type { RequestType } from '../../../types/request.types'
-
-interface RequestFormData {
-  type: RequestType
-  reason: string
-  projectId?: string
-}
+import { requestSubmissionSchema, type RequestSubmissionSchema } from '../schema'
 
 interface RequestSubmissionFormProps {
   onSuccess?: () => void
@@ -35,7 +30,8 @@ export function RequestSubmissionForm({ onSuccess }: RequestSubmissionFormProps)
     reset,
     watch,
     setValue,
-  } = useForm<RequestFormData>({
+  } = useForm<RequestSubmissionSchema>({
+    resolver: zodResolver(requestSubmissionSchema(t)),
     defaultValues: {
       type: undefined,
       reason: '',
@@ -71,7 +67,7 @@ export function RequestSubmissionForm({ onSuccess }: RequestSubmissionFormProps)
     },
   ]
 
-  const onSubmit = async (data: RequestFormData) => {
+  const onSubmit = async (data: RequestSubmissionSchema) => {
     setError('')
     setSuccess(false)
 
@@ -152,13 +148,7 @@ export function RequestSubmissionForm({ onSuccess }: RequestSubmissionFormProps)
         </Label>
         <Textarea
           id="reason"
-          {...register('reason', {
-            required: t('request.validation.reasonRequired') || 'سبب الطلب مطلوب',
-            minLength: {
-              value: 20,
-              message: t('request.validation.reasonMinLength') || 'السبب يجب أن يكون 20 حرفاً على الأقل',
-            },
-          })}
+          {...register('reason')}
           placeholder={t('request.reasonPlaceholder') || 'اذكر سبب تقديم الطلب بالتفصيل'}
           rows={5}
           className={errors.reason ? 'border-destructive' : ''}

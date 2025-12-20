@@ -1,5 +1,6 @@
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useSubmitFinalGrade } from '../hooks/useFinalEvaluation'
 import { usePeriodCheck } from '../../../hooks/usePeriodCheck'
 import { Button } from '../../../components/ui/button'
@@ -11,6 +12,7 @@ import { useAuthStore } from '../../auth/store/auth.store'
 import { useToast } from '../../../components/common/NotificationToast'
 import { LoadingSpinner } from '../../../components/common/LoadingSpinner'
 import { AlertCircle, Award, Loader2 } from 'lucide-react'
+import { finalEvaluationSchema, type FinalEvaluationSchema } from '../schema'
 
 interface FinalEvaluationFormProps {
   projectId: string
@@ -25,41 +27,39 @@ export function FinalEvaluationForm({
 }: FinalEvaluationFormProps) {
   const { t } = useTranslation()
   const { showToast } = useToast()
-  const [score, setScore] = useState('')
-  const [maxScore, setMaxScore] = useState('100')
-  const [comments, setComments] = useState('')
   const submitGrade = useSubmitFinalGrade()
   const { user } = useAuthStore()
   const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('committee_evaluation')
-  const [error, setError] = useState('')
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<FinalEvaluationSchema>({
+    resolver: zodResolver(finalEvaluationSchema(t)),
+    defaultValues: {
+      score: '',
+      maxScore: '100',
+      comments: '',
+    },
+  })
 
+  const onSubmit = async (data: FinalEvaluationSchema) => {
     if (!isPeriodActive) {
       const errorMsg = t('discussion.evaluationPeriodClosed') || 'فترة التقييم قد انتهت'
-      setError(errorMsg)
-      showToast(errorMsg, 'error')
-      return
-    }
-
-    const scoreNum = parseFloat(score)
-    const maxScoreNum = parseFloat(maxScore)
-
-    if (isNaN(scoreNum) || isNaN(maxScoreNum) || scoreNum < 0 || scoreNum > maxScoreNum) {
-      const errorMsg = t('discussion.invalidScore') || 'الدرجة غير صالحة'
-      setError(errorMsg)
       showToast(errorMsg, 'error')
       return
     }
 
     if (!user) {
       const errorMsg = t('discussion.userNotFound') || 'المستخدم غير معروف'
-      setError(errorMsg)
       showToast(errorMsg, 'error')
       return
     }
+
+    const scoreNum = parseFloat(data.score)
+    const maxScoreNum = parseFloat(data.maxScore)
 
     try {
       await submitGrade.mutateAsync({
@@ -69,17 +69,15 @@ export function FinalEvaluationForm({
           score: scoreNum,
           maxScore: maxScoreNum,
           criteria: {},
-          comments: comments || undefined,
+          comments: data.comments || undefined,
         },
         committeeMembers: [user.id], // In real app, get from committee assignment
       })
       showToast(t('discussion.evaluationSaved') || 'تم حفظ التقييم بنجاح', 'success')
-      setScore('')
-      setComments('')
+      reset()
       onSuccess?.()
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : t('discussion.evaluationError') || 'فشل حفظ التقييم'
-      setError(errorMsg)
       showToast(errorMsg, 'error')
     }
   }
@@ -123,11 +121,11 @@ export function FinalEvaluationForm({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {errors.score && (
             <div className="flex items-start gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
               <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-              <span>{error}</span>
+              <span>{errors.score.message}</span>
             </div>
           )}
 
@@ -137,13 +135,18 @@ export function FinalEvaluationForm({
               <Input
                 id="score"
                 type="number"
-                value={score}
-                onChange={(e) => setScore(e.target.value)}
+                {...register('score')}
                 min="0"
-                max={maxScore}
-                required
                 placeholder="0"
+                className={errors.score ? 'border-destructive' : ''}
+                aria-invalid={!!errors.score}
               />
+              {errors.score && (
+                <p className="text-sm text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.score.message}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -151,12 +154,18 @@ export function FinalEvaluationForm({
               <Input
                 id="maxScore"
                 type="number"
-                value={maxScore}
-                onChange={(e) => setMaxScore(e.target.value)}
+                {...register('maxScore')}
                 min="0"
-                required
                 placeholder="100"
+                className={errors.maxScore ? 'border-destructive' : ''}
+                aria-invalid={!!errors.maxScore}
               />
+              {errors.maxScore && (
+                <p className="text-sm text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.maxScore.message}
+                </p>
+              )}
             </div>
           </div>
 
@@ -164,8 +173,7 @@ export function FinalEvaluationForm({
             <Label htmlFor="comments">{t('discussion.comments') || 'ملاحظات'} ({t('common.optional') || 'اختياري'})</Label>
             <Textarea
               id="comments"
-              value={comments}
-              onChange={(e) => setComments(e.target.value)}
+              {...register('comments')}
               placeholder={t('discussion.commentsPlaceholder') || 'أدخل ملاحظاتك حول التقييم'}
               rows={4}
             />

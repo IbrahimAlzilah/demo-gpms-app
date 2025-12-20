@@ -1,0 +1,2 @@
+export * from "./student.schema";
+

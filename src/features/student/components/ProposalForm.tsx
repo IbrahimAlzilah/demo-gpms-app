@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
 import { useCreateProposal } from '../hooks/useProposals'
 import { useAuthStore } from '../../auth/store/auth.store'
@@ -12,15 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { FileUpload } from '@/components/common/FileUpload'
 import { AlertCircle, FileText, Loader2, Calendar, AlertTriangle } from 'lucide-react'
-import type { Proposal } from '@/types/project.types'
-
-interface ProposalFormData {
-  title: string
-  description: string
-  objectives: string
-  methodology?: string
-  expectedOutcomes?: string
-}
+import { proposalSchema, type ProposalSchema } from '../schema'
 
 interface ProposalFormProps {
   onSuccess?: () => void
@@ -40,7 +33,8 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
     formState: { errors },
     reset,
     watch,
-  } = useForm<ProposalFormData>({
+  } = useForm<ProposalSchema>({
+    resolver: zodResolver(proposalSchema(t)),
     defaultValues: {
       title: '',
       description: '',
@@ -54,7 +48,7 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
   const description = watch('description')
   const objectives = watch('objectives')
 
-  const onSubmit = async (data: ProposalFormData) => {
+  const onSubmit = async (data: ProposalSchema) => {
     if (!user) {
       setError(t('proposal.authRequired') || 'يجب تسجيل الدخول أولاً')
       return
@@ -160,17 +154,7 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
             </Label>
             <Input
               id="title"
-              {...register('title', {
-                required: t('proposal.validation.titleRequired') || 'عنوان المقترح مطلوب',
-                minLength: {
-                  value: 5,
-                  message: t('proposal.validation.titleMinLength') || 'العنوان يجب أن يكون 5 أحرف على الأقل',
-                },
-                maxLength: {
-                  value: 200,
-                  message: t('proposal.validation.titleMaxLength') || 'العنوان يجب أن يكون أقل من 200 حرف',
-                },
-              })}
+              {...register('title')}
               placeholder={t('proposal.titlePlaceholder') || 'أدخل عنوان المقترح'}
               className={errors.title ? 'border-destructive' : ''}
               aria-invalid={!!errors.title}
@@ -192,13 +176,7 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
             </Label>
             <Textarea
               id="description"
-              {...register('description', {
-                required: t('proposal.validation.descriptionRequired') || 'الوصف مطلوب',
-                minLength: {
-                  value: 50,
-                  message: t('proposal.validation.descriptionMinLength') || 'الوصف يجب أن يكون 50 حرفاً على الأقل',
-                },
-              })}
+              {...register('description')}
               placeholder={t('proposal.descriptionPlaceholder') || 'أدخل وصفاً مفصلاً للمقترح'}
               rows={5}
               className={errors.description ? 'border-destructive' : ''}
@@ -221,13 +199,7 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
             </Label>
             <Textarea
               id="objectives"
-              {...register('objectives', {
-                required: t('proposal.validation.objectivesRequired') || 'الأهداف مطلوبة',
-                minLength: {
-                  value: 30,
-                  message: t('proposal.validation.objectivesMinLength') || 'الأهداف يجب أن تكون 30 حرفاً على الأقل',
-                },
-              })}
+              {...register('objectives')}
               placeholder={t('proposal.objectivesPlaceholder') || 'اذكر أهداف المشروع'}
               rows={4}
               className={errors.objectives ? 'border-destructive' : ''}

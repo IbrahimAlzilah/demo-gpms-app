@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import {
   useMyGroup,
   useRemoveGroupMember,
@@ -18,6 +20,7 @@ import { LoadingSpinner } from '../../../components/common/LoadingSpinner'
 import { useAuthStore } from '../../auth/store/auth.store'
 import { AlertCircle, Users, UserPlus, UserMinus, Mail, Crown, Loader2, CheckCircle2, XCircle } from 'lucide-react'
 import { formatRelativeTime } from '../../../lib/utils/format'
+import { groupInviteSchema, groupJoinSchema, type GroupInviteSchema, type GroupJoinSchema } from '../schema'
 
 export function GroupManagement() {
   const { t } = useTranslation()
@@ -33,19 +36,43 @@ export function GroupManagement() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [showInviteForm, setShowInviteForm] = useState(false)
-  const [inviteeId, setInviteeId] = useState('')
-  const [inviteMessage, setInviteMessage] = useState('')
   const [showJoinForm, setShowJoinForm] = useState(false)
-  const [joinGroupId, setJoinGroupId] = useState('')
 
-  const handleInvite = async () => {
-    if (!group || !inviteeId.trim()) {
-      setError(t('group.validation.studentIdRequired'))
+  // Invite form
+  const {
+    register: registerInvite,
+    handleSubmit: handleInviteSubmit,
+    formState: { errors: inviteErrors },
+    reset: resetInvite,
+  } = useForm<GroupInviteSchema>({
+    resolver: zodResolver(groupInviteSchema(t)),
+    defaultValues: {
+      inviteeId: '',
+      message: '',
+    },
+  })
+
+  // Join form
+  const {
+    register: registerJoin,
+    handleSubmit: handleJoinSubmit,
+    formState: { errors: joinErrors },
+    reset: resetJoin,
+  } = useForm<GroupJoinSchema>({
+    resolver: zodResolver(groupJoinSchema(t)),
+    defaultValues: {
+      joinGroupId: '',
+    },
+  })
+
+  const handleInvite = async (data: GroupInviteSchema) => {
+    if (!group) {
+      setError(t('group.validation.groupRequired') || 'المجموعة مطلوبة')
       return
     }
 
     if (group.members.length >= group.maxMembers) {
-      setError(t('group.fullCapacity'))
+      setError(t('group.fullCapacity') || 'المجموعة ممتلئة')
       return
     }
 
@@ -54,33 +81,27 @@ export function GroupManagement() {
     try {
       await inviteMember.mutateAsync({
         groupId: group.id,
-        inviteeId: inviteeId.trim(),
-        message: inviteMessage.trim() || undefined,
+        inviteeId: data.inviteeId,
+        message: data.message?.trim() || undefined,
       })
-      setInviteeId('')
-      setInviteMessage('')
+      resetInvite()
       setShowInviteForm(false)
-      setSuccess(t('group.inviteSuccess'))
+      setSuccess(t('group.inviteSuccess') || 'تم إرسال الدعوة بنجاح')
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('group.inviteError'))
+      setError(err instanceof Error ? err.message : t('group.inviteError') || 'فشل إرسال الدعوة')
     }
   }
 
-  const handleJoin = async () => {
-    if (!joinGroupId.trim()) {
-      setError(t('group.validation.groupIdRequired'))
-      return
-    }
-
+  const handleJoin = async (data: GroupJoinSchema) => {
     setError('')
     setSuccess('')
     try {
-      await joinGroup.mutateAsync(joinGroupId.trim())
-      setJoinGroupId('')
+      await joinGroup.mutateAsync(data.joinGroupId)
+      resetJoin()
       setShowJoinForm(false)
-      setSuccess(t('group.joinSuccess'))
+      setSuccess(t('group.joinSuccess') || 'تم الانضمام للمجموعة بنجاح')
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('group.joinError'))
+      setError(err instanceof Error ? err.message : t('group.joinError') || 'فشل الانضمام للمجموعة')
     }
   }
 
@@ -228,25 +249,28 @@ export function GroupManagement() {
           </Button>
 
           {showJoinForm && (
-            <div className="mt-4 space-y-3">
+            <form onSubmit={handleJoinSubmit(handleJoin)} className="mt-4 space-y-3">
               <div>
                 <Label htmlFor="joinGroupId">
                   {t('group.groupId')} <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="joinGroupId"
-                  value={joinGroupId}
-                  onChange={(e) => {
-                    setJoinGroupId(e.target.value)
-                    setError('')
-                  }}
+                  {...registerJoin('joinGroupId')}
                   placeholder={t('group.groupIdPlaceholder')}
-                  className={error ? 'border-destructive' : ''}
+                  className={joinErrors.joinGroupId ? 'border-destructive' : ''}
+                  aria-invalid={!!joinErrors.joinGroupId}
                 />
+                {joinErrors.joinGroupId && (
+                  <p className="text-sm text-destructive flex items-center gap-1 mt-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {joinErrors.joinGroupId.message}
+                  </p>
+                )}
               </div>
               <Button
-                onClick={handleJoin}
-                disabled={joinGroup.isPending || !joinGroupId.trim()}
+                type="submit"
+                disabled={joinGroup.isPending}
                 className="w-full"
               >
                 {joinGroup.isPending ? (
@@ -261,7 +285,7 @@ export function GroupManagement() {
                   </>
                 )}
               </Button>
-            </div>
+            </form>
           )}
         </div>
       </div>
@@ -491,21 +515,24 @@ export function GroupManagement() {
               </Button>
 
               {showInviteForm && (
-                <div className="mt-4 space-y-3">
+                <form onSubmit={handleInviteSubmit(handleInvite)} className="mt-4 space-y-3">
                   <div>
                     <Label htmlFor="inviteeId">
                       {t('group.studentId')} <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id="inviteeId"
-                      value={inviteeId}
-                      onChange={(e) => {
-                        setInviteeId(e.target.value)
-                        setError('')
-                      }}
+                      {...registerInvite('inviteeId')}
                       placeholder={t('group.studentIdPlaceholder')}
-                      className={error ? 'border-destructive' : ''}
+                      className={inviteErrors.inviteeId ? 'border-destructive' : ''}
+                      aria-invalid={!!inviteErrors.inviteeId}
                     />
+                    {inviteErrors.inviteeId && (
+                      <p className="text-sm text-destructive flex items-center gap-1 mt-1">
+                        <AlertCircle className="h-3 w-3" />
+                        {inviteErrors.inviteeId.message}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <Label htmlFor="inviteMessage">
@@ -513,15 +540,14 @@ export function GroupManagement() {
                     </Label>
                     <Textarea
                       id="inviteMessage"
-                      value={inviteMessage}
-                      onChange={(e) => setInviteMessage(e.target.value)}
+                      {...registerInvite('message')}
                       placeholder={t('group.messagePlaceholder')}
                       rows={3}
                     />
                   </div>
                   <Button
-                    onClick={handleInvite}
-                    disabled={inviteMember.isPending || !inviteeId.trim()}
+                    type="submit"
+                    disabled={inviteMember.isPending}
                     className="w-full"
                   >
                     {inviteMember.isPending ? (
@@ -536,7 +562,7 @@ export function GroupManagement() {
                       </>
                     )}
                   </Button>
-                </div>
+                </form>
               )}
             </div>
           )}
@@ -545,4 +571,5 @@ export function GroupManagement() {
     </div>
   )
 }
+
 

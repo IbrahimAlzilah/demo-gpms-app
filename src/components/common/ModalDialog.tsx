@@ -35,13 +35,13 @@ export function ModalDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className={`!p-0 ${sizeClasses[size]} ${className}`}>
-        <DialogHeader className={`p-5 !pb-1 ${headerClassName}`}>
+      <DialogContent className={`p-0! ${sizeClasses[size]} ${className}`}>
+        <DialogHeader className={`p-5 pb-1! ${headerClassName}`}>
           <DialogTitle className='text-base font-bold'>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
         <Separator />
-        <div className='flex-1 overflow-y-auto p-5 !pt-0 overflow-x-hidden'>{children}</div>
+        <div className='flex-1 overflow-y-auto p-5 pt-0! overflow-x-hidden'>{children}</div>
       </DialogContent>
     </Dialog>
   );

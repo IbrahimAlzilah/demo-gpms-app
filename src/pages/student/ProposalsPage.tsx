@@ -5,9 +5,7 @@ export function ProposalsPage() {
 
   return (
     <MainLayout>
-      <div className="space-y-6">
-        <ProposalManagement />
-      </div>
+      <ProposalManagement />
     </MainLayout>
   )
 }

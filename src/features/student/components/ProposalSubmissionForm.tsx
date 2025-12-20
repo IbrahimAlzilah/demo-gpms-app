@@ -1,29 +1,33 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useTranslation } from 'react-i18next'
 import { useCreateProposal } from '../hooks/useProposals'
 import { usePeriodCheck } from '../../../hooks/usePeriodCheck'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
 import { Textarea } from '../../../components/ui/textarea'
-import type { Proposal } from '../../../types/project.types'
-
-interface ProposalFormData {
-  title: string
-  description: string
-  objectives: string
-  methodology?: string
-  expectedOutcomes?: string
-}
+import { proposalSchema, type ProposalSchema } from '../schema'
 
 export function ProposalSubmissionForm() {
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<ProposalFormData>()
+  const { t } = useTranslation()
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<ProposalSchema>({
+    resolver: zodResolver(proposalSchema(t)),
+    defaultValues: {
+      title: '',
+      description: '',
+      objectives: '',
+      methodology: '',
+      expectedOutcomes: '',
+    },
+  })
   const createProposal = useCreateProposal()
   const { isPeriodActive } = usePeriodCheck('proposal_submission')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
 
-  const onSubmit = async (data: ProposalFormData) => {
+  const onSubmit = async (data: ProposalSchema) => {
     if (!isPeriodActive) {
       setError('فترة تقديم المقترحات غير مفتوحة حالياً')
       return
@@ -67,40 +71,49 @@ export function ProposalSubmissionForm() {
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="title">عنوان المشروع *</Label>
+        <Label htmlFor="title">{t('proposal.title') || 'عنوان المشروع'} *</Label>
         <Input
           id="title"
-          {...register('title', { required: 'عنوان المشروع مطلوب' })}
-          placeholder="أدخل عنوان المشروع"
+          {...register('title')}
+          placeholder={t('proposal.titlePlaceholder') || 'أدخل عنوان المشروع'}
+          className={errors.title ? 'border-destructive' : ''}
         />
         {errors.title && (
-          <p className="text-sm text-destructive">{errors.title.message}</p>
+          <p className="text-sm text-destructive flex items-center gap-1">
+            <span>{errors.title.message}</span>
+          </p>
         )}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="description">وصف المشروع *</Label>
+        <Label htmlFor="description">{t('proposal.description') || 'وصف المشروع'} *</Label>
         <Textarea
           id="description"
-          {...register('description', { required: 'وصف المشروع مطلوب' })}
-          placeholder="أدخل وصفاً مفصلاً للمشروع"
+          {...register('description')}
+          placeholder={t('proposal.descriptionPlaceholder') || 'أدخل وصفاً مفصلاً للمشروع'}
           rows={5}
+          className={errors.description ? 'border-destructive' : ''}
         />
         {errors.description && (
-          <p className="text-sm text-destructive">{errors.description.message}</p>
+          <p className="text-sm text-destructive flex items-center gap-1">
+            <span>{errors.description.message}</span>
+          </p>
         )}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="objectives">أهداف المشروع *</Label>
+        <Label htmlFor="objectives">{t('proposal.objectives') || 'أهداف المشروع'} *</Label>
         <Textarea
           id="objectives"
-          {...register('objectives', { required: 'أهداف المشروع مطلوبة' })}
-          placeholder="اذكر أهداف المشروع"
+          {...register('objectives')}
+          placeholder={t('proposal.objectivesPlaceholder') || 'اذكر أهداف المشروع'}
           rows={4}
+          className={errors.objectives ? 'border-destructive' : ''}
         />
         {errors.objectives && (
-          <p className="text-sm text-destructive">{errors.objectives.message}</p>
+          <p className="text-sm text-destructive flex items-center gap-1">
+            <span>{errors.objectives.message}</span>
+          </p>
         )}
       </div>
 

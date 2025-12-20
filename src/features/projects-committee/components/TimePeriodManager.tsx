@@ -1,68 +1,49 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { usePeriods, useCreatePeriod } from '../hooks/usePeriods'
-import { Button } from '../../../components/ui/button'
-import { Input } from '../../../components/ui/input'
-import { Label } from '../../../components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../../../components/ui/select'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
-import { LoadingSpinner } from '../../../components/common/LoadingSpinner'
-import { useToast } from '../../../components/common/NotificationToast'
+import { Button, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
+import { LoadingSpinner } from '@/components/common'
+import { useToast } from '@/components/common'
 import { AlertCircle, CheckCircle2, Calendar, Loader2 } from 'lucide-react'
-import { formatDate } from '../../../lib/utils/format'
-import { StatusBadge } from '../../../components/common/StatusBadge'
-import type { PeriodType } from '../../../types/period.types'
-
-interface PeriodFormData {
-  name: string
-  type: PeriodType
-  startDate: string
-  endDate: string
-  academicYear?: string
-  semester?: string
-}
+import { formatDate } from '@/lib/utils/format'
+import { StatusBadge } from '@/components/common'
+import { timePeriodSchema, type TimePeriodSchema } from '../schema'
+import type { PeriodType } from '@/types/period.types'
 
 export function TimePeriodManager() {
   const { t } = useTranslation()
   const { showToast } = useToast()
   const { data: periods, isLoading } = usePeriods()
   const createPeriod = useCreatePeriod()
-  const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<PeriodFormData>()
-  const [error, setError] = useState('')
+  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<TimePeriodSchema>({
+    resolver: zodResolver(timePeriodSchema(t)),
+    defaultValues: {
+      name: '',
+      type: undefined as PeriodType | undefined,
+      startDate: '',
+      endDate: '',
+      academicYear: '',
+      semester: '',
+    },
+  })
   const [success, setSuccess] = useState(false)
 
-  const selectedType = watch('type')
-
-  const onSubmit = async (data: PeriodFormData) => {
-    setError('')
+  const onSubmit = async (data: TimePeriodSchema) => {
     setSuccess(false)
-
-    if (new Date(data.startDate) >= new Date(data.endDate)) {
-      const errorMsg = t('committee.periods.invalidDateRange') || 'تاريخ البداية يجب أن يكون قبل تاريخ النهاية'
-      setError(errorMsg)
-      showToast(errorMsg, 'error')
-      return
-    }
 
     try {
       await createPeriod.mutateAsync({
         ...data,
         isActive: true,
-        createdBy: '', // Will be set by service
       })
       setSuccess(true)
       showToast(t('committee.periods.periodCreated') || 'تم إعلان الفترة الزمنية بنجاح', 'success')
       reset()
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : t('committee.periods.createError') || 'فشل إنشاء الفترة'
-      setError(errorMsg)
+      const errorMsg = err instanceof Error ? err.message : t('committee.periods.createError')
       showToast(errorMsg, 'error')
     }
   }
@@ -72,12 +53,12 @@ export function TimePeriodManager() {
   }
 
   const periodTypeOptions = [
-    { value: 'proposal_submission', label: t('committee.periods.types.proposalSubmission') || 'تقديم المقترحات' },
-    { value: 'project_registration', label: t('committee.periods.types.projectRegistration') || 'التسجيل في المشاريع' },
-    { value: 'document_submission', label: t('committee.periods.types.documentSubmission') || 'تسليم الوثائق' },
-    { value: 'supervisor_evaluation', label: t('committee.periods.types.supervisorEvaluation') || 'تقييم المشرف' },
-    { value: 'committee_evaluation', label: t('committee.periods.types.committeeEvaluation') || 'تقييم اللجنة' },
-    { value: 'final_discussion', label: t('committee.periods.types.finalDiscussion') || 'المناقشة النهائية' },
+    { value: 'proposal_submission', label: t('committee.periods.types.proposalSubmission') },
+    { value: 'project_registration', label: t('committee.periods.types.projectRegistration') },
+    { value: 'document_submission', label: t('committee.periods.types.documentSubmission') },
+    { value: 'supervisor_evaluation', label: t('committee.periods.types.supervisorEvaluation') },
+    { value: 'committee_evaluation', label: t('committee.periods.types.committeeEvaluation') },
+    { value: 'final_discussion', label: t('committee.periods.types.finalDiscussion') },
   ]
 
   return (
@@ -86,31 +67,26 @@ export function TimePeriodManager() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary" />
-            {t('committee.periods.createNew') || 'إعلان فترة زمنية جديدة'}
+            {t('committee.periods.createNew')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {error && (
-              <div className="flex items-start gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
-                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
-
             {success && (
               <div className="flex items-start gap-2 p-3 text-sm text-success bg-success/10 border border-success/20 rounded-md">
                 <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" />
-                <span>{t('committee.periods.periodCreated') || 'تم إعلان الفترة الزمنية بنجاح'}</span>
+                <span>{t('committee.periods.periodCreated')}</span>
               </div>
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="name">{t('committee.periods.name') || 'اسم الفترة'} *</Label>
+              <Label htmlFor="name">{t('committee.periods.name')} *</Label>
               <Input
                 id="name"
-                {...register('name', { required: t('committee.periods.nameRequired') || 'اسم الفترة مطلوب' })}
-                placeholder={t('committee.periods.namePlaceholder') || 'مثال: فترة تقديم المقترحات'}
+                {...register('name')}
+                placeholder={t('committee.periods.namePlaceholder')}
+                className={errors.name ? 'border-destructive' : ''}
+                aria-invalid={!!errors.name}
               />
               {errors.name && (
                 <p className="text-sm text-destructive flex items-center gap-1">
@@ -121,13 +97,16 @@ export function TimePeriodManager() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="type">{t('committee.periods.type') || 'نوع الفترة'} *</Label>
+              <Label htmlFor="type">{t('committee.periods.type')} *</Label>
               <Select
-                onValueChange={(value: PeriodType) => setValue('type', value)}
+                onValueChange={(value) => setValue('type', value as TimePeriodSchema['type'])}
                 defaultValue=""
               >
-                <SelectTrigger id="type">
-                  <SelectValue placeholder={t('committee.periods.selectType') || 'اختر نوع الفترة'} />
+                <SelectTrigger
+                  id="type"
+                  className={errors.type ? 'border-destructive' : ''}
+                >
+                  <SelectValue placeholder={t('committee.periods.selectType')} />
                 </SelectTrigger>
                 <SelectContent>
                   {periodTypeOptions.map((option) => (
@@ -147,11 +126,13 @@ export function TimePeriodManager() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="startDate">{t('committee.periods.startDate') || 'تاريخ البداية'} *</Label>
+                <Label htmlFor="startDate">{t('committee.periods.startDate')} *</Label>
                 <Input
                   id="startDate"
                   type="date"
-                  {...register('startDate', { required: t('committee.periods.startDateRequired') || 'تاريخ البداية مطلوب' })}
+                  {...register('startDate')}
+                  className={errors.startDate ? 'border-destructive' : ''}
+                  aria-invalid={!!errors.startDate}
                 />
                 {errors.startDate && (
                   <p className="text-sm text-destructive flex items-center gap-1">
@@ -162,11 +143,13 @@ export function TimePeriodManager() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="endDate">{t('committee.periods.endDate') || 'تاريخ النهاية'} *</Label>
+                <Label htmlFor="endDate">{t('committee.periods.endDate')} *</Label>
                 <Input
                   id="endDate"
                   type="date"
-                  {...register('endDate', { required: t('committee.periods.endDateRequired') || 'تاريخ النهاية مطلوب' })}
+                  {...register('endDate')}
+                  className={errors.endDate ? 'border-destructive' : ''}
+                  aria-invalid={!!errors.endDate}
                 />
                 {errors.endDate && (
                   <p className="text-sm text-destructive flex items-center gap-1">
@@ -188,7 +171,7 @@ export function TimePeriodManager() {
                   {t('common.saving')}
                 </>
               ) : (
-                t('committee.periods.announcePeriod') || 'إعلان الفترة'
+                t('committee.periods.announcePeriod')
               )}
             </Button>
           </form>
@@ -198,7 +181,7 @@ export function TimePeriodManager() {
       {periods && periods.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>{t('committee.periods.currentPeriods') || 'الفترات الزمنية الحالية'}</CardTitle>
+            <CardTitle>{t('committee.periods.currentPeriods')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -215,7 +198,7 @@ export function TimePeriodManager() {
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
-                    {t('committee.periods.type')}: {periodTypeOptions.find(opt => opt.value === period.type)?.label || period.type}
+                    {t('committee.periods.type')}: {periodTypeOptions.find(opt => opt.value === period.type)?.label}
                   </p>
                 </div>
               ))}

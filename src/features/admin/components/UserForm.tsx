@@ -1,4 +1,5 @@
 import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
 import { useCreateUser, useUpdateUser } from '../hooks/useUsers'
 import { Button } from '../../../components/ui/button'
@@ -13,16 +14,7 @@ import {
 } from '../../../components/ui/select'
 import { AlertCircle, Loader2, UserPlus, UserCog } from 'lucide-react'
 import type { User, UserRole, UserStatus } from '../../../types/user.types'
-
-interface UserFormData {
-  name: string
-  email: string
-  role: UserRole
-  status: UserStatus
-  studentId?: string
-  department?: string
-  phone?: string
-}
+import { userSchema, type UserSchema } from '../schema'
 
 interface UserFormProps {
   user?: User | null
@@ -38,7 +30,8 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
     formState: { errors },
     setValue,
     watch,
-  } = useForm<UserFormData>({
+  } = useForm<UserSchema>({
+    resolver: zodResolver(userSchema(t)),
     defaultValues: user
       ? {
           name: user.name,
@@ -59,7 +52,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
   const selectedRole = watch('role')
   const selectedStatus = watch('status')
 
-  const onSubmit = async (data: UserFormData) => {
+  const onSubmit = async (data: UserSchema) => {
     try {
       if (isEditing && user) {
         await updateUser.mutateAsync({ id: user.id, data })
@@ -114,13 +107,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
           </Label>
           <Input
             id="name"
-            {...register('name', {
-              required: t('user.validation.nameRequired') || 'الاسم مطلوب',
-              minLength: {
-                value: 2,
-                message: t('user.validation.nameMinLength') || 'الاسم يجب أن يكون حرفين على الأقل',
-              },
-            })}
+            {...register('name')}
             className={errors.name ? 'border-destructive' : ''}
             aria-invalid={!!errors.name}
           />
@@ -139,13 +126,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
           <Input
             id="email"
             type="email"
-            {...register('email', {
-              required: t('user.validation.emailRequired') || 'البريد الإلكتروني مطلوب',
-              pattern: {
-                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                message: t('user.validation.emailInvalid') || 'البريد الإلكتروني غير صحيح',
-              },
-            })}
+            {...register('email')}
             className={errors.email ? 'border-destructive' : ''}
             aria-invalid={!!errors.email}
             disabled={isEditing}
@@ -251,12 +232,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
         <Input
           id="phone"
           type="tel"
-          {...register('phone', {
-            pattern: {
-              value: /^[0-9+\-\s()]+$/,
-              message: t('user.validation.phoneInvalid') || 'رقم الهاتف غير صحيح',
-            },
-          })}
+          {...register('phone')}
           placeholder={t('user.phonePlaceholder') || 'رقم الهاتف (اختياري)'}
           className={errors.phone ? 'border-destructive' : ''}
         />

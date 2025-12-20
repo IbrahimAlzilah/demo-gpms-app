@@ -8,11 +8,9 @@ import type { Document } from '../../../types/request.types'
 import { createDocumentColumns } from './DocumentTableColumns'
 import { useDataTable } from '@/hooks/useDataTable'
 import { documentService } from '../api/document.service'
-import { DataTable, Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
-import { BlockContent, ModalDialog } from '@/components/common'
-import { AlertCircle, PlusCircle, FolderOpen, Upload, File, CheckCircle2, XCircle, Clock, Calendar, AlertTriangle, Download, MessageSquare } from 'lucide-react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { StatusBadge } from '@/components/common/StatusBadge'
+import { DataTable, Button, Card, CardContent, CardHeader, CardTitle, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui'
+import { BlockContent, ModalDialog, StatusBadge } from '@/components/common'
+import { AlertCircle, PlusCircle, FolderOpen, File, CheckCircle2, XCircle, Clock, Calendar, AlertTriangle, Download, MessageSquare } from 'lucide-react'
 import { formatDate, formatFileSize } from '@/lib/utils/format'
 
 export function DocumentManagement() {
@@ -30,7 +28,9 @@ export function DocumentManagement() {
   // Set default project if user has one
   useEffect(() => {
     if (!selectedProjectId && userProject) {
-      setSelectedProjectId(userProject.id)
+      setTimeout(() => {
+        setSelectedProjectId(userProject.id)
+      }, 0)
     }
   }, [selectedProjectId, userProject])
 
@@ -49,7 +49,7 @@ export function DocumentManagement() {
     setPagination,
     rtl,
   } = useDataTable({
-    queryKey: ['student-documents-table', selectedProjectId],
+    queryKey: ['student-documents-table', selectedProjectId || ''],
     queryFn: (params) => documentService.getTableData(params, selectedProjectId),
     initialPageSize: 10,
     enableServerSide: true,
@@ -76,9 +76,9 @@ export function DocumentManagement() {
 
     return {
       total: documents.length,
-      pending: documents.filter((d) => d.reviewStatus === 'pending').length,
-      approved: documents.filter((d) => d.reviewStatus === 'approved').length,
-      rejected: documents.filter((d) => d.reviewStatus === 'rejected').length,
+      pending: documents.filter((d: Document) => d.reviewStatus === 'pending').length,
+      approved: documents.filter((d: Document) => d.reviewStatus === 'approved').length,
+      rejected: documents.filter((d: Document) => d.reviewStatus === 'rejected').length,
     }
   }, [documents])
 
@@ -138,8 +138,8 @@ export function DocumentManagement() {
           <CardTitle>{t('document.currentProject')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="font-medium">{userProject.title}</p>
-          <p className="text-sm text-muted-foreground line-clamp-2">{userProject.description}</p>
+          <p className="font-medium">{userProject?.title}</p>
+          <p className="text-sm text-muted-foreground line-clamp-2">{userProject?.description}</p>
         </CardContent>
       </Card>
 
