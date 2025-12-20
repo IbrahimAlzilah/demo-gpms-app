@@ -5,8 +5,7 @@ import { ROUTES } from '../lib/constants'
 
 // Public pages
 import { LoginPage } from '../pages/auth/LoginPage'
-import { LogoutPage } from '../pages/auth/LogoutPage'
-import { PasswordRecoveryPage } from '../pages/auth/PasswordRecoveryPage'
+import { PasswordRecoveryPage } from '../pages/auth/ForgetPasswordPage'
 import { UnauthorizedPage } from '../pages/unauthorized/UnauthorizedPage'
 import { NotFoundPage } from '../pages/not-found/NotFoundPage'
 
@@ -52,10 +51,7 @@ export function RootRouter() {
     <BrowserRouter>
       <Routes>
         {/* Public routes */}
-        <Route path={ROUTES.HOME} element={<LoginPage />} />
-        <Route path={ROUTES.ABOUT} element={<LoginPage />} />
         <Route path={ROUTES.LOGIN} element={<LoginPage />} />
-        <Route path={ROUTES.LOGOUT} element={<LogoutPage />} />
         <Route path="/recover-password" element={<PasswordRecoveryPage />} />
         <Route path={ROUTES.UNAUTHORIZED} element={<UnauthorizedPage />} />
 

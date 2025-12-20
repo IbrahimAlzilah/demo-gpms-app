@@ -1,81 +1,47 @@
 import { useState } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useAuthStore } from '../store/auth.store'
-import { mockAuthService } from '../../../lib/mock/auth.mock'
-import { Button, Input, Label } from '../../../components/ui'
-import { ROUTES } from '../../../lib/constants'
-import { useToast } from '../../../components/common/NotificationToast'
+import { mockAuthService } from '@/lib/mock/auth.mock'
+import { Button, Input, Label } from '@/components/ui'
+import { ROUTES } from '@/lib/constants'
+import { useToast } from '@/components/common/NotificationToast'
 import { AlertCircle, Eye, EyeOff, Loader2, LogIn } from 'lucide-react'
-import type { LoginCredentials } from '../types/auth.types'
+import { authSchema, type AuthSchema } from '../schema/auth.schema'
+import logo from '@/assets/logo2.png'
 
 export function LoginForm() {
   const { t } = useTranslation()
   const { showToast } = useToast()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [emailError, setEmailError] = useState('')
-  const [passwordError, setPasswordError] = useState('')
   const { login } = useAuthStore()
   const navigate = useNavigate()
   const location = useLocation()
 
   const from = (location.state as { from?: Location })?.from?.pathname || '/'
 
-  const validateEmail = (value: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!value) {
-      setEmailError(t('auth.validation.emailRequired'))
-      return false
-    }
-    if (!emailRegex.test(value)) {
-      setEmailError(t('auth.validation.emailInvalid'))
-      return false
-    }
-    setEmailError('')
-    return true
-  }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<AuthSchema>({
+    resolver: zodResolver(authSchema(t)),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  })
 
-  const validatePassword = (value: string): boolean => {
-    if (!value) {
-      setPasswordError(t('auth.validation.passwordRequired'))
-      return false
-    }
-    if (value.length < 6) {
-      setPasswordError(t('auth.validation.passwordMinLength'))
-      return false
-    }
-    setPasswordError('')
-    return true
-  }
-
-  const handleEmailBlur = () => {
-    validateEmail(email)
-  }
-
-  const handlePasswordBlur = () => {
-    validatePassword(password)
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const onSubmit = async (data: AuthSchema) => {
     setError('')
-
-    const isEmailValid = validateEmail(email)
-    const isPasswordValid = validatePassword(password)
-
-    if (!isEmailValid || !isPasswordValid) {
-      return
-    }
-
     setIsLoading(true)
 
     try {
-      const credentials: LoginCredentials = { email, password }
-      const response = await mockAuthService.login(credentials)
+      const response = await mockAuthService.login(data)
       login(response.user, response.token, response.permissions)
 
       // Redirect based on role
@@ -103,7 +69,7 @@ export function LoginForm() {
     <div className="w-full space-y-6">
       <div className="text-center">
         <div className="flex justify-center mb-4">
-          <img src="/src/assets/logo2.png" alt="GPMS Logo" className="h-16 w-16 object-contain" />
+          <img src={logo} alt="GPMS Logo" className="h-16 w-16 object-contain" />
         </div>
         <h2 className="text-2xl font-bold">{t('auth.login')}</h2>
         <p className="text-sm text-muted-foreground mt-2">
@@ -111,7 +77,7 @@ export function LoginForm() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {error && (
           <div className="flex items-start gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
             <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
@@ -124,23 +90,17 @@ export function LoginForm() {
           <Input
             id="email"
             type="email"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value)
-              if (emailError) setEmailError('')
-            }}
-            onBlur={handleEmailBlur}
-            required
-            disabled={isLoading}
+            {...register('email')}
+            disabled={isLoading || isSubmitting}
             placeholder={t('auth.emailPlaceholder')}
-            className={emailError ? 'border-destructive focus-visible:ring-destructive' : ''}
-            aria-invalid={!!emailError}
-            aria-describedby={emailError ? 'email-error' : undefined}
+            className={errors.email ? 'border-destructive focus-visible:ring-destructive' : ''}
+            aria-invalid={!!errors.email}
+            aria-describedby={errors.email ? 'email-error' : undefined}
           />
-          {emailError && (
+          {errors.email && (
             <p id="email-error" className="text-sm text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
-              {emailError}
+              {errors.email.message}
             </p>
           )}
         </div>
@@ -151,18 +111,12 @@ export function LoginForm() {
             <Input
               id="password"
               type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value)
-                if (passwordError) setPasswordError('')
-              }}
-              onBlur={handlePasswordBlur}
-              required
-              disabled={isLoading}
+              {...register('password')}
+              disabled={isLoading || isSubmitting}
               placeholder={t('auth.passwordPlaceholder')}
-              className={passwordError ? 'border-destructive focus-visible:ring-destructive pe-10' : 'pe-10'}
-              aria-invalid={!!passwordError}
-              aria-describedby={passwordError ? 'password-error' : undefined}
+              className={errors.password ? 'border-destructive focus-visible:ring-destructive pe-10' : 'pe-10'}
+              aria-invalid={!!errors.password}
+              aria-describedby={errors.password ? 'password-error' : undefined}
             />
             <button
               type="button"
@@ -174,10 +128,10 @@ export function LoginForm() {
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
-          {passwordError && (
+          {errors.password && (
             <p id="password-error" className="text-sm text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
-              {passwordError}
+              {errors.password.message}
             </p>
           )}
         </div>
@@ -194,9 +148,9 @@ export function LoginForm() {
         <Button
           type="submit"
           className="w-full"
-          disabled={isLoading || !!emailError || !!passwordError || !email || !password}
+          disabled={isLoading || isSubmitting}
         >
-          {isLoading ? (
+          {isLoading || isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               {t('auth.loggingIn')}

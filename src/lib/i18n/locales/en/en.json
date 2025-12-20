@@ -77,7 +77,7 @@
       "passwordRequired": "Password is required",
       "passwordMinLength": "Password must be at least 6 characters"
     },
-    "passwordRecovery": {
+    "forgetPassword": {
       "title": "Password Recovery",
       "subtitle": "Enter your email to receive a password reset link",
       "sendLink": "Send Recovery Link",

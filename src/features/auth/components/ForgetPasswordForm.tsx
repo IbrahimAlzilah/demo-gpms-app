@@ -1,60 +1,52 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { mockAuthService } from '../../../lib/mock/auth.mock'
-import { Button } from '../../../components/ui/button'
-import { Input } from '../../../components/ui/input'
-import { Label } from '../../../components/ui/label'
-import { ROUTES } from '../../../lib/constants'
-import { useToast } from '../../../components/common/NotificationToast'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { mockAuthService } from '@/lib/mock/auth.mock'
+import { Button, Input, Label } from '@/components/ui'
+import { ROUTES } from '@/lib/constants'
+import { useToast } from '@/components/common/NotificationToast'
 import { AlertCircle, CheckCircle2, Loader2, Mail, ArrowLeft } from 'lucide-react'
+import { forgetPasswordSchema, type ForgetPasswordSchema } from '../schema/auth.schema'
 
-export function PasswordRecoveryForm() {
+export function ForgetPasswordForm() {
   const { t } = useTranslation()
   const { showToast } = useToast()
-  const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
-  const [emailError, setEmailError] = useState('')
   const [isSuccess, setIsSuccess] = useState(false)
+  const [submittedEmail, setSubmittedEmail] = useState('')
 
-  const validateEmail = (value: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!value) {
-      setEmailError(t('auth.validation.emailRequired') || 'البريد الإلكتروني مطلوب')
-      return false
-    }
-    if (!emailRegex.test(value)) {
-      setEmailError(t('auth.validation.emailInvalid') || 'البريد الإلكتروني غير صحيح')
-      return false
-    }
-    setEmailError('')
-    return true
-  }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<ForgetPasswordSchema>({
+    resolver: zodResolver(forgetPasswordSchema(t)),
+    defaultValues: {
+      email: '',
+    },
+  })
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const onSubmit = async (data: ForgetPasswordSchema) => {
     setError('')
     setMessage('')
     setIsSuccess(false)
-
-    if (!validateEmail(email)) {
-      return
-    }
-
     setIsLoading(true)
+    setSubmittedEmail(data.email)
 
     try {
-      const response = await mockAuthService.recoverPassword({ email })
-      const successMessage = response.message || t('auth.passwordRecovery.success') || 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني'
+      const response = await mockAuthService.recoverPassword({ email: data.email })
+      const successMessage = response.message || t('auth.forgetPassword.success')
       setMessage(successMessage)
       setIsSuccess(true)
       showToast(successMessage, 'success')
     } catch (err) {
-      const errorMessage = err instanceof Error 
-        ? err.message 
-        : t('auth.passwordRecovery.error') || 'حدث خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى.'
+      const errorMessage = err instanceof Error
+        ? err.message
+        : t('auth.forgetPassword.error')
       setError(errorMessage)
       setIsSuccess(false)
       showToast(errorMessage, 'error')
@@ -72,12 +64,12 @@ export function PasswordRecoveryForm() {
               <CheckCircle2 className="h-8 w-8 text-success" />
             </div>
           </div>
-          <h2 className="text-2xl font-bold">{t('auth.passwordRecovery.successTitle') || 'تم إرسال الطلب بنجاح'}</h2>
+          <h2 className="text-2xl font-bold">{t('auth.forgetPassword.successTitle')}</h2>
           <p className="text-sm text-muted-foreground mt-2">
             {message}
           </p>
           <p className="text-sm text-muted-foreground mt-2">
-            {t('auth.passwordRecovery.checkEmail') || 'يرجى التحقق من بريدك الإلكتروني واتباع التعليمات لإعادة تعيين كلمة المرور.'}
+            {t('auth.forgetPassword.checkEmail')}
           </p>
         </div>
 
@@ -85,27 +77,27 @@ export function PasswordRecoveryForm() {
           <div className="p-4 bg-muted rounded-lg border">
             <div className="flex items-start gap-3">
               <Mail className="h-5 w-5 text-muted-foreground mt-0.5" />
-              <div className="flex-1">
-                <p className="text-sm font-medium">{t('auth.passwordRecovery.emailSentTo') || 'تم الإرسال إلى:'}</p>
-                <p className="text-sm text-muted-foreground mt-1">{email}</p>
+              <div className="flex-1 flex items-center gap-2">
+                <p className="text-sm font-medium">{t('auth.forgetPassword.emailSentTo')}</p>
+                <p className="text-sm text-muted-foreground">{submittedEmail}</p>
               </div>
             </div>
           </div>
 
           <div className="text-center space-y-2">
             <p className="text-sm text-muted-foreground">
-              {t('auth.passwordRecovery.didNotReceive') || 'لم تستلم البريد؟'}
+              {t('auth.forgetPassword.didNotReceive')}
             </p>
             <Button
               variant="outline"
               onClick={() => {
                 setIsSuccess(false)
                 setMessage('')
-                setEmail('')
+                setSubmittedEmail('')
               }}
               className="w-full"
             >
-              {t('auth.passwordRecovery.tryAgain') || 'إعادة المحاولة'}
+              {t('auth.forgetPassword.tryAgain')}
             </Button>
           </div>
 
@@ -115,7 +107,7 @@ export function PasswordRecoveryForm() {
               className="inline-flex items-center gap-2 text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
             >
               <ArrowLeft className="h-4 w-4" />
-              {t('auth.passwordRecovery.backToLogin') || 'العودة إلى تسجيل الدخول'}
+              {t('auth.forgetPassword.backToLogin')}
             </Link>
           </div>
         </div>
@@ -131,13 +123,13 @@ export function PasswordRecoveryForm() {
             <Mail className="h-8 w-8 text-primary" />
           </div>
         </div>
-        <h2 className="text-2xl font-bold">{t('auth.passwordRecovery.title') || 'استعادة كلمة المرور'}</h2>
+        <h2 className="text-2xl font-bold">{t('auth.forgetPassword.title')}</h2>
         <p className="text-sm text-muted-foreground mt-2">
-          {t('auth.passwordRecovery.subtitle') || 'أدخل بريدك الإلكتروني لإرسال رابط إعادة تعيين كلمة المرور'}
+          {t('auth.forgetPassword.subtitle')}
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {error && (
           <div className="flex items-start gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
             <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
@@ -150,41 +142,35 @@ export function PasswordRecoveryForm() {
           <Input
             id="email"
             type="email"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value)
-              if (emailError) setEmailError('')
-            }}
-            onBlur={() => validateEmail(email)}
-            required
-            disabled={isLoading}
+            {...register('email')}
+            disabled={isLoading || isSubmitting}
             placeholder={t('auth.emailPlaceholder')}
-            className={emailError ? 'border-destructive focus-visible:ring-destructive' : ''}
-            aria-invalid={!!emailError}
-            aria-describedby={emailError ? 'email-error' : undefined}
+            className={errors.email ? 'border-destructive focus-visible:ring-destructive' : ''}
+            aria-invalid={!!errors.email}
+            aria-describedby={errors.email ? 'email-error' : undefined}
           />
-          {emailError && (
+          {errors.email && (
             <p id="email-error" className="text-sm text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
-              {emailError}
+              {errors.email.message}
             </p>
           )}
         </div>
 
-        <Button 
-          type="submit" 
-          className="w-full" 
-          disabled={isLoading || !!emailError}
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={isLoading || isSubmitting}
         >
-          {isLoading ? (
+          {isLoading || isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {t('auth.passwordRecovery.sending') || 'جاري الإرسال...'}
+              {t('auth.forgetPassword.sending')}
             </>
           ) : (
             <>
               <Mail className="mr-2 h-4 w-4" />
-              {t('auth.passwordRecovery.sendLink') || 'إرسال رابط الاستعادة'}
+              {t('auth.forgetPassword.sendLink')}
             </>
           )}
         </Button>
@@ -196,10 +182,9 @@ export function PasswordRecoveryForm() {
           className="inline-flex items-center gap-2 text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
         >
           <ArrowLeft className="h-4 w-4" />
-          {t('auth.passwordRecovery.backToLogin') || 'العودة إلى تسجيل الدخول'}
+          {t('auth.forgetPassword.backToLogin')}
         </Link>
       </div>
     </div>
-  )
+  );
 }
-

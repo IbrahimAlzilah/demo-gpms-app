@@ -1,10 +1,10 @@
 import { AuthLayout } from '../../layouts/AuthLayout'
-import { PasswordRecoveryForm } from '../../features/auth/components/PasswordRecoveryForm'
+import { ForgetPasswordForm } from '../../features/auth/components/ForgetPasswordForm'
 
 export function PasswordRecoveryPage() {
   return (
     <AuthLayout>
-      <PasswordRecoveryForm />
+      <ForgetPasswordForm />
     </AuthLayout>
   )
 }

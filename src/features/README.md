@@ -26,5 +26,7 @@ auth/
 │   └── auth.types.ts
 └── api/
     └── auth.service.ts
+└── schema/
+    └── auth.schema.ts
 ```
 

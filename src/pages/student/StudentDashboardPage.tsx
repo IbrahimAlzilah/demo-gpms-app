@@ -15,9 +15,6 @@ import {
   FileCheck,
   Award,
   ArrowLeft,
-  CheckCircle2,
-  Clock,
-  XCircle,
 } from 'lucide-react'
 import { StatusBadge } from '../../components/common/StatusBadge'
 import { formatRelativeTime } from '../../lib/utils/format'
@@ -71,14 +68,6 @@ export function StudentDashboardPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold">{t('dashboard.student.title')}</h1>
-          <p className="text-muted-foreground mt-2">
-            {t('dashboard.student.welcome', { name: user?.name })}
-          </p>
-        </div>
-
         {/* Statistics Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>

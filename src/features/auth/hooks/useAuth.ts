@@ -5,6 +5,5 @@ export function useAuth() {
     isAuthenticated: false,
     login: () => {},
     logout: () => {},
-  }
+  };
 }
-
