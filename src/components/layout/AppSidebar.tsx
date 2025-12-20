@@ -61,7 +61,7 @@ export function AppSidebar() {
                 const isActive = isActiveRoute(item.path)
                 return (
                   <SidebarMenuItem key={item.path}>
-                    <SidebarMenuButton asChild isActive={isActive} tooltip={t(item.labelKey)} className="w-full text-lg h-10">
+                    <SidebarMenuButton asChild isActive={isActive} tooltip={t(item.labelKey)} className="w-full text-md h-10">
                       <NavLink to={item.path}>
                         <Icon className="h-5 w-5 shrink-0" />
                         <span>{t(item.labelKey)}</span>
