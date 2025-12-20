@@ -4,12 +4,17 @@ import { Button } from "@/components/ui";
 import { DropdownMenu, DropdownMenuItem } from './DropdownMenu'
 import { Languages } from 'lucide-react'
 
+const LANGUAGE_STORAGE_KEY = 'i18nextLng'
+
 export function LanguageToggle() {
   const { t, i18n } = useTranslation()
   const [showLangMenu, setShowLangMenu] = useState(false)
 
   const handleLanguageChange = (lang: string) => {
+    // Change language (LanguageDetector will save to localStorage automatically)
     i18n.changeLanguage(lang)
+    // Explicitly ensure it's saved to localStorage (backup)
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, lang)
     setShowLangMenu(false)
   }
 

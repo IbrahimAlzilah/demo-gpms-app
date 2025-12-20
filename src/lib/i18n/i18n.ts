@@ -20,14 +20,14 @@ i18n
   .init({
     resources,
     fallbackLng: 'ar',
-    lng: 'ar',
     debug: false,
     interpolation: {
       escapeValue: false
     },
     detection: {
       order: ['localStorage', 'navigator', 'htmlTag'],
-      caches: ['localStorage']
+      caches: ['localStorage'],
+      lookupLocalStorage: 'i18nextLng'
     }
   })
 

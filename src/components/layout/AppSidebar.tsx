@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/sidebar'
 import type { ComponentType } from 'react'
 import type { SVGProps } from 'react'
+import logo from '@/assets/logo2.png'
 
 const getIcon = (iconName: string): ComponentType<SVGProps<SVGSVGElement>> => {
   return (Icons[iconName as keyof typeof Icons] as ComponentType<SVGProps<SVGSVGElement>>) || Icons.Circle
@@ -43,9 +44,9 @@ export function AppSidebar() {
       <SidebarHeader className={cn(
         'flex flex-row items-center gap-3 border-b border-sidebar-border h-16 px-4')}>
         <img
-          src="/src/assets/logo.png"
+          src={logo}
           alt="GPMS Logo"
-          className="h-8 w-8 shrink-0 object-contain"
+          className="h-8 w-8 rounded-full shrink-0 object-contain"
         />
         <h2 className="text-lg font-semibold tracking-tight text-sidebar-foreground truncate">
           {t('app.shortName')}
