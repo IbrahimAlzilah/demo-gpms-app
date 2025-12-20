@@ -1,15 +1,13 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { MainLayout } from '../../layouts/MainLayout'
-import { ProjectBrowser } from '../../features/student/components/ProjectBrowser'
-import { ProjectRegistrationForm } from '../../features/student/components/ProjectRegistrationForm'
-import { Button } from '../../components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog'
-import { usePeriodCheck } from '../../hooks/usePeriodCheck'
+import { MainLayout } from '@/layouts/MainLayout'
+import { ProjectBrowser } from '@/features/student/components/ProjectBrowser'
+import { ProjectRegistrationForm } from '@/features/student/components/ProjectRegistrationForm'
+import { Card, CardContent, CardHeader, CardTitle, Button, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui'
+import { usePeriodCheck } from '@/hooks/usePeriodCheck'
 import { AlertTriangle, ArrowRight, Briefcase, Calendar, Users, User, Building2 } from 'lucide-react'
-import { LoadingSpinner } from '../../components/common/LoadingSpinner'
-import type { Project } from '../../types/project.types'
+import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import type { Project } from '@/types/project.types'
 
 export function ProjectsPage() {
   const { t } = useTranslation()
@@ -30,7 +28,7 @@ export function ProjectsPage() {
             className="mb-4"
           >
             <ArrowRight className="ml-2 h-4 w-4" />
-            {t('project.backToProjects') || 'العودة إلى قائمة المشاريع'}
+            {t('project.backToProjects')}
           </Button>
           <ProjectRegistrationForm
             project={selectedProject}
@@ -51,16 +49,6 @@ export function ProjectsPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Briefcase className="h-8 w-8 text-primary" />
-            {t('nav.projects') || 'تصفح المشاريع'}
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            {t('project.browseDescription') || 'تصفح المشاريع المتاحة للتسجيل واختر المشروع المناسب لك'}
-          </p>
-        </div>
-
         {periodLoading ? (
           <Card>
             <CardContent className="pt-6">
@@ -72,7 +60,7 @@ export function ProjectsPage() {
             <CardHeader>
               <div className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-warning" />
-                <CardTitle>{t('project.periodClosed') || 'فترة التسجيل مغلقة'}</CardTitle>
+                <CardTitle>{t('project.periodClosed')}</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
@@ -80,10 +68,10 @@ export function ProjectsPage() {
                 <Calendar className="h-5 w-5 text-warning mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-warning-foreground">
-                    {t('project.periodClosedMessage') || 'فترة التسجيل في المشاريع غير مفتوحة حالياً'}
+                    {t('project.periodClosedMessage')}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {t('project.periodClosedDescription') || 'يرجى الانتظار حتى يتم فتح فترة التسجيل من قبل لجنة المشاريع'}
+                    {t('project.periodClosedDescription')}
                   </p>
                 </div>
               </div>
@@ -109,7 +97,7 @@ export function ProjectsPage() {
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <h4 className="text-sm font-medium mb-2">{t('project.description') || 'الوصف'}</h4>
+                  <h4 className="text-sm font-medium mb-2">{t('project.description')}</h4>
                   <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                     {selectedProject.description}
                   </p>
@@ -119,16 +107,16 @@ export function ProjectsPage() {
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <p className="text-xs text-muted-foreground">{t('project.supervisor') || 'المشرف'}</p>
+                      <p className="text-xs text-muted-foreground">{t('project.supervisor')}</p>
                       <p className="text-sm font-medium">
-                        {selectedProject.supervisor?.name || t('project.noSupervisor') || 'غير معين'}
+                        {selectedProject.supervisor?.name || t('project.noSupervisor')}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Users className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <p className="text-xs text-muted-foreground">{t('project.students') || 'الطلاب'}</p>
+                      <p className="text-xs text-muted-foreground">{t('project.students')}</p>
                       <p className="text-sm font-medium">
                         {selectedProject.currentStudents}/{selectedProject.maxStudents}
                       </p>
@@ -138,7 +126,7 @@ export function ProjectsPage() {
                     <div className="flex items-center gap-2">
                       <Building2 className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-xs text-muted-foreground">{t('project.specialization') || 'التخصص'}</p>
+                        <p className="text-xs text-muted-foreground">{t('project.specialization')}</p>
                         <p className="text-sm font-medium">{selectedProject.specialization}</p>
                       </div>
                     </div>
@@ -147,7 +135,7 @@ export function ProjectsPage() {
 
                 {selectedProject.keywords && selectedProject.keywords.length > 0 && (
                   <div>
-                    <h4 className="text-sm font-medium mb-2">{t('project.keywords') || 'الكلمات المفتاحية'}</h4>
+                    <h4 className="text-sm font-medium mb-2">{t('project.keywords')}</h4>
                     <div className="flex flex-wrap gap-2">
                       {selectedProject.keywords.map((keyword, index) => (
                         <span
@@ -173,7 +161,7 @@ export function ProjectsPage() {
                     className="flex-1"
                     disabled={!isPeriodActive}
                   >
-                    {t('project.register') || 'التسجيل في المشروع'}
+                    {t('project.register')}
                   </Button>
                   <Button
                     variant="outline"
@@ -182,7 +170,7 @@ export function ProjectsPage() {
                       setSelectedProject(null)
                     }}
                   >
-                    {t('common.close') || 'إغلاق'}
+                    {t('common.close')}
                   </Button>
                 </div>
               </div>

@@ -8,7 +8,7 @@ import { Button, Input, Label } from '@/components/ui'
 import { ROUTES } from '@/lib/constants'
 import { useToast } from '@/components/common/NotificationToast'
 import { AlertCircle, CheckCircle2, Loader2, Mail, ArrowLeft } from 'lucide-react'
-import { forgetPasswordSchema, type ForgetPasswordSchema } from '../schema/auth.schema'
+import { forgetPasswordSchema, type ForgetPasswordSchema } from '../schema'
 
 export function ForgetPasswordForm() {
   const { t } = useTranslation()

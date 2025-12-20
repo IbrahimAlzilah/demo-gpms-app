@@ -9,7 +9,7 @@ import { Button, Input, Label } from '@/components/ui'
 import { ROUTES } from '@/lib/constants'
 import { useToast } from '@/components/common/NotificationToast'
 import { AlertCircle, Eye, EyeOff, Loader2, LogIn } from 'lucide-react'
-import { authSchema, type AuthSchema } from '../schema/auth.schema'
+import { authSchema, type AuthSchema } from '../schema'
 import logo from '@/assets/logo2.png'
 
 export function LoginForm() {
