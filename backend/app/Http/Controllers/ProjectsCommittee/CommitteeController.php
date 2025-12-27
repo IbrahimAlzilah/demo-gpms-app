@@ -1,0 +1,50 @@
+<?php
+
+namespace App\Http\Controllers\ProjectsCommittee;
+
+use App\Http\Controllers\Controller;
+use App\Models\Project;
+use App\Models\CommitteeAssignment;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class CommitteeController extends Controller
+{
+    public function distribute(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'assignments' => 'required|array',
+            'assignments.*.project_id' => 'required|exists:projects,id',
+            'assignments.*.committee_member_ids' => 'required|array|min:2|max:3',
+            'assignments.*.committee_member_ids.*' => 'exists:users,id',
+        ]);
+
+        try {
+            foreach ($validated['assignments'] as $assignment) {
+                $project = Project::findOrFail($assignment['project_id']);
+                
+                // Remove existing assignments
+                CommitteeAssignment::where('project_id', $project->id)->delete();
+                
+                // Create new assignments
+                foreach ($assignment['committee_member_ids'] as $memberId) {
+                    CommitteeAssignment::create([
+                        'project_id' => $project->id,
+                        'committee_member_id' => $memberId,
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Committees distributed successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+}
+
