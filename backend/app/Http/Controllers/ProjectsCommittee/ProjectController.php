@@ -4,6 +4,7 @@ namespace App\Http\Controllers\ProjectsCommittee;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProjectResource;
+use App\Http\Traits\HasTableQuery;
 use App\Models\Project;
 use App\Services\ProjectService;
 use Illuminate\Http\JsonResponse;
@@ -11,18 +12,29 @@ use Illuminate\Http\Request;
 
 class ProjectController extends Controller
 {
+    use HasTableQuery;
+
     public function __construct(
         protected ProjectService $projectService
     ) {}
 
     public function index(Request $request): JsonResponse
     {
-        $projects = Project::with(['supervisor', 'students'])->get();
+        $query = Project::with(['supervisor', 'students']);
 
-        return response()->json([
-            'success' => true,
-            'data' => ProjectResource::collection($projects),
-        ]);
+        // Filter by status if provided
+        if ($request->has('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter projects without supervisor
+        if ($request->has('supervisor_id') && $request->supervisor_id === 'null') {
+            $query->whereNull('supervisor_id');
+        }
+
+        $query = $this->applyTableQuery($query, $request);
+
+        return response()->json($this->getPaginatedResponse($query, $request));
     }
 
     public function announce(Request $request): JsonResponse
@@ -33,11 +45,22 @@ class ProjectController extends Controller
         ]);
 
         try {
-            $projects = $this->projectService->announceProjects($validated['project_ids']);
+            $projectIds = $validated['project_ids'];
+            $projects = Project::whereIn('id', $projectIds)
+                ->where('status', 'approved')
+                ->get();
+
+            foreach ($projects as $project) {
+                $project->update(['status' => 'available_for_registration']);
+            }
+
+            $announcedProjects = Project::whereIn('id', $projectIds)
+                ->with(['supervisor', 'students'])
+                ->get();
 
             return response()->json([
                 'success' => true,
-                'data' => $projects,
+                'data' => ProjectResource::collection($announcedProjects),
                 'message' => 'Projects announced successfully',
             ]);
         } catch (\Exception $e) {
@@ -46,6 +69,29 @@ class ProjectController extends Controller
                 'message' => $e->getMessage(),
             ], 400);
         }
+    }
+
+    protected function applySearch($query, string $search)
+    {
+        return $query->where(function ($q) use ($search) {
+            $q->where('title', 'like', "%{$search}%")
+                ->orWhere('description', 'like', "%{$search}%");
+        });
+    }
+
+    protected function applyFilters($query, array $filters)
+    {
+        if (isset($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+        if (isset($filters['supervisor_id'])) {
+            if ($filters['supervisor_id'] === 'null') {
+                $query->whereNull('supervisor_id');
+            } else {
+                $query->where('supervisor_id', $filters['supervisor_id']);
+            }
+        }
+        return $query;
     }
 }
 

@@ -15,21 +15,23 @@ class ProposalResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id' => (string) $this->id,
             'title' => $this->title,
             'description' => $this->description,
             'objectives' => $this->objectives,
             'methodology' => $this->methodology,
-            'expected_outcomes' => $this->expected_outcomes,
+            'expectedOutcomes' => $this->expected_outcomes,
             'status' => $this->status,
-            'review_notes' => $this->review_notes,
-            'reviewed_at' => $this->reviewed_at?->toISOString(),
-            'project_id' => $this->project_id,
+            'reviewNotes' => $this->review_notes,
+            'reviewedAt' => $this->reviewed_at?->toISOString(),
+            'reviewedBy' => $this->reviewed_by ? (string) $this->reviewed_by : null,
+            'projectId' => $this->project_id ? (string) $this->project_id : null,
+            'submitterId' => (string) $this->submitter_id,
             'submitter' => new UserResource($this->whenLoaded('submitter')),
             'reviewer' => new UserResource($this->whenLoaded('reviewer')),
             'project' => new ProjectResource($this->whenLoaded('project')),
-            'created_at' => $this->created_at?->toISOString(),
-            'updated_at' => $this->updated_at?->toISOString(),
+            'createdAt' => $this->created_at?->toISOString(),
+            'updatedAt' => $this->updated_at?->toISOString(),
         ];
     }
 }

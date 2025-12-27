@@ -16,8 +16,18 @@ class EvaluationController extends Controller
         protected EvaluationService $evaluationService
     ) {}
 
-    public function submitGrade(Request $request, Project $project): JsonResponse
+    /**
+     * Get evaluations/grades for a project
+     * GET /supervisor/evaluations?project_id={id}
+     */
+    public function index(Request $request): JsonResponse
     {
+        $validated = $request->validate([
+            'project_id' => 'required|exists:projects,id',
+        ]);
+
+        $project = Project::findOrFail($validated['project_id']);
+
         if ($project->supervisor_id !== $request->user()->id) {
             return response()->json([
                 'success' => false,
@@ -25,13 +35,39 @@ class EvaluationController extends Controller
             ], 403);
         }
 
+        $grades = Grade::where('project_id', $project->id)
+            ->with(['student', 'project'])
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => GradeResource::collection($grades),
+        ]);
+    }
+
+    /**
+     * Submit a grade/evaluation
+     * POST /supervisor/evaluations (with project_id in body)
+     */
+    public function store(Request $request): JsonResponse
+    {
         $validated = $request->validate([
+            'project_id' => 'required|exists:projects,id',
             'student_id' => 'required|exists:users,id',
             'score' => 'required|numeric|min:0',
             'max_score' => 'required|numeric|min:0',
             'criteria' => 'required|array',
             'comments' => 'nullable|string',
         ]);
+
+        $project = Project::findOrFail($validated['project_id']);
+
+        if ($project->supervisor_id !== $request->user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
 
         try {
             $student = \App\Models\User::findOrFail($validated['student_id']);
@@ -58,25 +94,6 @@ class EvaluationController extends Controller
                 'message' => $e->getMessage(),
             ], 400);
         }
-    }
-
-    public function getGrades(Request $request, Project $project): JsonResponse
-    {
-        if ($project->supervisor_id !== $request->user()->id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized',
-            ], 403);
-        }
-
-        $grades = Grade::where('project_id', $project->id)
-            ->with(['student', 'project'])
-            ->get();
-
-        return response()->json([
-            'success' => true,
-            'data' => GradeResource::collection($grades),
-        ]);
     }
 }
 

@@ -59,9 +59,9 @@ class GroupService
     /**
      * Remove member from group
      */
-    public function removeMember(ProjectGroup $group, int $memberId): ProjectGroup
+    public function removeMember(ProjectGroup $group, User $member): ProjectGroup
     {
-        if ($group->leader_id === $memberId) {
+        if ($group->leader_id === $member->id) {
             throw new \Exception('Cannot remove group leader');
         }
 
@@ -69,7 +69,25 @@ class GroupService
             throw new \Exception('Group must have at least one member');
         }
 
-        $group->members()->detach($memberId);
+        if (!$group->hasMember($member->id)) {
+            throw new \Exception('User is not a member of this group');
+        }
+
+        $group->members()->detach($member->id);
+
+        return $group->fresh();
+    }
+
+    /**
+     * Update group leader
+     */
+    public function updateLeader(ProjectGroup $group, User $newLeader): ProjectGroup
+    {
+        if (!$group->hasMember($newLeader->id)) {
+            throw new \Exception('New leader must be a member of the group');
+        }
+
+        $group->update(['leader_id' => $newLeader->id]);
 
         return $group->fresh();
     }

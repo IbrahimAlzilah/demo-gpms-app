@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\ProjectsCommittee;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ProjectResource;
+use App\Http\Resources\UserResource;
 use App\Models\Project;
 use App\Models\CommitteeAssignment;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -20,6 +23,7 @@ class CommitteeController extends Controller
         ]);
 
         try {
+            $projects = [];
             foreach ($validated['assignments'] as $assignment) {
                 $project = Project::findOrFail($assignment['project_id']);
                 
@@ -33,10 +37,13 @@ class CommitteeController extends Controller
                         'committee_member_id' => $memberId,
                     ]);
                 }
+
+                $projects[] = $project->fresh()->load(['supervisor', 'students', 'committeeMembers']);
             }
 
             return response()->json([
                 'success' => true,
+                'data' => ProjectResource::collection($projects),
                 'message' => 'Committees distributed successfully',
             ]);
         } catch (\Exception $e) {
@@ -45,6 +52,18 @@ class CommitteeController extends Controller
                 'message' => $e->getMessage(),
             ], 400);
         }
+    }
+
+    public function members(Request $request): JsonResponse
+    {
+        $members = User::where('role', 'discussion_committee')
+            ->where('status', 'active')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => UserResource::collection($members),
+        ]);
     }
 }
 

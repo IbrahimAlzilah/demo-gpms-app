@@ -100,5 +100,16 @@ class ProjectService
 
         return $project->fresh();
     }
+
+    /**
+     * Get projects without supervisor
+     */
+    public function getProjectsWithoutSupervisor(): \Illuminate\Database\Eloquent\Collection
+    {
+        return Project::whereNull('supervisor_id')
+            ->where('status', 'approved')
+            ->with(['supervisor', 'students'])
+            ->get();
+    }
 }
 

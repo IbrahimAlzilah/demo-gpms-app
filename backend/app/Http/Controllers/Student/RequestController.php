@@ -53,15 +53,21 @@ class RequestController extends Controller
         }
     }
 
-    public function cancel(ProjectRequest $projectRequest): JsonResponse
+    public function cancel(Request $request, ProjectRequest $projectRequest): JsonResponse
     {
-        $this->authorize('update', $projectRequest);
+        if ($projectRequest->student_id !== $request->user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized to cancel this request',
+            ], 403);
+        }
 
         try {
-            $this->requestService->cancel($projectRequest, request()->user());
+            $cancelled = $this->requestService->cancel($projectRequest, $request->user());
 
             return response()->json([
                 'success' => true,
+                'data' => new RequestResource($cancelled->load(['student', 'project'])),
                 'message' => 'Request cancelled successfully',
             ]);
         } catch (\Exception $e) {

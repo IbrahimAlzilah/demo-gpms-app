@@ -15,19 +15,19 @@ class TimePeriodResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id' => (string) $this->id,
             'name' => $this->name,
             'type' => $this->type,
-            'start_date' => $this->start_date?->toDateString(),
-            'end_date' => $this->end_date?->toDateString(),
-            'is_active' => $this->is_active,
-            'academic_year' => $this->academic_year,
+            'startDate' => $this->start_date?->toISOString(),
+            'endDate' => $this->end_date?->toISOString(),
+            'isActive' => $this->is_active,
+            'academicYear' => $this->academic_year,
             'semester' => $this->semester,
             'description' => $this->description,
-            'created_by' => $this->created_by,
+            'createdBy' => (string) $this->created_by,
             'creator' => new UserResource($this->whenLoaded('creator')),
-            'created_at' => $this->created_at?->toISOString(),
-            'updated_at' => $this->updated_at?->toISOString(),
+            'createdAt' => $this->created_at?->toISOString(),
+            'updatedAt' => $this->updated_at?->toISOString(),
         ];
     }
 }

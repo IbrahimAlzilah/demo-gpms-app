@@ -15,22 +15,25 @@ class ProjectResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id' => (string) $this->id,
             'title' => $this->title,
             'description' => $this->description,
             'status' => $this->status,
-            'max_students' => $this->max_students,
-            'current_students' => $this->current_students,
+            'maxStudents' => $this->max_students,
+            'currentStudents' => $this->current_students,
             'specialization' => $this->specialization,
             'keywords' => $this->keywords,
-            'supervisor_id' => $this->supervisor_id,
-            'committee_id' => $this->committee_id,
+            'supervisorId' => $this->supervisor_id ? (string) $this->supervisor_id : null,
+            'committeeId' => $this->committee_id,
             'supervisor' => new UserResource($this->whenLoaded('supervisor')),
             'students' => UserResource::collection($this->whenLoaded('students')),
+            'groupId' => $this->whenLoaded('group') ? (string) $this->group->id : null,
             'group' => new GroupResource($this->whenLoaded('group')),
-            'committee_members' => UserResource::collection($this->whenLoaded('committeeMembers')),
-            'created_at' => $this->created_at?->toISOString(),
-            'updated_at' => $this->updated_at?->toISOString(),
+            'documents' => $this->whenLoaded('documents') ? array_map(function($doc) {
+                return $doc['file_path'] ?? $doc['fileUrl'] ?? '';
+            }, $this->documents->toArray()) : [],
+            'createdAt' => $this->created_at?->toISOString(),
+            'updatedAt' => $this->updated_at?->toISOString(),
         ];
     }
 }

@@ -18,9 +18,19 @@ class GroupController extends Controller
 
     public function show(Request $request): JsonResponse
     {
-        $group = ProjectGroup::whereHas('members', function ($q) use ($request) {
-            $q->where('users.id', $request->user()->id);
-        })->with(['project', 'leader', 'members'])->first();
+        $query = ProjectGroup::with(['project', 'leader', 'members']);
+
+        // If project_id is provided in query, filter by project
+        if ($request->has('project_id')) {
+            $query->where('project_id', $request->project_id);
+        } else {
+            // Otherwise, get group where user is a member
+            $query->whereHas('members', function ($q) use ($request) {
+                $q->where('users.id', $request->user()->id);
+            });
+        }
+
+        $group = $query->first();
 
         if (!$group) {
             return response()->json([
@@ -85,7 +95,7 @@ class GroupController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $invitation,
+                'data' => new \App\Http\Resources\GroupInvitationResource($invitation->load(['group', 'inviter', 'invitee'])),
                 'message' => 'Invitation sent successfully',
             ], 201);
         } catch (\Exception $e) {
@@ -135,13 +145,184 @@ class GroupController extends Controller
     {
         $invitations = GroupInvitation::where('invitee_id', $request->user()->id)
             ->where('status', 'pending')
-            ->with(['group', 'inviter'])
+            ->with(['group', 'inviter', 'invitee'])
             ->get();
 
         return response()->json([
             'success' => true,
-            'data' => $invitations,
+            'data' => \App\Http\Resources\GroupInvitationResource::collection($invitations),
         ]);
+    }
+
+    public function joinGroup(Request $request, ProjectGroup $group): JsonResponse
+    {
+        try {
+            if ($group->isFull()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Group is full',
+                ], 400);
+            }
+
+            if ($group->hasMember($request->user()->id)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You are already a member of this group',
+                ], 400);
+            }
+
+            $updatedGroup = $this->groupService->addMember($group, $request->user());
+
+            return response()->json([
+                'success' => true,
+                'data' => new GroupResource($updatedGroup->load(['project', 'leader', 'members'])),
+                'message' => 'Joined group successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Update group leader
+     * PUT /student/groups/{group}/leader
+     */
+    public function updateLeader(Request $request, ProjectGroup $group): JsonResponse
+    {
+        // Verify user is the current leader or a member
+        if ($group->leader_id !== $request->user()->id && !$group->hasMember($request->user()->id)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized to update leader',
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'leader_id' => 'required|exists:users,id',
+        ]);
+
+        try {
+            $newLeader = \App\Models\User::findOrFail($validated['leader_id']);
+            
+            // Verify new leader is a member of the group
+            if (!$group->hasMember($newLeader->id)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'New leader must be a member of the group',
+                ], 400);
+            }
+
+            $updatedGroup = $this->groupService->updateLeader($group, $newLeader);
+
+            return response()->json([
+                'success' => true,
+                'data' => new GroupResource($updatedGroup->load(['project', 'leader', 'members'])),
+                'message' => 'Leader updated successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Add member to group
+     * POST /student/groups/{group}/members
+     */
+    public function addMember(Request $request, ProjectGroup $group): JsonResponse
+    {
+        // Verify user is leader or member
+        if ($group->leader_id !== $request->user()->id && !$group->hasMember($request->user()->id)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized to add members',
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'member_id' => 'required|exists:users,id',
+        ]);
+
+        try {
+            if ($group->isFull()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Group is full',
+                ], 400);
+            }
+
+            $member = \App\Models\User::findOrFail($validated['member_id']);
+
+            if ($group->hasMember($member->id)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User is already a member of this group',
+                ], 400);
+            }
+
+            $updatedGroup = $this->groupService->addMember($group, $member);
+
+            return response()->json([
+                'success' => true,
+                'data' => new GroupResource($updatedGroup->load(['project', 'leader', 'members'])),
+                'message' => 'Member added successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Remove member from group
+     * DELETE /student/groups/{group}/members/{member}
+     */
+    public function removeMember(Request $request, ProjectGroup $group, \App\Models\User $member): JsonResponse
+    {
+        // Verify user is leader
+        if ($group->leader_id !== $request->user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only the leader can remove members',
+            ], 403);
+        }
+
+        try {
+            if (!$group->hasMember($member->id)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User is not a member of this group',
+                ], 400);
+            }
+
+            // Cannot remove the leader
+            if ($group->leader_id === $member->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot remove the leader. Update leader first.',
+                ], 400);
+            }
+
+            $updatedGroup = $this->groupService->removeMember($group, $member);
+
+            return response()->json([
+                'success' => true,
+                'data' => new GroupResource($updatedGroup->load(['project', 'leader', 'members'])),
+                'message' => 'Member removed successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
     }
 }
 

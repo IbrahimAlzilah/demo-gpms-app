@@ -15,19 +15,19 @@ class RequestResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id' => (string) $this->id,
             'type' => $this->type,
-            'student_id' => $this->student_id,
-            'project_id' => $this->project_id,
+            'studentId' => (string) $this->student_id,
+            'projectId' => $this->project_id ? (string) $this->project_id : null,
             'reason' => $this->reason,
             'status' => $this->status,
-            'supervisor_approval' => $this->supervisor_approval,
-            'committee_approval' => $this->committee_approval,
-            'additional_data' => $this->additional_data,
+            'supervisorApproval' => $this->supervisor_approval,
+            'committeeApproval' => $this->committee_approval,
+            'additionalData' => $this->additional_data,
             'student' => new UserResource($this->whenLoaded('student')),
             'project' => new ProjectResource($this->whenLoaded('project')),
-            'created_at' => $this->created_at?->toISOString(),
-            'updated_at' => $this->updated_at?->toISOString(),
+            'createdAt' => $this->created_at?->toISOString(),
+            'updatedAt' => $this->updated_at?->toISOString(),
         ];
     }
 }

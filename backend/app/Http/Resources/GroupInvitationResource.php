@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class UserResource extends JsonResource
+class GroupInvitationResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,14 +16,14 @@ class UserResource extends JsonResource
     {
         return [
             'id' => (string) $this->id,
-            'name' => $this->name,
-            'email' => $this->email,
-            'role' => $this->role,
+            'groupId' => (string) $this->group_id,
+            'group' => new GroupResource($this->whenLoaded('group')),
+            'inviterId' => (string) $this->inviter_id,
+            'inviter' => new UserResource($this->whenLoaded('inviter')),
+            'inviteeId' => (string) $this->invitee_id,
+            'invitee' => new UserResource($this->whenLoaded('invitee')),
             'status' => $this->status,
-            'studentId' => $this->student_id,
-            'empId' => $this->emp_id,
-            'department' => $this->department,
-            'phone' => $this->phone,
+            'message' => $this->message,
             'createdAt' => $this->created_at?->toISOString(),
             'updatedAt' => $this->updated_at?->toISOString(),
         ];

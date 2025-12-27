@@ -15,18 +15,19 @@ class GradeResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'project_id' => $this->project_id,
-            'student_id' => $this->student_id,
-            'supervisor_grade' => $this->supervisor_grade,
-            'committee_grade' => $this->committee_grade,
-            'final_grade' => $this->final_grade,
-            'is_approved' => $this->is_approved,
-            'approved_at' => $this->approved_at?->toISOString(),
+            'id' => (string) $this->id,
+            'projectId' => (string) $this->project_id,
+            'studentId' => (string) $this->student_id,
+            'supervisorGrade' => $this->supervisor_grade,
+            'committeeGrade' => $this->committee_grade,
+            'finalGrade' => $this->final_grade ? (float) $this->final_grade : null,
+            'isApproved' => $this->is_approved,
+            'approvedAt' => $this->approved_at?->toISOString(),
+            'approvedBy' => $this->approved_by ? (string) $this->approved_by : null,
             'project' => new ProjectResource($this->whenLoaded('project')),
             'student' => new UserResource($this->whenLoaded('student')),
-            'created_at' => $this->created_at?->toISOString(),
-            'updated_at' => $this->updated_at?->toISOString(),
+            'createdAt' => $this->created_at?->toISOString(),
+            'updatedAt' => $this->updated_at?->toISOString(),
         ];
     }
 }

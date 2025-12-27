@@ -75,6 +75,43 @@ class ProjectController extends Controller
         ]);
     }
 
+    public function cancelRegistration(Request $request, ProjectRegistration $registration): JsonResponse
+    {
+        if ($registration->student_id !== $request->user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized to cancel this registration',
+            ], 403);
+        }
+
+        if (!in_array($registration->status, ['pending', 'approved'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot cancel registration in current status',
+            ], 400);
+        }
+
+        try {
+            if ($registration->status === 'approved') {
+                $project = $registration->project;
+                $project->students()->detach($registration->student_id);
+                $project->decrement('current_students');
+            }
+
+            $registration->update(['status' => 'cancelled']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Registration cancelled successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
     protected function applySearch($query, string $search)
     {
         return $query->where(function ($q) use ($search) {
