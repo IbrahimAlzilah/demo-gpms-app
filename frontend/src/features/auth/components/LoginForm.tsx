@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useAuthStore } from '../store/auth.store'
-import { mockAuthService } from '@/lib/mock/auth.mock'
+import { authService } from '../api/auth.service'
 import { Button, Input, Label } from '@/components/ui'
 import { ROUTES } from '@/lib/constants'
 import { useToast } from '@/components/common/NotificationToast'
@@ -41,7 +41,7 @@ export function LoginForm() {
     setIsLoading(true)
 
     try {
-      const response = await mockAuthService.login(data)
+      const response = await authService.login(data)
       login(response.user, response.token, response.permissions)
 
       // Redirect based on role

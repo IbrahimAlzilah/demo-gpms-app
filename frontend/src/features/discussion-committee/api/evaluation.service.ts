@@ -1,4 +1,4 @@
-import { mockEvaluationService } from '../../../lib/mock/evaluation.mock'
+import { apiClient } from '../../../lib/axios'
 import type { Grade } from '../../../types/evaluation.types'
 
 export const committeeEvaluationService = {
@@ -14,17 +14,20 @@ export const committeeEvaluationService = {
     evaluatedBy: string,
     committeeMembers: string[]
   ): Promise<Grade> => {
-    return mockEvaluationService.submitCommitteeGrade(
-      projectId,
-      studentId,
-      grade,
-      evaluatedBy,
-      committeeMembers
-    )
+    const response = await apiClient.post<Grade>('/discussion-committee/evaluations', {
+      project_id: projectId,
+      student_id: studentId,
+      score: grade.score,
+      max_score: grade.maxScore,
+      criteria: grade.criteria,
+      comments: grade.comments,
+      committee_members: committeeMembers,
+    })
+    return response.data
   },
 
   getGrades: async (projectId: string): Promise<Grade[]> => {
-    return mockEvaluationService.getGrades(projectId)
+    const response = await apiClient.get<Grade[]>(`/discussion-committee/evaluations?project_id=${projectId}`)
+    return Array.isArray(response.data) ? response.data : []
   },
 }
-

@@ -99,7 +99,60 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const { user } = get();
     return user?.role === role;
   },
-  initialize: () => {
-    set(getInitialState());
+  initialize: async () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        // Verify token and get user data from backend
+        const { authService } = await import("../api/auth.service");
+        const user = await authService.me();
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+          const storedUser = JSON.parse(userStr) as User;
+          // Get permissions from backend (they should be in localStorage from login)
+          const permissions: Record<User["role"], string[]> = {
+            student: [
+              "view:own_projects",
+              "submit:proposals",
+              "submit:requests",
+              "upload:documents",
+            ],
+            supervisor: [
+              "view:assigned_projects",
+              "evaluate:projects",
+              "approve:supervision_requests",
+              "manage:project_progress",
+            ],
+            discussion_committee: [
+              "view:assigned_projects",
+              "evaluate:final_discussion",
+            ],
+            projects_committee: [
+              "manage:proposals",
+              "manage:projects",
+              "assign:supervisors",
+              "process:requests",
+              "distribute:committees",
+              "generate:reports",
+              "announce:periods",
+            ],
+            admin: ["*"],
+          };
+          set({
+            user: storedUser,
+            token,
+            isAuthenticated: true,
+            permissions: permissions[storedUser.role] || [],
+          });
+        }
+      } catch (error) {
+        // Token invalid, clear storage
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        set({ user: null, token: null, isAuthenticated: false, permissions: [] });
+      }
+    } else {
+      set(getInitialState());
+    }
   },
 }));

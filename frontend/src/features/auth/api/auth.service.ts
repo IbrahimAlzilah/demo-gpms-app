@@ -10,12 +10,19 @@ import type {
 
 export const authService = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    const response = await apiClient.post<AuthResponse>('/auth/login', credentials)
-    return response.data
+    const response = await apiClient.post<{ data: AuthResponse }>('/auth/login', credentials)
+    // Backend returns { success: true, data: { token, user, permissions } }
+    // Interceptor extracts data, so response.data is { token, user, permissions }
+    return response.data as AuthResponse
   },
 
   register: async (data: RegisterData): Promise<AuthResponse> => {
-    const response = await apiClient.post<AuthResponse>('/auth/register', data)
+    const response = await apiClient.post<{ data: AuthResponse }>('/auth/register', data)
+    return response.data as AuthResponse
+  },
+
+  me: async (): Promise<AuthResponse['user']> => {
+    const response = await apiClient.get<{ data: AuthResponse['user'] }>('/auth/me')
     return response.data
   },
 
@@ -26,7 +33,7 @@ export const authService = {
   recoverPassword: async (
     data: PasswordRecoveryRequest
   ): Promise<PasswordRecoveryResponse> => {
-    const response = await apiClient.post<PasswordRecoveryResponse>(
+    const response = await apiClient.post<{ data: PasswordRecoveryResponse }>(
       '/auth/recover-password',
       data
     )

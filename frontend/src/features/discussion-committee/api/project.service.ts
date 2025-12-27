@@ -1,108 +1,48 @@
-import { mockProjectService, mockProjects } from '../../../lib/mock/project.mock'
+import { apiClient } from '../../../lib/axios'
 import type { Project } from '../../../types/project.types'
 import type { TableQueryParams, TableResponse } from '../../../types/table.types'
 
-function applyCommitteeProjectFilters(projects: Project[], filters?: Record<string, unknown>): Project[] {
-  if (!filters || Object.keys(filters).length === 0) return projects
-  
-  return projects.filter((project) => {
-    if (filters.status && project.status !== filters.status) return false
-    return true
-  })
-}
-
-function applyCommitteeProjectSearch(projects: Project[], search?: string): Project[] {
-  if (!search) return projects
-  
-  const searchLower = search.toLowerCase()
-  return projects.filter((project) => 
-    project.title.toLowerCase().includes(searchLower) ||
-    project.description?.toLowerCase().includes(searchLower)
-  )
-}
-
-function applyCommitteeProjectSorting(projects: Project[], sortBy?: string, sortOrder?: "asc" | "desc"): Project[] {
-  if (!sortBy) return projects
-  
-  const sorted = [...projects].sort((a, b) => {
-    let aValue: string | number | Date = ""
-    let bValue: string | number | Date = ""
-    
-    switch (sortBy) {
-      case "title":
-        aValue = a.title
-        bValue = b.title
-        break
-      case "createdAt":
-        aValue = new Date(a.createdAt)
-        bValue = new Date(b.createdAt)
-        break
-      case "currentStudents":
-        aValue = a.currentStudents
-        bValue = b.currentStudents
-        break
-      default:
-        return 0
-    }
-    
-    if (aValue < bValue) return sortOrder === "asc" ? -1 : 1
-    if (aValue > bValue) return sortOrder === "asc" ? 1 : -1
-    return 0
-  })
-  
-  return sorted
-}
-
 export const discussionCommitteeProjectService = {
   getAssignedProjects: async (committeeMemberId: string): Promise<Project[]> => {
-    const all = await mockProjectService.getAll()
-    // In real app, filter by committee assignment
-    // For now, return projects that are in_progress
-    return all.filter((p) => p.status === 'in_progress')
+    const response = await apiClient.get<Project[]>('/discussion-committee/projects')
+    return Array.isArray(response.data) ? response.data : []
   },
 
   getTableData: async (params?: TableQueryParams, committeeMemberId?: string): Promise<TableResponse<Project>> => {
-    await new Promise((resolve) => setTimeout(resolve, 300))
+    const queryParams = new URLSearchParams()
     
-    let projects = committeeMemberId
-      ? await mockProjectService.getAll().then(all => all.filter((p) => p.status === 'in_progress'))
-      : []
-    
-    // Apply search
-    if (params?.search) {
-      projects = applyCommitteeProjectSearch(projects, params.search)
-    }
-    
-    // Apply filters
+    if (params?.page) queryParams.append('page', params.page.toString())
+    if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString())
+    if (params?.sortBy) queryParams.append('sortBy', params.sortBy)
+    if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder)
+    if (params?.search) queryParams.append('search', params.search)
     if (params?.filters) {
-      projects = applyCommitteeProjectFilters(projects, params.filters)
+      Object.entries(params.filters).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== '') {
+          queryParams.append(`filters[${key}]`, String(value))
+        }
+      })
     }
-    
-    // Apply sorting
-    if (params?.sortBy) {
-      projects = applyCommitteeProjectSorting(projects, params.sortBy, params.sortOrder)
-    }
-    
-    const totalCount = projects.length
-    const page = (params?.page ?? 1) - 1
-    const pageSize = params?.pageSize ?? 10
-    const start = page * pageSize
-    const end = start + pageSize
-    
-    const paginatedProjects = projects.slice(start, end)
-    const totalPages = Math.ceil(totalCount / pageSize)
+
+    const response = await apiClient.get<{ data: Project[], pagination: any }>(
+      `/discussion-committee/projects?${queryParams.toString()}`
+    )
     
     return {
-      data: paginatedProjects,
-      totalCount,
-      page: page + 1,
-      pageSize,
-      totalPages,
+      data: response.data || [],
+      totalCount: response.pagination?.total || 0,
+      page: response.pagination?.page || 1,
+      pageSize: response.pagination?.pageSize || 10,
+      totalPages: response.pagination?.totalPages || 0,
     }
   },
 
   getById: async (id: string): Promise<Project | null> => {
-    return mockProjectService.getById(id)
+    try {
+      const response = await apiClient.get<Project>(`/discussion-committee/projects/${id}`)
+      return response.data
+    } catch {
+      return null
+    }
   },
 }
-

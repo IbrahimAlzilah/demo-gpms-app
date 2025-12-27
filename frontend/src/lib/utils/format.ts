@@ -2,8 +2,10 @@
  * Formatting utilities for dates, numbers, and text
  */
 
-export function formatDate(date: string | Date): string {
+export function formatDate(date: string | Date | null | undefined): string {
+  if (!date) return '-'
   const d = typeof date === 'string' ? new Date(date) : date
+  if (!(d instanceof Date) || isNaN(d.getTime())) return '-'
   return new Intl.DateTimeFormat('ar-SA', {
     year: 'numeric',
     month: 'long',
@@ -11,8 +13,10 @@ export function formatDate(date: string | Date): string {
   }).format(d)
 }
 
-export function formatDateTime(date: string | Date): string {
+export function formatDateTime(date: string | Date | null | undefined): string {
+  if (!date) return '-'
   const d = typeof date === 'string' ? new Date(date) : date
+  if (!(d instanceof Date) || isNaN(d.getTime())) return '-'
   return new Intl.DateTimeFormat('ar-SA', {
     year: 'numeric',
     month: 'long',
@@ -22,8 +26,10 @@ export function formatDateTime(date: string | Date): string {
   }).format(d)
 }
 
-export function formatRelativeTime(date: string | Date): string {
+export function formatRelativeTime(date: string | Date | null | undefined): string {
+  if (!date) return '-'
   const d = typeof date === 'string' ? new Date(date) : date
+  if (!(d instanceof Date) || isNaN(d.getTime())) return '-'
   const now = new Date()
   const diffInSeconds = Math.floor((now.getTime() - d.getTime()) / 1000)
 

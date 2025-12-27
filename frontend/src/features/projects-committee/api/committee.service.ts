@@ -1,5 +1,4 @@
-import { mockProjectService, mockProjects } from '../../../lib/mock/project.mock'
-import { mockUsers } from '../../../lib/mock/auth.mock'
+import { apiClient } from '../../../lib/axios'
 import type { Project } from '../../../types/project.types'
 import type { User } from '../../../types/user.types'
 
@@ -10,31 +9,22 @@ export interface CommitteeAssignment {
 
 export const committeeDistributionService = {
   getProjectsReadyForDiscussion: async (): Promise<Project[]> => {
-    const all = await mockProjectService.getAll()
-    return all.filter((p) => p.status === 'in_progress' && !p.committeeId)
+    const response = await apiClient.get<Project[]>('/projects-committee/projects?status=in_progress')
+    return Array.isArray(response.data) ? response.data : []
   },
 
   getDiscussionCommitteeMembers: async (): Promise<User[]> => {
-    await new Promise((resolve) => setTimeout(resolve, 200))
-    return mockUsers.filter(
-      (u) => u.role === 'discussion_committee' && u.status === 'active'
-    )
+    const response = await apiClient.get<User[]>('/projects-committee/committees/members')
+    return Array.isArray(response.data) ? response.data : []
   },
 
   distributeProjects: async (assignments: CommitteeAssignment[]): Promise<Project[]> => {
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    const distributed: Project[] = []
-
-    assignments.forEach((assignment) => {
-      const project = mockProjects.find((p) => p.id === assignment.projectId)
-      if (project) {
-        project.committeeId = assignment.committeeMemberIds.join(',')
-        project.updatedAt = new Date().toISOString()
-        distributed.push({ ...project })
-      }
+    const response = await apiClient.post<Project[]>('/projects-committee/committees/distribute', {
+      assignments: assignments.map(a => ({
+        project_id: a.projectId,
+        committee_member_ids: a.committeeMemberIds,
+      })),
     })
-
-    return distributed
+    return Array.isArray(response.data) ? response.data : []
   },
 }
-

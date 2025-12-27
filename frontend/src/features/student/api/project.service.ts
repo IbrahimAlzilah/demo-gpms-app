@@ -1,171 +1,87 @@
-import { mockProjectService } from '../../../lib/mock/project.mock'
+import { apiClient } from '../../../lib/axios'
 import type {
   Project,
   ProjectRegistration,
-  SupervisorNote,
-  ProjectMilestone,
-  ProjectMeeting,
 } from '../../../types/project.types'
 import type { TableQueryParams, TableResponse } from '../../../types/table.types'
 
-function applyProjectFilters(projects: Project[], filters?: Record<string, unknown>): Project[] {
-  if (!filters || Object.keys(filters).length === 0) return projects
-  
-  return projects.filter((project) => {
-    if (filters.status && project.status !== filters.status) return false
-    return true
-  })
-}
-
-function applyProjectSearch(projects: Project[], search?: string): Project[] {
-  if (!search) return projects
-  
-  const searchLower = search.toLowerCase()
-  return projects.filter((project) => 
-    project.title.toLowerCase().includes(searchLower) ||
-    project.description?.toLowerCase().includes(searchLower)
-  )
-}
-
-function applyProjectSorting(projects: Project[], sortBy?: string, sortOrder?: "asc" | "desc"): Project[] {
-  if (!sortBy) return projects
-  
-  const sorted = [...projects].sort((a, b) => {
-    let aValue: string | number = ""
-    let bValue: string | number = ""
-    
-    switch (sortBy) {
-      case "title":
-        aValue = a.title
-        bValue = b.title
-        break
-      case "currentStudents":
-        aValue = a.currentStudents
-        bValue = b.currentStudents
-        break
-      case "maxStudents":
-        aValue = a.maxStudents
-        bValue = b.maxStudents
-        break
-      default:
-        return 0
-    }
-    
-    if (aValue < bValue) return sortOrder === "asc" ? -1 : 1
-    if (aValue > bValue) return sortOrder === "asc" ? 1 : -1
-    return 0
-  })
-  
-  return sorted
-}
-
 export const projectService = {
   getAll: async (): Promise<Project[]> => {
-    return mockProjectService.getAll()
+    const response = await apiClient.get<Project[]>('/student/projects')
+    return Array.isArray(response.data) ? response.data : []
   },
 
-  getTableData: async (params?: TableQueryParams): Promise<TableResponse<Project>> => {
-    await new Promise((resolve) => setTimeout(resolve, 300))
+  getTableData: async (params?: TableQueryParams, available?: boolean): Promise<TableResponse<Project>> => {
+    const queryParams = new URLSearchParams()
     
-    let projects = await mockProjectService.getAll()
-    
-    // Apply search
-    if (params?.search) {
-      projects = applyProjectSearch(projects, params.search)
+    if (available !== undefined) {
+      queryParams.append('available', available.toString())
     }
-    
-    // Apply filters
+    if (params?.page) queryParams.append('page', params.page.toString())
+    if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString())
+    if (params?.sortBy) queryParams.append('sortBy', params.sortBy)
+    if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder)
+    if (params?.search) queryParams.append('search', params.search)
     if (params?.filters) {
-      projects = applyProjectFilters(projects, params.filters)
+      Object.entries(params.filters).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== '') {
+          queryParams.append(`filters[${key}]`, String(value))
+        }
+      })
     }
-    
-    // Apply sorting
-    if (params?.sortBy) {
-      projects = applyProjectSorting(projects, params.sortBy, params.sortOrder)
-    }
-    
-    const totalCount = projects.length
-    const page = (params?.page ?? 1) - 1
-    const pageSize = params?.pageSize ?? 10
-    const start = page * pageSize
-    const end = start + pageSize
-    
-    const paginatedProjects = projects.slice(start, end)
-    const totalPages = Math.ceil(totalCount / pageSize)
+
+    const response = await apiClient.get<{ data: Project[], pagination: any }>(
+      `/student/projects?${queryParams.toString()}`
+    )
     
     return {
-      data: paginatedProjects,
-      totalCount,
-      page: page + 1,
-      pageSize,
-      totalPages,
+      data: response.data || [],
+      totalCount: response.pagination?.total || 0,
+      page: response.pagination?.page || 1,
+      pageSize: response.pagination?.pageSize || 10,
+      totalPages: response.pagination?.totalPages || 0,
     }
   },
 
   getById: async (id: string): Promise<Project | null> => {
-    return mockProjectService.getById(id)
+    try {
+      const response = await apiClient.get<Project>(`/student/projects/${id}`)
+      return response.data
+    } catch {
+      return null
+    }
   },
 
   getAvailable: async (): Promise<Project[]> => {
-    return mockProjectService.getAvailable()
+    const response = await apiClient.get<Project[]>('/student/projects?available=true')
+    return Array.isArray(response.data) ? response.data : []
   },
 
   getStudentRegistrations: async (studentId: string): Promise<ProjectRegistration[]> => {
-    return mockProjectService.getStudentRegistrations(studentId)
+    const response = await apiClient.get<ProjectRegistration[]>('/student/projects/registrations')
+    return Array.isArray(response.data) ? response.data : []
   },
 
   getRegistrationByProject: async (
     projectId: string,
     studentId: string
   ): Promise<ProjectRegistration | null> => {
-    return mockProjectService.getRegistrationByProject(projectId, studentId)
+    try {
+      const registrations = await this.getStudentRegistrations(studentId)
+      return registrations.find(r => r.projectId === projectId) || null
+    } catch {
+      return null
+    }
   },
 
   register: async (projectId: string, studentId: string): Promise<ProjectRegistration> => {
-    return mockProjectService.register(projectId, studentId)
+    const response = await apiClient.post<ProjectRegistration>(
+      `/student/projects/${projectId}/register`
+    )
+    return response.data
   },
 
   cancelRegistration: async (registrationId: string, studentId: string): Promise<void> => {
-    return mockProjectService.cancelRegistration(registrationId, studentId)
-  },
-
-  getSupervisorNotes: async (projectId: string): Promise<SupervisorNote[]> => {
-    return mockProjectService.getSupervisorNotes(projectId)
-  },
-
-  addSupervisorNote: async (projectId: string, content: string): Promise<SupervisorNote> => {
-    // This would call the API to add a supervisor note
-    // For now, we'll use the mock service if it exists
-    if (mockProjectService.addSupervisorNote) {
-      return mockProjectService.addSupervisorNote(projectId, content)
-    }
-    // Fallback: create a simple note object
-    return {
-      id: `note-${Date.now()}`,
-      projectId,
-      supervisorId: '',
-      content,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
-  },
-
-  getMilestones: async (projectId: string): Promise<ProjectMilestone[]> => {
-    return mockProjectService.getMilestones(projectId)
-  },
-
-  getMeetings: async (projectId: string): Promise<ProjectMeeting[]> => {
-    return mockProjectService.getMeetings(projectId)
-  },
-
-  getProgressPercentage: async (projectId: string): Promise<number> => {
-    return mockProjectService.getProgressPercentage(projectId)
-  },
-
-  replyToNote: async (noteId: string, content: string): Promise<void> => {
-    // This would call the API to reply to a supervisor note
-    // For now, we'll use the mock service if it exists, otherwise just return
-    return Promise.resolve()
+    await apiClient.delete(`/student/projects/registrations/${registrationId}`)
   },
 }
-

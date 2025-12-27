@@ -1,34 +1,26 @@
-import { mockProjectService, mockProjects } from '../../../lib/mock/project.mock'
-import { mockUsers } from '../../../lib/mock/auth.mock'
+import { apiClient } from '../../../lib/axios'
 import type { Project } from '../../../types/project.types'
 import type { User } from '../../../types/user.types'
 
 export const supervisorAssignmentService = {
   getProjectsWithoutSupervisor: async (): Promise<Project[]> => {
-    const all = await mockProjectService.getAll()
-    return all.filter((p) => !p.supervisorId)
+    const response = await apiClient.get<Project[]>('/projects-committee/projects?supervisor_id=null')
+    return Array.isArray(response.data) ? response.data : []
   },
 
   getAvailableSupervisors: async (): Promise<User[]> => {
-    await new Promise((resolve) => setTimeout(resolve, 200))
-    return mockUsers.filter((u) => u.role === 'supervisor' && u.status === 'active')
+    const response = await apiClient.get<User[]>('/projects-committee/supervisors')
+    return Array.isArray(response.data) ? response.data : []
   },
 
   assignSupervisor: async (projectId: string, supervisorId: string): Promise<Project> => {
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    const project = mockProjects.find((p) => p.id === projectId)
-    if (!project) throw new Error('Project not found')
-    
-    const supervisor = mockUsers.find((u) => u.id === supervisorId)
-    if (!supervisor || supervisor.role !== 'supervisor') {
-      throw new Error('Invalid supervisor')
-    }
-
-    project.supervisorId = supervisorId
-    project.supervisor = supervisor
-    project.updatedAt = new Date().toISOString()
-    
-    return { ...project }
+    const response = await apiClient.post<Project>(
+      `/projects-committee/supervisors/assign`,
+      {
+        project_id: projectId,
+        supervisor_id: supervisorId,
+      }
+    )
+    return response.data
   },
 }
-

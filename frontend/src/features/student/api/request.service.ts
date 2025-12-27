@@ -1,113 +1,65 @@
-import { mockRequestService } from '../../../lib/mock/request.mock'
+import { apiClient } from '../../../lib/axios'
 import type { Request } from '../../../types/request.types'
 import type { TableQueryParams, TableResponse } from '../../../types/table.types'
 
-function applyRequestFilters(requests: Request[], filters?: Record<string, unknown>): Request[] {
-  if (!filters || Object.keys(filters).length === 0) return requests
-  
-  return requests.filter((request) => {
-    if (filters.status && request.status !== filters.status) return false
-    if (filters.type && request.type !== filters.type) return false
-    return true
-  })
-}
-
-function applyRequestSearch(requests: Request[], search?: string): Request[] {
-  if (!search) return requests
-  
-  const searchLower = search.toLowerCase()
-  return requests.filter((request) => 
-    request.reason?.toLowerCase().includes(searchLower) ||
-    request.type.toLowerCase().includes(searchLower)
-  )
-}
-
-function applyRequestSorting(requests: Request[], sortBy?: string, sortOrder?: "asc" | "desc"): Request[] {
-  if (!sortBy) return requests
-  
-  const sorted = [...requests].sort((a, b) => {
-    let aValue: string | number | Date = ""
-    let bValue: string | number | Date = ""
-    
-    switch (sortBy) {
-      case "createdAt":
-        aValue = new Date(a.createdAt)
-        bValue = new Date(b.createdAt)
-        break
-      case "type":
-        aValue = a.type
-        bValue = b.type
-        break
-      default:
-        return 0
-    }
-    
-    if (aValue < bValue) return sortOrder === "asc" ? -1 : 1
-    if (aValue > bValue) return sortOrder === "asc" ? 1 : -1
-    return 0
-  })
-  
-  return sorted
-}
-
 export const requestService = {
   getAll: async (studentId?: string): Promise<Request[]> => {
-    return mockRequestService.getAll(studentId)
+    const response = await apiClient.get<Request[]>('/student/requests')
+    return Array.isArray(response.data) ? response.data : []
   },
 
   getTableData: async (params?: TableQueryParams, studentId?: string): Promise<TableResponse<Request>> => {
-    await new Promise((resolve) => setTimeout(resolve, 300))
+    const queryParams = new URLSearchParams()
     
-    let requests = await mockRequestService.getAll(studentId)
-    
-    // Apply search
-    if (params?.search) {
-      requests = applyRequestSearch(requests, params.search)
-    }
-    
-    // Apply filters
+    if (params?.page) queryParams.append('page', params.page.toString())
+    if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString())
+    if (params?.sortBy) queryParams.append('sortBy', params.sortBy)
+    if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder)
+    if (params?.search) queryParams.append('search', params.search)
     if (params?.filters) {
-      requests = applyRequestFilters(requests, params.filters)
+      Object.entries(params.filters).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== '') {
+          queryParams.append(`filters[${key}]`, String(value))
+        }
+      })
     }
-    
-    // Apply sorting
-    if (params?.sortBy) {
-      requests = applyRequestSorting(requests, params.sortBy, params.sortOrder)
-    }
-    
-    const totalCount = requests.length
-    const page = (params?.page ?? 1) - 1
-    const pageSize = params?.pageSize ?? 10
-    const start = page * pageSize
-    const end = start + pageSize
-    
-    const paginatedRequests = requests.slice(start, end)
-    const totalPages = Math.ceil(totalCount / pageSize)
+
+    const response = await apiClient.get<{ data: Request[], pagination: any }>(
+      `/student/requests?${queryParams.toString()}`
+    )
     
     return {
-      data: paginatedRequests,
-      totalCount,
-      page: page + 1,
-      pageSize,
-      totalPages,
+      data: response.data || [],
+      totalCount: response.pagination?.total || 0,
+      page: response.pagination?.page || 1,
+      pageSize: response.pagination?.pageSize || 10,
+      totalPages: response.pagination?.totalPages || 0,
     }
   },
 
   getById: async (id: string): Promise<Request | null> => {
-    return mockRequestService.getById(id)
+    try {
+      const response = await apiClient.get<Request>(`/student/requests/${id}`)
+      return response.data
+    } catch {
+      return null
+    }
   },
 
   create: async (
     data: Omit<Request, 'id' | 'createdAt' | 'updatedAt' | 'status'>
   ): Promise<Request> => {
-    return mockRequestService.create({
-      ...data,
-      status: 'pending',
+    const response = await apiClient.post<Request>('/student/requests', {
+      type: data.type,
+      project_id: data.projectId,
+      reason: data.reason,
+      additional_data: data.additionalData,
     })
+    return response.data
   },
 
   cancel: async (id: string): Promise<Request> => {
-    return mockRequestService.update(id, { status: 'cancelled' })
+    const response = await apiClient.post<Request>(`/student/requests/${id}/cancel`)
+    return response.data
   },
 }
-

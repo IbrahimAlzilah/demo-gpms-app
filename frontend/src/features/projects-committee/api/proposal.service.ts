@@ -1,128 +1,71 @@
-import { mockProposalService, mockProposals } from '../../../lib/mock/project.mock'
+import { apiClient } from '../../../lib/axios'
 import type { Proposal } from '../../../types/project.types'
 import type { TableQueryParams, TableResponse } from '../../../types/table.types'
 
-function applyProposalFilters(proposals: Proposal[], filters?: Record<string, unknown>): Proposal[] {
-  if (!filters || Object.keys(filters).length === 0) return proposals
-  
-  return proposals.filter((proposal) => {
-    if (filters.status && proposal.status !== filters.status) return false
-    return true
-  })
-}
-
-function applyProposalSearch(proposals: Proposal[], search?: string): Proposal[] {
-  if (!search) return proposals
-  
-  const searchLower = search.toLowerCase()
-  return proposals.filter((proposal) => 
-    proposal.title.toLowerCase().includes(searchLower) ||
-    proposal.description?.toLowerCase().includes(searchLower) ||
-    proposal.objectives?.toLowerCase().includes(searchLower)
-  )
-}
-
-function applyProposalSorting(proposals: Proposal[], sortBy?: string, sortOrder?: "asc" | "desc"): Proposal[] {
-  if (!sortBy) return proposals
-  
-  const sorted = [...proposals].sort((a, b) => {
-    let aValue: string | Date = ""
-    let bValue: string | Date = ""
-    
-    switch (sortBy) {
-      case "title":
-        aValue = a.title
-        bValue = b.title
-        break
-      case "createdAt":
-        aValue = new Date(a.createdAt)
-        bValue = new Date(b.createdAt)
-        break
-      default:
-        return 0
-    }
-    
-    if (aValue < bValue) return sortOrder === "asc" ? -1 : 1
-    if (aValue > bValue) return sortOrder === "asc" ? 1 : -1
-    return 0
-  })
-  
-  return sorted
-}
-
 export const committeeProposalService = {
   getAll: async (): Promise<Proposal[]> => {
-    return mockProposalService.getAll()
+    const response = await apiClient.get<Proposal[]>('/projects-committee/proposals')
+    return Array.isArray(response.data) ? response.data : []
   },
 
   getPending: async (): Promise<Proposal[]> => {
-    const all = await mockProposalService.getAll()
-    return all.filter((p) => p.status === 'pending_review')
+    const response = await apiClient.get<Proposal[]>('/projects-committee/proposals?status=pending_review')
+    return Array.isArray(response.data) ? response.data : []
   },
 
   getTableData: async (params?: TableQueryParams, status?: string): Promise<TableResponse<Proposal>> => {
-    await new Promise((resolve) => setTimeout(resolve, 300))
+    const queryParams = new URLSearchParams()
     
-    let proposals = await mockProposalService.getAll()
-    
-    // Filter by status if specified
-    if (status) {
-      proposals = proposals.filter((p) => p.status === status)
-    }
-    
-    // Apply search
-    if (params?.search) {
-      proposals = applyProposalSearch(proposals, params.search)
-    }
-    
-    // Apply filters
+    if (status) queryParams.append('status', status)
+    if (params?.page) queryParams.append('page', params.page.toString())
+    if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString())
+    if (params?.sortBy) queryParams.append('sortBy', params.sortBy)
+    if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder)
+    if (params?.search) queryParams.append('search', params.search)
     if (params?.filters) {
-      proposals = applyProposalFilters(proposals, params.filters)
+      Object.entries(params.filters).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== '') {
+          queryParams.append(`filters[${key}]`, String(value))
+        }
+      })
     }
-    
-    // Apply sorting
-    if (params?.sortBy) {
-      proposals = applyProposalSorting(proposals, params.sortBy, params.sortOrder)
-    }
-    
-    const totalCount = proposals.length
-    const page = (params?.page ?? 1) - 1
-    const pageSize = params?.pageSize ?? 10
-    const start = page * pageSize
-    const end = start + pageSize
-    
-    const paginatedProposals = proposals.slice(start, end)
-    const totalPages = Math.ceil(totalCount / pageSize)
+
+    const response = await apiClient.get<{ data: Proposal[], pagination: any }>(
+      `/projects-committee/proposals?${queryParams.toString()}`
+    )
     
     return {
-      data: paginatedProposals,
-      totalCount,
-      page: page + 1,
-      pageSize,
-      totalPages,
+      data: response.data || [],
+      totalCount: response.pagination?.total || 0,
+      page: response.pagination?.page || 1,
+      pageSize: response.pagination?.pageSize || 10,
+      totalPages: response.pagination?.totalPages || 0,
     }
   },
 
   getById: async (id: string): Promise<Proposal | null> => {
-    return mockProposalService.getById(id)
+    try {
+      const response = await apiClient.get<Proposal>(`/projects-committee/proposals/${id}`)
+      return response.data
+    } catch {
+      return null
+    }
   },
 
   approve: async (id: string, reviewedBy: string, projectId?: string): Promise<Proposal> => {
-    return mockProposalService.update(id, {
-      status: 'approved',
-      reviewedBy,
-      reviewedAt: new Date().toISOString(),
-      projectId,
-    })
+    const response = await apiClient.post<Proposal>(
+      `/projects-committee/proposals/${id}/approve`,
+      { project_id: projectId }
+    )
+    return response.data
   },
 
   reject: async (id: string, reviewedBy: string, reviewNotes?: string): Promise<Proposal> => {
-    return mockProposalService.update(id, {
-      status: 'rejected',
-      reviewedBy,
-      reviewedAt: new Date().toISOString(),
-      reviewNotes,
-    })
+    const response = await apiClient.post<Proposal>(
+      `/projects-committee/proposals/${id}/reject`,
+      { review_notes: reviewNotes }
+    )
+    return response.data
   },
 
   requestModification: async (
@@ -130,12 +73,10 @@ export const committeeProposalService = {
     reviewedBy: string,
     reviewNotes: string
   ): Promise<Proposal> => {
-    return mockProposalService.update(id, {
-      status: 'requires_modification',
-      reviewedBy,
-      reviewedAt: new Date().toISOString(),
-      reviewNotes,
-    })
+    const response = await apiClient.post<Proposal>(
+      `/projects-committee/proposals/${id}/request-modification`,
+      { review_notes: reviewNotes }
+    )
+    return response.data
   },
 }
-

@@ -42,7 +42,7 @@ class Project extends Model
      */
     public function students(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'project_student')
+        return $this->belongsToMany(User::class, 'project_student', 'project_id', 'student_id')
             ->withTimestamps();
     }
 

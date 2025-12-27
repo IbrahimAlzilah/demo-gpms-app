@@ -14,6 +14,18 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// Health check endpoint
+Route::get('/health', function () {
+    return response()->json([
+        'success' => true,
+        'message' => 'API is running',
+        'data' => [
+            'timestamp' => now()->toISOString(),
+            'database' => \DB::connection()->getPdo() ? 'connected' : 'disconnected',
+        ],
+    ]);
+});
+
 // Public routes
 Route::prefix('auth')->group(function () {
     Route::post('/login', [App\Http\Controllers\AuthController::class, 'login']);
@@ -52,6 +64,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Projects Committee routes
     Route::prefix('projects-committee')->middleware('role:projects_committee')->group(function () {
+        // Custom proposal routes (must be before apiResource to match correctly)
+        Route::post('proposals/{proposal}/approve', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'approve']);
+        Route::post('proposals/{proposal}/reject', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'reject']);
+        Route::post('proposals/{proposal}/request-modification', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'requestModification']);
         Route::apiResource('proposals', App\Http\Controllers\ProjectsCommittee\ProposalController::class);
         Route::apiResource('projects', App\Http\Controllers\ProjectsCommittee\ProjectController::class);
         Route::apiResource('periods', App\Http\Controllers\ProjectsCommittee\PeriodController::class);

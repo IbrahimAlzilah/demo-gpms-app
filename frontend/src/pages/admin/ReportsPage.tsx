@@ -1,12 +1,26 @@
+import { useState } from 'react'
 import { MainLayout } from '../../layouts/MainLayout'
 import { Card } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
+import { reportService, type ReportType } from '../../features/admin/api/report.service'
+import { useToast } from '../../components/common/NotificationToast'
+import { Loader2 } from 'lucide-react'
 
 export function ReportsPage() {
-  const handleGenerateReport = (type: string) => {
-    // In real app, this would generate and download a report
-    console.log(`Generating ${type} report...`)
-    alert(`سيتم توليد تقرير ${type}`)
+  const { showToast } = useToast()
+  const [loading, setLoading] = useState<string | null>(null)
+
+  const handleGenerateReport = async (type: ReportType) => {
+    setLoading(type)
+    try {
+      await reportService.downloadReport(type, { format: 'pdf' })
+      showToast(`تم توليد تقرير ${type} بنجاح`, 'success')
+    } catch (error) {
+      console.error('Error generating report:', error)
+      showToast(`فشل في توليد التقرير: ${error instanceof Error ? error.message : 'خطأ غير معروف'}`, 'error')
+    } finally {
+      setLoading(null)
+    }
   }
 
   return (
@@ -20,8 +34,18 @@ export function ReportsPage() {
             <p className="text-sm text-muted-foreground mb-4">
               تقرير شامل عن جميع المشاريع
             </p>
-            <Button onClick={() => handleGenerateReport('projects')}>
-              توليد التقرير
+            <Button 
+              onClick={() => handleGenerateReport('projects')}
+              disabled={loading === 'projects'}
+            >
+              {loading === 'projects' ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  جاري التوليد...
+                </>
+              ) : (
+                'توليد التقرير'
+              )}
             </Button>
           </Card>
 
@@ -30,8 +54,18 @@ export function ReportsPage() {
             <p className="text-sm text-muted-foreground mb-4">
               تقرير عن الطلاب ومشاريعهم
             </p>
-            <Button onClick={() => handleGenerateReport('students')}>
-              توليد التقرير
+            <Button 
+              onClick={() => handleGenerateReport('students')}
+              disabled={loading === 'students'}
+            >
+              {loading === 'students' ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  جاري التوليد...
+                </>
+              ) : (
+                'توليد التقرير'
+              )}
             </Button>
           </Card>
 
@@ -40,8 +74,18 @@ export function ReportsPage() {
             <p className="text-sm text-muted-foreground mb-4">
               تقرير عن التقييمات والدرجات
             </p>
-            <Button onClick={() => handleGenerateReport('evaluations')}>
-              توليد التقرير
+            <Button 
+              onClick={() => handleGenerateReport('evaluations')}
+              disabled={loading === 'evaluations'}
+            >
+              {loading === 'evaluations' ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  جاري التوليد...
+                </>
+              ) : (
+                'توليد التقرير'
+              )}
             </Button>
           </Card>
         </div>
