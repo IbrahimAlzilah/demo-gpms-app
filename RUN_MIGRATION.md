@@ -100,3 +100,5 @@ curl -X POST http://localhost:8000/api/auth/login \
 ```
 
 You should now get a successful response with a token! 🎉
+
+

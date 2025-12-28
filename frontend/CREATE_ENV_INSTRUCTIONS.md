@@ -54,3 +54,5 @@ EOF
 - The `.env` file is already added to `.gitignore` so it won't be committed to version control
 - If your backend runs on a different port, update `VITE_API_BASE_URL` accordingly
 
+
+

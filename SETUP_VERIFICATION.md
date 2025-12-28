@@ -260,3 +260,5 @@ If you're still experiencing issues:
 4. Ensure `.env` files are properly configured in both directories
 5. Try the health check endpoint first to verify basic connectivity
 
+
+

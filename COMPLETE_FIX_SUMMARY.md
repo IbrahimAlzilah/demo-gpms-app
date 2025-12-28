@@ -196,3 +196,5 @@ You'll know everything is working when:
 
 **Ready?** Run `php artisan migrate` now! 🚀
 
+
+
