@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDownloadReport } from '../hooks/useReportOperations'
 import { useToast } from '@/components/common/NotificationToast'
-import type { ReportType } from '@/features/admin/api/report.service'
+import type { ReportType } from '../../api/report.service'
 import type { ReportsListState, ReportsListData } from './ReportsList.types'
 
 export function useReportsList() {

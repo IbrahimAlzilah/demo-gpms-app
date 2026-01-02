@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { projectService } from "../api/project.service";
-import { useAuthStore } from "@/features/auth/store/auth.store";
+import { useAuthStore } from "@/pages/auth/login";
 import type { Project } from "@/types/project.types";
 
 /**

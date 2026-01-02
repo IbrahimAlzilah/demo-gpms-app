@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { groupService } from '../api/group.service'
-import { useAuthStore } from '@/features/auth/store/auth.store'
+import { useAuthStore } from '@/pages/auth/login'
 import type { User } from '@/types/user.types'
 
 export function useCreateGroup() {

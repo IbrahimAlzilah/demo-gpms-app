@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useAuthStore } from '@/features/auth/store/auth.store'
+import { useAuthStore } from '@/pages/auth/login'
 import { useDataTable } from '@/hooks/useDataTable'
 import { proposalService } from '../api/proposal.service'
 import type { Proposal } from '@/types/project.types'

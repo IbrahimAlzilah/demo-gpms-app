@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { FileQuestion, Home, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { useAuthStore } from '@/features/auth/store/auth.store'
+import { useAuthStore } from '@/pages/auth/login'
 import { ROUTES } from '@/lib/constants'
 import { roleRouteMap } from '@/routes/config'
 

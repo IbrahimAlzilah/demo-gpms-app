@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useAuthStore } from '@/features/auth/store/auth.store'
+import { useAuthStore } from '@/pages/auth/login'
 import { useProjects } from '@/pages/student/projects/hooks/useProjects'
 import { usePeriodCheck } from '@/hooks/usePeriodCheck'
 import { useDataTable } from '@/hooks/useDataTable'

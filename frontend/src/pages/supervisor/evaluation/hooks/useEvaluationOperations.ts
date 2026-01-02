@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { evaluationService } from '../api/evaluation.service'
-import { useAuthStore } from '@/features/auth/store/auth.store'
+import { useAuthStore } from '@/pages/auth/login'
 
 export function useSubmitGrade() {
   const queryClient = useQueryClient()

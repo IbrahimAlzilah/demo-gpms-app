@@ -1,4 +1,4 @@
-import type { ReportType, ReportOptions } from '@/features/admin/api/report.service'
+import type { ReportType, ReportOptions } from '../api/report.service'
 
 /**
  * Report list screen props

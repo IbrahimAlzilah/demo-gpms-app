@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useAuthStore } from '@/features/auth/store/auth.store'
+import { useAuthStore } from '@/pages/auth/login'
 import { NAV_MENU } from '@/lib/constants'
 import { useDirection } from '@/hooks/use-direction'
 import { cn } from '@/lib/utils'

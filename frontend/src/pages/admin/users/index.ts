@@ -28,3 +28,6 @@ export type {
 // Schemas
 export { userFormSchema } from './schema'
 export type { UserFormSchema } from './schema'
+
+// API Services (for internal use, but exported for flexibility)
+export { userService } from './api/user.service'

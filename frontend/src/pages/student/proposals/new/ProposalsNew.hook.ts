@@ -1,6 +1,6 @@
 import { useProposalForm } from '../hooks/useProposalForm'
 import { useCreateProposal } from '../hooks/useProposalOperations'
-import { useAuthStore } from '@/features/auth/store/auth.store'
+import { useAuthStore } from '@/pages/auth/login'
 
 export function useProposalsNew(onSuccess?: () => void) {
   const { user } = useAuthStore()

@@ -1,8 +1,8 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDataTable } from '@/hooks/useDataTable'
-import { userService } from '@/features/admin/api/user.service'
-import type { User } from '@/types/user.types'
+import { userService } from '../api/user.service'
+// import type { User } from '@/types/user.types'
 import type { UsersListState, UsersListData } from './UsersList.types'
 
 export function useUsersList() {

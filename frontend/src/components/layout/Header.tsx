@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useAuthStore } from '@/features/auth/store/auth.store'
+import { useAuthStore } from '@/pages/auth/login'
 import { ROUTES } from '@/lib/constants'
 import { SidebarTrigger, Button, Separator } from '@/components/ui'
 import { cn } from '@/lib/utils'

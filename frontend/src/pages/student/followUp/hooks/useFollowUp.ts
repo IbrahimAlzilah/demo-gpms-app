@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useProjects } from '@/pages/student/projects/hooks/useProjects'
-import { useAuthStore } from '@/features/auth/store/auth.store'
+import { useAuthStore } from '@/pages/auth/login'
 import type { Project } from '@/types/project.types'
 
 /**

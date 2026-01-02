@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
-import { useAuthStore } from "@/features/auth/store/auth.store";
+import { useAuthStore } from "@/pages/auth/login";
 import { usePeriodCheck } from "@/hooks/usePeriodCheck";
 import { proposalFormSchema, type ProposalFormSchema } from "../schema";
 import type { ProposalFormData } from "../types/Proposals.types";

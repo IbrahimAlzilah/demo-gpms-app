@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui'
 import { UserMinus, Crown } from 'lucide-react'
-import { useAuthStore } from '@/features/auth/store/auth.store'
+import { useAuthStore } from '@/pages/auth/login'
 import { useRemoveGroupMember } from '../hooks/useGroupOperations'
 import type { ProjectGroup } from '@/types/project.types'
 

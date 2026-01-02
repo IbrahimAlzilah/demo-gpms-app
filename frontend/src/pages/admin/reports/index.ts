@@ -16,3 +16,7 @@ export type {
   ReportOptions,
   ReportType,
 } from './types/Reports.types'
+
+// API Services (for internal use, but exported for flexibility)
+export { reportService } from './api/report.service'
+export type { ReportOptions, ReportType } from './api/report.service'

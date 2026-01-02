@@ -1,4 +1,4 @@
-import type { ReportType } from '@/features/admin/api/report.service'
+import type { ReportType } from '../../api/report.service'
 
 export interface ReportsListState {
   loadingReport: ReportType | null

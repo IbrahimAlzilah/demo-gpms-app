@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { gradeService } from '../api/grade.service'
-import { useAuthStore } from '@/features/auth/store/auth.store'
+import { useAuthStore } from '@/pages/auth/login'
 
 /**
  * Fetch all grades for the current user

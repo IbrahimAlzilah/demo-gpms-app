@@ -6,7 +6,7 @@ import type {
   PasswordRecoveryRequest,
   PasswordRecoveryResponse,
 } from "../../types/user.types";
-import type { LoginCredentials } from "../../features/auth/types/auth.types";
+import type { LoginCredentials } from "../../pages/auth/login";
 
 // Mock users database
 export const mockUsers: User[] = [

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supervisionService } from '../api/supervision.service'
-import { useAuthStore } from '@/features/auth/store/auth.store'
+import { useAuthStore } from '@/pages/auth/login'
 
 export function useApproveSupervisionRequest() {
   const queryClient = useQueryClient()

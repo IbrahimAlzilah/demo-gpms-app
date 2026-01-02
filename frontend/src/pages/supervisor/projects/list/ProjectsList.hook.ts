@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useAuthStore } from '@/features/auth/store/auth.store'
+import { useAuthStore } from '@/pages/auth/login'
 import { useDataTable } from '@/hooks/useDataTable'
 import { projectService } from '../api/project.service'
 import type { ProjectsListState, ProjectsListData } from './ProjectsList.types'

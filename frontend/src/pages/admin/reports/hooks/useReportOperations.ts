@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
-import { reportService, type ReportType, type ReportOptions } from '@/features/admin/api/report.service'
+import { reportService, type ReportType, type ReportOptions } from '../api/report.service'
 
 export function useGenerateReport() {
   return useMutation({

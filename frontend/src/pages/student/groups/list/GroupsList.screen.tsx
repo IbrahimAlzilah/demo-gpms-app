@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { BlockContent, ModalDialog, LoadingSpinner } from '@/components/common'
 import { AlertCircle, Users, Mail, Crown, Loader2, CheckCircle2, XCircle, Plus, ArrowLeft } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
-import { useAuthStore } from '@/features/auth/store/auth.store'
+import { useAuthStore } from '@/pages/auth/login'
 import { useAcceptInvitation, useRejectInvitation, useCreateGroup } from '../hooks/useGroupOperations'
 import { GroupInviteForm } from '../components/GroupInviteForm'
 import { GroupJoinForm } from '../components/GroupJoinForm'

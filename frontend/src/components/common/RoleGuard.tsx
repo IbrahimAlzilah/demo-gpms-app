@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom'
-import { useAuthStore } from '../../features/auth/store/auth.store'
+import { useAuthStore } from '../../pages/auth/login'
 import type { UserRole } from '../../types/user.types'
 
 interface RoleGuardProps {
