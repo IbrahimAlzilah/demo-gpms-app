@@ -9,12 +9,12 @@ export const LazyNotFoundPage = lazy(() => import('../pages/not-found/NotFoundPa
 // Student pages
 export const LazyStudentDashboardPage = lazy(() => import('../pages/student/StudentDashboardPage').then(m => ({ default: m.StudentDashboardPage })))
 export const LazyStudentProposalsPage = lazy(() => import('../pages/student/proposals/ProposalsPage').then(m => ({ default: m.ProposalsPage })))
-export const LazyStudentProjectsPage = lazy(() => import('../pages/student/ProjectsPage').then(m => ({ default: m.ProjectsPage })))
-export const LazyGroupsPage = lazy(() => import('../pages/student/GroupsPage').then(m => ({ default: m.GroupsPage })))
-export const LazyRequestsPage = lazy(() => import('../pages/student/RequestsPage').then(m => ({ default: m.RequestsPage })))
-export const LazyDocumentsPage = lazy(() => import('../pages/student/DocumentsPage').then(m => ({ default: m.DocumentsPage })))
-export const LazyFollowUpPage = lazy(() => import('../pages/student/FollowUpPage').then(m => ({ default: m.FollowUpPage })))
-export const LazyGradesPage = lazy(() => import('../pages/student/GradesPage').then(m => ({ default: m.GradesPage })))
+export const LazyStudentProjectsPage = lazy(() => import('../pages/student/projects/ProjectsPage').then(m => ({ default: m.ProjectsPage })))
+export const LazyGroupsPage = lazy(() => import('../pages/student/groups/GroupsPage').then(m => ({ default: m.GroupsPage })))
+export const LazyRequestsPage = lazy(() => import('../pages/student/requests/RequestsPage').then(m => ({ default: m.RequestsPage })))
+export const LazyDocumentsPage = lazy(() => import('../pages/student/documents/DocumentsPage').then(m => ({ default: m.DocumentsPage })))
+export const LazyFollowUpPage = lazy(() => import('../pages/student/followUp/FollowUpPage').then(m => ({ default: m.FollowUpPage })))
+export const LazyGradesPage = lazy(() => import('../pages/student/grades/GradesPage').then(m => ({ default: m.GradesPage })))
 
 // Supervisor pages
 export const LazySupervisorDashboardPage = lazy(() => import('../pages/supervisor/SupervisorDashboardPage').then(m => ({ default: m.SupervisorDashboardPage })))

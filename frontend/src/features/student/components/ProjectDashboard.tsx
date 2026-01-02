@@ -2,11 +2,10 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useProject } from '../hooks/useProjects'
-import { useDocuments } from '../hooks/useDocuments'
+import { useDocuments, DocumentUpload } from '@/pages/student/documents'
 import { projectService } from '../api/project.service'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Textarea, Label, Badge } from '@/components/ui'
 import { LoadingSpinner, StatusBadge } from '@/components/common'
-import { DocumentUpload } from './DocumentUpload'
 import {
   Briefcase, User, Calendar, FileText, MessageSquare, CheckCircle2, Clock,
   MapPin, Users, TrendingUp, Loader2, Send, X, AlertCircle
