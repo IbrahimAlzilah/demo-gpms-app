@@ -1,92 +1,45 @@
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
-import { useCreateProposal } from '../hooks/useProposals'
-import { useAuthStore } from '../../auth/store/auth.store'
-import { usePeriodCheck } from '../../../hooks/usePeriodCheck'
 import { Button, Input, Textarea, Label } from '@/components/ui'
 import { LoadingSpinner, FileUpload } from '@/components/common'
 import { AlertCircle, FileText, Loader2, Calendar } from 'lucide-react'
-import { proposalSchema, type ProposalSchema } from '../schema'
+import type { UseProposalFormReturn } from '../../hooks/useProposalForm'
 
 interface ProposalFormProps {
-  onSuccess?: () => void
+  form: UseProposalFormReturn['form']
+  attachedFiles: UseProposalFormReturn['attachedFiles']
+  error: UseProposalFormReturn['error']
+  isPeriodActive: UseProposalFormReturn['isPeriodActive']
+  periodLoading: UseProposalFormReturn['periodLoading']
+  handleSubmit: UseProposalFormReturn['handleSubmit']
+  handleFileChange: UseProposalFormReturn['handleFileChange']
+  watch: UseProposalFormReturn['watch']
+  isSubmitting?: boolean
+  isEditMode?: boolean
+  onCancel?: () => void
 }
 
-export function ProposalForm({ onSuccess }: ProposalFormProps) {
+export function ProposalForm({
+  form,
+  attachedFiles,
+  error,
+  isPeriodActive,
+  periodLoading,
+  handleSubmit,
+  handleFileChange,
+  watch,
+  isSubmitting = false,
+  isEditMode = false,
+  onCancel,
+}: ProposalFormProps) {
   const { t } = useTranslation()
-  const { user } = useAuthStore()
-  const createProposal = useCreateProposal()
-  const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('proposal_submission')
-  const [attachedFiles, setAttachedFiles] = useState<File[]>([])
-  const [error, setError] = useState('')
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-    watch,
-  } = useForm<ProposalSchema>({
-    resolver: zodResolver(proposalSchema(t)),
-    defaultValues: {
-      title: '',
-      description: '',
-      objectives: '',
-      methodology: '',
-      expectedOutcomes: '',
-    },
-  })
+  const { register, formState: { errors } } = form
 
   const title = watch('title')
   const description = watch('description')
   const objectives = watch('objectives')
 
-  const onSubmit = async (data: ProposalSchema) => {
-    if (!user) {
-      setError(t('proposal.authRequired'))
-      return
-    }
-
-    if (!isPeriodActive) {
-      setError(t('proposal.periodClosed'))
-      return
-    }
-
-    setError('')
-
-    try {
-      await createProposal.mutateAsync({
-        title: data.title.trim(),
-        description: data.description.trim(),
-        objectives: data.objectives.trim(),
-        methodology: data.methodology?.trim(),
-        expectedOutcomes: data.expectedOutcomes?.trim(),
-        submitterId: user.id,
-      })
-
-      // Reset form and files
-      reset()
-      setAttachedFiles([])
-      setError('')
-      onSuccess?.()
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : t('proposal.submitError')
-      )
-    }
-  }
-
-  const handleFileChange = (files: File[]) => {
-    setAttachedFiles(files)
-    setError('')
-  }
-
   if (periodLoading) {
-    return (<LoadingSpinner />)
+    return <LoadingSpinner />
   }
 
   if (!isPeriodActive) {
@@ -106,7 +59,7 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6" noValidate>
       {error && (
         <div className="flex items-start gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
           <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
@@ -114,7 +67,7 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
         </div>
       )}
 
-      <div className='space-y-4'>
+      <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="title">
             {t('proposal.title')} <span className="text-destructive">*</span>
@@ -183,6 +136,46 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
           </p>
         </div>
 
+        <div className="space-y-2">
+          <Label htmlFor="methodology">
+            {t('proposal.methodology')} ({t('common.optional')})
+          </Label>
+          <Textarea
+            id="methodology"
+            {...register('methodology')}
+            placeholder={t('proposal.methodologyPlaceholder')}
+            rows={4}
+            className={errors.methodology ? 'border-destructive' : ''}
+            aria-invalid={!!errors.methodology}
+          />
+          {errors.methodology && (
+            <p className="text-sm text-destructive flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" />
+              {errors.methodology.message}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="expectedOutcomes">
+            {t('proposal.expectedOutcomes')} ({t('common.optional')})
+          </Label>
+          <Textarea
+            id="expectedOutcomes"
+            {...register('expectedOutcomes')}
+            placeholder={t('proposal.expectedOutcomesPlaceholder')}
+            rows={4}
+            className={errors.expectedOutcomes ? 'border-destructive' : ''}
+            aria-invalid={!!errors.expectedOutcomes}
+          />
+          {errors.expectedOutcomes && (
+            <p className="text-sm text-destructive flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" />
+              {errors.expectedOutcomes.message}
+            </p>
+          )}
+        </div>
+
         <div className="space-y-2 col-span-2">
           <Label>
             {t('proposal.attachments')} ({t('common.optional')})
@@ -200,31 +193,29 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
         </div>
       </div>
       <div className="flex gap-2 justify-end pt-4 border-t">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => {
-            reset()
-            setAttachedFiles([])
-            setError('')
-          }}
-          disabled={createProposal.isPending}
-        >
-          {t('common.cancel')}
-        </Button>
+        {onCancel && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
+            {t('common.cancel')}
+          </Button>
+        )}
         <Button
           type="submit"
-          disabled={createProposal.isPending || !isPeriodActive}
+          disabled={isSubmitting || !isPeriodActive}
         >
-          {createProposal.isPending ? (
+          {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {t('proposal.submitting')}
+              {isEditMode ? t('proposal.updating') : t('proposal.submitting')}
             </>
           ) : (
             <>
               <FileText className="mr-2 h-4 w-4" />
-              {t('proposal.submit')}
+              {isEditMode ? t('proposal.update') : t('proposal.submit')}
             </>
           )}
         </Button>
@@ -232,5 +223,3 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
     </form>
   )
 }
-
-

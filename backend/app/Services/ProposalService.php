@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Proposal;
 use App\Models\User;
 use App\Models\Project;
+use App\Enums\ProposalStatus;
 use Illuminate\Support\Facades\DB;
 
 class ProposalService
@@ -152,6 +153,32 @@ class ProposalService
         }
 
         return $proposal;
+    }
+
+    /**
+     * Update a proposal (only allowed when status is pending_review)
+     */
+    public function update(Proposal $proposal, array $data): Proposal
+    {
+        // Ensure proposal can be modified (status must be pending_review)
+        if ($proposal->status !== ProposalStatus::PENDING_REVIEW) {
+            throw new \Illuminate\Http\Exceptions\HttpResponseException(
+                response()->json([
+                    'success' => false,
+                    'message' => 'Proposal can only be edited when status is pending_review',
+                ], 403)
+            );
+        }
+
+        $proposal->update([
+            'title' => $data['title'] ?? $proposal->title,
+            'description' => $data['description'] ?? $proposal->description,
+            'objectives' => $data['objectives'] ?? $proposal->objectives,
+            'methodology' => $data['methodology'] ?? $proposal->methodology,
+            'expected_outcomes' => $data['expected_outcomes'] ?? $proposal->expected_outcomes,
+        ]);
+
+        return $proposal->fresh();
     }
 }
 

@@ -77,23 +77,19 @@ class ProposalController extends Controller
         $this->authorize('update', $proposal);
 
         $validated = $request->validate([
-            'title' => 'sometimes|string|max:255',
-            'description' => 'sometimes|string',
-            'objectives' => 'sometimes|string',
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'objectives' => 'required|string',
             'methodology' => 'nullable|string',
             'expected_outcomes' => 'nullable|string',
         ]);
 
-        // If proposal requires modification, allow resubmission by changing status to pending_review
-        if ($proposal->status === 'requires_modification') {
-            $validated['status'] = 'pending_review';
-        }
-
-        $proposal->update($validated);
+        // Use service to update proposal (enforces status check)
+        $proposal = $this->proposalService->update($proposal, $validated);
 
         return response()->json([
             'success' => true,
-            'data' => new ProposalResource($proposal->fresh()->load(['submitter', 'reviewer'])),
+            'data' => new ProposalResource($proposal->load(['submitter', 'reviewer'])),
             'message' => 'Proposal updated successfully',
         ]);
     }

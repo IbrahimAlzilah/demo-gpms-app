@@ -1,18 +1,15 @@
-import type { ColumnDef } from "@tanstack/react-table"
-import { Button } from "@/components/ui/button"
-import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
-import { StatusBadge } from "@/components/common/StatusBadge"
-import type { Proposal } from "@/types/project.types"
-import { Eye, CheckCircle2, XCircle, Clock, AlertCircle } from "lucide-react"
-import { formatRelativeTime } from "@/lib/utils/format"
-
-interface ProposalTableColumnsProps {
-  onView: (proposal: Proposal) => void
-  t: (key: string) => string
-}
+import type { ColumnDef } from '@tanstack/react-table'
+import { DataTableColumnHeader } from '@/components/ui/data-table/data-table-column-header'
+import { StatusBadge } from '@/components/common/StatusBadge'
+import { ActionsDropdown } from '@/components/common/ActionsDropdown'
+import type { Proposal } from '@/types/project.types'
+import { Eye, Edit, CheckCircle2, XCircle, Clock, AlertCircle } from 'lucide-react'
+import { formatRelativeTime } from '@/lib/utils/format'
+import type { ProposalTableColumnsProps } from '../../types/Proposals.types'
 
 export function createProposalColumns({
   onView,
+  onEdit,
   t,
 }: ProposalTableColumnsProps): ColumnDef<Proposal>[] {
   const getStatusIcon = (status: string) => {
@@ -30,7 +27,7 @@ export function createProposalColumns({
 
   return [
     {
-      accessorKey: "title",
+      accessorKey: 'title',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('proposal.title')} />
       ),
@@ -42,7 +39,7 @@ export function createProposalColumns({
       ),
     },
     {
-      accessorKey: "description",
+      accessorKey: 'description',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('proposal.description')} />
       ),
@@ -53,7 +50,7 @@ export function createProposalColumns({
       ),
     },
     {
-      accessorKey: "status",
+      accessorKey: 'status',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('common.status')} />
       ),
@@ -63,7 +60,7 @@ export function createProposalColumns({
       },
     },
     {
-      accessorKey: "createdAt",
+      accessorKey: 'createdAt',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('proposal.submittedAt')} />
       ),
@@ -74,7 +71,7 @@ export function createProposalColumns({
       ),
     },
     {
-      accessorKey: "reviewedAt",
+      accessorKey: 'reviewedAt',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('proposal.reviewedAt')} />
       ),
@@ -85,29 +82,30 @@ export function createProposalColumns({
       ),
     },
     {
-      id: "actions",
+      id: 'actions',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('common.actions')} />
       ),
       cell: ({ row }) => {
         const proposal = row.original
-        const viewLabel = t('common.view')
 
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onView(proposal)}
-              className="h-8 w-8 p-0"
-              title={viewLabel}
-              aria-label={viewLabel}
-            >
-              <Eye className="h-4 w-4" />
-              <span className="sr-only">{viewLabel}</span>
-            </Button>
-          </div>
-        )
+        const actions = [
+          {
+            id: 'view',
+            label: t('view'),
+            icon: Eye,
+            onClick: () => onView(proposal),
+          },
+          {
+            id: 'edit',
+            label: t('edit'),
+            icon: Edit,
+            onClick: () => onEdit?.(proposal),
+            hidden: (row: Proposal) => row.status !== 'pending_review' || !onEdit,
+          },
+        ]
+
+        return <ActionsDropdown row={proposal} actions={actions} />
       },
     },
   ]

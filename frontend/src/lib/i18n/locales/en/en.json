@@ -350,7 +350,12 @@
     "resubmitTitle": "Resubmit Proposal",
     "resubmitMessage": "Are you sure you want to resubmit this proposal after modifications? The status will be changed to pending review.",
     "resubmitSuccess": "Proposal resubmitted successfully",
-    "resubmitError": "Failed to resubmit proposal"
+    "resubmitError": "Failed to resubmit proposal",
+    "edit": "Edit Proposal",
+    "update": "Update Proposal",
+    "updating": "Updating...",
+    "updateSuccess": "Proposal updated successfully",
+    "cannotEdit": "This proposal cannot be edited. Only proposals with pending_review status can be edited."
   },
   "group": {
     "pageDescription": "Create a new group, join one, invite colleagues, or leave",

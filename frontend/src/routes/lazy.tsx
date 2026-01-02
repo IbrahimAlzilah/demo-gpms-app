@@ -8,7 +8,7 @@ export const LazyNotFoundPage = lazy(() => import('../pages/not-found/NotFoundPa
 
 // Student pages
 export const LazyStudentDashboardPage = lazy(() => import('../pages/student/StudentDashboardPage').then(m => ({ default: m.StudentDashboardPage })))
-export const LazyStudentProposalsPage = lazy(() => import('../pages/student/ProposalsPage').then(m => ({ default: m.ProposalsPage })))
+export const LazyStudentProposalsPage = lazy(() => import('../pages/student/proposals/ProposalsPage').then(m => ({ default: m.ProposalsPage })))
 export const LazyStudentProjectsPage = lazy(() => import('../pages/student/ProjectsPage').then(m => ({ default: m.ProjectsPage })))
 export const LazyGroupsPage = lazy(() => import('../pages/student/GroupsPage').then(m => ({ default: m.GroupsPage })))
 export const LazyRequestsPage = lazy(() => import('../pages/student/RequestsPage').then(m => ({ default: m.RequestsPage })))

@@ -1,11 +1,10 @@
 import { MainLayout } from '@/layouts/MainLayout'
-import { ProposalManagement } from '@/features/student/components/ProposalManagement'
+import { ProposalsList } from './list/ProposalsList.screen'
 
 export function ProposalsPage() {
-
   return (
     <MainLayout>
-      <ProposalManagement />
+      <ProposalsList />
     </MainLayout>
   )
 }

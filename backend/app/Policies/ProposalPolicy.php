@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Proposal;
 use App\Models\User;
+use App\Enums\ProposalStatus;
 
 class ProposalPolicy
 {
@@ -40,8 +41,8 @@ class ProposalPolicy
             return false;
         }
 
-        // Can only update if pending or requires modification
-        return in_array($proposal->status, ['pending_review', 'requires_modification']);
+        // Can only update if status is pending_review
+        return $proposal->status === ProposalStatus::PENDING_REVIEW;
     }
 
     /**
@@ -51,6 +52,6 @@ class ProposalPolicy
     {
         // Only submitter can delete their own proposal if it's pending
         return $proposal->submitter_id === $user->id 
-            && $proposal->status === 'pending_review';
+            && $proposal->status === ProposalStatus::PENDING_REVIEW;
     }
 }
