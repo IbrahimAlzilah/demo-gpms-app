@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register custom middleware aliases
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'window' => \App\Http\Middleware\CheckTimeWindow::class,
         ]);
 
         // Enable API middleware group (includes throttle, CORS, etc.)

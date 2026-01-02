@@ -105,6 +105,8 @@
   "nav": {
     "dashboard": "Dashboard",
     "proposals": "Proposals",
+    "myProposals": "My Proposals",
+    "approvedProposals": "Approved Proposals",
     "projects": "Projects",
     "groups": "Groups",
     "requests": "Requests",
@@ -313,6 +315,7 @@
     "fileUploadHint": "You can upload PDF, Word, or text files. Maximum 10MB per file",
     "submit": "Submit Proposal",
     "submitting": "Submitting...",
+    "submitSuccess": "Proposal submitted successfully",
     "submitError": "An error occurred while submitting the proposal",
     "pageDescription": "Submit graduation project proposals or review submitted proposals",
     "noProposals": "No proposals",
@@ -342,12 +345,20 @@
       "objectivesMinLength": "Objectives must be at least 30 characters"
     },
     "fileTooLarge": "File is too large (maximum 10MB)",
-    "invalidFileType": "Unsupported file type"
+    "invalidFileType": "Unsupported file type",
+    "resubmit": "Resubmit",
+    "resubmitTitle": "Resubmit Proposal",
+    "resubmitMessage": "Are you sure you want to resubmit this proposal after modifications? The status will be changed to pending review.",
+    "resubmitSuccess": "Proposal resubmitted successfully",
+    "resubmitError": "Failed to resubmit proposal"
   },
   "group": {
     "pageDescription": "Create a new group, join one, invite colleagues, or leave",
     "management": "Group Management",
-    "noGroupDescription": "No group has been created yet",
+    "noGroup": "No group exists",
+    "noGroupDescription": "You can create a new group or join an existing group",
+    "createGroup": "Create Group",
+    "joinGroup": "Join Group",
     "myGroup": "My Group",
     "membersCount": "Members",
     "full": "Full",
@@ -650,7 +661,17 @@
       "notesOptional": "Notes (optional)",
       "modificationsPlaceholder": "Mention required modifications",
       "notesPlaceholder": "Notes (optional)",
-      "modifyNotesRequired": "Modification notes are required"
+      "modifyNotesRequired": "Modification notes are required",
+      "filterByStatus": "Filter by Status",
+      "allProposals": "All Proposals",
+      "reviewPanel": "Manage Proposals",
+      "searchPlaceholder": "Search proposals...",
+      "noProposals": "No proposals",
+      "loadError": "An error occurred while loading proposals",
+      "approveSuccess": "Proposal approved successfully",
+      "rejectSuccess": "Proposal rejected successfully",
+      "modifySuccess": "Modification requested successfully",
+      "processError": "An error occurred while processing the proposal"
     },
     "periods": {
       "createNew": "Announce New Time Period",
@@ -665,7 +686,14 @@
       "endDateRequired": "End date is required",
       "invalidDateRange": "Start date must be before end date",
       "periodCreated": "Time period announced successfully",
+      "periodUpdated": "Period updated successfully",
+      "periodDeleted": "Period deleted successfully",
       "createError": "Failed to create period",
+      "updateError": "Failed to update period",
+      "deleteError": "Failed to delete period",
+      "editPeriod": "Edit Period",
+      "confirmDelete": "Are you sure you want to delete this period? This action cannot be undone.",
+      "noPeriods": "No periods found",
       "announcePeriod": "Announce Period",
       "currentPeriods": "Current Time Periods",
       "types": {

@@ -20,8 +20,23 @@ class ProposalController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = Proposal::where('submitter_id', $request->user()->id)
-            ->with(['submitter', 'reviewer', 'project']);
+        $query = Proposal::with(['submitter', 'reviewer', 'project']);
+
+        // Get filters from request
+        $filters = $request->get('filters', []);
+
+        // For "My Proposals" route: filter by submitter_id (user's proposals)
+        // For "Approved Proposals" route: show all approved proposals (no submitter filter)
+        if (isset($filters['submitterId'])) {
+            // Explicitly filter by submitterId (for "My Proposals")
+            $query->where('submitter_id', $filters['submitterId']);
+        } elseif (isset($filters['status']) && $filters['status'] === 'approved') {
+            // For "Approved Proposals": show all approved proposals (no submitter filter)
+            // Don't apply submitter filter
+        } else {
+            // Default behavior: show only user's proposals
+            $query->where('submitter_id', $request->user()->id);
+        }
 
         $query = $this->applyTableQuery($query, $request);
 
@@ -68,6 +83,11 @@ class ProposalController extends Controller
             'methodology' => 'nullable|string',
             'expected_outcomes' => 'nullable|string',
         ]);
+
+        // If proposal requires modification, allow resubmission by changing status to pending_review
+        if ($proposal->status === 'requires_modification') {
+            $validated['status'] = 'pending_review';
+        }
 
         $proposal->update($validated);
 

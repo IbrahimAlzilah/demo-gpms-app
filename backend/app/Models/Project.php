@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Enums\ProjectStatus;
 
 class Project extends Model
 {
@@ -27,6 +28,7 @@ class Project extends Model
 
     protected $casts = [
         'keywords' => 'array',
+        'status' => ProjectStatus::class,
     ];
 
     /**
@@ -132,7 +134,7 @@ class Project extends Model
      */
     public function isAvailableForRegistration(): bool
     {
-        return $this->status === 'available_for_registration' 
+        return $this->status === ProjectStatus::AVAILABLE_FOR_REGISTRATION
             && $this->current_students < $this->max_students;
     }
 
@@ -142,6 +144,30 @@ class Project extends Model
     public function hasAvailableSpots(): bool
     {
         return $this->current_students < $this->max_students;
+    }
+
+    /**
+     * Check if project is visible to students
+     */
+    public function isVisibleToStudents(): bool
+    {
+        return $this->status?->isVisibleToStudents() ?? false;
+    }
+
+    /**
+     * Check if project is active
+     */
+    public function isActive(): bool
+    {
+        return $this->status?->isActive() ?? false;
+    }
+
+    /**
+     * Check if project is completed
+     */
+    public function isCompleted(): bool
+    {
+        return $this->status === ProjectStatus::COMPLETED;
     }
 }
 

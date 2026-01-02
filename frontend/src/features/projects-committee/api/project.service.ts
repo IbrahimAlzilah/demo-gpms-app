@@ -7,8 +7,10 @@ export const committeeProjectService = {
     return Array.isArray(response.data) ? response.data : []
   },
 
-  getApproved: async (): Promise<Project[]> => {
-    const response = await apiClient.get<Project[]>('/projects-committee/projects?status=approved')
+  getDraft: async (): Promise<Project[]> => {
+    // Get all draft projects (not yet announced) by using a large page size
+    // Only projects with status 'draft' should be shown (not 'available_for_registration')
+    const response = await apiClient.get<{ data: Project[], pagination: any }>('/projects-committee/projects?status=draft&pageSize=1000')
     return Array.isArray(response.data) ? response.data : []
   },
 

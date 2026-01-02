@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ProjectResource;
 use App\Http\Traits\HasTableQuery;
 use App\Models\Project;
+use App\Models\User;
 use App\Services\ProjectService;
+use App\Services\NotificationService;
+use App\Enums\ProjectStatus;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -15,7 +18,8 @@ class ProjectController extends Controller
     use HasTableQuery;
 
     public function __construct(
-        protected ProjectService $projectService
+        protected ProjectService $projectService,
+        protected NotificationService $notificationService
     ) {}
 
     public function index(Request $request): JsonResponse
@@ -47,16 +51,35 @@ class ProjectController extends Controller
         try {
             $projectIds = $validated['project_ids'];
             $projects = Project::whereIn('id', $projectIds)
-                ->where('status', 'approved')
+                ->where('status', ProjectStatus::DRAFT->value)
                 ->get();
 
             foreach ($projects as $project) {
-                $project->update(['status' => 'available_for_registration']);
+                $project->update(['status' => ProjectStatus::AVAILABLE_FOR_REGISTRATION->value]);
             }
 
             $announcedProjects = Project::whereIn('id', $projectIds)
                 ->with(['supervisor', 'students'])
                 ->get();
+
+            // Notify all students about announced projects
+            $students = User::where('role', 'student')
+                ->where('status', 'active')
+                ->pluck('id')
+                ->toArray();
+
+            if (!empty($students) && !empty($announcedProjects)) {
+                $projectTitles = $announcedProjects->pluck('title')->implode(', ');
+                $message = "تم إعلان مشاريع جديدة متاحة للتسجيل: {$projectTitles}";
+                
+                $this->notificationService->createForUsers(
+                    $students,
+                    $message,
+                    'projects_announced',
+                    'project',
+                    null
+                );
+            }
 
             return response()->json([
                 'success' => true,

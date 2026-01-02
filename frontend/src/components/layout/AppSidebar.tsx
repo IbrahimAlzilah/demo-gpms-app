@@ -5,6 +5,8 @@ import { NAV_MENU } from '@/lib/constants'
 import { useDirection } from '@/hooks/use-direction'
 import { cn } from '@/lib/utils'
 import * as Icons from 'lucide-react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import {
   Sidebar,
   SidebarContent,
@@ -15,6 +17,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuBadge,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
 } from '@/components/ui/sidebar'
 import type { ComponentType } from 'react'
 import type { SVGProps } from 'react'
@@ -29,15 +34,56 @@ export function AppSidebar() {
   const { t } = useTranslation()
   const location = useLocation()
   const isRtl = useDirection()
+  const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set())
 
   if (!user) return null
 
   const menuItems = NAV_MENU[user.role] || []
 
-  const isActiveRoute = (path: string) => {
-    return location.pathname === path ||
-      (path !== '/' && location.pathname.startsWith(path + '/'))
+  const isActiveRoute = (path?: string) => {
+    if (!path) return false
+    // Exact match
+    if (location.pathname === path) return true
+    // For submenu items, check exact match (not prefix match to avoid false positives)
+    // For parent routes, check prefix match
+    const isSubmenuRoute = path.includes('/my') || path.includes('/approved')
+    if (isSubmenuRoute) {
+      return location.pathname === path
+    }
+    return location.pathname.startsWith(path + '/')
   }
+
+  const toggleMenu = (labelKey: string) => {
+    setExpandedMenus((prev) => {
+      const next = new Set(prev)
+      if (next.has(labelKey)) {
+        next.delete(labelKey)
+      } else {
+        next.add(labelKey)
+      }
+      return next
+    })
+  }
+
+  const isMenuExpanded = (labelKey: string) => {
+    return expandedMenus.has(labelKey)
+  }
+
+  const isSubmenuItemActive = (submenu: { path: string }[]) => {
+    return submenu.some((subItem) => isActiveRoute(subItem.path))
+  }
+
+  // Auto-expand menu if any submenu item is active
+  useEffect(() => {
+    menuItems.forEach((item) => {
+      if (item.submenu && item.submenu.length > 0) {
+        const hasActiveSubmenu = isSubmenuItemActive(item.submenu)
+        if (hasActiveSubmenu && !expandedMenus.has(item.labelKey)) {
+          setExpandedMenus((prev) => new Set([...prev, item.labelKey]))
+        }
+      }
+    })
+  }, [location.pathname, menuItems, expandedMenus])
 
   return (
     <Sidebar side={isRtl ? 'right' : 'left'} collapsible="icon">
@@ -58,20 +104,79 @@ export function AppSidebar() {
             <SidebarMenu className="space-y-1">
               {menuItems.map((item) => {
                 const Icon = getIcon(item.icon)
-                const isActive = isActiveRoute(item.path)
+                const hasSubmenu = item.submenu && item.submenu.length > 0
+                const isExpanded = hasSubmenu ? isMenuExpanded(item.labelKey) : false
+                const isActive = hasSubmenu
+                  ? isSubmenuItemActive(item.submenu || [])
+                  : isActiveRoute(item.path)
+
                 return (
-                  <SidebarMenuItem key={item.path}>
-                    <SidebarMenuButton asChild isActive={isActive} tooltip={t(item.labelKey)} className="w-full text-md h-10">
-                      <NavLink to={item.path}>
-                        <Icon className="h-5 w-5 shrink-0" />
-                        <span>{t(item.labelKey)}</span>
-                        {item.badge && item.badge > 0 && (
-                          <SidebarMenuBadge className="ms-auto">
-                            {item.badge}
-                          </SidebarMenuBadge>
+                  <SidebarMenuItem key={item.path || item.labelKey}>
+                    {hasSubmenu ? (
+                      <>
+                        <SidebarMenuButton
+                          onClick={() => toggleMenu(item.labelKey)}
+                          isActive={isActive}
+                          tooltip={t(item.labelKey)}
+                          className="w-full text-md h-10"
+                          data-state={isExpanded ? 'open' : 'closed'}
+                        >
+                          <Icon className="h-5 w-5 shrink-0" />
+                          <span>{t(item.labelKey)}</span>
+                          {item.badge && item.badge > 0 && (
+                            <SidebarMenuBadge className="ms-auto">
+                              {item.badge}
+                            </SidebarMenuBadge>
+                          )}
+                          {isRtl ? (
+                            isExpanded ? (
+                              <ChevronUp className="h-4 w-4 ms-auto" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4 ms-auto" />
+                            )
+                          ) : (
+                            isExpanded ? (
+                              <ChevronUp className="h-4 w-4 ms-auto" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4 ms-auto" />
+                            )
+                          )}
+                        </SidebarMenuButton>
+                        {isExpanded && (
+                          <SidebarMenuSub>
+                            {item.submenu?.map((subItem) => {
+                              const SubIcon = subItem.icon ? getIcon(subItem.icon) : null
+                              const isSubActive = isActiveRoute(subItem.path)
+                              return (
+                                <SidebarMenuSubItem key={subItem.path}>
+                                  <SidebarMenuSubButton
+                                    asChild
+                                    isActive={isSubActive}
+                                  >
+                                    <NavLink to={subItem.path}>
+                                      {SubIcon && <SubIcon className="h-4 w-4 shrink-0" />}
+                                      <span>{t(subItem.labelKey)}</span>
+                                    </NavLink>
+                                  </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                              )
+                            })}
+                          </SidebarMenuSub>
                         )}
-                      </NavLink>
-                    </SidebarMenuButton>
+                      </>
+                    ) : (
+                      <SidebarMenuButton asChild isActive={isActive} tooltip={t(item.labelKey)} className="w-full text-md h-10">
+                        <NavLink to={item.path || '#'}>
+                          <Icon className="h-5 w-5 shrink-0" />
+                          <span>{t(item.labelKey)}</span>
+                          {item.badge && item.badge > 0 && (
+                            <SidebarMenuBadge className="ms-auto">
+                              {item.badge}
+                            </SidebarMenuBadge>
+                          )}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    )}
                   </SidebarMenuItem>
                 )
               })}

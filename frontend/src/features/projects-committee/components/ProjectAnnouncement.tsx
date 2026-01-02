@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useApprovedProjects, useAnnounceProjects } from '../hooks/useProjectAnnouncement'
 import { Card, CardContent, Button } from '@/components/ui'
 import { LoadingSpinner, EmptyState, useToast } from '@/components/common'
-import { Briefcase, CheckCircle2, AlertCircle, Loader2, Megaphone } from 'lucide-react'
+import { Briefcase, CheckCircle2, Loader2, Megaphone } from 'lucide-react'
 
 export function ProjectAnnouncement() {
   const { t } = useTranslation()
@@ -44,7 +44,7 @@ export function ProjectAnnouncement() {
     return <LoadingSpinner />
   }
 
-  if (!projects || projects.length === 0) {
+  if (!projects || projects?.length === 0) {
     return (
       <EmptyState
         icon={Briefcase}
@@ -85,7 +85,7 @@ export function ProjectAnnouncement() {
       </div>
 
       <div className="space-y-3">
-        {projects.map((project) => (
+        {projects?.map((project) => (
           <Card
             key={project.id}
             className={`cursor-pointer transition-all ${

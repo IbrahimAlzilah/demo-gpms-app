@@ -55,6 +55,10 @@ export function createProposalColumns({
       header: "الإجراءات",
       cell: ({ row }) => {
         const proposal = row.original
+        // Only show actions for pending_review and requires_modification proposals
+        if (proposal.status !== 'pending_review' && proposal.status !== 'requires_modification') {
+          return <span className="text-muted-foreground text-sm">-</span>
+        }
         return (
           <div className="flex items-center gap-2">
             <Button

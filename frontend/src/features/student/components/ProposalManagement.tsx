@@ -1,22 +1,33 @@
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useLocation } from 'react-router-dom'
 import { useAuthStore } from '../../auth/store/auth.store'
 import { ProposalForm } from './ProposalForm'
 import type { Proposal } from '../../../types/project.types'
 import { createProposalColumns } from './ProposalTableColumns'
 import { useDataTable } from '@/hooks/useDataTable'
 import { proposalService } from '../api/proposal.service'
+import { useUpdateProposal } from '../hooks/useProposals'
 import { DataTable, Button } from '@/components/ui'
 import { BlockContent, ModalDialog, StatusBadge, useToast } from '@/components/common'
-import { AlertCircle, PlusCircle, FileText, MessageSquare } from 'lucide-react'
+import { AlertCircle, PlusCircle, FileText, MessageSquare, RotateCcw } from 'lucide-react'
 import { formatDate } from '@/lib/utils/format'
+import { ROUTES } from '@/lib/constants'
 
 export function ProposalManagement() {
   const { t } = useTranslation()
   const { user } = useAuthStore()
+  const location = useLocation()
   const { showToast } = useToast()
   const [showForm, setShowForm] = useState(false)
   const [selectedProposal, setSelectedProposal] = useState<Proposal | null>(null)
+  const [showResubmitDialog, setShowResubmitDialog] = useState(false)
+  const [proposalToResubmit, setProposalToResubmit] = useState<Proposal | null>(null)
+  const updateProposal = useUpdateProposal()
+
+  // Determine the current route type
+  const isMyProposals = location.pathname === ROUTES.STUDENT.MY_PROPOSALS
+  const isApprovedProposals = location.pathname === ROUTES.STUDENT.APPROVED_PROPOSALS
 
   const {
     data: proposals,
@@ -32,10 +43,22 @@ export function ProposalManagement() {
     pagination,
     setPagination,
   } = useDataTable({
-    queryKey: ['student-proposals-table'],
+    queryKey: ['student-proposals-table', location.pathname],
     queryFn: (params) => {
-      // Filter to only user's proposals
-      const filters = { ...params?.filters, submitterId: user?.id }
+      const filters: Record<string, unknown> = { ...params?.filters }
+      
+      if (isMyProposals) {
+        // My Proposals: fetch only proposals created by the logged-in user
+        filters.submitterId = user?.id
+      } else if (isApprovedProposals) {
+        // Approved Proposals: fetch all proposals with approved status
+        filters.status = 'approved'
+        // Don't filter by submitterId to show all approved proposals
+      } else {
+        // Default: show user's proposals (for backward compatibility)
+        filters.submitterId = user?.id
+      }
+      
       return proposalService.getTableData({ ...params, filters })
     },
     initialPageSize: 10,
@@ -56,6 +79,26 @@ export function ProposalManagement() {
   const handleFormSuccess = () => {
     setShowForm(false)
     showToast(t('proposal.submitSuccess'), 'success')
+  }
+
+  const handleResubmit = async (proposal: Proposal) => {
+    try {
+      await updateProposal.mutateAsync({
+        id: proposal.id,
+        data: {
+          ...proposal,
+          status: 'pending_review' as const,
+        },
+      })
+      showToast(t('proposal.resubmitSuccess'), 'success')
+      setShowResubmitDialog(false)
+      setProposalToResubmit(null)
+    } catch (err) {
+      showToast(
+        err instanceof Error ? err.message : t('proposal.resubmitError'),
+        'error'
+      )
+    }
   }
 
   // Calculate statistics
@@ -79,8 +122,8 @@ export function ProposalManagement() {
 
   return (
     <>
-      {/* Statistics Cards */}
-      {stats.total > 0 && (
+      {/* Statistics Cards - Only show for "My Proposals" */}
+      {isMyProposals && stats.total > 0 && (
         <div className="grid gap-4 md:grid-cols-4 mb-6">
           <div className="rounded-lg border bg-card p-4">
             <div className="flex items-center justify-between">
@@ -121,7 +164,16 @@ export function ProposalManagement() {
         </div>
       )}
 
-      <BlockContent title={t('nav.proposals')} actions={actions}>
+      <BlockContent 
+        title={
+          isMyProposals 
+            ? t('nav.myProposals') 
+            : isApprovedProposals 
+            ? t('nav.approvedProposals') 
+            : t('nav.proposals')
+        } 
+        actions={actions}
+      >
         <DataTable
           columns={columns}
           data={proposals}
@@ -219,9 +271,65 @@ export function ProposalManagement() {
                 )}
               </div>
             )}
+
+            {selectedProposal?.status === 'requires_modification' && (
+              <div className="mt-4 pt-4 border-t">
+                <Button
+                  onClick={() => {
+                    setProposalToResubmit(selectedProposal)
+                    setShowResubmitDialog(true)
+                  }}
+                  className="w-full"
+                >
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  {t('proposal.resubmit')}
+                </Button>
+              </div>
+            )}
           </div>
         </ModalDialog>
       )}
+
+      {/* Resubmit Confirmation Dialog */}
+      <ModalDialog
+        open={showResubmitDialog}
+        onOpenChange={setShowResubmitDialog}
+        title={t('proposal.resubmitTitle')}
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            {t('proposal.resubmitMessage')}
+          </p>
+          <div className="flex gap-2 justify-end">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowResubmitDialog(false)
+                setProposalToResubmit(null)
+              }}
+              disabled={updateProposal.isPending}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              onClick={() => proposalToResubmit && handleResubmit(proposalToResubmit)}
+              disabled={updateProposal.isPending}
+            >
+              {updateProposal.isPending ? (
+                <>
+                  <RotateCcw className="mr-2 h-4 w-4 animate-spin" />
+                  {t('common.processing')}
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  {t('proposal.resubmit')}
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </ModalDialog>
     </>
   )
 }

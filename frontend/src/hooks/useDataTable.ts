@@ -4,7 +4,6 @@ import type { SortingState, ColumnFiltersState } from "@tanstack/react-table"
 import type { TableQueryOptions, TableResponse } from "../types/table.types"
 import { buildTableQueryParams } from "../types/table.types"
 import { useTranslation } from "react-i18next"
-import { isRTL } from "@/lib/utils/rtl"
 
 export interface UseDataTableOptions<TData> {
   queryKey: string[]
@@ -20,7 +19,7 @@ export function useDataTable<TData>({
   enableServerSide = true,
 }: UseDataTableOptions<TData>) {
   const { i18n } = useTranslation()
-  const rtl = isRTL()
+  const rtl = i18n.dir() === 'rtl'
 
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])

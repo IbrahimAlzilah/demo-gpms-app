@@ -1,0 +1,56 @@
+<?php
+
+namespace App\Policies;
+
+use App\Models\Proposal;
+use App\Models\User;
+
+class ProposalPolicy
+{
+    /**
+     * Determine if the user can view the proposal.
+     */
+    public function view(User $user, Proposal $proposal): bool
+    {
+        // Submitter can always view their own proposal
+        if ($proposal->submitter_id === $user->id) {
+            return true;
+        }
+
+        // Projects committee can view all proposals
+        if ($user->isProjectsCommittee()) {
+            return true;
+        }
+
+        // Supervisor can view their own proposals
+        if ($user->isSupervisor() && $proposal->submitter_id === $user->id) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine if the user can update the proposal.
+     */
+    public function update(User $user, Proposal $proposal): bool
+    {
+        // Only submitter can update their own proposal
+        if ($proposal->submitter_id !== $user->id) {
+            return false;
+        }
+
+        // Can only update if pending or requires modification
+        return in_array($proposal->status, ['pending_review', 'requires_modification']);
+    }
+
+    /**
+     * Determine if the user can delete the proposal.
+     */
+    public function delete(User $user, Proposal $proposal): bool
+    {
+        // Only submitter can delete their own proposal if it's pending
+        return $proposal->submitter_id === $user->id 
+            && $proposal->status === 'pending_review';
+    }
+}

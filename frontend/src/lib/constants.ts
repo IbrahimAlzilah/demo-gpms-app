@@ -19,6 +19,8 @@ export const ROUTES = {
   STUDENT: {
     DASHBOARD: "/dashboard",
     PROPOSALS: "/proposals",
+    MY_PROPOSALS: "/proposals/my",
+    APPROVED_PROPOSALS: "/proposals/approved",
     PROJECTS: "/projects",
     REGISTER_PROJECT: "/projects/register",
     GROUPS: "/groups",
@@ -30,6 +32,7 @@ export const ROUTES = {
   // Supervisor routes
   SUPERVISOR: {
     DASHBOARD: "/dashboard",
+    PROPOSALS: "/proposals",
     SUPERVISION_REQUESTS: "/supervision-requests",
     PROJECTS: "/projects",
     PROGRESS: "/progress",
@@ -49,6 +52,7 @@ export const ROUTES = {
     ANNOUNCE_PROJECTS: "/announce",
     ASSIGN_SUPERVISORS: "/supervisors",
     REQUESTS: "/requests",
+    REGISTRATIONS: "/registrations",
     DISTRIBUTE_COMMITTEES: "/distribute",
     REPORTS: "/reports",
   },
@@ -60,11 +64,18 @@ export const ROUTES = {
   },
 } as const;
 
+export interface NavMenuSubItem {
+  labelKey: string;
+  path: string;
+  icon?: string;
+}
+
 export interface NavMenuItem {
   labelKey: string; // Translation key instead of hardcoded label
-  path: string;
+  path?: string; // Optional if it has submenu items
   icon: string; // Lucide icon name
   badge?: number;
+  submenu?: NavMenuSubItem[]; // Submenu items
 }
 
 export const NAV_MENU: Record<string, NavMenuItem[]> = {
@@ -76,8 +87,17 @@ export const NAV_MENU: Record<string, NavMenuItem[]> = {
     },
     {
       labelKey: "nav.proposals",
-      path: ROUTES.STUDENT.PROPOSALS,
       icon: "FileText",
+      submenu: [
+        {
+          labelKey: "nav.myProposals",
+          path: ROUTES.STUDENT.MY_PROPOSALS,
+        },
+        {
+          labelKey: "nav.approvedProposals",
+          path: ROUTES.STUDENT.APPROVED_PROPOSALS,
+        },
+      ],
     },
     {
       labelKey: "nav.projects",
@@ -107,6 +127,11 @@ export const NAV_MENU: Record<string, NavMenuItem[]> = {
       labelKey: "nav.dashboard",
       path: ROUTES.SUPERVISOR.DASHBOARD,
       icon: "LayoutDashboard",
+    },
+    {
+      labelKey: "nav.proposals",
+      path: ROUTES.SUPERVISOR.PROPOSALS,
+      icon: "FileText",
     },
     {
       labelKey: "nav.supervisionRequests",
@@ -176,6 +201,11 @@ export const NAV_MENU: Record<string, NavMenuItem[]> = {
       labelKey: "nav.processRequests",
       path: ROUTES.PROJECTS_COMMITTEE.REQUESTS,
       icon: "FileCheck",
+    },
+    {
+      labelKey: "nav.manageRegistrations",
+      path: ROUTES.PROJECTS_COMMITTEE.REGISTRATIONS,
+      icon: "UserCheck",
     },
     {
       labelKey: "nav.distributeCommittees",

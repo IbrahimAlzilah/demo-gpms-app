@@ -17,6 +17,7 @@ import {
   LazyGradesPage,
   // Supervisor
   LazySupervisorDashboardPage,
+  LazySupervisorProposalsPage,
   LazySupervisionRequestsPage,
   LazySupervisorProjectsPage,
   LazyProgressPage,
@@ -32,6 +33,7 @@ import {
   LazyAnnounceProjectsPage,
   LazySupervisorsPage,
   LazyCommitteeRequestsPage,
+  LazyRegistrationsPage,
   LazyDistributeCommitteesPage,
   LazyCommitteeReportsPage,
   // Admin
@@ -61,6 +63,14 @@ export const studentRoutes: RouteConfig[] = [
   {
     path: 'dashboard',
     element: LazyStudentDashboardPage,
+  },
+  {
+    path: 'proposals/my',
+    element: LazyStudentProposalsPage,
+  },
+  {
+    path: 'proposals/approved',
+    element: LazyStudentProposalsPage,
   },
   {
     path: 'proposals',
@@ -97,6 +107,10 @@ export const supervisorRoutes: RouteConfig[] = [
   {
     path: 'dashboard',
     element: LazySupervisorDashboardPage,
+  },
+  {
+    path: 'proposals',
+    element: LazySupervisorProposalsPage,
   },
   {
     path: 'supervision-requests',
@@ -157,6 +171,10 @@ export const projectsCommitteeRoutes: RouteConfig[] = [
   {
     path: 'requests',
     element: LazyCommitteeRequestsPage,
+  },
+  {
+    path: 'registrations',
+    element: LazyRegistrationsPage,
   },
   {
     path: 'distribute',

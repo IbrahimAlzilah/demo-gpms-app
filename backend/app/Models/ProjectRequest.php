@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Enums\RequestStatus;
 
 class ProjectRequest extends Model
 {
@@ -27,10 +28,11 @@ class ProjectRequest extends Model
         'supervisor_approval' => 'array',
         'committee_approval' => 'array',
         'additional_data' => 'array',
+        'status' => RequestStatus::class,
     ];
 
     /**
-     * Get the student who made the request
+     * Get the student who created the request
      */
     public function student(): BelongsTo
     {
@@ -38,7 +40,7 @@ class ProjectRequest extends Model
     }
 
     /**
-     * Get the project related to the request
+     * Get the related project
      */
     public function project(): BelongsTo
     {
@@ -50,23 +52,41 @@ class ProjectRequest extends Model
      */
     public function isPending(): bool
     {
-        return $this->status === 'pending';
+        return $this->status?->isPending() ?? false;
     }
 
     /**
-     * Check if supervisor has approved
+     * Check if request is final
      */
-    public function isSupervisorApproved(): bool
+    public function isFinal(): bool
     {
-        return $this->status === 'supervisor_approved';
+        return $this->status?->isFinal() ?? false;
     }
 
     /**
-     * Check if committee has approved
+     * Check if request can be cancelled
      */
-    public function isCommitteeApproved(): bool
+    public function canBeCancelled(): bool
     {
-        return $this->status === 'committee_approved';
+        return $this->status?->canBeCancelled() ?? false;
+    }
+
+    /**
+     * Check if waiting for supervisor approval
+     */
+    public function needsSupervisorApproval(): bool
+    {
+        return $this->status === RequestStatus::PENDING;
+    }
+
+    /**
+     * Check if waiting for committee approval
+     */
+    public function needsCommitteeApproval(): bool
+    {
+        return in_array($this->status, [
+            RequestStatus::PENDING,
+            RequestStatus::SUPERVISOR_APPROVED,
+        ]);
     }
 }
-

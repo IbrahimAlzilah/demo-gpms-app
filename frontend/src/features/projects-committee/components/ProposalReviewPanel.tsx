@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useApproveProposal, useRejectProposal, useRequestModification } from '../hooks/useProposalManagement'
-import { DataTable } from '@/components/ui'
+import { DataTable, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Label } from '@/components/ui'
 import { BlockContent } from '@/components/common'
 import { createProposalColumns } from './ProposalTableColumns'
 import { useDataTable } from '@/hooks/useDataTable'
@@ -11,6 +11,8 @@ import type { Proposal } from '@/types/project.types'
 import { AlertCircle } from 'lucide-react'
 import { useToast } from '@/components/common'
 
+type ProposalStatusFilter = 'all' | 'pending_review' | 'approved' | 'rejected' | 'requires_modification'
+
 export function ProposalReviewPanel() {
   const { t } = useTranslation()
   const { showToast } = useToast()
@@ -19,6 +21,7 @@ export function ProposalReviewPanel() {
   const requestModification = useRequestModification()
   const [selectedProposal, setSelectedProposal] = useState<Proposal | null>(null)
   const [action, setAction] = useState<'approve' | 'reject' | 'modify' | null>(null)
+  const [statusFilter, setStatusFilter] = useState<ProposalStatusFilter>('pending_review')
 
   const {
     data: proposals,
@@ -35,8 +38,11 @@ export function ProposalReviewPanel() {
     pagination,
     setPagination,
   } = useDataTable({
-    queryKey: ['committee-proposals-table', 'pending'],
-    queryFn: (params) => committeeProposalService.getTableData(params, 'pending_review'),
+    queryKey: ['committee-proposals-table', statusFilter],
+    queryFn: (params) => committeeProposalService.getTableData(
+      params, 
+      statusFilter === 'all' ? undefined : statusFilter
+    ),
     initialPageSize: 10,
     enableServerSide: true,
   })
@@ -94,6 +100,26 @@ export function ProposalReviewPanel() {
   return (
     <>
       <BlockContent title={t('committee.proposal.reviewPanel')}>
+        <div className="mb-4 flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Label htmlFor="status-filter">{t('committee.proposal.filterByStatus')}</Label>
+            <Select
+              value={statusFilter}
+              onValueChange={(value) => setStatusFilter(value as ProposalStatusFilter)}
+            >
+              <SelectTrigger id="status-filter" className="w-[200px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('committee.proposal.allProposals')}</SelectItem>
+                <SelectItem value="pending_review">{t('proposal.status.pendingReview')}</SelectItem>
+                <SelectItem value="approved">{t('proposal.status.approved')}</SelectItem>
+                <SelectItem value="rejected">{t('proposal.status.rejected')}</SelectItem>
+                <SelectItem value="requires_modification">{t('proposal.status.requiresModification')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
         <DataTable
           columns={columns}
           data={proposals}

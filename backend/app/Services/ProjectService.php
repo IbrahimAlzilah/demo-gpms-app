@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Project;
 use App\Models\User;
 use App\Models\ProjectRegistration;
+use App\Enums\ProjectStatus;
 use Illuminate\Support\Facades\DB;
 
 class ProjectService
@@ -17,7 +18,7 @@ class ProjectService
         return Project::create([
             'title' => $data['title'],
             'description' => $data['description'],
-            'status' => 'approved',
+            'status' => \App\Enums\ProjectStatus::DRAFT->value,
             'supervisor_id' => $data['supervisor_id'] ?? null,
             'max_students' => $data['max_students'] ?? 4,
             'current_students' => 0,
@@ -56,6 +57,10 @@ class ProjectService
      */
     public function approveRegistration(ProjectRegistration $registration, User $reviewer): ProjectRegistration
     {
+        if ($registration->status !== 'pending') {
+            throw new \Exception('Registration is not pending approval');
+        }
+
         return DB::transaction(function () use ($registration, $reviewer) {
             $registration->update([
                 'status' => 'approved',
@@ -64,11 +69,34 @@ class ProjectService
             ]);
 
             $project = $registration->project;
-            $project->students()->attach($registration->student_id);
-            $project->increment('current_students');
+            
+            // Only attach if not already attached
+            if (!$project->students()->where('users.id', $registration->student_id)->exists()) {
+                $project->students()->attach($registration->student_id);
+                $project->increment('current_students');
+            }
 
             return $registration->fresh();
         });
+    }
+
+    /**
+     * Reject a project registration
+     */
+    public function rejectRegistration(ProjectRegistration $registration, User $reviewer, string $comments): ProjectRegistration
+    {
+        if ($registration->status !== 'pending') {
+            throw new \Exception('Registration is not pending approval');
+        }
+
+        $registration->update([
+            'status' => 'rejected',
+            'reviewed_by' => $reviewer->id,
+            'reviewed_at' => now(),
+            'review_comments' => $comments,
+        ]);
+
+        return $registration->fresh();
     }
 
     /**
@@ -77,11 +105,11 @@ class ProjectService
     public function announceProjects(array $projectIds): array
     {
         $projects = Project::whereIn('id', $projectIds)
-            ->where('status', 'approved')
+            ->where('status', \App\Enums\ProjectStatus::DRAFT->value)
             ->get();
 
         foreach ($projects as $project) {
-            $project->update(['status' => 'available_for_registration']);
+            $project->update(['status' => \App\Enums\ProjectStatus::AVAILABLE_FOR_REGISTRATION->value]);
         }
 
         return $projects->toArray();
@@ -107,9 +135,25 @@ class ProjectService
     public function getProjectsWithoutSupervisor(): \Illuminate\Database\Eloquent\Collection
     {
         return Project::whereNull('supervisor_id')
-            ->where('status', 'approved')
+            ->where('status', \App\Enums\ProjectStatus::DRAFT->value)
             ->with(['supervisor', 'students'])
             ->get();
+    }
+
+    /**
+     * Calculate progress percentage for a project based on completed milestones
+     */
+    public function calculateProgressPercentage(Project $project): int
+    {
+        $totalMilestones = $project->milestones()->count();
+
+        if ($totalMilestones === 0) {
+            return 0;
+        }
+
+        $completedMilestones = $project->milestones()->where('completed', true)->count();
+
+        return (int) round(($completedMilestones / $totalMilestones) * 100);
     }
 }
 

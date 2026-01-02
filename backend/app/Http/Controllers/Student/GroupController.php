@@ -157,27 +157,11 @@ class GroupController extends Controller
     public function joinGroup(Request $request, ProjectGroup $group): JsonResponse
     {
         try {
-            if ($group->isFull()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Group is full',
-                ], 400);
-            }
-
-            if ($group->hasMember($request->user()->id)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'You are already a member of this group',
-                ], 400);
-            }
-
-            $updatedGroup = $this->groupService->addMember($group, $request->user());
-
+            // Prevent joining by ID without invitation - require invitation
             return response()->json([
-                'success' => true,
-                'data' => new GroupResource($updatedGroup->load(['project', 'leader', 'members'])),
-                'message' => 'Joined group successfully',
-            ]);
+                'success' => false,
+                'message' => 'You cannot join a group directly. Please accept an invitation from a group member.',
+            ], 403);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

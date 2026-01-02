@@ -114,7 +114,7 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
         </div>
       )}
 
-      <div className='grid grid-cols-2 gap-4'>
+      <div className='space-y-4'>
         <div className="space-y-2">
           <Label htmlFor="title">
             {t('proposal.title')} <span className="text-destructive">*</span>
@@ -181,30 +181,6 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
           <p className="text-xs text-muted-foreground">
             {objectives?.length || 0} {t('common.characters')}
           </p>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="methodology">
-            {t('proposal.methodology')} ({t('common.optional')})
-          </Label>
-          <Textarea
-            id="methodology"
-            {...register('methodology')}
-            placeholder={t('proposal.methodologyPlaceholder')}
-            rows={4}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="expectedOutcomes">
-            {t('proposal.expectedOutcomes')} ({t('common.optional')})
-          </Label>
-          <Textarea
-            id="expectedOutcomes"
-            {...register('expectedOutcomes')}
-            placeholder={t('proposal.expectedOutcomesPlaceholder')}
-            rows={4}
-          />
         </div>
 
         <div className="space-y-2 col-span-2">

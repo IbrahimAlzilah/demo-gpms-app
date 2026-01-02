@@ -37,22 +37,22 @@ export function RequestSubmissionForm({ onSuccess }: RequestSubmissionFormProps)
   const requestTypes: { value: string; label: string; icon: React.ReactNode }[] = [
     {
       value: 'change_supervisor',
-      label: t('request.type.changeSupervisor'),
+      label: t('request.changeSupervisor'),
       icon: <User className="h-4 w-4" />,
     },
     {
       value: 'change_group',
-      label: t('request.type.changeGroup'),
+      label: t('request.changeGroup'),
       icon: <Users className="h-4 w-4" />,
     },
     {
       value: 'change_project',
-      label: t('request.type.changeProject'),
+      label: t('request.changeProject'),
       icon: <Briefcase className="h-4 w-4" />,
     },
     {
       value: 'other',
-      label: t('request.type.other'),
+      label: t('request.other'),
       icon: <MoreHorizontal className="h-4 w-4" />,
     },
   ]

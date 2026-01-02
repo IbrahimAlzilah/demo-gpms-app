@@ -6,10 +6,28 @@ use App\Models\ProjectGroup;
 use App\Models\GroupInvitation;
 use App\Models\User;
 use App\Models\Project;
+use App\Models\ProjectRegistration;
 use Illuminate\Support\Facades\DB;
 
 class GroupService
 {
+    /**
+     * Check if a student has approved registration for a project
+     */
+    protected function hasApprovedRegistration(User $student, Project $project): bool
+    {
+        // Check if student is directly attached to project (approved registration)
+        if ($project->students()->where('users.id', $student->id)->exists()) {
+            return true;
+        }
+
+        // Check if student has an approved registration
+        return ProjectRegistration::where('project_id', $project->id)
+            ->where('student_id', $student->id)
+            ->where('status', 'approved')
+            ->exists();
+    }
+
     /**
      * Create a new group
      */
@@ -19,7 +37,22 @@ class GroupService
             throw new \Exception('Project already has a group');
         }
 
+        // Verify leader has approved registration
+        if (!$this->hasApprovedRegistration($leader, $project)) {
+            throw new \Exception('You must have an approved registration for this project to create a group');
+        }
+
         return DB::transaction(function () use ($project, $leader, $memberIds) {
+            // Verify all members have approved registration
+            if (!empty($memberIds)) {
+                foreach ($memberIds as $memberId) {
+                    $member = User::findOrFail($memberId);
+                    if (!$this->hasApprovedRegistration($member, $project)) {
+                        throw new \Exception("Student {$member->name} does not have an approved registration for this project");
+                    }
+                }
+            }
+
             $group = ProjectGroup::create([
                 'project_id' => $project->id,
                 'leader_id' => $leader->id,
@@ -49,6 +82,12 @@ class GroupService
 
         if ($group->hasMember($member->id)) {
             throw new \Exception('Member is already in the group');
+        }
+
+        // Verify member has approved registration for the project
+        $project = $group->project;
+        if (!$this->hasApprovedRegistration($member, $project)) {
+            throw new \Exception('Student must have an approved registration for this project to join the group');
         }
 
         $group->members()->attach($member->id);
@@ -137,8 +176,14 @@ class GroupService
             throw new \Exception('Invitation is no longer valid');
         }
 
-        return DB::transaction(function () use ($invitation) {
+        return DB::transaction(function () use ($invitation, $invitee) {
             $group = $invitation->group;
+            $project = $group->project;
+
+            // Verify invitee has approved registration
+            if (!$this->hasApprovedRegistration($invitee, $project)) {
+                throw new \Exception('You must have an approved registration for this project to accept the invitation');
+            }
 
             if ($group->isFull()) {
                 throw new \Exception('Group is now full');

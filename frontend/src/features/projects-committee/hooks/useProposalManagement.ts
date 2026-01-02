@@ -35,7 +35,11 @@ export function useApproveProposal() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['committee-proposals'] })
+      queryClient.invalidateQueries({ queryKey: ['committee-proposals-table'] })
       queryClient.invalidateQueries({ queryKey: ['proposals'] })
+      // Invalidate projects queries to refresh approved projects list
+      queryClient.invalidateQueries({ queryKey: ['committee-projects'] })
+      queryClient.invalidateQueries({ queryKey: ['projects'] })
     },
   })
 }
@@ -51,6 +55,7 @@ export function useRejectProposal() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['committee-proposals'] })
+      queryClient.invalidateQueries({ queryKey: ['committee-proposals-table'] })
       queryClient.invalidateQueries({ queryKey: ['proposals'] })
     },
   })
@@ -67,6 +72,7 @@ export function useRequestModification() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['committee-proposals'] })
+      queryClient.invalidateQueries({ queryKey: ['committee-proposals-table'] })
       queryClient.invalidateQueries({ queryKey: ['proposals'] })
     },
   })

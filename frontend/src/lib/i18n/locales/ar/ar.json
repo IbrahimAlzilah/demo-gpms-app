@@ -105,6 +105,8 @@
   "nav": {
     "dashboard": "لوحة التحكم",
     "proposals": "المقترحات",
+    "myProposals": "مقترحاتي",
+    "approvedProposals": "المقترحات المعتمدة",
     "projects": "المشاريع",
     "groups": "المجموعات",
     "requests": "الطلبات",
@@ -121,6 +123,7 @@
     "announceProjects": "إعلان المشاريع",
     "assignSupervisors": "تعيين المشرفين",
     "processRequests": "معالجة الطلبات",
+    "manageRegistrations": "إدارة طلبات التسجيل",
     "distributeCommittees": "توزيع اللجان",
     "reports": "التقارير",
     "users": "إدارة المستخدمين"
@@ -313,6 +316,7 @@
     "fileUploadHint": "يمكن رفع ملفات PDF, Word, أو نص. الحد الأقصى 10MB لكل ملف",
     "submit": "إرسال المقترح",
     "submitting": "جاري الإرسال...",
+    "submitSuccess": "تم تقديم المقترح بنجاح",
     "submitError": "حدث خطأ أثناء إرسال المقترح",
     "pageDescription": "قم بتقديم مقترحات مشاريع التخرج أو راجع المقترحات المقدمة",
     "noProposals": "لا توجد مقترحات",
@@ -342,12 +346,20 @@
       "objectivesMinLength": "الأهداف يجب أن تكون 30 حرفاً على الأقل"
     },
     "fileTooLarge": "الملف كبير جداً (الحد الأقصى 10MB)",
-    "invalidFileType": "نوع الملف غير مدعوم"
+    "invalidFileType": "نوع الملف غير مدعوم",
+    "resubmit": "إعادة التقديم",
+    "resubmitTitle": "إعادة تقديم المقترح",
+    "resubmitMessage": "هل أنت متأكد من إعادة تقديم هذا المقترح بعد التعديلات؟ سيتم تغيير الحالة إلى قيد المراجعة.",
+    "resubmitSuccess": "تم إعادة تقديم المقترح بنجاح",
+    "resubmitError": "فشل إعادة تقديم المقترح"
   },
   "group": {
     "pageDescription": "قم بإنشاء مجموعة جديدة، الانضمام إليها، دعوة زملاء، أو المغادرة",
     "management": "إدارة المجموعة",
-    "noGroupDescription": "لم يتم إنشاء مجموعة بعد",
+    "noGroup": "لا توجد مجموعة",
+    "noGroupDescription": "يمكنك إنشاء مجموعة جديدة أو الانضمام إلى مجموعة موجودة",
+    "createGroup": "إنشاء مجموعة",
+    "joinGroup": "الانضمام لمجموعة",
     "myGroup": "مجموعتي",
     "membersCount": "الأعضاء",
     "full": "مكتملة",
@@ -415,12 +427,10 @@
     "cancel": "إلغاء الطلب",
     "cancelTitle": "تأكيد الحذف",
     "cancelDescription": "هل أنت متأكد من إلغاء هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء.",
-    "type": {
-      "changeSupervisor": "تغيير المشرف",
-      "changeGroup": "تغيير المجموعة",
-      "changeProject": "تغيير المشروع",
-      "other": "طلب آخر"
-    },
+    "changeSupervisor": "تغيير المشرف",
+    "changeGroup": "تغيير المجموعة",
+    "changeProject": "تغيير المشروع",
+    "other": "طلب آخر",
     "status": {
       "pending": "معلقة",
       "approved": "موافق عليها",
@@ -650,7 +660,17 @@
       "notesOptional": "ملاحظات (اختياري)",
       "modificationsPlaceholder": "اذكر التعديلات المطلوبة",
       "notesPlaceholder": "ملاحظات (اختياري)",
-      "modifyNotesRequired": "ملاحظات التعديل مطلوبة"
+      "modifyNotesRequired": "ملاحظات التعديل مطلوبة",
+      "filterByStatus": "فلترة حسب الحالة",
+      "allProposals": "جميع المقترحات",
+      "reviewPanel": "إدارة المقترحات",
+      "searchPlaceholder": "البحث في المقترحات...",
+      "noProposals": "لا توجد مقترحات",
+      "loadError": "حدث خطأ أثناء تحميل المقترحات",
+      "approveSuccess": "تم قبول المقترح بنجاح",
+      "rejectSuccess": "تم رفض المقترح بنجاح",
+      "modifySuccess": "تم طلب التعديل بنجاح",
+      "processError": "حدث خطأ أثناء معالجة المقترح"
     },
     "periods": {
       "createNew": "إعلان فترة زمنية جديدة",
@@ -665,7 +685,14 @@
       "endDateRequired": "تاريخ النهاية مطلوب",
       "invalidDateRange": "تاريخ البداية يجب أن يكون قبل تاريخ النهاية",
       "periodCreated": "تم إعلان الفترة الزمنية بنجاح",
+      "periodUpdated": "تم تحديث الفترة الزمنية بنجاح",
+      "periodDeleted": "تم حذف الفترة الزمنية بنجاح",
       "createError": "فشل إنشاء الفترة",
+      "updateError": "فشل تحديث الفترة",
+      "deleteError": "فشل حذف الفترة",
+      "editPeriod": "تعديل الفترة الزمنية",
+      "confirmDelete": "هل أنت متأكد من حذف الفترة الزمنية؟ لا يمكن التراجع عن هذا الإجراء.",
+      "noPeriods": "لا توجد فترات زمنية",
       "announcePeriod": "إعلان الفترة",
       "currentPeriods": "الفترات الزمنية الحالية",
       "types": {
@@ -791,6 +818,31 @@
     "cancelling": "جاري الإلغاء...",
     "searchPlaceholder": "البحث في المشاريع...",
     "noAvailableProjects": "لا توجد مشاريع متاحة للتسجيل حالياً"
+  },
+  "registration": {
+    "management": "إدارة طلبات التسجيل",
+    "student": "الطالب",
+    "project": "المشروع",
+    "pending": "قيد الانتظار",
+    "approved": "معتمد",
+    "rejected": "مرفوض",
+    "submittedAt": "تاريخ التقديم",
+    "approveTitle": "قبول طلب التسجيل",
+    "rejectTitle": "رفض طلب التسجيل",
+    "approveDescription": "هل أنت متأكد من قبول طلب التسجيل هذا؟",
+    "rejectDescription": "هل أنت متأكد من رفض طلب التسجيل هذا؟",
+    "approvalComments": "ملاحظات (اختياري)",
+    "rejectionComments": "سبب الرفض (مطلوب)",
+    "approvalCommentsPlaceholder": "ملاحظات إضافية...",
+    "rejectionCommentsPlaceholder": "يرجى توضيح سبب الرفض...",
+    "commentsRequired": "الرجاء إدخال سبب الرفض",
+    "noRegistrations": "لا توجد طلبات تسجيل"
+  },
+  "group": {
+    "registrationRequired": "التسجيل مطلوب",
+    "registrationRequiredTitle": "يجب الموافقة على تسجيلك أولاً",
+    "registrationPendingMessage": "طلب التسجيل قيد المراجعة. يرجى انتظار الموافقة من لجنة المشاريع.",
+    "registrationNotApprovedMessage": "يجب أن يكون لديك تسجيل معتمد في هذا المشروع قبل إدارة المجموعة."
   },
   "admin": {
     "usersDescription": "التحكم الكامل في حسابات المستخدمين وإدارة صلاحياتهم"

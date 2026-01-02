@@ -26,6 +26,33 @@ export function useCreatePeriod() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['periods'] })
+      queryClient.invalidateQueries({ queryKey: ['committee-periods-table'] })
+    },
+  })
+}
+
+export function useUpdatePeriod() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<TimePeriod> }) =>
+      periodService.update(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['periods'] })
+      queryClient.invalidateQueries({ queryKey: ['committee-periods-table'] })
+      queryClient.invalidateQueries({ queryKey: ['periods', variables.id] })
+    },
+  })
+}
+
+export function useDeletePeriod() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => periodService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['periods'] })
+      queryClient.invalidateQueries({ queryKey: ['committee-periods-table'] })
     },
   })
 }

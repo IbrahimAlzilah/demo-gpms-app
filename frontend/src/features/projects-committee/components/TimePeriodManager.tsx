@@ -1,24 +1,30 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { usePeriods, useCreatePeriod } from '../hooks/usePeriods'
-import { Button, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
-import { LoadingSpinner } from '@/components/common'
+import { useCreatePeriod, useUpdatePeriod, useDeletePeriod } from '../hooks/usePeriods'
+import { Button, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, DataTable } from '@/components/ui'
+import { BlockContent, ModalDialog } from '@/components/common'
 import { useToast } from '@/components/common'
-import { AlertCircle, CheckCircle2, Calendar, Loader2 } from 'lucide-react'
-import { formatDate } from '@/lib/utils/format'
-import { StatusBadge } from '@/components/common'
+import { AlertCircle, CheckCircle2, Calendar, Loader2, PlusCircle } from 'lucide-react'
 import { timePeriodSchema, type TimePeriodSchema } from '../schema'
 import type { PeriodType } from '@/types/period.types'
+import { useDataTable } from '@/hooks/useDataTable'
+import { periodService } from '../api/period.service'
+import { createPeriodColumns } from './PeriodTableColumns'
+import type { TimePeriod } from '@/types/period.types'
 
 export function TimePeriodManager() {
   const { t } = useTranslation()
   const { showToast } = useToast()
-  const { data: periods, isLoading } = usePeriods()
   const createPeriod = useCreatePeriod()
-  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<TimePeriodSchema>({
+  const updatePeriod = useUpdatePeriod()
+  const deletePeriod = useDeletePeriod()
+  const [showForm, setShowForm] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod | null>(null)
+  const isEditMode = !!selectedPeriod
+  const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<TimePeriodSchema>({
     resolver: zodResolver(timePeriodSchema(t)),
     defaultValues: {
       name: '',
@@ -31,26 +37,105 @@ export function TimePeriodManager() {
   })
   const [success, setSuccess] = useState(false)
 
+  const {
+    data: periods,
+    pageCount,
+    isLoading,
+    error,
+    sorting,
+    setSorting,
+    columnFilters,
+    setColumnFilters,
+    globalFilter,
+    setGlobalFilter,
+    pagination,
+    setPagination,
+  } = useDataTable({
+    queryKey: ['committee-periods-table'],
+    queryFn: (params) => periodService.getTableData(params),
+    initialPageSize: 10,
+    enableServerSide: true,
+  })
+
+  const columns = useMemo(
+    () =>
+      createPeriodColumns({
+        onEdit: (period) => {
+          setSelectedPeriod(period)
+          // Populate form with period data
+          setValue('name', period.name)
+          setValue('type', period.type)
+          setValue('startDate', period.startDate)
+          setValue('endDate', period.endDate)
+          setValue('academicYear', period.academicYear || '')
+          setValue('semester', period.semester || '')
+          setShowForm(true)
+        },
+        onDelete: (period) => {
+          setSelectedPeriod(period)
+          setShowDeleteDialog(true)
+        },
+        t,
+      }),
+    [t, setValue]
+  )
+
   const onSubmit = async (data: TimePeriodSchema) => {
     setSuccess(false)
 
     try {
-      await createPeriod.mutateAsync({
-        ...data,
-        isActive: true,
-      })
-      setSuccess(true)
-      showToast(t('committee.periods.periodCreated'), 'success')
+      if (isEditMode && selectedPeriod) {
+        await updatePeriod.mutateAsync({
+          id: selectedPeriod.id.toString(),
+          data: {
+            ...data,
+            isActive: selectedPeriod.isActive,
+          },
+        })
+        showToast(t('committee.periods.periodUpdated') || 'Period updated successfully', 'success')
+      } else {
+        await createPeriod.mutateAsync({
+          ...data,
+          isActive: true,
+        })
+        setSuccess(true)
+        showToast(t('committee.periods.periodCreated'), 'success')
+      }
       reset()
+      setSelectedPeriod(null)
+      setShowForm(false)
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : t('committee.periods.createError')
+      const errorMsg = err instanceof Error ? err.message : (isEditMode ? t('committee.periods.updateError') || 'Failed to update period' : t('committee.periods.createError'))
       showToast(errorMsg, 'error')
     }
   }
 
-  if (isLoading) {
-    return <LoadingSpinner />
+  const handleDelete = async () => {
+    if (!selectedPeriod) return
+
+    try {
+      await deletePeriod.mutateAsync(selectedPeriod.id.toString())
+      showToast(t('committee.periods.periodDeleted') || 'Period deleted successfully', 'success')
+      setShowDeleteDialog(false)
+      setSelectedPeriod(null)
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : t('committee.periods.deleteError') || 'Failed to delete period'
+      showToast(errorMsg, 'error')
+    }
   }
+
+  const handleFormClose = () => {
+    setShowForm(false)
+    setSelectedPeriod(null)
+    reset()
+  }
+
+  const actions = useMemo(() => (
+    <Button onClick={() => setShowForm(true)}>
+      <PlusCircle className="mr-2 h-4 w-4" />
+      {t('committee.periods.createNew')}
+    </Button>
+  ), [t])
 
   const periodTypeOptions = [
     { value: 'proposal_submission', label: t('committee.periods.types.proposalSubmission') },
@@ -63,16 +148,47 @@ export function TimePeriodManager() {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-primary" />
-            {t('committee.periods.createNew')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {success && (
+      <BlockContent title={t('committee.periods.currentPeriods')} actions={actions}>
+        <DataTable
+          columns={columns}
+          data={periods}
+          isLoading={isLoading}
+          error={error}
+          pageCount={pageCount}
+          pageIndex={pagination.pageIndex}
+          pageSize={pagination.pageSize}
+          onPaginationChange={(pageIndex, pageSize) => {
+            setPagination({ pageIndex, pageSize })
+          }}
+          sorting={sorting}
+          onSortingChange={setSorting}
+          columnFilters={columnFilters}
+          onColumnFiltersChange={setColumnFilters}
+          searchValue={globalFilter}
+          onSearchChange={setGlobalFilter}
+          searchPlaceholder={t('common.search')}
+          enableFiltering={true}
+          enableViews={true}
+          emptyMessage={t('committee.periods.noPeriods') || 'No periods found'}
+        />
+      </BlockContent>
+
+      {error && (
+        <BlockContent variant="container" className="border-destructive">
+          <div className="flex items-center gap-2 text-destructive">
+            <AlertCircle className="h-5 w-5" />
+            <span>{t('common.error')}</span>
+          </div>
+        </BlockContent>
+      )}
+
+      <ModalDialog 
+        open={showForm} 
+        onOpenChange={handleFormClose} 
+        title={isEditMode ? t('committee.periods.editPeriod') || 'Edit Period' : t('committee.periods.createNew')}
+      >
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {success && !isEditMode && (
               <div className="flex items-start gap-2 p-3 text-sm text-success bg-success/10 border border-success/20 rounded-md">
                 <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" />
                 <span>{t('committee.periods.periodCreated')}</span>
@@ -99,8 +215,8 @@ export function TimePeriodManager() {
             <div className="space-y-2">
               <Label htmlFor="type">{t('committee.periods.type')} *</Label>
               <Select
+                value={watch('type') || ''}
                 onValueChange={(value) => setValue('type', value as TimePeriodSchema['type'])}
-                defaultValue=""
               >
                 <SelectTrigger
                   id="type"
@@ -160,52 +276,74 @@ export function TimePeriodManager() {
               </div>
             </div>
 
+          <div className="flex gap-2 justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleFormClose}
+              disabled={createPeriod.isPending || updatePeriod.isPending}
+            >
+              {t('common.cancel')}
+            </Button>
             <Button
               type="submit"
-              disabled={createPeriod.isPending}
-              className="w-full"
+              disabled={createPeriod.isPending || updatePeriod.isPending}
             >
-              {createPeriod.isPending ? (
+              {(createPeriod.isPending || updatePeriod.isPending) ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   {t('common.saving')}
                 </>
               ) : (
-                t('committee.periods.announcePeriod')
+                isEditMode ? t('common.update') : t('committee.periods.announcePeriod')
               )}
             </Button>
-          </form>
-        </CardContent>
-      </Card>
+          </div>
+        </form>
+      </ModalDialog>
 
-      {periods && periods.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('committee.periods.currentPeriods')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {periods.map((period) => (
-                <div key={period.id} className="p-4 bg-muted rounded-lg border">
-                  <div className="flex items-start justify-between mb-2">
-                    <p className="font-medium">{period.name}</p>
-                    <StatusBadge status={period.isActive ? 'active' : 'inactive'} />
-                  </div>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4" />
-                      {formatDate(period.startDate)} - {formatDate(period.endDate)}
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {t('committee.periods.type')}: {periodTypeOptions.find(opt => opt.value === period.type)?.label}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Delete Confirmation Dialog */}
+      <ModalDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title={t('common.confirmDelete') || 'Confirm Delete'}
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            {selectedPeriod && (
+              <>
+                {t('committee.periods.confirmDelete')} <strong>"{selectedPeriod.name}"</strong>
+              </>
+            )}
+          </p>
+          <div className="flex gap-2 justify-end">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowDeleteDialog(false)
+                setSelectedPeriod(null)
+              }}
+              disabled={deletePeriod.isPending}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deletePeriod.isPending}
+            >
+              {deletePeriod.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t('common.deleting') || 'Deleting...'}
+                </>
+              ) : (
+                t('common.delete')
+              )}
+            </Button>
+          </div>
+        </div>
+      </ModalDialog>
     </div>
   )
 }

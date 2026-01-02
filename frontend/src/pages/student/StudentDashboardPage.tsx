@@ -241,10 +241,10 @@ export function StudentDashboardPage() {
                     >
                       <div className="flex-1 space-y-1">
                         <p className="text-sm font-medium">
-                          {request.type === 'change_supervisor' && t('request.type.changeSupervisor')}
-                          {request.type === 'change_group' && t('request.type.changeGroup')}
-                          {request.type === 'change_project' && t('request.type.changeProject')}
-                          {request.type === 'other' && t('request.type.other')}
+                          {request.type === 'change_supervisor' && t('request.changeSupervisor')}
+                          {request.type === 'change_group' && t('request.changeGroup')}
+                          {request.type === 'change_project' && t('request.changeProject')}
+                          {request.type === 'other' && t('request.other')}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {formatRelativeTime(request.createdAt)}

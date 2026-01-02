@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Enums\ProposalStatus;
 
 class Proposal extends Model
 {
@@ -26,6 +27,7 @@ class Proposal extends Model
 
     protected $casts = [
         'reviewed_at' => 'datetime',
+        'status' => ProposalStatus::class,
     ];
 
     /**
@@ -57,7 +59,7 @@ class Proposal extends Model
      */
     public function isPending(): bool
     {
-        return $this->status === 'pending_review';
+        return $this->status === ProposalStatus::PENDING_REVIEW;
     }
 
     /**
@@ -65,7 +67,7 @@ class Proposal extends Model
      */
     public function isApproved(): bool
     {
-        return $this->status === 'approved';
+        return $this->status === ProposalStatus::APPROVED;
     }
 
     /**
@@ -73,7 +75,31 @@ class Proposal extends Model
      */
     public function isRejected(): bool
     {
-        return $this->status === 'rejected';
+        return $this->status === ProposalStatus::REJECTED;
+    }
+
+    /**
+     * Check if proposal requires modification
+     */
+    public function requiresModification(): bool
+    {
+        return $this->status === ProposalStatus::REQUIRES_MODIFICATION;
+    }
+
+    /**
+     * Check if proposal can be modified
+     */
+    public function canBeModified(): bool
+    {
+        return $this->status?->canBeModified() ?? false;
+    }
+
+    /**
+     * Check if proposal status is final
+     */
+    public function isFinal(): bool
+    {
+        return $this->status?->isFinal() ?? false;
     }
 }
 

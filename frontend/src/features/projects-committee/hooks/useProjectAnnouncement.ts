@@ -3,8 +3,8 @@ import { committeeProjectService } from '../api/project.service'
 
 export function useApprovedProjects() {
   return useQuery({
-    queryKey: ['committee-projects', 'approved'],
-    queryFn: () => committeeProjectService.getApproved(),
+    queryKey: ['committee-projects', 'draft'],
+    queryFn: () => committeeProjectService.getDraft(),
   })
 }
 
