@@ -3,8 +3,13 @@
 // Screens
 export { FollowUpList } from './list/FollowUpList.screen'
 
+// Components
+export { ProjectDashboard } from './components/ProjectDashboard'
+
 // Hooks
 export { useFollowUp } from './hooks/useFollowUp'
 
 // Types
-export type { FollowUpListScreenProps } from './types/FollowUp.types'
+export type {
+  FollowUpListScreenProps,
+} from './types/FollowUp.types'

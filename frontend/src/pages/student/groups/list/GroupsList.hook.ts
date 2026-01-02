@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMyGroup, useGroupInvitations } from '../hooks/useGroups'
-import { useProjectRegistration, useStudentRegistrations } from '@/features/student/hooks/useProjects'
+import { useProjectRegistration, useStudentRegistrations } from '@/pages/student/projects/hooks/useProjects'
 import type { GroupsListState, GroupsListData } from './GroupsList.types'
 
 export function useGroupsList() {

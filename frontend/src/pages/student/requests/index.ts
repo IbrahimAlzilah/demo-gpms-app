@@ -10,10 +10,15 @@ export { StatisticsCards } from './components/StatisticsCards'
 export { createRequestColumns } from './components/table'
 
 // Hooks
-export { useRequests, useRequest } from './hooks/useRequests'
-export {
+export { 
+  useRequests, 
+  useRequest,
   useCreateRequest,
   useCancelRequest,
+} from './hooks/useRequests'
+export {
+  useCreateRequest as useCreateRequestOp,
+  useCancelRequest as useCancelRequestOp,
 } from './hooks/useRequestOperations'
 
 // Types
@@ -25,3 +30,14 @@ export type {
   RequestsViewScreenProps,
   RequestsNewScreenProps,
 } from './types/Requests.types'
+
+// Schemas
+export {
+  requestSubmissionSchema,
+} from './schema'
+export type {
+  RequestSubmissionSchema,
+} from './schema'
+
+// API Services (for internal use, but exported for flexibility)
+export { requestService } from './api/request.service'

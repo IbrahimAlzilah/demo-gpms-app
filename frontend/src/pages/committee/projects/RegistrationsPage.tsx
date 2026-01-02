@@ -1,5 +1,5 @@
-import { MainLayout } from '../../../layouts/MainLayout'
-import { RegistrationManagementPanel } from '../../../features/projects-committee/components/RegistrationManagementPanel'
+import { MainLayout } from '@/layouts/MainLayout'
+import { RegistrationManagementPanel } from './components/RegistrationManagementPanel'
 
 export function RegistrationsPage() {
   return (

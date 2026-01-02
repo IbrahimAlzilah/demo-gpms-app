@@ -617,7 +617,12 @@
       "scoreInvalid": "Invalid score",
       "maxScoreRequired": "Max score is required",
       "maxScoreInvalid": "Invalid max score"
-    }
+    },
+    "projectIdRequired": "Project ID Required",
+    "projectIdRequiredMessage": "Please select a project to view its progress. You can navigate to the projects page and select a project from there.",
+    "studentIdRequired": "Student ID Required",
+    "studentIdRequiredMessage": "Please select a student to evaluate. You can navigate to the projects page and select a project with students from there.",
+    "backToProjects": "Back to Projects"
   },
   "discussion": {
     "projectsDescription": "Browse projects assigned to the committee and access their details and documents",

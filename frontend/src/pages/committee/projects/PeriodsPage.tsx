@@ -1,5 +1,5 @@
 import { MainLayout } from '@/layouts/MainLayout'
-import { TimePeriodManager } from '@/features/projects-committee/components/TimePeriodManager'
+import { TimePeriodManager } from './components/TimePeriodManager'
 
 export function PeriodsPage() {
 

@@ -8,15 +8,22 @@ export { ProjectsRegister } from './register/ProjectsRegister.screen'
 // Components
 export { ProjectBrowser } from './components/ProjectBrowser'
 export { ProjectRegistrationForm } from './components/ProjectRegistrationForm'
+export { ProjectCard } from './components/ProjectCard'
 export { createProjectColumns } from './components/table'
 
 // Hooks
-export { useProjects, useProject, useAvailableProjects } from './hooks/useProjects'
-export {
+export { 
+  useProjects, 
+  useProject, 
+  useAvailableProjects,
   useStudentRegistrations,
   useProjectRegistration,
   useRegisterProject,
   useCancelRegistration,
+} from './hooks/useProjects'
+export {
+  useRegisterProject as useRegisterProjectOp,
+  useCancelRegistration as useCancelRegistrationOp,
 } from './hooks/useProjectOperations'
 
 // Types
@@ -27,3 +34,9 @@ export type {
   ProjectsViewScreenProps,
   ProjectsRegisterScreenProps,
 } from './types/Projects.types'
+
+// Store
+export { useStudentStore } from './store/projects.store'
+
+// API Services (for internal use, but exported for flexibility)
+export { projectService } from './api/project.service'

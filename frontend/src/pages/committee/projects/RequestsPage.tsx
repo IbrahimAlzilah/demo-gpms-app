@@ -1,5 +1,5 @@
 import { MainLayout } from '@/layouts/MainLayout'
-import { RequestProcessingPanel } from '@/features/projects-committee/components/RequestProcessingPanel'
+import { RequestProcessingPanel } from './components/RequestProcessingPanel'
 
 export function CommitteeRequestsPage() {
 

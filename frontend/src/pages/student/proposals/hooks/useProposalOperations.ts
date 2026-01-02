@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { proposalService } from "@/features/student/api/proposal.service";
+import { proposalService } from "../api/proposal.service";
 import type { Proposal } from "@/types/project.types";
 import type { ProposalFormData } from "../types/Proposals.types";
 

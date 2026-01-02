@@ -1,5 +1,5 @@
 import { MainLayout } from '@/layouts/MainLayout'
-import { CommitteeDistribution } from '@/features/projects-committee/components/CommitteeDistribution'
+import { CommitteeDistribution } from './components/CommitteeDistribution'
 
 export function DistributeCommitteesPage() {
 

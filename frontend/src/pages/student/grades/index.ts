@@ -5,11 +5,15 @@ export { GradesList } from './list/GradesList.screen'
 
 // Hooks
 export { useGrades, useGrade } from './hooks/useGrades'
-export { useGradeOperations } from './hooks/useGradeOperations'
+export {
+  useGradeOperations,
+} from './hooks/useGradeOperations'
 
 // Types
 export type {
+  GradeFilters,
   GradesListScreenProps,
-  GradesViewScreenProps,
-  Grade,
 } from './types/Grades.types'
+
+// API Services (for internal use, but exported for flexibility)
+export { gradeService } from './api/grade.service'

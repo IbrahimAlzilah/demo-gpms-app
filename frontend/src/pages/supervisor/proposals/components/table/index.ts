@@ -1,0 +1,1 @@
+export { createProposalColumns } from './columns'

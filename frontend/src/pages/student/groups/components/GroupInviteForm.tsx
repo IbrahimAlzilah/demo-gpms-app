@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button, Label, Input, Textarea } from '@/components/ui'
 import { AlertCircle, Mail, Loader2 } from 'lucide-react'
-import { groupInviteSchema, type GroupInviteSchema } from '@/features/student/schema'
+import { groupInviteSchema, type GroupInviteSchema } from '../schema'
 import { useInviteGroupMember } from '../hooks/useGroupOperations'
 import type { ProjectGroup } from '@/types/project.types'
 

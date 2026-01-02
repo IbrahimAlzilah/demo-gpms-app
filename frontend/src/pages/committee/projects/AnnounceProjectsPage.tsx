@@ -1,5 +1,5 @@
 import { MainLayout } from '@/layouts/MainLayout'
-import { ProjectAnnouncement } from '@/features/projects-committee/components/ProjectAnnouncement'
+import { ProjectAnnouncement } from './components/ProjectAnnouncement'
 
 export function AnnounceProjectsPage() {
 

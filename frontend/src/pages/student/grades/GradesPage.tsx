@@ -4,8 +4,7 @@ import { BlockContent } from '@/components/common'
 import { Button } from '@/components/ui'
 import { Printer, Download } from 'lucide-react'
 import { GradesList } from './list/GradesList.screen'
-import { useGradeOperations } from './hooks/useGradeOperations'
-import { useGrades } from './hooks/useGrades'
+import { useGradeOperations, useGrades } from './index'
 
 export function GradesPage() {
   const { t } = useTranslation()

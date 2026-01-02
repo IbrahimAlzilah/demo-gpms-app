@@ -4,7 +4,7 @@ import { useAuthStore } from '@/features/auth/store/auth.store'
 import { useProjects } from '@/pages/student/projects/hooks/useProjects'
 import { usePeriodCheck } from '@/hooks/usePeriodCheck'
 import { useDataTable } from '@/hooks/useDataTable'
-import { documentService } from '@/features/student/api/document.service'
+import { documentService } from '../api/document.service'
 import type { Document } from '@/types/request.types'
 import type { DocumentsListState, DocumentsListData } from './DocumentsList.types'
 

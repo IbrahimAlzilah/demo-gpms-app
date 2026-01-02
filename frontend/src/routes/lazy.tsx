@@ -18,11 +18,11 @@ export const LazyGradesPage = lazy(() => import('../pages/student/grades/GradesP
 
 // Supervisor pages
 export const LazySupervisorDashboardPage = lazy(() => import('../pages/supervisor/SupervisorDashboardPage').then(m => ({ default: m.SupervisorDashboardPage })))
-export const LazySupervisorProposalsPage = lazy(() => import('../pages/supervisor/ProposalsPage').then(m => ({ default: m.SupervisorProposalsPage })))
-export const LazySupervisionRequestsPage = lazy(() => import('../pages/supervisor/SupervisionRequestsPage').then(m => ({ default: m.SupervisionRequestsPage })))
-export const LazySupervisorProjectsPage = lazy(() => import('../pages/supervisor/ProjectsPage').then(m => ({ default: m.SupervisorProjectsPage })))
-export const LazyProgressPage = lazy(() => import('../pages/supervisor/ProgressPage').then(m => ({ default: m.ProgressPage })))
-export const LazyEvaluationPage = lazy(() => import('../pages/supervisor/EvaluationPage').then(m => ({ default: m.EvaluationPage })))
+export const LazySupervisorProposalsPage = lazy(() => import('../pages/supervisor/proposals/ProposalsPage').then(m => ({ default: m.ProposalsPage })))
+export const LazySupervisionRequestsPage = lazy(() => import('../pages/supervisor/supervision-requests/SupervisionRequestsPage').then(m => ({ default: m.SupervisionRequestsPage })))
+export const LazySupervisorProjectsPage = lazy(() => import('../pages/supervisor/projects/ProjectsPage').then(m => ({ default: m.ProjectsPage })))
+export const LazyProgressPage = lazy(() => import('../pages/supervisor/progress/ProgressPage').then(m => ({ default: m.ProgressPage })))
+export const LazyEvaluationPage = lazy(() => import('../pages/supervisor/evaluation/EvaluationPage').then(m => ({ default: m.EvaluationPage })))
 
 // Discussion Committee pages
 export const LazyDiscussionCommitteeDashboardPage = lazy(() => import('../pages/committee/discussion/DiscussionCommitteeDashboardPage').then(m => ({ default: m.DiscussionCommitteeDashboardPage })))
@@ -42,6 +42,6 @@ export const LazyCommitteeReportsPage = lazy(() => import('../pages/committee/pr
 
 // Admin pages
 export const LazyAdminDashboardPage = lazy(() => import('../pages/admin/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })))
-export const LazyUsersPage = lazy(() => import('../pages/admin/UsersPage').then(m => ({ default: m.UsersPage })))
-export const LazyReportsPage = lazy(() => import('../pages/admin/ReportsPage').then(m => ({ default: m.ReportsPage })))
+export const LazyUsersPage = lazy(() => import('../pages/admin/users/UsersPage').then(m => ({ default: m.UsersPage })))
+export const LazyReportsPage = lazy(() => import('../pages/admin/reports/ReportsPage').then(m => ({ default: m.ReportsPage })))
 

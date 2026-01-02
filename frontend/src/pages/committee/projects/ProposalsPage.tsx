@@ -1,5 +1,5 @@
 import { MainLayout } from '@/layouts/MainLayout'
-import { ProposalReviewPanel } from '@/features/projects-committee/components/ProposalReviewPanel'
+import { ProposalReviewPanel } from './components/ProposalReviewPanel'
 
 export function ProposalsPage() {
 

@@ -39,3 +39,6 @@ export {
   proposalStatusSchema,
 } from "./schema";
 export type { ProposalFormSchema } from "./schema";
+
+// API Services (for internal use, but exported for flexibility)
+export { proposalService } from './api/proposal.service'

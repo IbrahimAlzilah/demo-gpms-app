@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDataTable } from '@/hooks/useDataTable'
-import { projectService } from '@/features/student/api/project.service'
+import { projectService } from '../api/project.service'
 import { usePeriodCheck } from '@/hooks/usePeriodCheck'
 import type { Project } from '@/types/project.types'
 import type { ProjectsListState, ProjectsListData } from './ProjectsList.types'

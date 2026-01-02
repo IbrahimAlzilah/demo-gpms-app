@@ -121,11 +121,11 @@ export const supervisorRoutes: RouteConfig[] = [
     element: LazySupervisorProjectsPage,
   },
   {
-    path: 'progress',
+    path: 'progress/:projectId?',
     element: LazyProgressPage,
   },
   {
-    path: 'evaluation',
+    path: 'evaluation/:projectId?/:studentId?',
     element: LazyEvaluationPage,
   },
 ]

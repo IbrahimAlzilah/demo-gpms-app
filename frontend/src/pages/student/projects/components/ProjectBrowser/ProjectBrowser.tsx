@@ -4,7 +4,7 @@ import type { Project } from '@/types/project.types'
 import { DataTable } from '@/components/ui/data-table'
 import { createProjectColumns } from '../table'
 import { useDataTable } from '@/hooks/useDataTable'
-import { projectService } from '@/features/student/api/project.service'
+import { projectService } from '../../api/project.service'
 
 interface ProjectBrowserProps {
   onSelectProject?: (project: Project) => void

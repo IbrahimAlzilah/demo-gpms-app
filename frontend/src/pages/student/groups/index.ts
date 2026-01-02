@@ -10,8 +10,10 @@ export { GroupJoinForm } from './components/GroupJoinForm'
 export { GroupMembersList } from './components/GroupMembersList'
 
 // Hooks
-export { useMyGroup, useGroupInvitations, useGroupByProject } from './hooks/useGroups'
-export {
+export { 
+  useMyGroup, 
+  useGroupInvitations, 
+  useGroupByProject,
   useCreateGroup,
   useAddGroupMember,
   useRemoveGroupMember,
@@ -19,6 +21,15 @@ export {
   useAcceptInvitation,
   useRejectInvitation,
   useJoinGroup,
+} from './hooks/useGroups'
+export {
+  useCreateGroup as useCreateGroupOp,
+  useAddGroupMember as useAddGroupMemberOp,
+  useRemoveGroupMember as useRemoveGroupMemberOp,
+  useInviteGroupMember as useInviteGroupMemberOp,
+  useAcceptInvitation as useAcceptInvitationOp,
+  useRejectInvitation as useRejectInvitationOp,
+  useJoinGroup as useJoinGroupOp,
 } from './hooks/useGroupOperations'
 
 // Types
@@ -27,3 +38,16 @@ export type {
   GroupsListScreenProps,
   GroupsViewScreenProps,
 } from './types/Groups.types'
+
+// Schemas
+export {
+  groupInviteSchema,
+  groupJoinSchema,
+} from './schema'
+export type {
+  GroupInviteSchema,
+  GroupJoinSchema,
+} from './schema'
+
+// API Services (for internal use, but exported for flexibility)
+export { groupService } from './api/group.service'

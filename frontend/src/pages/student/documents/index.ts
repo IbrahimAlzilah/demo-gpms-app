@@ -27,3 +27,6 @@ export type {
 
 // Schemas
 export { documentUploadSchema, type DocumentUploadSchema } from './schema'
+
+// API Services (for internal use, but exported for flexibility)
+export { documentService } from './api/document.service'

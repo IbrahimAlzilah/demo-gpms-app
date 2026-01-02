@@ -1,5 +1,5 @@
 import { MainLayout } from '@/layouts/MainLayout'
-import { SupervisorAssignment } from '@/features/projects-committee/components/SupervisorAssignment'
+import { SupervisorAssignment } from './components/SupervisorAssignment'
 
 export function SupervisorsPage() {
 

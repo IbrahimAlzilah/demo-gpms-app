@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { documentService } from '@/features/student/api/document.service'
+import { documentService } from '../api/document.service'
 
 /**
  * Fetch all documents for a project

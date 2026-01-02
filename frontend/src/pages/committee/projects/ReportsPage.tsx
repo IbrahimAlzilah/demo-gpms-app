@@ -1,5 +1,5 @@
 import { MainLayout } from '@/layouts/MainLayout'
-import { ReportGenerator } from '@/features/projects-committee/components/ReportGenerator'
+import { ReportGenerator } from './components/ReportGenerator'
 
 export function CommitteeReportsPage() {
 

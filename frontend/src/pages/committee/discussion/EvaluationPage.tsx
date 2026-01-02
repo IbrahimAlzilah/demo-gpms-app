@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom'
 import { MainLayout } from '@/layouts/MainLayout'
-import { FinalEvaluationForm } from '@/features/discussion-committee/components/FinalEvaluationForm'
+import { FinalEvaluationForm } from './components/FinalEvaluationForm'
 
 export function DiscussionEvaluationPage() {
   const { projectId, studentId } = useParams<{ projectId: string; studentId: string }>()

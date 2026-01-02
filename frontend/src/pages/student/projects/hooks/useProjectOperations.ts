@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { projectService } from '@/features/student/api/project.service'
+import { projectService } from '../api/project.service'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 import type { ProjectRegistration } from '@/types/project.types'
 

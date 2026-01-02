@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { documentService } from '@/features/student/api/document.service'
+import { documentService } from '../api/document.service'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 import type { DocumentType } from '@/types/request.types'
 

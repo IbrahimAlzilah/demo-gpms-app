@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { ProjectDashboard } from '@/features/student/components/ProjectDashboard'
+import { ProjectDashboard } from '../components/ProjectDashboard'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Briefcase } from 'lucide-react'

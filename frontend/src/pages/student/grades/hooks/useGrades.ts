@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { gradeService } from '@/features/student/api/grade.service'
+import { gradeService } from '../api/grade.service'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 
 /**

@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button, Label, Input } from '@/components/ui'
 import { AlertCircle, Users, Loader2 } from 'lucide-react'
-import { groupJoinSchema, type GroupJoinSchema } from '@/features/student/schema'
+import { groupJoinSchema, type GroupJoinSchema } from '../schema'
 import { useJoinGroup } from '../hooks/useGroupOperations'
 
 interface GroupJoinFormProps {
