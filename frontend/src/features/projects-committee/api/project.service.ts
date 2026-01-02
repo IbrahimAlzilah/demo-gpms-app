@@ -1,5 +1,6 @@
 import { apiClient } from '../../../lib/axios'
 import type { Project } from '../../../types/project.types'
+import type { TableQueryParams, TableResponse } from '../../../types/table.types'
 
 export const committeeProjectService = {
   getAll: async (): Promise<Project[]> => {
@@ -14,6 +15,36 @@ export const committeeProjectService = {
     return Array.isArray(response.data) ? response.data : []
   },
 
+  getTableData: async (params?: TableQueryParams, status?: string): Promise<TableResponse<Project>> => {
+    const queryParams = new URLSearchParams()
+    
+    if (status) queryParams.append('status', status)
+    if (params?.page) queryParams.append('page', params.page.toString())
+    if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString())
+    if (params?.sortBy) queryParams.append('sortBy', params.sortBy)
+    if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder)
+    if (params?.search) queryParams.append('search', params.search)
+    if (params?.filters) {
+      Object.entries(params.filters).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== '') {
+          queryParams.append(`filters[${key}]`, String(value))
+        }
+      })
+    }
+
+    const response = await apiClient.get<{ data: Project[], pagination: any }>(
+      `/projects-committee/projects?${queryParams.toString()}`
+    )
+    
+    return {
+      data: response.data || [],
+      totalCount: response.pagination?.total || 0,
+      page: response.pagination?.page || 1,
+      pageSize: response.pagination?.pageSize || 10,
+      totalPages: response.pagination?.totalPages || 0,
+    }
+  },
+
   getById: async (id: string): Promise<Project | null> => {
     try {
       const response = await apiClient.get<Project>(`/projects-committee/projects/${id}`)
@@ -24,9 +55,9 @@ export const committeeProjectService = {
   },
 
   announce: async (projectIds: string[]): Promise<Project[]> => {
-    const response = await apiClient.post<Project[]>('/projects-committee/projects/announce', {
+    const response = await apiClient.post<{ data: Project[] }>('/projects-committee/projects/announce', {
       project_ids: projectIds,
     })
-    return Array.isArray(response.data) ? response.data : []
+    return Array.isArray(response.data?.data) ? response.data.data : (Array.isArray(response.data) ? response.data : [])
   },
 }

@@ -1,26 +1,50 @@
-import { useState } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useApprovedProjects, useAnnounceProjects } from '../hooks/useProjectAnnouncement'
-import { Card, CardContent, Button } from '@/components/ui'
-import { LoadingSpinner, EmptyState, useToast } from '@/components/common'
-import { Briefcase, CheckCircle2, Loader2, Megaphone } from 'lucide-react'
+import { useAnnounceProjects } from '../hooks/useProjectAnnouncement'
+import { DataTable, Button } from '@/components/ui'
+import { BlockContent, useToast } from '@/components/common'
+import { useDataTable } from '@/hooks/useDataTable'
+import { committeeProjectService } from '../api/project.service'
+import { createProjectAnnouncementColumns } from './ProjectAnnouncementTableColumns'
+import { Loader2, Megaphone, AlertCircle } from 'lucide-react'
 
 export function ProjectAnnouncement() {
   const { t } = useTranslation()
   const { showToast } = useToast()
-  const { data: projects, isLoading } = useApprovedProjects()
   const announceProjects = useAnnounceProjects()
   const [selectedProjects, setSelectedProjects] = useState<Set<string>>(new Set())
 
-  const toggleProject = (projectId: string) => {
-    const newSelected = new Set(selectedProjects)
-    if (newSelected.has(projectId)) {
-      newSelected.delete(projectId)
-    } else {
-      newSelected.add(projectId)
-    }
-    setSelectedProjects(newSelected)
-  }
+  const {
+    data: projects,
+    pageCount,
+    isLoading,
+    error,
+    sorting,
+    setSorting,
+    columnFilters,
+    setColumnFilters,
+    globalFilter,
+    setGlobalFilter,
+    pagination,
+    setPagination,
+  } = useDataTable({
+    queryKey: ['committee-projects-announce', 'draft'],
+    queryFn: (params) => committeeProjectService.getTableData(params, 'draft'),
+    initialPageSize: 10,
+    enableServerSide: true,
+  })
+
+  const toggleProject = useCallback((projectId: string) => {
+    setSelectedProjects((prev) => {
+      const newSelected = new Set(prev)
+      if (newSelected.has(projectId)) {
+        newSelected.delete(projectId)
+      } else {
+        newSelected.add(projectId)
+      }
+      return newSelected
+    })
+  }, [])
 
   const handleAnnounce = async () => {
     if (selectedProjects.size === 0) {
@@ -40,88 +64,79 @@ export function ProjectAnnouncement() {
     }
   }
 
-  if (isLoading) {
-    return <LoadingSpinner />
-  }
+  const columns = useMemo(
+    () =>
+      createProjectAnnouncementColumns({
+        selectedProjects,
+        onToggleProject: toggleProject,
+        t,
+      }),
+    [selectedProjects, toggleProject, t]
+  )
 
-  if (!projects || projects?.length === 0) {
-    return (
-      <EmptyState
-        icon={Briefcase}
-        title={t('committee.announce.noProjects')}
-        description={t('committee.announce.noProjectsDescription')}
-      />
-    )
-  }
+  const headerActions = (
+    <div className="flex items-center gap-4">
+      <div className="text-sm text-muted-foreground">
+        {t('committee.announce.selectedCount', { count: selectedProjects.size })}
+      </div>
+      <Button
+        onClick={handleAnnounce}
+        disabled={selectedProjects.size === 0 || announceProjects.isPending}
+      >
+        {announceProjects.isPending ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            {t('committee.announce.announcing')}
+          </>
+        ) : (
+          <>
+            <Megaphone className="mr-2 h-4 w-4" />
+            {t('committee.announce.announceSelected')}
+          </>
+        )}
+      </Button>
+    </div>
+  )
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h3 className="text-lg font-semibold">
-            {t('committee.announce.approvedProjects')}
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            {t('committee.announce.selectedCount', { count: selectedProjects.size })}
-          </p>
-        </div>
-        <Button
-          onClick={handleAnnounce}
-          disabled={selectedProjects.size === 0 || announceProjects.isPending}
-          className="w-full sm:w-auto"
-        >
-          {announceProjects.isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {t('committee.announce.announcing')}
-            </>
-          ) : (
-            <>
-              <Megaphone className="mr-2 h-4 w-4" />
-              {t('committee.announce.announceSelected')}
-            </>
-          )}
-        </Button>
-      </div>
+    <>
+      <BlockContent
+        title={t('committee.announce.approvedProjects')}
+        actions={headerActions}
+      >
+        <DataTable
+          columns={columns}
+          data={projects}
+          isLoading={isLoading}
+          error={error}
+          pageCount={pageCount}
+          pageIndex={pagination.pageIndex}
+          pageSize={pagination.pageSize}
+          onPaginationChange={(pageIndex, pageSize) => {
+            setPagination({ pageIndex, pageSize })
+          }}
+          sorting={sorting}
+          onSortingChange={setSorting}
+          columnFilters={columnFilters}
+          onColumnFiltersChange={setColumnFilters}
+          searchValue={globalFilter}
+          onSearchChange={setGlobalFilter}
+          searchPlaceholder={t('committee.announce.searchPlaceholder') || 'البحث في المشاريع...'}
+          enableFiltering={true}
+          enableViews={true}
+          emptyMessage={t('committee.announce.noProjects')}
+        />
+      </BlockContent>
 
-      <div className="space-y-3">
-        {projects?.map((project) => (
-          <Card
-            key={project.id}
-            className={`cursor-pointer transition-all ${
-              selectedProjects.has(project.id)
-                ? 'border-primary bg-primary/5 shadow-md'
-                : 'hover:bg-muted hover:shadow-sm'
-            }`}
-            onClick={() => toggleProject(project.id)}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 space-y-2">
-                  <h4 className="font-semibold">{project.title}</h4>
-                  <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
-                  <div className="text-xs text-muted-foreground">
-                    {t('committee.announce.supervisor')}: {project.supervisor?.name || t('common.unassigned')}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {selectedProjects.has(project.id) && (
-                    <CheckCircle2 className="h-5 w-5 text-primary" />
-                  )}
-                  <input
-                    type="checkbox"
-                    checked={selectedProjects.has(project.id)}
-                    onChange={() => toggleProject(project.id)}
-                    className="h-4 w-4"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
+      {error && (
+        <BlockContent variant="container" className="border-destructive">
+          <div className="flex items-center gap-2 text-destructive">
+            <AlertCircle className="h-5 w-5" />
+            <span>{t('committee.announce.loadError') || 'حدث خطأ أثناء تحميل المشاريع'}</span>
+          </div>
+        </BlockContent>
+      )}
+    </>
   )
 }
 
