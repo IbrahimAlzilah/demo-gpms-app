@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { useAssignSupervisor } from '../hooks/useSupervisorAssignment'
+import { useAssignSupervisor } from '../hooks/useSupervisorOperations'
 import { Card, CardContent, Button } from '@/components/ui'
 import { LoadingSpinner, EmptyState, useToast } from '@/components/common'
 import { Briefcase, UserCheck, User, Loader2, CheckCircle2 } from 'lucide-react'

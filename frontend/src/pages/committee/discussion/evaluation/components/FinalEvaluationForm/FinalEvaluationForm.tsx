@@ -1,13 +1,11 @@
 import { useTranslation } from 'react-i18next'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useSubmitFinalGrade } from '../hooks/useFinalEvaluation'
-import { usePeriodCheck } from '@/hooks/usePeriodCheck'
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label, Textarea } from '@/components/ui'
-import { useAuthStore } from '@/pages/auth/login'
 import { LoadingSpinner, useToast } from '@/components/common'
 import { AlertCircle, Loader2 } from 'lucide-react'
-import { finalEvaluationSchema, type FinalEvaluationSchema } from '../schema'
+import { useAuthStore } from '@/pages/auth/login'
+import { useEvaluationForm } from '../../hooks/useEvaluationForm'
+import { useSubmitFinalGrade } from '../../hooks/useEvaluationOperations'
+import type { FinalEvaluationSchema } from '../../schema'
 
 interface FinalEvaluationFormProps {
   projectId: string
@@ -24,37 +22,22 @@ export function FinalEvaluationForm({
   const { showToast } = useToast()
   const submitGrade = useSubmitFinalGrade()
   const { user } = useAuthStore()
-  const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('committee_evaluation')
-
+  
   const {
-    register,
+    form,
+    error,
+    isPeriodActive,
+    periodLoading,
     handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<FinalEvaluationSchema>({
-    resolver: zodResolver(finalEvaluationSchema(t)),
-    defaultValues: {
-      score: '',
-      maxScore: '100',
-      comments: '',
-    },
-  })
+  } = useEvaluationForm({
+    onSubmit: async (data: FinalEvaluationSchema) => {
+      if (!user) {
+        throw new Error(t('discussion.userNotFound'))
+      }
 
-  const onSubmit = async (data: FinalEvaluationSchema) => {
-    if (!isPeriodActive) {
-      showToast(t('discussion.evaluationPeriodClosed'), 'error')
-      return
-    }
+      const scoreNum = parseFloat(data.score)
+      const maxScoreNum = parseFloat(data.maxScore)
 
-    if (!user) {
-      showToast(t('discussion.userNotFound'), 'error')
-      return
-    }
-
-    const scoreNum = parseFloat(data.score)
-    const maxScoreNum = parseFloat(data.maxScore)
-
-    try {
       await submitGrade.mutateAsync({
         projectId,
         studentId,
@@ -66,13 +49,17 @@ export function FinalEvaluationForm({
         },
         committeeMembers: [user.id],
       })
+
       showToast(t('discussion.evaluationSaved'), 'success')
-      reset()
       onSuccess?.()
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : t('discussion.evaluationError')
-      showToast(errorMsg, 'error')
-    }
+    },
+  })
+
+  const { register, formState: { errors }, reset } = form
+
+  const onSubmit = async (data: FinalEvaluationSchema) => {
+    await handleSubmit(data)
+    reset()
   }
 
   if (periodLoading) {
@@ -113,7 +100,14 @@ export function FinalEvaluationForm({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          {error && (
+            <div className="flex items-start gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
+              <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
           {errors.score && (
             <div className="flex items-start gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
               <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />

@@ -1,13 +1,10 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useApproveRegistration, useRejectRegistration } from '../hooks/useRegistrationManagement'
+import { useApproveRegistration, useRejectRegistration } from '../hooks/useRegistrationOperations'
+import { createRegistrationColumns } from '../components/table'
 import { DataTable, Button, Textarea, Label } from '@/components/ui'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoadingSpinner, ConfirmDialog } from '@/components/common'
-import { StatusBadge } from '@/components/common/StatusBadge'
-import { CheckCircle2, XCircle, User, Briefcase } from 'lucide-react'
-import { formatDate } from '@/lib/utils/format'
-import type { ColumnDef } from '@tanstack/react-table'
 import type { ProjectRegistration } from '@/types/project.types'
 import { useRegistrationsList } from './RegistrationsList.hook'
 import { useToast } from '@/components/common'
@@ -93,72 +90,13 @@ export function RegistrationsList() {
     }))
   }
 
-  const columns: ColumnDef<ProjectRegistration>[] = useMemo(
-    () => [
-      {
-        accessorKey: 'student',
-        header: t('registration.student') || 'الطالب',
-        cell: ({ row }) => (
-          <div className="flex items-center gap-2">
-            <User className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium">
-              {row.original.student?.name || row.original.studentId}
-            </span>
-          </div>
-        ),
-      },
-      {
-        accessorKey: 'project',
-        header: t('registration.project') || 'المشروع',
-        cell: ({ row }) => (
-          <div className="flex items-center gap-2">
-            <Briefcase className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium">{row.original.project?.title || row.original.projectId}</span>
-          </div>
-        ),
-      },
-      {
-        accessorKey: 'status',
-        header: t('common.status') || 'الحالة',
-        cell: ({ row }) => <StatusBadge status={row.original.status} />,
-      },
-      {
-        accessorKey: 'submittedAt',
-        header: t('registration.submittedAt') || 'تاريخ التقديم',
-        cell: ({ row }) => formatDate(row.original.submittedAt),
-      },
-      {
-        id: 'actions',
-        header: t('common.actions') || 'الإجراءات',
-        cell: ({ row }) => {
-          const registration = row.original
-          if (registration.status !== 'pending') return null
-
-          return (
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleActionClick(registration, 'approve')}
-                className="text-success hover:text-success"
-              >
-                <CheckCircle2 className="h-4 w-4 mr-1" />
-                {t('common.approve') || 'قبول'}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleActionClick(registration, 'reject')}
-                className="text-destructive hover:text-destructive"
-              >
-                <XCircle className="h-4 w-4 mr-1" />
-                {t('common.reject') || 'رفض'}
-              </Button>
-            </div>
-          )
-        },
-      },
-    ],
+  const columns = useMemo(
+    () =>
+      createRegistrationColumns({
+        onApprove: (registration) => handleActionClick(registration, 'approve'),
+        onReject: (registration) => handleActionClick(registration, 'reject'),
+        t,
+      }),
     [t]
   )
 

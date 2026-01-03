@@ -3,9 +3,9 @@ import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-col
 import { Button } from "@/components/ui"
 import { Badge } from "@/components/ui/badge"
 import { ClipboardCheck, CheckCircle2 } from "lucide-react"
-import type { EvaluationListItem } from "../list/EvaluationList.types"
+import type { EvaluationListItem } from "../../list/EvaluationList.types"
 
-interface EvaluationTableColumnsProps {
+export interface EvaluationTableColumnsProps {
   onEvaluate: (item: EvaluationListItem) => void
   t: (key: string) => string
 }

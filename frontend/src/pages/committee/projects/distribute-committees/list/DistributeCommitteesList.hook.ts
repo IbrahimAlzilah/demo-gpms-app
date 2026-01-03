@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useProjectsReadyForDiscussion, useDiscussionCommitteeMembers } from '../hooks/useCommitteeDistribution'
+import { useDistributeCommittees, useDiscussionCommitteeMembers } from '../hooks/useDistributeCommittees'
 import type { DistributeCommitteesListState, DistributeCommitteesListData } from './DistributeCommitteesList.types'
 
 export function useDistributeCommitteesList() {
   const { t } = useTranslation()
-  const { data: projects, isLoading: projectsLoading } = useProjectsReadyForDiscussion()
+  const { data: projects, isLoading: projectsLoading } = useDistributeCommittees()
   const { data: members, isLoading: membersLoading } = useDiscussionCommitteeMembers()
   
   const [state, setState] = useState<DistributeCommitteesListState>({

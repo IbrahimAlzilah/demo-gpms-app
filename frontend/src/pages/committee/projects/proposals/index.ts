@@ -5,17 +5,20 @@ export { ProposalsList } from "./list/ProposalsList.screen"
 
 // Components
 export { ProposalReviewDialog } from "./components/ProposalReviewDialog"
-export { createProposalColumns } from "./components/ProposalTableColumns"
+export { createProposalColumns } from "./components/table"
+export type { ProposalTableColumnsProps } from "./components/table"
 
 // Hooks
 export {
   usePendingProposals,
   useAllProposals,
   useProposal,
+} from "./hooks/useProposals"
+export {
   useApproveProposal,
   useRejectProposal,
   useRequestModification,
-} from "./hooks/useProposalManagement"
+} from "./hooks/useProposalOperations"
 
 // Types
 export type {

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { DataTable } from '@/components/ui'
 import { BlockContent } from '@/components/common'
 import { AlertCircle } from 'lucide-react'
-import { createAssignedProjectColumns } from '../components/AssignedProjectTableColumns'
+import { createProjectsColumns } from '../components/table'
 import { useProjectsList } from './ProjectsList.hook'
 
 export function ProjectsList() {
@@ -24,7 +24,7 @@ export function ProjectsList() {
 
   const columns = useMemo(
     () =>
-      createAssignedProjectColumns({
+      createProjectsColumns({
         t,
       }),
     [t]

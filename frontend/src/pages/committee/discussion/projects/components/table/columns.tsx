@@ -3,13 +3,13 @@ import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-col
 import type { Project } from "@/types/project.types"
 import { formatDate } from "@/lib/utils/format"
 
-interface AssignedProjectTableColumnsProps {
+export interface ProjectsTableColumnsProps {
   t: (key: string) => string
 }
 
-export function createAssignedProjectColumns({
+export function createProjectsColumns({
   t,
-}: AssignedProjectTableColumnsProps): ColumnDef<Project>[] {
+}: ProjectsTableColumnsProps): ColumnDef<Project>[] {
   return [
     {
       accessorKey: "title",

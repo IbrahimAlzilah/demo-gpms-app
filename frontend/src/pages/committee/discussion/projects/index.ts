@@ -4,13 +4,14 @@
 export { ProjectsList } from "./list/ProjectsList.screen"
 
 // Components
-export { createAssignedProjectColumns } from "./components/AssignedProjectTableColumns"
+export { createProjectsColumns } from "./components/table"
+export type { ProjectsTableColumnsProps } from "./components/table"
 
 // Hooks
 export {
-  useCommitteeProjects,
-  useCommitteeProject,
-} from "./hooks/useCommitteeProjects"
+  useProjects,
+  useProject,
+} from "./hooks/useProjects"
 
 // Types
 export type {

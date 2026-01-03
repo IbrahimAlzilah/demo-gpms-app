@@ -1,22 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { registrationService, type RegistrationListParams } from '../api/registration.service'
-import type { ProjectRegistration } from '@/types/project.types'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { registrationService } from '../api/registration.service'
 
-export function useRegistrations(params?: RegistrationListParams) {
-  return useQuery({
-    queryKey: ['committee-registrations', params],
-    queryFn: () => registrationService.getAll(params),
-  })
-}
-
-export function useRegistration(id: string) {
-  return useQuery({
-    queryKey: ['committee-registration', id],
-    queryFn: () => registrationService.getById(id),
-    enabled: !!id,
-  })
-}
-
+/**
+ * Hook for approving a registration
+ */
 export function useApproveRegistration() {
   const queryClient = useQueryClient()
 
@@ -37,6 +24,9 @@ export function useApproveRegistration() {
   })
 }
 
+/**
+ * Hook for rejecting a registration
+ */
 export function useRejectRegistration() {
   const queryClient = useQueryClient()
 

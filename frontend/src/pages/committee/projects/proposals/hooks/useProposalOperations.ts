@@ -1,29 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { committeeProposalService } from '../api/proposal.service'
 import { useAuthStore } from '@/pages/auth/login'
 
-export function usePendingProposals() {
-  return useQuery({
-    queryKey: ['committee-proposals', 'pending'],
-    queryFn: () => committeeProposalService.getPending(),
-  })
-}
-
-export function useAllProposals() {
-  return useQuery({
-    queryKey: ['committee-proposals'],
-    queryFn: () => committeeProposalService.getAll(),
-  })
-}
-
-export function useProposal(id: string) {
-  return useQuery({
-    queryKey: ['committee-proposals', id],
-    queryFn: () => committeeProposalService.getById(id),
-    enabled: !!id,
-  })
-}
-
+/**
+ * Hook for approving a proposal
+ */
 export function useApproveProposal() {
   const queryClient = useQueryClient()
   const { user } = useAuthStore()
@@ -44,6 +25,9 @@ export function useApproveProposal() {
   })
 }
 
+/**
+ * Hook for rejecting a proposal
+ */
 export function useRejectProposal() {
   const queryClient = useQueryClient()
   const { user } = useAuthStore()
@@ -61,6 +45,9 @@ export function useRejectProposal() {
   })
 }
 
+/**
+ * Hook for requesting modification of a proposal
+ */
 export function useRequestModification() {
   const queryClient = useQueryClient()
   const { user } = useAuthStore()

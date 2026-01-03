@@ -1,17 +1,17 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useAnnounceProjects } from '../hooks/useProjectAnnouncement'
+import { useAnnounceProjects as useAnnounceProjectsOperation } from '../hooks/useAnnounceProjectsOperations'
 import { DataTable, Button } from '@/components/ui'
 import { BlockContent, useToast } from '@/components/common'
-import { createProjectAnnouncementColumns } from '../components/ProjectAnnouncementTableColumns'
+import { createAnnounceProjectsColumns } from '../components/table'
 import { Loader2, Megaphone, AlertCircle } from 'lucide-react'
 import { useAnnounceProjectsList } from './AnnounceProjectsList.hook'
 
 export function AnnounceProjectsList() {
   const { t } = useTranslation()
   const { showToast } = useToast()
-  const announceProjects = useAnnounceProjects()
-  
+  const announceProjectsOperation = useAnnounceProjectsOperation()
+
   const {
     data,
     state,
@@ -35,7 +35,7 @@ export function AnnounceProjectsList() {
     }
 
     try {
-      await announceProjects.mutateAsync(Array.from(state.selectedProjects))
+      await announceProjectsOperation.mutateAsync(Array.from(state.selectedProjects))
       showToast(t('committee.announce.success'), 'success')
       setState((prev) => ({ ...prev, selectedProjects: new Set() }))
     } catch (err) {
@@ -48,7 +48,7 @@ export function AnnounceProjectsList() {
 
   const columns = useMemo(
     () =>
-      createProjectAnnouncementColumns({
+      createAnnounceProjectsColumns({
         selectedProjects: state.selectedProjects,
         onToggleProject: toggleProject,
         t,
@@ -63,9 +63,9 @@ export function AnnounceProjectsList() {
       </div>
       <Button
         onClick={handleAnnounce}
-        disabled={state.selectedProjects.size === 0 || announceProjects.isPending}
+        disabled={state.selectedProjects.size === 0 || announceProjectsOperation.isPending}
       >
-        {announceProjects.isPending ? (
+        {announceProjectsOperation.isPending ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             {t('committee.announce.announcing')}

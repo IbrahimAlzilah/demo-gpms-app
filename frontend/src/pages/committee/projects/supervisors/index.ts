@@ -7,8 +7,8 @@ export { SupervisorsList } from "./list/SupervisorsList.screen"
 export {
   useProjectsWithoutSupervisor,
   useAvailableSupervisors,
-  useAssignSupervisor,
-} from "./hooks/useSupervisorAssignment"
+} from "./hooks/useSupervisors"
+export { useAssignSupervisor } from "./hooks/useSupervisorOperations"
 
 // Types
 export type {

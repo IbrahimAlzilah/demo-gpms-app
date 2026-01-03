@@ -5,10 +5,10 @@ export { DistributeCommitteesList } from "./list/DistributeCommitteesList.screen
 
 // Hooks
 export {
-  useProjectsReadyForDiscussion,
+  useDistributeCommittees,
   useDiscussionCommitteeMembers,
-  useDistributeProjects,
-} from "./hooks/useCommitteeDistribution"
+} from "./hooks/useDistributeCommittees"
+export { useDistributeProjects } from "./hooks/useDistributeCommitteesOperations"
 
 // Types
 export type {

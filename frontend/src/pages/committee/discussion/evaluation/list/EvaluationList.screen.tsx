@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { DataTable } from '@/components/ui'
 import { BlockContent, ModalDialog } from '@/components/common'
 import { AlertCircle } from 'lucide-react'
-import { createEvaluationColumns } from '../components/EvaluationTableColumns'
+import { createEvaluationColumns } from '../components/table'
 import { EvaluationNew } from '../new/EvaluationNew.screen'
 import { useEvaluationList } from './EvaluationList.hook'
 

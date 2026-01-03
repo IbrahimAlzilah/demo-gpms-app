@@ -1,9 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useQuery, useQueries } from '@tanstack/react-query'
 import { useAuthStore } from '@/pages/auth/login'
-import { discussionCommitteeProjectService } from '../../projects/api/project.service'
-import { committeeEvaluationService } from '../api/evaluation.service'
+import { useEvaluationProjects, useEvaluationsForProjects } from '../hooks/useEvaluations'
 import type { EvaluationListState, EvaluationListData, EvaluationListItem } from './EvaluationList.types'
 
 export function useEvaluationList() {
@@ -21,21 +19,10 @@ export function useEvaluationList() {
     data: projects,
     isLoading: projectsLoading,
     error: projectsError,
-  } = useQuery({
-    queryKey: ['discussion-committee-evaluation-projects', user?.id],
-    queryFn: () => discussionCommitteeProjectService.getAssignedProjects(user?.id || ''),
-    enabled: !!user?.id,
-  })
+  } = useEvaluationProjects(user?.id)
 
   // Fetch evaluations for each project
-  const evaluationQueries = useQueries({
-    queries:
-      projects?.map((project) => ({
-        queryKey: ['discussion-committee-evaluations', project.id],
-        queryFn: () => committeeEvaluationService.getEvaluationsByProject(project.id),
-        enabled: !!project.id,
-      })) || [],
-  })
+  const evaluationQueries = useEvaluationsForProjects(projects)
 
   // Combine projects with evaluations to create list items
   const items = useMemo<EvaluationListItem[]>(() => {

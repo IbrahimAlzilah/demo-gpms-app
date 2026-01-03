@@ -4,15 +4,18 @@
 export { RequestsList } from "./list/RequestsList.screen"
 
 // Components
-export { createRequestProcessingColumns } from "./components/RequestProcessingTableColumns"
+export { createRequestColumns } from "./components/table"
+export type { RequestTableColumnsProps } from "./components/table"
 
 // Hooks
 export {
   usePendingRequests,
   useRequest,
+} from "./hooks/useRequests"
+export {
   useApproveRequest,
   useRejectRequest,
-} from "./hooks/useRequestProcessing"
+} from "./hooks/useRequestOperations"
 
 // Types
 export type {

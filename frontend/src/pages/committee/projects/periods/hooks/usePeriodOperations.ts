@@ -1,15 +1,11 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { periodService } from '../api/period.service'
 import { useAuthStore } from '@/pages/auth/login'
 import type { TimePeriod } from '@/types/period.types'
 
-export function usePeriods() {
-  return useQuery({
-    queryKey: ['periods'],
-    queryFn: () => periodService.getAll(),
-  })
-}
-
+/**
+ * Hook for creating a new period
+ */
 export function useCreatePeriod() {
   const queryClient = useQueryClient()
   const { user } = useAuthStore()
@@ -31,6 +27,9 @@ export function useCreatePeriod() {
   })
 }
 
+/**
+ * Hook for updating an existing period
+ */
 export function useUpdatePeriod() {
   const queryClient = useQueryClient()
 
@@ -45,6 +44,9 @@ export function useUpdatePeriod() {
   })
 }
 
+/**
+ * Hook for deleting a period
+ */
 export function useDeletePeriod() {
   const queryClient = useQueryClient()
 

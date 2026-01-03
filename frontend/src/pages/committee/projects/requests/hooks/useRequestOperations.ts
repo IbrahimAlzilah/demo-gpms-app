@@ -1,22 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { committeeRequestService } from '../api/request.service'
 import { useAuthStore } from '@/pages/auth/login'
 
-export function usePendingRequests() {
-  return useQuery({
-    queryKey: ['committee-requests', 'pending'],
-    queryFn: () => committeeRequestService.getPendingRequests(),
-  })
-}
-
-export function useRequest(id: string) {
-  return useQuery({
-    queryKey: ['committee-requests', id],
-    queryFn: () => committeeRequestService.getById(id),
-    enabled: !!id,
-  })
-}
-
+/**
+ * Hook for approving a request
+ */
 export function useApproveRequest() {
   const queryClient = useQueryClient()
   const { user } = useAuthStore()
@@ -35,6 +23,9 @@ export function useApproveRequest() {
   })
 }
 
+/**
+ * Hook for rejecting a request
+ */
 export function useRejectRequest() {
   const queryClient = useQueryClient()
   const { user } = useAuthStore()

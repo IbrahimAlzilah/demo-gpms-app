@@ -1,20 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { committeeDistributionService, type CommitteeAssignment } from '../api/committee.service'
 
-export function useProjectsReadyForDiscussion() {
-  return useQuery({
-    queryKey: ['projects-ready-for-discussion'],
-    queryFn: () => committeeDistributionService.getProjectsReadyForDiscussion(),
-  })
-}
-
-export function useDiscussionCommitteeMembers() {
-  return useQuery({
-    queryKey: ['discussion-committee-members'],
-    queryFn: () => committeeDistributionService.getDiscussionCommitteeMembers(),
-  })
-}
-
+/**
+ * Hook for distributing projects to committees
+ */
 export function useDistributeProjects() {
   const queryClient = useQueryClient()
 

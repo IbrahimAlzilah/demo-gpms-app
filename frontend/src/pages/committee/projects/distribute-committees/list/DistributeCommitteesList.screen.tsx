@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { useDistributeProjects } from '../hooks/useCommitteeDistribution'
+import { useDistributeProjects } from '../hooks/useDistributeCommitteesOperations'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
 import { LoadingSpinner, EmptyState, useToast } from '@/components/common'
 import { Briefcase, Users, CheckCircle2, Loader2, UserCheck } from 'lucide-react'

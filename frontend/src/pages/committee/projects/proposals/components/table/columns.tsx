@@ -6,7 +6,7 @@ import type { Proposal } from "@/types/project.types"
 import { Check, X, FileEdit } from "lucide-react"
 import { formatDate } from "@/lib/utils/format"
 
-interface ProposalTableColumnsProps {
+export interface ProposalTableColumnsProps {
   onApprove: (proposal: Proposal) => void
   onReject: (proposal: Proposal) => void
   onRequestModification: (proposal: Proposal) => void

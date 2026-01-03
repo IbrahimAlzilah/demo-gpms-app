@@ -7,17 +7,17 @@ import { CheckCircle2, XCircle, User, AlertTriangle, CheckCircle } from "lucide-
 import { formatRelativeTime } from "@/lib/utils/format"
 import { requiresSupervisorApproval } from "@/features/common/utils/requestRouting"
 
-interface RequestProcessingTableColumnsProps {
+export interface RequestTableColumnsProps {
   onApprove: (request: Request) => void
   onReject: (request: Request) => void
   t: (key: string) => string
 }
 
-export function createRequestProcessingColumns({
+export function createRequestColumns({
   onApprove,
   onReject,
   t,
-}: RequestProcessingTableColumnsProps): ColumnDef<Request>[] {
+}: RequestTableColumnsProps): ColumnDef<Request>[] {
   const getRequestTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
       change_supervisor: t('requests.change_supervisor'),

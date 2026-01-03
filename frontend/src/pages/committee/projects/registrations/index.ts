@@ -3,13 +3,19 @@
 // Screens
 export { RegistrationsList } from "./list/RegistrationsList.screen"
 
+// Components
+export { createRegistrationColumns } from "./components/table"
+export type { RegistrationTableColumnsProps } from "./components/table"
+
 // Hooks
 export {
   useRegistrations,
   useRegistration,
+} from "./hooks/useRegistrations"
+export {
   useApproveRegistration,
   useRejectRegistration,
-} from "./hooks/useRegistrationManagement"
+} from "./hooks/useRegistrationOperations"
 
 // Types
 export type {

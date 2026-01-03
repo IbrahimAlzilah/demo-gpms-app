@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useApproveRequest, useRejectRequest } from '../hooks/useRequestProcessing'
+import { useApproveRequest, useRejectRequest } from '../hooks/useRequestOperations'
 import { requiresSupervisorApproval } from '@/features/common/utils/requestRouting'
-import { createRequestProcessingColumns } from '../components/RequestProcessingTableColumns'
+import { createRequestColumns } from '../components/table'
 import { DataTable } from '@/components/ui'
 import { BlockContent, ConfirmDialog } from '@/components/common'
 import { AlertCircle, User, MessageSquare, AlertTriangle, CheckCircle2 } from 'lucide-react'
@@ -93,7 +93,7 @@ export function RequestsList() {
 
   const columns = useMemo(
     () =>
-      createRequestProcessingColumns({
+      createRequestColumns({
         onApprove: handleApproveClick,
         onReject: handleRejectClick,
         t,

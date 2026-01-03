@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useProjectsWithoutSupervisor, useAvailableSupervisors } from '../hooks/useSupervisorAssignment'
+import { useProjectsWithoutSupervisor, useAvailableSupervisors } from '../hooks/useSupervisors'
 import type { SupervisorsListState, SupervisorsListData } from './SupervisorsList.types'
 
 export function useSupervisorsList() {

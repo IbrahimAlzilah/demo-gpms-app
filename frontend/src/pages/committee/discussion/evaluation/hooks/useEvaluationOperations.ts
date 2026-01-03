@@ -1,6 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { committeeEvaluationService } from '../api/evaluation.service'
 
+/**
+ * Hook for submitting final grade evaluation
+ */
 export function useSubmitFinalGrade() {
   const queryClient = useQueryClient()
 

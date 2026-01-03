@@ -5,17 +5,17 @@ import { StatusBadge } from "@/components/common/StatusBadge"
 import type { Project } from "@/types/project.types"
 import { formatDate } from "@/lib/utils/format"
 
-interface ProjectAnnouncementTableColumnsProps {
+export interface AnnounceProjectsTableColumnsProps {
   selectedProjects: Set<string>
   onToggleProject: (projectId: string) => void
   t: (key: string) => string
 }
 
-export function createProjectAnnouncementColumns({
+export function createAnnounceProjectsColumns({
   selectedProjects,
   onToggleProject,
   t,
-}: ProjectAnnouncementTableColumnsProps): ColumnDef<Project>[] {
+}: AnnounceProjectsTableColumnsProps): ColumnDef<Project>[] {
   return [
     {
       id: "select",

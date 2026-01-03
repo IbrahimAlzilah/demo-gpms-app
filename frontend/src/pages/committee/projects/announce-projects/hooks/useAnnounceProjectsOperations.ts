@@ -1,13 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { committeeProjectService } from '../api/project.service'
 
-export function useApprovedProjects() {
-  return useQuery({
-    queryKey: ['committee-projects', 'draft'],
-    queryFn: () => committeeProjectService.getDraft(),
-  })
-}
-
+/**
+ * Hook for announcing projects
+ */
 export function useAnnounceProjects() {
   const queryClient = useQueryClient()
 

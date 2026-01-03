@@ -6,10 +6,17 @@ export { EvaluationNew } from "./new/EvaluationNew.screen"
 
 // Components
 export { FinalEvaluationForm } from "./components/FinalEvaluationForm"
-export { createEvaluationColumns } from "./components/EvaluationTableColumns"
+export { createEvaluationColumns } from "./components/table"
+export type { EvaluationTableColumnsProps } from "./components/table"
 
 // Hooks
-export { useSubmitFinalGrade } from "./hooks/useFinalEvaluation"
+export {
+  useEvaluationsByProject,
+  useEvaluationProjects,
+  useEvaluationsForProjects,
+} from "./hooks/useEvaluations"
+export { useSubmitFinalGrade } from "./hooks/useEvaluationOperations"
+export { useEvaluationForm } from "./hooks/useEvaluationForm"
 
 // Types
 export type {

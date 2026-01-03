@@ -1,20 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supervisorAssignmentService } from '../api/supervisor.service'
 
-export function useProjectsWithoutSupervisor() {
-  return useQuery({
-    queryKey: ['projects-without-supervisor'],
-    queryFn: () => supervisorAssignmentService.getProjectsWithoutSupervisor(),
-  })
-}
-
-export function useAvailableSupervisors() {
-  return useQuery({
-    queryKey: ['available-supervisors'],
-    queryFn: () => supervisorAssignmentService.getAvailableSupervisors(),
-  })
-}
-
+/**
+ * Hook for assigning a supervisor to a project
+ */
 export function useAssignSupervisor() {
   const queryClient = useQueryClient()
 

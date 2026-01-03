@@ -6,7 +6,7 @@ import type { TimePeriod } from "@/types/period.types"
 import { Edit, Trash2 } from "lucide-react"
 import { formatDate } from "@/lib/utils/format"
 
-interface PeriodTableColumnsProps {
+export interface PeriodTableColumnsProps {
   onEdit?: (period: TimePeriod) => void
   onDelete?: (period: TimePeriod) => void
   t: (key: string) => string
