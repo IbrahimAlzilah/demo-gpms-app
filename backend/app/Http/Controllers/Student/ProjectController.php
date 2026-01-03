@@ -3,7 +3,12 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\NoteReplyResource;
+use App\Http\Resources\ProjectMeetingResource;
+use App\Http\Resources\ProjectMilestoneResource;
+use App\Http\Resources\ProjectRegistrationResource;
 use App\Http\Resources\ProjectResource;
+use App\Http\Resources\SupervisorNoteResource;
 use App\Http\Traits\HasTableQuery;
 use App\Models\Project;
 use App\Models\ProjectRegistration;
@@ -38,7 +43,7 @@ class ProjectController extends Controller
 
         $query = $this->applyTableQuery($query, $request);
 
-        return response()->json($this->getPaginatedResponse($query, $request));
+        return response()->json($this->getPaginatedResponse($query, $request, ProjectResource::class));
     }
 
     public function show(Request $request, Project $project): JsonResponse
@@ -60,7 +65,7 @@ class ProjectController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $registration,
+                'data' => new ProjectRegistrationResource($registration->load(['project', 'student'])),
                 'message' => 'Registration submitted successfully',
             ], 201);
         } catch (\Exception $e) {
@@ -79,7 +84,7 @@ class ProjectController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $registrations,
+            'data' => ProjectRegistrationResource::collection($registrations),
         ]);
     }
 
@@ -148,7 +153,7 @@ class ProjectController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $notes,
+            'data' => SupervisorNoteResource::collection($notes),
         ]);
     }
 
@@ -185,7 +190,7 @@ class ProjectController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $reply->load(['author']),
+            'data' => new NoteReplyResource($reply->load(['author'])),
             'message' => 'Reply added successfully',
         ], 201);
     }
@@ -209,7 +214,7 @@ class ProjectController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $milestones,
+            'data' => ProjectMilestoneResource::collection($milestones),
         ]);
     }
 
@@ -233,7 +238,7 @@ class ProjectController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $meetings,
+            'data' => ProjectMeetingResource::collection($meetings),
         ]);
     }
 
@@ -255,7 +260,7 @@ class ProjectController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'progress_percentage' => $progressPercentage,
+                'progressPercentage' => $progressPercentage,
             ],
         ]);
     }

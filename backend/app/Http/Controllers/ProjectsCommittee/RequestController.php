@@ -25,7 +25,7 @@ class RequestController extends Controller
 
         $query = $this->applyTableQuery($query, $request);
 
-        return response()->json($this->getPaginatedResponse($query, $request));
+        return response()->json($this->getPaginatedResponse($query, $request, RequestResource::class));
     }
 
     public function show(ProjectRequest $request): JsonResponse

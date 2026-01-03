@@ -29,7 +29,7 @@ class DocumentController extends Controller
 
         $query = $this->applyTableQuery($query, $request);
 
-        return response()->json($this->getPaginatedResponse($query, $request));
+        return response()->json($this->getPaginatedResponse($query, $request, DocumentResource::class));
     }
 
     public function store(Request $request): JsonResponse

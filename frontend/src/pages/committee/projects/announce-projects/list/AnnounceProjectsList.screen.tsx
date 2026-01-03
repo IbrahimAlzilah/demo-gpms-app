@@ -103,7 +103,7 @@ export function AnnounceProjectsList() {
           onColumnFiltersChange={setColumnFilters}
           searchValue={globalFilter}
           onSearchChange={setGlobalFilter}
-          searchPlaceholder={t('committee.announce.searchPlaceholder') || 'البحث في المشاريع...'}
+          // searchPlaceholder={t('committee.announce.searchPlaceholder')}
           enableFiltering={true}
           enableViews={true}
           emptyMessage={t('committee.announce.noProjects')}

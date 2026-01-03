@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Supervisor;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ProjectMeetingResource;
 use App\Models\Project;
 use App\Models\ProjectMeeting;
 use App\Models\User;
@@ -30,7 +31,7 @@ class MeetingController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $meetings,
+            'data' => ProjectMeetingResource::collection($meetings),
         ]);
     }
 
@@ -77,7 +78,7 @@ class MeetingController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $meeting->load(['scheduledBy', 'attendees']),
+            'data' => new ProjectMeetingResource($meeting->load(['scheduledBy', 'attendees'])),
             'message' => 'Meeting scheduled successfully',
         ], 201);
     }
@@ -117,7 +118,7 @@ class MeetingController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $meeting->fresh()->load(['scheduledBy', 'attendees']),
+            'data' => new ProjectMeetingResource($meeting->fresh()->load(['scheduledBy', 'attendees'])),
             'message' => 'Meeting updated successfully',
         ]);
     }

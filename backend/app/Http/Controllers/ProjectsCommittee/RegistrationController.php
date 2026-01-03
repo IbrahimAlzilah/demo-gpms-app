@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\ProjectsCommittee;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ProjectRegistrationResource;
 use App\Http\Traits\HasTableQuery;
 use App\Models\ProjectRegistration;
 use App\Services\ProjectService;
@@ -38,7 +39,7 @@ class RegistrationController extends Controller
 
         $query = $this->applyTableQuery($query, $request);
 
-        return response()->json($this->getPaginatedResponse($query, $request));
+        return response()->json($this->getPaginatedResponse($query, $request, ProjectRegistrationResource::class));
     }
 
     /**
@@ -50,7 +51,7 @@ class RegistrationController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $registration,
+            'data' => new ProjectRegistrationResource($registration),
         ]);
     }
 
@@ -87,7 +88,7 @@ class RegistrationController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $approved->load(['project', 'student', 'reviewer']),
+                'data' => new ProjectRegistrationResource($approved->load(['project', 'student', 'reviewer'])),
                 'message' => 'Registration approved successfully',
             ]);
         } catch (\Exception $e) {
@@ -127,7 +128,7 @@ class RegistrationController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $rejected->load(['project', 'student', 'reviewer']),
+                'data' => new ProjectRegistrationResource($rejected->load(['project', 'student', 'reviewer'])),
                 'message' => 'Registration rejected',
             ]);
         } catch (\Exception $e) {

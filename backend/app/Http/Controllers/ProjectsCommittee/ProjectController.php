@@ -38,7 +38,7 @@ class ProjectController extends Controller
 
         $query = $this->applyTableQuery($query, $request);
 
-        return response()->json($this->getPaginatedResponse($query, $request));
+        return response()->json($this->getPaginatedResponse($query, $request, ProjectResource::class));
     }
 
     public function announce(Request $request): JsonResponse

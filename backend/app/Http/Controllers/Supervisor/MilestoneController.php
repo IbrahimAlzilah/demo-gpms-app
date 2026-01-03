@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Supervisor;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ProjectMilestoneResource;
 use App\Models\Project;
 use App\Models\ProjectMilestone;
 use Illuminate\Http\JsonResponse;
@@ -28,7 +29,7 @@ class MilestoneController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $milestones,
+            'data' => ProjectMilestoneResource::collection($milestones),
         ]);
     }
 
@@ -62,7 +63,7 @@ class MilestoneController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $milestone,
+            'data' => new ProjectMilestoneResource($milestone),
             'message' => 'Milestone created successfully',
         ], 201);
     }
@@ -99,7 +100,7 @@ class MilestoneController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $milestone->fresh(),
+            'data' => new ProjectMilestoneResource($milestone->fresh()),
             'message' => 'Milestone updated successfully',
         ]);
     }
@@ -147,7 +148,7 @@ class MilestoneController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $milestone->fresh(),
+            'data' => new ProjectMilestoneResource($milestone->fresh()),
             'message' => 'Milestone marked as completed',
         ]);
     }

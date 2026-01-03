@@ -25,7 +25,7 @@ class ProjectController extends Controller
 
         $query = $this->applyTableQuery($query, $request);
 
-        return response()->json($this->getPaginatedResponse($query, $request));
+        return response()->json($this->getPaginatedResponse($query, $request, ProjectResource::class));
     }
 
     public function show(Project $project): JsonResponse
@@ -60,7 +60,7 @@ class ProjectController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'progress_percentage' => $progressPercentage,
+                'progressPercentage' => $progressPercentage,
             ],
         ]);
     }

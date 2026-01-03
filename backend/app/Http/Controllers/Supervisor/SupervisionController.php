@@ -29,7 +29,7 @@ class SupervisionController extends Controller
 
         $query = $this->applyTableQuery($query, $request);
 
-        return response()->json($this->getPaginatedResponse($query, $request));
+        return response()->json($this->getPaginatedResponse($query, $request, RequestResource::class));
     }
 
     public function approve(Request $request, ProjectRequest $projectRequest): JsonResponse

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\TimePeriodResource;
 use App\Services\TimeWindowService;
 use App\Enums\TimePeriodType;
 use Illuminate\Http\Request;
@@ -22,7 +23,7 @@ class TimeWindowController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $windows,
+            'data' => TimePeriodResource::collection($windows),
         ]);
     }
 
@@ -35,7 +36,7 @@ class TimeWindowController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $windows,
+            'data' => TimePeriodResource::collection($windows),
         ]);
     }
 
@@ -56,9 +57,9 @@ class TimeWindowController extends Controller
             'success' => true,
             'data' => [
                 'type' => $type,
-                'is_active' => $isActive,
-                'window' => $window,
-                'days_remaining' => $isActive ? now()->diffInDays($window->end_date, false) : null,
+                'isActive' => $isActive,
+                'window' => $window ? new TimePeriodResource($window) : null,
+                'daysRemaining' => $isActive ? now()->diffInDays($window->end_date, false) : null,
             ],
         ]);
     }
@@ -76,9 +77,19 @@ class TimeWindowController extends Controller
         $types = $request->input('types');
         $status = $this->timeWindowService->getWindowsStatus($types);
 
+        // Transform windows in status array to use Resources
+        $transformedStatus = [];
+        foreach ($status as $type => $statusData) {
+            $transformedStatus[$type] = [
+                'isActive' => $statusData['is_active'],
+                'window' => $statusData['window'] ? new TimePeriodResource($statusData['window']) : null,
+                'daysRemaining' => $statusData['days_remaining'],
+            ];
+        }
+
         return response()->json([
             'success' => true,
-            'data' => $status,
+            'data' => $transformedStatus,
         ]);
     }
 

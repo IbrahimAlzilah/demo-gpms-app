@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -54,15 +55,7 @@ class AuthController extends Controller
                 'success' => true,
                 'data' => [
                     'token' => $token,
-                    'user' => [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'email' => $user->email,
-                        'role' => $user->role,
-                        'status' => $user->status,
-                        'student_id' => $user->student_id,
-                        'department' => $user->department,
-                    ],
+                    'user' => new UserResource($user),
                     'permissions' => $this->getPermissions($user->role),
                 ],
             ]);
@@ -123,13 +116,7 @@ class AuthController extends Controller
                 'success' => true,
                 'data' => [
                     'token' => $token,
-                    'user' => [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'email' => $user->email,
-                        'role' => $user->role,
-                        'status' => $user->status,
-                    ],
+                    'user' => new UserResource($user),
                     'permissions' => $this->getPermissions($user->role),
                 ],
             ], 201);
@@ -157,15 +144,7 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role,
-                'status' => $user->status,
-                'student_id' => $user->student_id,
-                'emp_id' => $user->emp_id,
-                'department' => $user->department,
-                'phone' => $user->phone,
+                'user' => new UserResource($user),
                 'permissions' => $this->getPermissions($user->role),
             ],
         ]);

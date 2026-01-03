@@ -25,7 +25,7 @@ class ProposalController extends Controller
 
         $query = $this->applyTableQuery($query, $request);
 
-        return response()->json($this->getPaginatedResponse($query, $request));
+        return response()->json($this->getPaginatedResponse($query, $request, ProposalResource::class));
     }
 
     public function store(Request $request): JsonResponse
