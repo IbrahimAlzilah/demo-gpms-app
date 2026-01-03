@@ -104,12 +104,31 @@ class ProjectPolicy
             return false;
         }
 
-        // Student should not be already registered
+        // Student should not be already registered in this project
         if ($project->students()->where('users.id', $user->id)->exists()) {
             return false;
         }
 
-        // Check if student already has a project
+        // Check if student already has a pending registration for this project
+        $existingRegistration = \App\Models\ProjectRegistration::where('student_id', $user->id)
+            ->where('project_id', $project->id)
+            ->where('status', 'pending')
+            ->exists();
+
+        if ($existingRegistration) {
+            return false;
+        }
+
+        // Check if student already has a pending registration for any project
+        $hasPendingRegistration = \App\Models\ProjectRegistration::where('student_id', $user->id)
+            ->where('status', 'pending')
+            ->exists();
+
+        if ($hasPendingRegistration) {
+            return false;
+        }
+
+        // Check if student already has an approved project
         $hasProject = Project::whereHas('students', function ($query) use ($user) {
             $query->where('users.id', $user->id);
         })->exists();

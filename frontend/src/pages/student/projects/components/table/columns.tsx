@@ -61,25 +61,25 @@ export function createProjectColumns({
     },
     ...(onSelectProject
       ? [
-          {
-            id: 'actions',
-            header: ({ column }) => (
-              <DataTableColumnHeader column={column} title={t('common.actions') || 'الإجراءات'} />
-            ),
-            cell: ({ row }) => {
-              const project = row.original
-              return (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onSelectProject(project)}
-                >
-                  <Eye className="size-4" />
-                </Button>
-              )
-            },
-          } as ColumnDef<Project>,
-        ]
+        {
+          id: 'actions',
+          header: ({ column }) => (
+            <DataTableColumnHeader column={column} title={t('common.actions') || 'الإجراءات'} />
+          ),
+          cell: ({ row }) => {
+            const project = row.original
+            return (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onSelectProject(project)}
+              >
+                <Eye className="size-4" />
+              </Button>
+            )
+          },
+        } as ColumnDef<Project>,
+      ]
       : []),
   ]
 }

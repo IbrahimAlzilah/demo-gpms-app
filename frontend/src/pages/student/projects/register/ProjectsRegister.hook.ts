@@ -33,12 +33,14 @@ export function useProjectsRegister(project: Project) {
     try {
       await registerProject.mutateAsync(project.id)
       setSuccess(true)
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : t('project.registrationError') || 'فشل التسجيل في المشروع'
-      )
+    } catch (err: any) {
+      // Extract error message from API response
+      const errorMessage =
+        err?.response?.data?.message ||
+        err?.message ||
+        t('project.registrationError') ||
+        'فشل التسجيل في المشروع'
+      setError(errorMessage)
     }
   }
 
@@ -47,8 +49,13 @@ export function useProjectsRegister(project: Project) {
     setError('')
     try {
       await cancelRegistration.mutateAsync(registration.id)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'فشل إلغاء طلب التسجيل')
+    } catch (err: any) {
+      // Extract error message from API response
+      const errorMessage =
+        err?.response?.data?.message ||
+        err?.message ||
+        'فشل إلغاء طلب التسجيل'
+      setError(errorMessage)
     }
   }
 

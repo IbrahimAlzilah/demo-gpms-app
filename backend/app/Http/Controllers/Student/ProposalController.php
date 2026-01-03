@@ -85,7 +85,7 @@ class ProposalController extends Controller
         ]);
 
         // Use service to update proposal (enforces status check)
-        $proposal = $this->proposalService->update($proposal, $validated);
+        $proposal = $this->proposalService->update($proposal, $validated, $request->user());
 
         return response()->json([
             'success' => true,

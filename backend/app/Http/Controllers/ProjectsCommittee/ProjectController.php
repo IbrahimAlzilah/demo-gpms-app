@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\ProjectService;
 use App\Services\NotificationService;
 use App\Enums\ProjectStatus;
+use App\Enums\ProposalStatus;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -29,6 +30,13 @@ class ProjectController extends Controller
         // Filter by status if provided
         if ($request->has('status')) {
             $query->where('status', $request->status);
+            
+            // For draft status, only show projects from approved proposals
+            if ($request->status === ProjectStatus::DRAFT->value) {
+                $query->whereHas('proposals', function ($q) {
+                    $q->where('status', ProposalStatus::APPROVED->value);
+                });
+            }
         }
 
         // Filter projects without supervisor
@@ -52,13 +60,18 @@ class ProjectController extends Controller
             $projectIds = $validated['project_ids'];
             $projects = Project::whereIn('id', $projectIds)
                 ->where('status', ProjectStatus::DRAFT->value)
+                ->whereHas('proposals', function ($q) {
+                    $q->where('status', ProposalStatus::APPROVED->value);
+                })
                 ->get();
 
             foreach ($projects as $project) {
                 $project->update(['status' => ProjectStatus::AVAILABLE_FOR_REGISTRATION->value]);
             }
 
-            $announcedProjects = Project::whereIn('id', $projectIds)
+            // Only get projects that were actually updated (have approved proposals)
+            $announcedProjectIds = $projects->pluck('id')->toArray();
+            $announcedProjects = Project::whereIn('id', $announcedProjectIds)
                 ->with(['supervisor', 'students'])
                 ->get();
 
@@ -106,6 +119,13 @@ class ProjectController extends Controller
     {
         if (isset($filters['status'])) {
             $query->where('status', $filters['status']);
+            
+            // For draft status, only show projects from approved proposals
+            if ($filters['status'] === ProjectStatus::DRAFT->value) {
+                $query->whereHas('proposals', function ($q) {
+                    $q->where('status', ProposalStatus::APPROVED->value);
+                });
+            }
         }
         if (isset($filters['supervisor_id'])) {
             if ($filters['supervisor_id'] === 'null') {

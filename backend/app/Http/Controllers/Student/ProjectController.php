@@ -32,8 +32,13 @@ class ProjectController extends Controller
     {
         $query = Project::with(['supervisor', 'students']);
 
+        // Check if requesting available projects via 'available' parameter or filters
+        $filters = $request->filters ?? [];
+        $isRequestingAvailable = ($request->has('available') && $request->available) 
+            || (isset($filters['status']) && $filters['status'] === ProjectStatus::AVAILABLE_FOR_REGISTRATION->value);
+
         // Show available projects or student's registered projects
-        if ($request->has('available') && $request->available) {
+        if ($isRequestingAvailable) {
             $query->where('status', ProjectStatus::AVAILABLE_FOR_REGISTRATION->value);
         } else {
             $query->whereHas('students', function ($q) use ($request) {
@@ -58,10 +63,69 @@ class ProjectController extends Controller
 
     public function register(Request $request, Project $project): JsonResponse
     {
-        $this->authorize('register', $project);
+        $user = $request->user();
+
+        // Check authorization with specific error messages
+        if (!$user->isStudent()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only students can register for projects',
+            ], 403);
+        }
+
+        if (!$project->isAvailableForRegistration()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Project is not available for registration',
+            ], 403);
+        }
+
+        if ($project->students()->where('users.id', $user->id)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are already registered in this project',
+            ], 403);
+        }
+
+        // Check if student already has a pending registration for this project
+        $existingRegistration = ProjectRegistration::where('student_id', $user->id)
+            ->where('project_id', $project->id)
+            ->where('status', 'pending')
+            ->exists();
+
+        if ($existingRegistration) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You already have a pending registration for this project',
+            ], 403);
+        }
+
+        // Check if student already has a pending registration for any project
+        $hasPendingRegistration = ProjectRegistration::where('student_id', $user->id)
+            ->where('status', 'pending')
+            ->exists();
+
+        if ($hasPendingRegistration) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You already have a pending registration for another project',
+            ], 403);
+        }
+
+        // Check if student already has an approved project
+        $hasProject = Project::whereHas('students', function ($query) use ($user) {
+            $query->where('users.id', $user->id);
+        })->exists();
+
+        if ($hasProject) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are already registered in another project',
+            ], 403);
+        }
 
         try {
-            $registration = $this->projectService->registerStudent($project, $request->user());
+            $registration = $this->projectService->registerStudent($project, $user);
 
             return response()->json([
                 'success' => true,
@@ -78,13 +142,66 @@ class ProjectController extends Controller
 
     public function getRegistrations(Request $request): JsonResponse
     {
-        $registrations = ProjectRegistration::where('student_id', $request->user()->id)
+        $student = $request->user();
+        
+        // Get all ProjectRegistration records for the student
+        $registrations = ProjectRegistration::where('student_id', $student->id)
             ->with(['project', 'reviewer'])
             ->get();
 
+        // Get all projects where the student is directly attached via students relationship
+        $attachedProjects = Project::whereHas('students', function ($q) use ($student) {
+            $q->where('users.id', $student->id);
+        })
+        ->with(['supervisor', 'students' => function ($q) use ($student) {
+            $q->where('users.id', $student->id);
+        }])
+        ->get();
+
+        // Get project IDs that already have approved registration records
+        $approvedRegistrationProjectIds = $registrations
+            ->where('status', 'approved')
+            ->pluck('project_id')
+            ->toArray();
+
+        // Create synthetic registration records for projects where student is attached
+        // but doesn't have an approved registration record
+        $syntheticRegistrations = collect();
+        foreach ($attachedProjects as $project) {
+            if (!in_array($project->id, $approvedRegistrationProjectIds)) {
+                // Get pivot data for timestamps
+                $pivot = $project->students->first()?->pivot;
+                $pivotCreatedAt = $pivot->created_at ?? now();
+                $pivotUpdatedAt = $pivot->updated_at ?? now();
+                
+                // Create a synthetic ProjectRegistration instance (not saved to DB)
+                $syntheticRegistration = new ProjectRegistration([
+                    'project_id' => $project->id,
+                    'student_id' => $student->id,
+                    'status' => 'approved',
+                    'submitted_at' => $pivotCreatedAt,
+                    'reviewed_at' => $pivotUpdatedAt,
+                    'reviewed_by' => null,
+                    'review_comments' => null,
+                ]);
+                
+                // Set the project relationship
+                $syntheticRegistration->setRelation('project', $project);
+                $syntheticRegistration->setRelation('reviewer', null);
+                
+                // Set ID to a unique synthetic ID to avoid conflicts
+                $syntheticRegistration->id = 'synthetic_' . $project->id;
+                
+                $syntheticRegistrations->push($syntheticRegistration);
+            }
+        }
+
+        // Merge real registrations with synthetic ones
+        $allRegistrations = $registrations->merge($syntheticRegistrations);
+
         return response()->json([
             'success' => true,
-            'data' => ProjectRegistrationResource::collection($registrations),
+            'data' => ProjectRegistrationResource::collection($allRegistrations),
         ]);
     }
 

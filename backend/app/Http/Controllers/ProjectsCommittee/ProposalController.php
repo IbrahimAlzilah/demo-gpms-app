@@ -116,5 +116,56 @@ class ProposalController extends Controller
             ], 400);
         }
     }
+
+    public function update(Request $request, Proposal $proposal): JsonResponse
+    {
+        $this->authorize('update', $proposal);
+
+        $validated = $request->validate([
+            'title' => 'sometimes|string|max:255',
+            'description' => 'sometimes|string',
+            'objectives' => 'sometimes|string',
+            'methodology' => 'nullable|string',
+            'expected_outcomes' => 'nullable|string',
+        ]);
+
+        try {
+            $updated = $this->proposalService->update(
+                $proposal,
+                $validated,
+                $request->user()
+            );
+
+            return response()->json([
+                'success' => true,
+                'data' => new ProposalResource($updated->load(['submitter', 'reviewer', 'project'])),
+                'message' => 'Proposal updated successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    public function destroy(Request $request, Proposal $proposal): JsonResponse
+    {
+        $this->authorize('delete', $proposal);
+
+        try {
+            $this->proposalService->delete($proposal);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Proposal deleted successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
 }
 

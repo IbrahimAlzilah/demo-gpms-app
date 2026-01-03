@@ -79,4 +79,16 @@ export const committeeProposalService = {
     )
     return response.data
   },
+
+  update: async (id: string, data: Partial<Proposal>): Promise<Proposal> => {
+    const response = await apiClient.put<Proposal>(
+      `/projects-committee/proposals/${id}`,
+      data
+    )
+    return response.data
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await apiClient.delete(`/projects-committee/proposals/${id}`)
+  },
 }

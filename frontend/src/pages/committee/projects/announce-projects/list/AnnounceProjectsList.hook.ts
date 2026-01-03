@@ -9,6 +9,7 @@ export function useAnnounceProjectsList() {
   
   const [state, setState] = useState<AnnounceProjectsListState>({
     selectedProjects: new Set(),
+    viewStatus: 'draft',
   })
 
   const {
@@ -25,8 +26,8 @@ export function useAnnounceProjectsList() {
     pagination,
     setPagination,
   } = useDataTable({
-    queryKey: ['committee-projects-announce', 'draft'],
-    queryFn: (params) => committeeProjectService.getTableData(params, 'draft'),
+    queryKey: ['committee-projects-announce', state.viewStatus],
+    queryFn: (params) => committeeProjectService.getTableData(params, state.viewStatus),
     initialPageSize: 10,
     enableServerSide: true,
   })
@@ -50,11 +51,17 @@ export function useAnnounceProjectsList() {
     pageCount,
   }
 
+  const setViewStatus = useCallback((viewStatus: 'draft' | 'available_for_registration') => {
+    setState((prev) => ({ ...prev, viewStatus, selectedProjects: new Set() }))
+  }, [])
+
   return {
     data,
     state,
     setState,
     toggleProject,
+    viewStatus: state.viewStatus,
+    setViewStatus,
     // Table controls
     pageCount,
     sorting,

@@ -59,6 +59,7 @@ export const projectService = {
 
   getStudentRegistrations: async (studentId: string): Promise<ProjectRegistration[]> => {
     const response = await apiClient.get<ProjectRegistration[]>('/student/projects/registrations')
+    // The axios interceptor already extracts response.data.data, so response.data is the array
     return Array.isArray(response.data) ? response.data : []
   },
 
@@ -78,6 +79,7 @@ export const projectService = {
     const response = await apiClient.post<ProjectRegistration>(
       `/student/projects/${projectId}/register`
     )
+    // The axios interceptor already extracts response.data.data, so response.data is the registration
     return response.data
   },
 

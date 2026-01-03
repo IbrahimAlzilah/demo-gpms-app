@@ -9,15 +9,19 @@ export interface AnnounceProjectsTableColumnsProps {
   selectedProjects: Set<string>
   onToggleProject: (projectId: string) => void
   t: (key: string) => string
+  showSelection?: boolean
 }
 
 export function createAnnounceProjectsColumns({
   selectedProjects,
   onToggleProject,
   t,
+  showSelection = true,
 }: AnnounceProjectsTableColumnsProps): ColumnDef<Project>[] {
-  return [
-    {
+  const columns: ColumnDef<Project>[] = []
+
+  if (showSelection) {
+    columns.push({
       id: "select",
       header: ({ table }) => (
         <Checkbox
@@ -55,7 +59,10 @@ export function createAnnounceProjectsColumns({
       },
       enableSorting: false,
       enableHiding: false,
-    },
+    })
+  }
+
+  columns.push(
     {
       accessorKey: "title",
       header: ({ column }) => (
@@ -110,5 +117,7 @@ export function createAnnounceProjectsColumns({
       ),
       cell: ({ row }) => <div className="text-sm">{formatDate(row.original.createdAt)}</div>,
     },
-  ]
+  )
+
+  return columns
 }

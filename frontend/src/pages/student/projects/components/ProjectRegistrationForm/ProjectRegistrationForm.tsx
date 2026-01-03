@@ -60,12 +60,14 @@ export function ProjectRegistrationForm({
       setTimeout(() => {
         onSuccess?.()
       }, 2000)
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : t('project.registrationError') || 'فشل التسجيل في المشروع'
-      )
+    } catch (err: any) {
+      // Extract error message from API response
+      const errorMessage =
+        err?.response?.data?.message ||
+        err?.message ||
+        t('project.registrationError') ||
+        'فشل التسجيل في المشروع'
+      setError(errorMessage)
     }
   }
 
@@ -75,8 +77,13 @@ export function ProjectRegistrationForm({
     try {
       await cancelRegistration.mutateAsync(registration.id)
       onSuccess?.()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'فشل إلغاء طلب التسجيل')
+    } catch (err: any) {
+      // Extract error message from API response
+      const errorMessage =
+        err?.response?.data?.message ||
+        err?.message ||
+        'فشل إلغاء طلب التسجيل'
+      setError(errorMessage)
     }
   }
 
@@ -189,11 +196,10 @@ export function ProjectRegistrationForm({
           </div>
 
           <div
-            className={`flex items-start gap-3 p-4 rounded-lg ${
-              isApproved
+            className={`flex items-start gap-3 p-4 rounded-lg ${isApproved
                 ? 'bg-success/10 border border-success/20'
                 : 'bg-destructive/10 border border-destructive/20'
-            }`}
+              }`}
           >
             {isApproved ? (
               <CheckCircle2 className="h-5 w-5 text-success mt-0.5" />

@@ -156,18 +156,25 @@ class ProposalService
     }
 
     /**
-     * Update a proposal (only allowed when status is pending_review)
+     * Update a proposal
+     * 
+     * @param Proposal $proposal The proposal to update
+     * @param array $data The data to update
+     * @param User|null $user The user performing the update (null for committee members)
      */
-    public function update(Proposal $proposal, array $data): Proposal
+    public function update(Proposal $proposal, array $data, ?User $user = null): Proposal
     {
-        // Ensure proposal can be modified (status must be pending_review)
-        if ($proposal->status !== ProposalStatus::PENDING_REVIEW) {
-            throw new \Illuminate\Http\Exceptions\HttpResponseException(
-                response()->json([
-                    'success' => false,
-                    'message' => 'Proposal can only be edited when status is pending_review',
-                ], 403)
-            );
+        // If user is provided and not a committee member, enforce status restriction
+        if ($user && !$user->isProjectsCommittee()) {
+            // Ensure proposal can be modified (status must be pending_review)
+            if ($proposal->status !== ProposalStatus::PENDING_REVIEW) {
+                throw new \Illuminate\Http\Exceptions\HttpResponseException(
+                    response()->json([
+                        'success' => false,
+                        'message' => 'Proposal can only be edited when status is pending_review',
+                    ], 403)
+                );
+            }
         }
 
         $proposal->update([
@@ -179,6 +186,14 @@ class ProposalService
         ]);
 
         return $proposal->fresh();
+    }
+
+    /**
+     * Delete a proposal
+     */
+    public function delete(Proposal $proposal): bool
+    {
+        return $proposal->delete();
     }
 }
 

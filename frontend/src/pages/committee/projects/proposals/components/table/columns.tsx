@@ -1,22 +1,30 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import { Button } from "@/components/ui/button"
 import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
 import { StatusBadge } from "@/components/common/StatusBadge"
+import { ActionsDropdown } from "@/components/common/ActionsDropdown"
 import type { Proposal } from "@/types/project.types"
-import { Check, X, FileEdit } from "lucide-react"
+import { Check, X, FileEdit, Edit, Trash2 } from "lucide-react"
 import { formatDate } from "@/lib/utils/format"
+import type { TFunction } from "react-i18next"
 
 export interface ProposalTableColumnsProps {
   onApprove: (proposal: Proposal) => void
   onReject: (proposal: Proposal) => void
   onRequestModification: (proposal: Proposal) => void
+  onEdit: (proposal: Proposal) => void
+  onDelete: (proposal: Proposal) => void
+  t: TFunction
 }
 
 export function createProposalColumns({
   onApprove,
   onReject,
   onRequestModification,
+  onEdit,
+  onDelete,
+  t,
 }: ProposalTableColumnsProps): ColumnDef<Proposal>[] {
+  
   return [
     {
       accessorKey: "title",
@@ -52,44 +60,55 @@ export function createProposalColumns({
     },
     {
       id: "actions",
-      header: "الإجراءات",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('common.actions') || 'الإجراءات'} />
+      ),
       cell: ({ row }) => {
         const proposal = row.original
-        // Only show actions for pending_review and requires_modification proposals
-        if (proposal.status !== 'pending_review' && proposal.status !== 'requires_modification') {
-          return <span className="text-muted-foreground text-sm">-</span>
-        }
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onApprove(proposal)}
-              className="h-8 text-success hover:text-success/80"
-            >
-              <Check className="h-4 w-4" />
-              <span className="sr-only">قبول</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onRequestModification(proposal)}
-              className="h-8 text-primary hover:text-primary/80"
-            >
-              <FileEdit className="h-4 w-4" />
-              <span className="sr-only">طلب تعديل</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onReject(proposal)}
-              className="h-8 text-destructive hover:text-destructive"
-            >
-              <X className="h-4 w-4" />
-              <span className="sr-only">رفض</span>
-            </Button>
-          </div>
-        )
+
+        const actions = [
+          {
+            id: 'approve',
+            label: t('committee.proposal.approve') || 'قبول',
+            icon: Check,
+            onClick: () => onApprove(proposal),
+            hidden: (row: Proposal) => row.status !== 'pending_review' && row.status !== 'requires_modification',
+            variant: 'success' as const,
+          },
+          {
+            id: 'request-modification',
+            label: t('committee.proposal.requestModification') || 'طلب تعديل',
+            icon: FileEdit,
+            onClick: () => onRequestModification(proposal),
+            hidden: (row: Proposal) => row.status !== 'pending_review' && row.status !== 'requires_modification',
+            variant: 'primary' as const,
+          },
+          {
+            id: 'reject',
+            label: t('committee.proposal.reject') || 'رفض',
+            icon: X,
+            onClick: () => onReject(proposal),
+            hidden: (row: Proposal) => row.status !== 'pending_review' && row.status !== 'requires_modification',
+            variant: 'destructive' as const,
+          },
+          {
+            id: 'edit',
+            label: t('common.edit') || 'تعديل',
+            icon: Edit,
+            onClick: () => onEdit(proposal),
+            variant: 'default' as const,
+          },
+          {
+            id: 'delete',
+            label: t('common.delete') || 'حذف',
+            icon: Trash2,
+            onClick: () => onDelete(proposal),
+            variant: 'destructive' as const,
+            separator: true,
+          },
+        ]
+
+        return <ActionsDropdown row={proposal} actions={actions} />
       },
     },
   ]

@@ -40,6 +40,34 @@ class ProjectService
             throw new \Exception('Student is already registered to this project');
         }
 
+        // Check if student already has a pending registration for this project
+        $existingRegistration = ProjectRegistration::where('student_id', $student->id)
+            ->where('project_id', $project->id)
+            ->where('status', 'pending')
+            ->first();
+
+        if ($existingRegistration) {
+            throw new \Exception('You already have a pending registration for this project');
+        }
+
+        // Check if student already has a pending registration for any project
+        $hasPendingRegistration = ProjectRegistration::where('student_id', $student->id)
+            ->where('status', 'pending')
+            ->exists();
+
+        if ($hasPendingRegistration) {
+            throw new \Exception('You already have a pending registration for another project');
+        }
+
+        // Check if student is already registered in an approved project
+        $hasApprovedProject = Project::whereHas('students', function ($query) use ($student) {
+            $query->where('users.id', $student->id);
+        })->exists();
+
+        if ($hasApprovedProject) {
+            throw new \Exception('You are already registered in another project');
+        }
+
         return DB::transaction(function () use ($project, $student) {
             $registration = ProjectRegistration::create([
                 'project_id' => $project->id,

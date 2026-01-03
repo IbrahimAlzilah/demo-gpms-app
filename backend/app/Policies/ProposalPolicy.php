@@ -36,13 +36,14 @@ class ProposalPolicy
      */
     public function update(User $user, Proposal $proposal): bool
     {
-        // Only submitter can update their own proposal
-        if ($proposal->submitter_id !== $user->id) {
-            return false;
+        // Projects committee can update any proposal
+        if ($user->isProjectsCommittee()) {
+            return true;
         }
 
-        // Can only update if status is pending_review
-        return $proposal->status === ProposalStatus::PENDING_REVIEW;
+        // Submitter can update their own proposal if pending
+        return $proposal->submitter_id === $user->id 
+            && $proposal->status === ProposalStatus::PENDING_REVIEW;
     }
 
     /**
@@ -50,7 +51,12 @@ class ProposalPolicy
      */
     public function delete(User $user, Proposal $proposal): bool
     {
-        // Only submitter can delete their own proposal if it's pending
+        // Projects committee can delete any proposal
+        if ($user->isProjectsCommittee()) {
+            return true;
+        }
+
+        // Submitter can delete their own proposal if pending
         return $proposal->submitter_id === $user->id 
             && $proposal->status === ProposalStatus::PENDING_REVIEW;
     }

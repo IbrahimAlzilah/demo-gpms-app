@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAnnounceProjects as useAnnounceProjectsOperation } from '../hooks/useAnnounceProjectsOperations'
-import { DataTable, Button } from '@/components/ui'
+import { DataTable, Button, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui'
 import { BlockContent, useToast } from '@/components/common'
 import { createAnnounceProjectsColumns } from '../components/table'
 import { Loader2, Megaphone, AlertCircle } from 'lucide-react'
@@ -17,6 +17,8 @@ export function AnnounceProjectsList() {
     state,
     setState,
     toggleProject,
+    viewStatus,
+    setViewStatus,
     pageCount,
     sorting,
     setSorting,
@@ -46,17 +48,20 @@ export function AnnounceProjectsList() {
     }
   }
 
+  const isDraftView = viewStatus === 'draft'
+
   const columns = useMemo(
     () =>
       createAnnounceProjectsColumns({
         selectedProjects: state.selectedProjects,
         onToggleProject: toggleProject,
         t,
+        showSelection: isDraftView,
       }),
-    [state.selectedProjects, toggleProject, t]
+    [state.selectedProjects, toggleProject, t, isDraftView]
   )
 
-  const headerActions = (
+  const headerActions = isDraftView ? (
     <div className="flex items-center gap-4">
       <div className="text-sm text-muted-foreground">
         {t('committee.announce.selectedCount', { count: state.selectedProjects.size })}
@@ -78,14 +83,36 @@ export function AnnounceProjectsList() {
         )}
       </Button>
     </div>
-  )
+  ) : undefined
+
+  const title = isDraftView
+    ? t('committee.announce.approvedProjects')
+    : t('committee.announce.announcedProjects') || t('committee.announce.approvedProjects')
 
   return (
     <>
       <BlockContent
-        title={t('committee.announce.approvedProjects')}
+        title={title}
         actions={headerActions}
       >
+        <div className="flex gap-4 mb-4 items-center">
+          <Select
+            value={viewStatus}
+            onValueChange={(value) => setViewStatus(value as 'draft' | 'available_for_registration')}
+          >
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder={t('common.filterByStatus') || 'Filter by status'} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="draft">
+                {t('committee.announce.projectsToAnnounce') || t('committee.announce.approvedProjects') || 'Projects to Announce'}
+              </SelectItem>
+              <SelectItem value="available_for_registration">
+                {t('committee.announce.announcedProjects') || 'المشاريع المعلنة'}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <DataTable
           columns={columns}
           data={data.projects}

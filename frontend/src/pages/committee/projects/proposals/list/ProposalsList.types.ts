@@ -6,6 +6,8 @@ export interface ProposalsListState {
   selectedProposal: Proposal | null
   action: 'approve' | 'reject' | 'modify' | null
   statusFilter: ProposalStatusFilter
+  proposalToEditId: string | null
+  proposalToDelete: Proposal | null
 }
 
 export interface ProposalsListData {
