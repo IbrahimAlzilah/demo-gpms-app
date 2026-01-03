@@ -1,8 +1,10 @@
 import { useState, useMemo } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/pages/auth/login'
 import { useDataTable } from '@/hooks/useDataTable'
 import { proposalService } from '../api/proposal.service'
+import { buildProposalFilters } from '../components/table/filter'
 import type { Proposal } from '@/types/project.types'
 import type { ProposalStatistics } from '../types/Proposals.types'
 import type { ProposalsListState, ProposalsListData } from './ProposalsList.types'
@@ -10,11 +12,18 @@ import type { ProposalsListState, ProposalsListData } from './ProposalsList.type
 export function useProposalsList() {
   const { t } = useTranslation()
   const { user } = useAuthStore()
+  const location = useLocation()
   
   const [state, setState] = useState<ProposalsListState>({
     selectedProposal: null,
     showForm: false,
   })
+
+  // Build filters based on route
+  const routeFilters = useMemo(
+    () => buildProposalFilters(location.pathname, user?.id),
+    [location.pathname, user?.id]
+  )
 
   const {
     data: proposals,
@@ -30,10 +39,13 @@ export function useProposalsList() {
     pagination,
     setPagination,
   } = useDataTable({
-    queryKey: ['supervisor-proposals-table'],
+    queryKey: ['supervisor-proposals-table', location.pathname],
     queryFn: (params) => {
-      // Filter to only user's proposals
-      const filters = { ...params?.filters, submitterId: user?.id }
+      const filters: Record<string, unknown> = {
+        ...routeFilters,
+        ...params?.filters,
+      }
+      
       return proposalService.getTableData({ ...params, filters })
     },
     initialPageSize: 10,
@@ -59,10 +71,15 @@ export function useProposalsList() {
     error: error as Error | null,
   }
 
+  const isMyProposals = location.pathname.includes('/my')
+  const isApprovedProposals = location.pathname.includes('/approved')
+
   return {
     data,
     state,
     setState,
+    isMyProposals,
+    isApprovedProposals,
     // Table controls
     pageCount,
     sorting,

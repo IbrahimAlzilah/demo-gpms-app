@@ -10,6 +10,7 @@ export function useAnnounceProjectsList() {
   const [state, setState] = useState<AnnounceProjectsListState>({
     selectedProjects: new Set(),
     viewStatus: 'draft',
+    projectToViewId: null,
   })
 
   const {

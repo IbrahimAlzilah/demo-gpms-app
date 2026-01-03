@@ -7,6 +7,7 @@ import { BlockContent, ConfirmDialog, LoadingSpinner } from '@/components/common
 import { createProposalColumns } from '../components/table'
 import { ProposalReviewDialog } from '../components/ProposalReviewDialog'
 import { ProposalEditDialog } from '../components/ProposalEditDialog'
+import { ProposalDetailsView } from '../components/ProposalDetailsView'
 import { useProposalsList } from './ProposalsList.hook'
 import { AlertCircle } from 'lucide-react'
 import { useToast } from '@/components/common'
@@ -39,6 +40,9 @@ export function ProposalsList() {
   const columns = useMemo(
     () =>
       createProposalColumns({
+        onView: (proposal) => {
+          setState((prev) => ({ ...prev, proposalToViewId: proposal.id }))
+        },
         onApprove: (proposal) => {
           setState((prev) => ({ ...prev, selectedProposal: proposal, action: 'approve' }))
         },
@@ -220,6 +224,14 @@ export function ProposalsList() {
         confirmLabel={t('common.delete') || 'حذف'}
         cancelLabel={t('common.cancel') || 'إلغاء'}
         variant="destructive"
+      />
+
+      <ProposalDetailsView
+        proposalId={state.proposalToViewId}
+        open={!!state.proposalToViewId}
+        onClose={() => {
+          setState((prev) => ({ ...prev, proposalToViewId: null }))
+        }}
       />
     </>
   )

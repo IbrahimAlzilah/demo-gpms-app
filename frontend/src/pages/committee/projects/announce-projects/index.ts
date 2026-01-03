@@ -4,11 +4,13 @@
 export { AnnounceProjectsList } from "./list/AnnounceProjectsList.screen"
 
 // Components
+export { ProjectDetailsView } from "./components/ProjectDetailsView"
 export { createAnnounceProjectsColumns } from "./components/table"
 export type { AnnounceProjectsTableColumnsProps } from "./components/table"
 
 // Hooks
 export { useAnnounceProjects } from "./hooks/useAnnounceProjects"
+export { useProject } from "./hooks/useProject"
 export { useAnnounceProjects as useAnnounceProjectsOperation } from "./hooks/useAnnounceProjectsOperations"
 
 // Types

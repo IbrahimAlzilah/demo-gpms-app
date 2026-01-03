@@ -2,11 +2,13 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui'
 import { DataTableColumnHeader } from '@/components/ui/data-table/data-table-column-header'
 import { StatusBadge } from '@/components/common/StatusBadge'
+import { ActionsDropdown } from '@/components/common/ActionsDropdown'
 import type { ProjectRegistration } from '@/types/project.types'
-import { CheckCircle2, XCircle, User, Briefcase } from 'lucide-react'
+import { CheckCircle2, XCircle, User, Briefcase, Eye } from 'lucide-react'
 import { formatDate } from '@/lib/utils/format'
 
 export interface RegistrationTableColumnsProps {
+  onView: (registration: ProjectRegistration) => void
   onApprove: (registration: ProjectRegistration) => void
   onReject: (registration: ProjectRegistration) => void
   t: (key: string) => string
@@ -65,30 +67,35 @@ export function createRegistrationColumns({
       ),
       cell: ({ row }) => {
         const registration = row.original
-        if (registration.status !== 'pending') return null
 
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onApprove(registration)}
-              className="text-success hover:text-success"
-            >
-              <CheckCircle2 className="h-4 w-4 mr-1" />
-              {t('common.approve') || 'قبول'}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onReject(registration)}
-              className="text-destructive hover:text-destructive"
-            >
-              <XCircle className="h-4 w-4 mr-1" />
-              {t('common.reject') || 'رفض'}
-            </Button>
-          </div>
-        )
+        const actions = [
+          {
+            id: 'view',
+            label: t('common.view') || t('registration.viewDetails') || 'عرض التفاصيل',
+            icon: Eye,
+            onClick: () => onView(registration),
+            variant: 'default' as const,
+            separator: true,
+          },
+          {
+            id: 'approve',
+            label: t('common.approve') || 'قبول',
+            icon: CheckCircle2,
+            onClick: () => onApprove(registration),
+            hidden: () => registration.status !== 'pending',
+            variant: 'success' as const,
+          },
+          {
+            id: 'reject',
+            label: t('common.reject') || 'رفض',
+            icon: XCircle,
+            onClick: () => onReject(registration),
+            hidden: () => registration.status !== 'pending',
+            variant: 'destructive' as const,
+          },
+        ]
+
+        return <ActionsDropdown row={registration} actions={actions} />
       },
     },
   ]

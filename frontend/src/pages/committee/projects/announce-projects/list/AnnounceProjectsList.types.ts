@@ -3,6 +3,7 @@ import type { Project } from '@/types/project.types'
 export interface AnnounceProjectsListState {
   selectedProjects: Set<string>
   viewStatus: 'draft' | 'available_for_registration'
+  projectToViewId: string | null
 }
 
 export interface AnnounceProjectsListData {

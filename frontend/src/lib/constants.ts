@@ -33,6 +33,8 @@ export const ROUTES = {
   SUPERVISOR: {
     DASHBOARD: "/dashboard",
     PROPOSALS: "/proposals",
+    MY_PROPOSALS: "/proposals/my",
+    APPROVED_PROPOSALS: "/proposals/approved",
     SUPERVISION_REQUESTS: "/supervision-requests",
     PROJECTS: "/projects",
     PROGRESS: "/progress",
@@ -130,8 +132,17 @@ export const NAV_MENU: Record<string, NavMenuItem[]> = {
     },
     {
       labelKey: "nav.proposals",
-      path: ROUTES.SUPERVISOR.PROPOSALS,
       icon: "FileText",
+      submenu: [
+        {
+          labelKey: "nav.myProposals",
+          path: ROUTES.SUPERVISOR.MY_PROPOSALS,
+        },
+        {
+          labelKey: "nav.approvedProposals",
+          path: ROUTES.SUPERVISOR.APPROVED_PROPOSALS,
+        },
+      ],
     },
     {
       labelKey: "nav.supervisionRequests",

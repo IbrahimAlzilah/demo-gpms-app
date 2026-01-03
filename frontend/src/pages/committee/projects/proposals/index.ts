@@ -5,6 +5,7 @@ export { ProposalsList } from "./list/ProposalsList.screen"
 
 // Components
 export { ProposalReviewDialog } from "./components/ProposalReviewDialog"
+export { ProposalDetailsView } from "./components/ProposalDetailsView"
 export { createProposalColumns } from "./components/table"
 export type { ProposalTableColumnsProps } from "./components/table"
 

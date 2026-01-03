@@ -49,6 +49,14 @@ class ProjectController extends Controller
         return response()->json($this->getPaginatedResponse($query, $request, ProjectResource::class));
     }
 
+    public function show(Project $project): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => new ProjectResource($project->load(['supervisor', 'students', 'group'])),
+        ]);
+    }
+
     public function announce(Request $request): JsonResponse
     {
         $validated = $request->validate([

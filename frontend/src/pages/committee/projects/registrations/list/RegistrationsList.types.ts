@@ -8,6 +8,7 @@ export interface RegistrationsListState {
   action: 'approve' | 'reject' | null
   comments: string
   showDialog: boolean
+  registrationToViewId: string | null
 }
 
 export interface RegistrationsListData {

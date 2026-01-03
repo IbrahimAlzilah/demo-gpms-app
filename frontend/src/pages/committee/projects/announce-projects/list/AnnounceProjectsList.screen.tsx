@@ -4,6 +4,7 @@ import { useAnnounceProjects as useAnnounceProjectsOperation } from '../hooks/us
 import { DataTable, Button, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui'
 import { BlockContent, useToast } from '@/components/common'
 import { createAnnounceProjectsColumns } from '../components/table'
+import { ProjectDetailsView } from '../components/ProjectDetailsView'
 import { Loader2, Megaphone, AlertCircle } from 'lucide-react'
 import { useAnnounceProjectsList } from './AnnounceProjectsList.hook'
 
@@ -55,10 +56,13 @@ export function AnnounceProjectsList() {
       createAnnounceProjectsColumns({
         selectedProjects: state.selectedProjects,
         onToggleProject: toggleProject,
+        onView: (project) => {
+          setState((prev) => ({ ...prev, projectToViewId: project.id }))
+        },
         t,
         showSelection: isDraftView,
       }),
-    [state.selectedProjects, toggleProject, t, isDraftView]
+    [state.selectedProjects, toggleProject, setState, t, isDraftView]
   )
 
   const headerActions = isDraftView ? (
@@ -145,6 +149,14 @@ export function AnnounceProjectsList() {
           </div>
         </BlockContent>
       )}
+
+      <ProjectDetailsView
+        projectId={state.projectToViewId}
+        open={!!state.projectToViewId}
+        onClose={() => {
+          setState((prev) => ({ ...prev, projectToViewId: null }))
+        }}
+      />
     </>
   )
 }

@@ -13,6 +13,7 @@ export function useRegistrationsList() {
     action: null,
     comments: '',
     showDialog: false,
+    registrationToViewId: null,
   })
 
   const {

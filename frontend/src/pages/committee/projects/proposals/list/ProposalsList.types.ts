@@ -8,6 +8,7 @@ export interface ProposalsListState {
   statusFilter: ProposalStatusFilter
   proposalToEditId: string | null
   proposalToDelete: Proposal | null
+  proposalToViewId: string | null
 }
 
 export interface ProposalsListData {

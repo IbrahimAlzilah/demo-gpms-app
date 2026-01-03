@@ -110,6 +110,14 @@ export const supervisorRoutes: RouteConfig[] = [
     element: LazySupervisorDashboardPage,
   },
   {
+    path: 'proposals/my',
+    element: LazySupervisorProposalsPage,
+  },
+  {
+    path: 'proposals/approved',
+    element: LazySupervisorProposalsPage,
+  },
+  {
     path: 'proposals',
     element: LazySupervisorProposalsPage,
   },

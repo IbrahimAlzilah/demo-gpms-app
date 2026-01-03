@@ -16,6 +16,8 @@ export function ProposalsList() {
     data,
     state,
     setState,
+    isMyProposals,
+    isApprovedProposals,
     pageCount,
     sorting,
     setSorting,
@@ -53,12 +55,18 @@ export function ProposalsList() {
     [t, setState]
   )
 
+  const pageTitle = isMyProposals
+    ? t('nav.myProposals')
+    : isApprovedProposals
+    ? t('nav.approvedProposals')
+    : t('nav.proposals')
+
   return (
     <>
-      {/* Statistics Cards */}
-      {data.statistics.total > 0 && <StatisticsCards statistics={data.statistics} t={t} />}
+      {/* Statistics Cards - Only show for "My Proposals" */}
+      {isMyProposals && <StatisticsCards statistics={data.statistics} t={t} />}
 
-      <BlockContent title={t('nav.proposals')} actions={actions}>
+      <BlockContent title={pageTitle} actions={actions}>
         <DataTable
           columns={columns}
           data={data.proposals}

@@ -37,8 +37,10 @@ export interface Proposal extends BaseEntity {
   status: 'pending_review' | 'approved' | 'rejected' | 'requires_modification'
   reviewNotes?: string
   reviewedBy?: string
+  reviewer?: User
   reviewedAt?: string
   projectId?: string
+  project?: Project
 }
 
 export interface ProjectGroup extends BaseEntity {

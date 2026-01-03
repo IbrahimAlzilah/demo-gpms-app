@@ -2,12 +2,15 @@ import type { ColumnDef } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
 import { StatusBadge } from "@/components/common/StatusBadge"
+import { ActionsDropdown } from "@/components/common/ActionsDropdown"
 import type { Project } from "@/types/project.types"
 import { formatDate } from "@/lib/utils/format"
+import { Eye } from "lucide-react"
 
 export interface AnnounceProjectsTableColumnsProps {
   selectedProjects: Set<string>
   onToggleProject: (projectId: string) => void
+  onView: (project: Project) => void
   t: (key: string) => string
   showSelection?: boolean
 }
@@ -15,6 +18,7 @@ export interface AnnounceProjectsTableColumnsProps {
 export function createAnnounceProjectsColumns({
   selectedProjects,
   onToggleProject,
+  onView,
   t,
   showSelection = true,
 }: AnnounceProjectsTableColumnsProps): ColumnDef<Project>[] {
@@ -116,6 +120,27 @@ export function createAnnounceProjectsColumns({
         <DataTableColumnHeader column={column} title={t('common.date')} />
       ),
       cell: ({ row }) => <div className="text-sm">{formatDate(row.original.createdAt)}</div>,
+    },
+    {
+      id: "actions",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('common.actions') || 'الإجراءات'} />
+      ),
+      cell: ({ row }) => {
+        const project = row.original
+
+        const actions = [
+          {
+            id: 'view',
+            label: t('common.view') || t('committee.announce.viewDetails') || 'عرض التفاصيل',
+            icon: Eye,
+            onClick: () => onView(project),
+            variant: 'default' as const,
+          },
+        ]
+
+        return <ActionsDropdown row={project} actions={actions} />
+      },
     },
   )
 

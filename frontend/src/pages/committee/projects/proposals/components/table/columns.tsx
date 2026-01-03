@@ -3,11 +3,12 @@ import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-col
 import { StatusBadge } from "@/components/common/StatusBadge"
 import { ActionsDropdown } from "@/components/common/ActionsDropdown"
 import type { Proposal } from "@/types/project.types"
-import { Check, X, FileEdit, Edit, Trash2 } from "lucide-react"
+import { Check, X, FileEdit, Edit, Trash2, Eye } from "lucide-react"
 import { formatDate } from "@/lib/utils/format"
 import type { TFunction } from "react-i18next"
 
 export interface ProposalTableColumnsProps {
+  onView: (proposal: Proposal) => void
   onApprove: (proposal: Proposal) => void
   onReject: (proposal: Proposal) => void
   onRequestModification: (proposal: Proposal) => void
@@ -17,6 +18,7 @@ export interface ProposalTableColumnsProps {
 }
 
 export function createProposalColumns({
+  onView,
   onApprove,
   onReject,
   onRequestModification,
@@ -67,6 +69,14 @@ export function createProposalColumns({
         const proposal = row.original
 
         const actions = [
+          {
+            id: 'view',
+            label: t('common.view') || t('committee.proposal.viewDetails') || 'عرض التفاصيل',
+            icon: Eye,
+            onClick: () => onView(proposal),
+            variant: 'default' as const,
+            separator: true,
+          },
           {
             id: 'approve',
             label: t('committee.proposal.approve') || 'قبول',

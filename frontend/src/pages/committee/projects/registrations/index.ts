@@ -4,6 +4,7 @@
 export { RegistrationsList } from "./list/RegistrationsList.screen"
 
 // Components
+export { RegistrationDetailsView } from "./components/RegistrationDetailsView"
 export { createRegistrationColumns } from "./components/table"
 export type { RegistrationTableColumnsProps } from "./components/table"
 

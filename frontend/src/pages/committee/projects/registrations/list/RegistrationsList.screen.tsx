@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useApproveRegistration, useRejectRegistration } from '../hooks/useRegistrationOperations'
 import { createRegistrationColumns } from '../components/table'
+import { RegistrationDetailsView } from '../components/RegistrationDetailsView'
 import { DataTable, Button, Textarea, Label } from '@/components/ui'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoadingSpinner, ConfirmDialog } from '@/components/common'
@@ -93,11 +94,14 @@ export function RegistrationsList() {
   const columns = useMemo(
     () =>
       createRegistrationColumns({
+        onView: (registration) => {
+          setState((prev) => ({ ...prev, registrationToViewId: registration.id }))
+        },
         onApprove: (registration) => handleActionClick(registration, 'approve'),
         onReject: (registration) => handleActionClick(registration, 'reject'),
         t,
       }),
-    [t]
+    [setState, t]
   )
 
   if (data.isLoading) {
@@ -221,6 +225,14 @@ export function RegistrationsList() {
           </div>
         )}
       </ConfirmDialog>
+
+      <RegistrationDetailsView
+        registrationId={state.registrationToViewId}
+        open={!!state.registrationToViewId}
+        onClose={() => {
+          setState((prev) => ({ ...prev, registrationToViewId: null }))
+        }}
+      />
     </div>
   )
 }

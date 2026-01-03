@@ -14,6 +14,7 @@ export function useProposalsList() {
     statusFilter: 'pending_review',
     proposalToEditId: null,
     proposalToDelete: null,
+    proposalToViewId: null,
   })
 
   const {
