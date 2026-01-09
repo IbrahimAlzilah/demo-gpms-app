@@ -15,6 +15,8 @@ export interface RequestFilters {
 export interface RequestTableColumnsProps {
   onView: (request: Request) => void
   onCancel?: (request: Request) => void
+  onEdit?: (request: Request) => void
+  onDelete?: (request: Request) => void
   t: (key: string) => string
 }
 

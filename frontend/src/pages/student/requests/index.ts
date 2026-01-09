@@ -4,6 +4,7 @@
 export { RequestsList } from './list/RequestsList.screen'
 export { RequestsView } from './view/RequestsView.screen'
 export { RequestsNew } from './new/RequestsNew.screen'
+export { RequestsEdit } from './edit/RequestsEdit.screen'
 
 // Components
 export { StatisticsCards } from './components/StatisticsCards'
@@ -18,6 +19,8 @@ export {
 } from './hooks/useRequests'
 export {
   useCreateRequest as useCreateRequestOp,
+  useUpdateRequest,
+  useDeleteRequest,
   useCancelRequest as useCancelRequestOp,
 } from './hooks/useRequestOperations'
 

@@ -24,6 +24,9 @@ export interface Project extends BaseEntity {
   currentStudents: number
   specialization?: string
   keywords?: string[]
+  supervisorApprovalStatus?: 'pending' | 'approved' | 'rejected'
+  supervisorApprovalComments?: string
+  supervisorApprovalAt?: string
 }
 
 export interface Proposal extends BaseEntity {

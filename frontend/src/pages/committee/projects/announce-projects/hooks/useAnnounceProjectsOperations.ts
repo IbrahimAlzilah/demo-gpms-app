@@ -16,3 +16,19 @@ export function useAnnounceProjects() {
     },
   })
 }
+
+/**
+ * Hook for unannouncing/removing projects
+ */
+export function useUnannounceProjects() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (projectIds: string[]) => committeeProjectService.unannounce(projectIds),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['committee-projects'] })
+      queryClient.invalidateQueries({ queryKey: ['committee-projects-announce'] })
+      queryClient.invalidateQueries({ queryKey: ['projects'] })
+    },
+  })
+}

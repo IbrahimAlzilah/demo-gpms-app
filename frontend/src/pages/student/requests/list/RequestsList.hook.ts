@@ -16,6 +16,10 @@ export function useRequestsList() {
     showForm: false,
     requestToCancel: null,
     showCancelDialog: false,
+    requestToEdit: null,
+    showEditForm: false,
+    requestToDelete: null,
+    showDeleteDialog: false,
   })
 
   const {

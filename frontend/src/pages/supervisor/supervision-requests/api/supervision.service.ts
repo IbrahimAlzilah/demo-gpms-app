@@ -1,14 +1,14 @@
 import { apiClient } from '../../../../lib/axios'
-import type { Request } from '../../../../types/request.types'
+import type { Project } from '../../../../types/project.types'
 import type { TableQueryParams, TableResponse } from '../../../../types/table.types'
 
 export const supervisionService = {
-  getRequests: async (supervisorId: string): Promise<Request[]> => {
-    const response = await apiClient.get<Request[]>('/supervisor/supervision-requests')
+  getRequests: async (supervisorId: string): Promise<Project[]> => {
+    const response = await apiClient.get<Project[]>('/supervisor/supervision-requests')
     return Array.isArray(response.data) ? response.data : []
   },
 
-  getTableData: async (params?: TableQueryParams, supervisorId?: string): Promise<TableResponse<Request>> => {
+  getTableData: async (params?: TableQueryParams, supervisorId?: string): Promise<TableResponse<Project>> => {
     const queryParams = new URLSearchParams()
     
     if (params?.page) queryParams.append('page', params.page.toString())
@@ -24,7 +24,7 @@ export const supervisionService = {
       })
     }
 
-    const response = await apiClient.get<{ data: Request[], pagination: any }>(
+    const response = await apiClient.get<{ data: Project[], pagination: any }>(
       `/supervisor/supervision-requests?${queryParams.toString()}`
     )
     
@@ -41,8 +41,8 @@ export const supervisionService = {
     requestId: string,
     supervisorId: string,
     comments?: string
-  ): Promise<Request> => {
-    const response = await apiClient.post<Request>(
+  ): Promise<Project> => {
+    const response = await apiClient.post<Project>(
       `/supervisor/supervision-requests/${requestId}/approve`,
       { comments }
     )
@@ -53,8 +53,8 @@ export const supervisionService = {
     requestId: string,
     supervisorId: string,
     comments?: string
-  ): Promise<Request> => {
-    const response = await apiClient.post<Request>(
+  ): Promise<Project> => {
+    const response = await apiClient.post<Project>(
       `/supervisor/supervision-requests/${requestId}/reject`,
       { comments }
     )

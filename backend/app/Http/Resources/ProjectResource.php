@@ -25,6 +25,9 @@ class ProjectResource extends JsonResource
             'keywords' => $this->keywords,
             'supervisorId' => $this->supervisor_id ? (string) $this->supervisor_id : null,
             'committeeId' => $this->committee_id,
+            'supervisorApprovalStatus' => $this->supervisor_approval_status,
+            'supervisorApprovalComments' => $this->supervisor_approval_comments,
+            'supervisorApprovalAt' => $this->supervisor_approval_at?->toISOString(),
             'supervisor' => $this->when($this->relationLoaded('supervisor') && $this->supervisor !== null, function () {
                 return new UserResource($this->supervisor);
             }),

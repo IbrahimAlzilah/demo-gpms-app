@@ -24,11 +24,15 @@ class Project extends Model
         'specialization',
         'keywords',
         'committee_id',
+        'supervisor_approval_status',
+        'supervisor_approval_comments',
+        'supervisor_approval_at',
     ];
 
     protected $casts = [
         'keywords' => 'array',
         'status' => ProjectStatus::class,
+        'supervisor_approval_at' => 'datetime',
     ];
 
     /**

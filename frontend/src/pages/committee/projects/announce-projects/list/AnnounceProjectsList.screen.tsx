@@ -1,17 +1,19 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useAnnounceProjects as useAnnounceProjectsOperation } from '../hooks/useAnnounceProjectsOperations'
+import { useAnnounceProjects as useAnnounceProjectsOperation, useUnannounceProjects } from '../hooks/useAnnounceProjectsOperations'
 import { DataTable, Button, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui'
-import { BlockContent, useToast } from '@/components/common'
+import { BlockContent, useToast, ConfirmDialog } from '@/components/common'
 import { createAnnounceProjectsColumns } from '../components/table'
 import { ProjectDetailsView } from '../components/ProjectDetailsView'
 import { Loader2, Megaphone, AlertCircle } from 'lucide-react'
 import { useAnnounceProjectsList } from './AnnounceProjectsList.hook'
+import type { Project } from '@/types/project.types'
 
 export function AnnounceProjectsList() {
   const { t } = useTranslation()
   const { showToast } = useToast()
   const announceProjectsOperation = useAnnounceProjectsOperation()
+  const unannounceProjectsOperation = useUnannounceProjects()
 
   const {
     data,
@@ -49,6 +51,33 @@ export function AnnounceProjectsList() {
     }
   }
 
+  const handleRemoveClick = (project: Project) => {
+    setState((prev) => ({
+      ...prev,
+      projectToRemove: project,
+      showRemoveConfirm: true,
+    }))
+  }
+
+  const handleRemoveConfirm = async () => {
+    if (!state.projectToRemove) return
+
+    try {
+      await unannounceProjectsOperation.mutateAsync([state.projectToRemove.id])
+      showToast(t('committee.announce.removeSuccess') || 'تم إزالة المشروع بنجاح', 'success')
+      setState((prev) => ({
+        ...prev,
+        projectToRemove: null,
+        showRemoveConfirm: false,
+      }))
+    } catch (err) {
+      showToast(
+        err instanceof Error ? err.message : t('committee.announce.removeError') || 'حدث خطأ أثناء إزالة المشروع',
+        'error'
+      )
+    }
+  }
+
   const isDraftView = viewStatus === 'draft'
 
   const columns = useMemo(
@@ -59,10 +88,11 @@ export function AnnounceProjectsList() {
         onView: (project) => {
           setState((prev) => ({ ...prev, projectToViewId: project.id }))
         },
+        onRemove: handleRemoveClick,
         t,
         showSelection: isDraftView,
       }),
-    [state.selectedProjects, toggleProject, setState, t, isDraftView]
+    [state.selectedProjects, toggleProject, setState, handleRemoveClick, t, isDraftView]
   )
 
   const headerActions = isDraftView ? (
@@ -156,6 +186,28 @@ export function AnnounceProjectsList() {
         onClose={() => {
           setState((prev) => ({ ...prev, projectToViewId: null }))
         }}
+      />
+
+      <ConfirmDialog
+        open={state.showRemoveConfirm}
+        onClose={() => {
+          setState((prev) => ({
+            ...prev,
+            projectToRemove: null,
+            showRemoveConfirm: false,
+          }))
+        }}
+        onConfirm={handleRemoveConfirm}
+        title={t('committee.announce.confirmRemove') || 'تأكيد إزالة المشروع'}
+        description={
+          state.projectToRemove
+            ? t('committee.announce.confirmRemoveDescription', { title: state.projectToRemove.title }) ||
+              `هل أنت متأكد من إزالة المشروع "${state.projectToRemove.title}"؟ سيتم تغيير حالة المشروع من "متاح للتسجيل" إلى "مسودة".`
+            : ''
+        }
+        confirmLabel={t('common.confirm') || 'تأكيد'}
+        cancelLabel={t('common.cancel') || 'إلغاء'}
+        variant="destructive"
       />
     </>
   )

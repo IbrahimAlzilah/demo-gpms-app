@@ -24,6 +24,31 @@ export function useCreateRequest() {
   })
 }
 
+export function useUpdateRequest() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Omit<Request, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'studentId'>> }) =>
+      requestService.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['requests'] })
+      queryClient.invalidateQueries({ queryKey: ['student-requests-table'] })
+    },
+  })
+}
+
+export function useDeleteRequest() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => requestService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['requests'] })
+      queryClient.invalidateQueries({ queryKey: ['student-requests-table'] })
+    },
+  })
+}
+
 export function useCancelRequest() {
   const queryClient = useQueryClient()
 

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\ProjectRequest;
 use App\Models\User;
+use App\Enums\RequestStatus;
 use Illuminate\Support\Facades\DB;
 
 class RequestService
@@ -28,13 +29,13 @@ class RequestService
      */
     public function approveBySupervisor(ProjectRequest $request, User $supervisor, ?string $comments = null): ProjectRequest
     {
-        if ($request->status !== 'pending') {
+        if ($request->status !== RequestStatus::PENDING) {
             throw new \Exception('Request is not in pending status');
         }
 
         return DB::transaction(function () use ($request, $supervisor, $comments) {
             $request->update([
-                'status' => 'supervisor_approved',
+                'status' => RequestStatus::SUPERVISOR_APPROVED->value,
                 'supervisor_approval' => [
                     'approved' => true,
                     'comments' => $comments,
@@ -52,7 +53,7 @@ class RequestService
      */
     public function rejectBySupervisor(ProjectRequest $request, User $supervisor, ?string $comments = null): ProjectRequest
     {
-        if ($request->status !== 'pending') {
+        if ($request->status !== RequestStatus::PENDING) {
             throw new \Exception('Request is not in pending status');
         }
 
@@ -74,13 +75,13 @@ class RequestService
      */
     public function approveByCommittee(ProjectRequest $request, User $committeeMember, ?string $comments = null): ProjectRequest
     {
-        if ($request->status !== 'supervisor_approved') {
+        if ($request->status !== RequestStatus::SUPERVISOR_APPROVED) {
             throw new \Exception('Request must be approved by supervisor first');
         }
 
         return DB::transaction(function () use ($request, $committeeMember, $comments) {
             $request->update([
-                'status' => 'committee_approved',
+                'status' => RequestStatus::COMMITTEE_APPROVED->value,
                 'committee_approval' => [
                     'approved' => true,
                     'comments' => $comments,
@@ -101,12 +102,12 @@ class RequestService
      */
     public function rejectByCommittee(ProjectRequest $request, User $committeeMember, ?string $comments = null): ProjectRequest
     {
-        if ($request->status !== 'supervisor_approved') {
+        if ($request->status !== RequestStatus::SUPERVISOR_APPROVED) {
             throw new \Exception('Request must be approved by supervisor first');
         }
 
         $request->update([
-            'status' => 'committee_rejected',
+            'status' => RequestStatus::COMMITTEE_REJECTED->value,
             'committee_approval' => [
                 'approved' => false,
                 'comments' => $comments,
@@ -119,6 +120,58 @@ class RequestService
     }
 
     /**
+     * Update a request (only if pending)
+     */
+    public function update(ProjectRequest $request, array $data, User $student): ProjectRequest
+    {
+        if ($request->student_id !== $student->id) {
+            throw new \Exception('Unauthorized to update this request');
+        }
+
+        if ($request->status !== RequestStatus::PENDING) {
+            throw new \Exception('Can only update requests with pending status');
+        }
+
+        $updateData = [];
+        if (isset($data['type'])) {
+            $updateData['type'] = $data['type'];
+        }
+        if (isset($data['project_id'])) {
+            $updateData['project_id'] = $data['project_id'];
+        }
+        if (isset($data['reason'])) {
+            $updateData['reason'] = $data['reason'];
+        }
+        if (isset($data['additional_data'])) {
+            $updateData['additional_data'] = $data['additional_data'];
+        }
+
+        if (empty($updateData)) {
+            throw new \Exception('No data provided to update');
+        }
+
+        $request->update($updateData);
+
+        return $request->fresh();
+    }
+
+    /**
+     * Delete a request (only if pending)
+     */
+    public function delete(ProjectRequest $request, User $student): bool
+    {
+        if ($request->student_id !== $student->id) {
+            throw new \Exception('Unauthorized to delete this request');
+        }
+
+        if ($request->status !== RequestStatus::PENDING) {
+            throw new \Exception('Can only delete requests with pending status');
+        }
+
+        return $request->delete();
+    }
+
+    /**
      * Cancel a request
      */
     public function cancel(ProjectRequest $request, User $student): ProjectRequest
@@ -127,11 +180,11 @@ class RequestService
             throw new \Exception('Unauthorized to cancel this request');
         }
 
-        if (!in_array($request->status, ['pending', 'supervisor_approved'])) {
+        if (!in_array($request->status, [RequestStatus::PENDING, RequestStatus::SUPERVISOR_APPROVED])) {
             throw new \Exception('Cannot cancel request in current status');
         }
 
-        $request->update(['status' => 'cancelled']);
+        $request->update(['status' => RequestStatus::CANCELLED->value]);
 
         return $request->fresh();
     }

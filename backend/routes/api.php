@@ -102,9 +102,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('projects', [App\Http\Controllers\Supervisor\ProjectController::class, 'index']);
         Route::get('projects/{project}', [App\Http\Controllers\Supervisor\ProjectController::class, 'show']);
         Route::get('projects/{project}/progress', [App\Http\Controllers\Supervisor\ProjectController::class, 'getProgress']);
-        Route::apiResource('supervision-requests', App\Http\Controllers\Supervisor\SupervisionController::class);
-        Route::post('supervision-requests/{request}/approve', [App\Http\Controllers\Supervisor\SupervisionController::class, 'approve']);
-        Route::post('supervision-requests/{request}/reject', [App\Http\Controllers\Supervisor\SupervisionController::class, 'reject']);
+        Route::get('supervision-requests', [App\Http\Controllers\Supervisor\SupervisionController::class, 'index']);
+        Route::post('supervision-requests/{project}/approve', [App\Http\Controllers\Supervisor\SupervisionController::class, 'approve']);
+        Route::post('supervision-requests/{project}/reject', [App\Http\Controllers\Supervisor\SupervisionController::class, 'reject']);
         // Custom evaluation routes (before apiResource to match frontend expectations)
         Route::get('evaluations', [App\Http\Controllers\Supervisor\EvaluationController::class, 'index']);
         Route::post('evaluations', [App\Http\Controllers\Supervisor\EvaluationController::class, 'store']);
@@ -131,6 +131,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('proposals', App\Http\Controllers\ProjectsCommittee\ProposalController::class);
         Route::apiResource('projects', App\Http\Controllers\ProjectsCommittee\ProjectController::class);
         Route::post('projects/announce', [App\Http\Controllers\ProjectsCommittee\ProjectController::class, 'announce']);
+        Route::post('projects/unannounce', [App\Http\Controllers\ProjectsCommittee\ProjectController::class, 'unannounce']);
         Route::apiResource('periods', App\Http\Controllers\ProjectsCommittee\PeriodController::class);
         Route::get('supervisors', [App\Http\Controllers\ProjectsCommittee\SupervisorController::class, 'index']);
         Route::post('supervisors/assign', [App\Http\Controllers\ProjectsCommittee\SupervisorController::class, 'assign']);

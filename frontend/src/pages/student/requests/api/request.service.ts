@@ -58,6 +58,25 @@ export const requestService = {
     return response.data
   },
 
+  update: async (
+    id: string,
+    data: Partial<Omit<Request, 'id' | 'createdAt' | 'updatedAt' | 'status'>>
+  ): Promise<Request> => {
+    const payload: Record<string, any> = {}
+    
+    if (data.type !== undefined) payload.type = data.type
+    if (data.projectId !== undefined) payload.project_id = data.projectId
+    if (data.reason !== undefined) payload.reason = data.reason
+    if (data.additionalData !== undefined) payload.additional_data = data.additionalData
+
+    const response = await apiClient.put<Request>(`/student/requests/${id}`, payload)
+    return response.data
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await apiClient.delete(`/student/requests/${id}`)
+  },
+
   cancel: async (id: string): Promise<Request> => {
     const response = await apiClient.post<Request>(`/student/requests/${id}/cancel`)
     return response.data

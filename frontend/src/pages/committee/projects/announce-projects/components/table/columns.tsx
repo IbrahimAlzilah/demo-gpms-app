@@ -5,12 +5,13 @@ import { StatusBadge } from "@/components/common/StatusBadge"
 import { ActionsDropdown } from "@/components/common/ActionsDropdown"
 import type { Project } from "@/types/project.types"
 import { formatDate } from "@/lib/utils/format"
-import { Eye } from "lucide-react"
+import { Eye, X } from "lucide-react"
 
 export interface AnnounceProjectsTableColumnsProps {
   selectedProjects: Set<string>
   onToggleProject: (projectId: string) => void
   onView: (project: Project) => void
+  onRemove?: (project: Project) => void
   t: (key: string) => string
   showSelection?: boolean
 }
@@ -19,6 +20,7 @@ export function createAnnounceProjectsColumns({
   selectedProjects,
   onToggleProject,
   onView,
+  onRemove,
   t,
   showSelection = true,
 }: AnnounceProjectsTableColumnsProps): ColumnDef<Project>[] {
@@ -138,6 +140,17 @@ export function createAnnounceProjectsColumns({
             variant: 'default' as const,
           },
         ]
+
+        // Add remove action for announced projects (available_for_registration status)
+        if (onRemove && project.status === 'available_for_registration') {
+          actions.push({
+            id: 'remove',
+            label: t('committee.announce.remove') || t('common.remove') || 'إزالة',
+            icon: X,
+            onClick: () => onRemove(project),
+            variant: 'destructive' as const,
+          })
+        }
 
         return <ActionsDropdown row={project} actions={actions} />
       },

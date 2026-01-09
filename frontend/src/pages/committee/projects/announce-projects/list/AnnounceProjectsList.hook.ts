@@ -11,6 +11,8 @@ export function useAnnounceProjectsList() {
     selectedProjects: new Set(),
     viewStatus: 'draft',
     projectToViewId: null,
+    projectToRemove: null,
+    showRemoveConfirm: false,
   })
 
   const {

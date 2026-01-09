@@ -152,9 +152,61 @@ class ProjectService
             throw new \Exception('User is not a supervisor');
         }
 
-        $project->update(['supervisor_id' => $supervisor->id]);
+        $project->update([
+            'supervisor_id' => $supervisor->id,
+            'supervisor_approval_status' => 'pending',
+        ]);
 
         return $project->fresh();
+    }
+
+    /**
+     * Approve supervisor assignment
+     */
+    public function approveSupervisorAssignment(Project $project, User $supervisor, ?string $comments = null): Project
+    {
+        if ($project->supervisor_id !== $supervisor->id) {
+            throw new \Exception('You are not assigned to this project');
+        }
+
+        if ($project->supervisor_approval_status !== 'pending') {
+            throw new \Exception('This assignment is not pending approval');
+        }
+
+        return DB::transaction(function () use ($project, $comments) {
+            $project->update([
+                'supervisor_approval_status' => 'approved',
+                'supervisor_approval_comments' => $comments,
+                'supervisor_approval_at' => now(),
+            ]);
+
+            return $project->fresh();
+        });
+    }
+
+    /**
+     * Reject supervisor assignment
+     */
+    public function rejectSupervisorAssignment(Project $project, User $supervisor, ?string $comments = null): Project
+    {
+        if ($project->supervisor_id !== $supervisor->id) {
+            throw new \Exception('You are not assigned to this project');
+        }
+
+        if ($project->supervisor_approval_status !== 'pending') {
+            throw new \Exception('This assignment is not pending approval');
+        }
+
+        return DB::transaction(function () use ($project, $comments) {
+            $project->update([
+                'supervisor_approval_status' => 'rejected',
+                'supervisor_approval_comments' => $comments,
+                'supervisor_approval_at' => now(),
+                'supervisor_id' => null, // Remove supervisor assignment
+            ]);
+
+            return $project->fresh();
+        });
     }
 
     /**

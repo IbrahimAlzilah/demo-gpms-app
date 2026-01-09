@@ -6,6 +6,10 @@ export interface RequestsListState {
   showForm: boolean
   requestToCancel: Request | null
   showCancelDialog: boolean
+  requestToEdit: Request | null
+  showEditForm: boolean
+  requestToDelete: Request | null
+  showDeleteDialog: boolean
 }
 
 export interface RequestsListData {

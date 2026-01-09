@@ -28,6 +28,22 @@ class RequestController extends Controller
         return response()->json($this->getPaginatedResponse($query, $request, RequestResource::class));
     }
 
+    public function show(Request $request, ProjectRequest $projectRequest): JsonResponse
+    {
+        // Check authorization
+        if ($projectRequest->student_id !== $request->user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized to view this request',
+            ], 403);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => new RequestResource($projectRequest->load(['student', 'project'])),
+        ]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -45,6 +61,64 @@ class RequestController extends Controller
                 'data' => new RequestResource($projectRequest->load(['student', 'project'])),
                 'message' => 'Request submitted successfully',
             ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    public function update(Request $request, ProjectRequest $projectRequest): JsonResponse
+    {
+        // Check authorization first
+        if ($projectRequest->student_id !== $request->user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized to update this request',
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'type' => 'sometimes|required|in:change_supervisor,change_group,change_project,other',
+            'project_id' => 'nullable|exists:projects,id',
+            'reason' => 'sometimes|required|string|min:20',
+            'additional_data' => 'nullable|array',
+        ]);
+
+        try {
+            $updated = $this->requestService->update($projectRequest, $validated, $request->user());
+
+            return response()->json([
+                'success' => true,
+                'data' => new RequestResource($updated->load(['student', 'project'])),
+                'message' => 'Request updated successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    public function destroy(Request $request, ProjectRequest $projectRequest): JsonResponse
+    {
+        // Check authorization first
+        if ($projectRequest->student_id !== $request->user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized to delete this request',
+            ], 403);
+        }
+
+        try {
+            $this->requestService->delete($projectRequest, $request->user());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Request deleted successfully',
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

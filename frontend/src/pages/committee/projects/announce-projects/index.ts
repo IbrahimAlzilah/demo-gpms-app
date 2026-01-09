@@ -11,7 +11,7 @@ export type { AnnounceProjectsTableColumnsProps } from "./components/table"
 // Hooks
 export { useAnnounceProjects } from "./hooks/useAnnounceProjects"
 export { useProject } from "./hooks/useProject"
-export { useAnnounceProjects as useAnnounceProjectsOperation } from "./hooks/useAnnounceProjectsOperations"
+export { useAnnounceProjects as useAnnounceProjectsOperation, useUnannounceProjects } from "./hooks/useAnnounceProjectsOperations"
 
 // Types
 export type {

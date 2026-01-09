@@ -1,10 +1,10 @@
-import type { Request } from '@/types/request.types'
+import type { Project } from '@/types/project.types'
 
 /**
  * Supervision request filter options
  */
 export interface SupervisionRequestFilters {
-  status?: Request['status']
+  status?: Project['supervisorApprovalStatus']
   supervisorId?: string
   search?: string
 }
@@ -13,8 +13,8 @@ export interface SupervisionRequestFilters {
  * Supervision request table column definition props
  */
 export interface SupervisionRequestTableColumnsProps {
-  onApprove: (request: Request) => void
-  onReject: (request: Request) => void
+  onApprove: (project: Project) => void
+  onReject: (project: Project) => void
   canAcceptMore: boolean
   t: (key: string) => string
 }

@@ -1,18 +1,18 @@
-import type { Request } from '@/types/request.types'
+import type { Project } from '@/types/project.types'
 
 export interface SupervisionRequestsListState {
-  selectedRequest: Request | null
+  selectedRequest: Project | null
   showConfirmDialog: boolean
   action: 'approve' | 'reject' | null
   comments: string
 }
 
 export interface SupervisionRequestsListData {
-  requests: Request[]
+  requests: Project[]
   isLoading: boolean
   error: Error | null
   currentProjectCount: number
   maxProjectsPerSupervisor: number
 }
 
-export type { Request }
+export type { Project }

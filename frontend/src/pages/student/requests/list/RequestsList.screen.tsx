@@ -6,14 +6,16 @@ import { AlertCircle, PlusCircle } from 'lucide-react'
 import { createRequestColumns } from '../components/table'
 import { StatisticsCards } from '../components/StatisticsCards'
 import { RequestsNew } from '../new/RequestsNew.screen'
+import { RequestsEdit } from '../edit/RequestsEdit.screen'
 import { RequestsView } from '../view/RequestsView.screen'
 import { useRequestsList } from './RequestsList.hook'
-import { useCancelRequest } from '../hooks/useRequestOperations'
+import { useCancelRequest, useDeleteRequest } from '../hooks/useRequestOperations'
 
 export function RequestsList() {
   const { t } = useTranslation()
   const { showToast } = useToast()
   const cancelRequest = useCancelRequest()
+  const deleteRequest = useDeleteRequest()
   const {
     data,
     state,
@@ -44,6 +46,26 @@ export function RequestsList() {
     }
   }
 
+  const handleDelete = async () => {
+    if (!state.requestToDelete) return
+    try {
+      await deleteRequest.mutateAsync(state.requestToDelete.id)
+      showToast(t('request.deleteSuccess') || 'تم حذف الطلب بنجاح', 'success')
+      setState((prev) => ({
+        ...prev,
+        requestToDelete: null,
+        showDeleteDialog: false,
+      }))
+    } catch {
+      showToast(t('request.deleteError') || 'حدث خطأ أثناء حذف الطلب', 'error')
+    }
+  }
+
+  const handleEditSuccess = () => {
+    setState((prev) => ({ ...prev, requestToEdit: null, showEditForm: false }))
+    showToast(t('request.updateSuccess') || 'تم تحديث الطلب بنجاح', 'success')
+  }
+
   const columns = useMemo(
     () =>
       createRequestColumns({
@@ -55,6 +77,20 @@ export function RequestsList() {
             ...prev,
             requestToCancel: request,
             showCancelDialog: true,
+          }))
+        },
+        onEdit: (request) => {
+          setState((prev) => ({
+            ...prev,
+            requestToEdit: request,
+            showEditForm: true,
+          }))
+        },
+        onDelete: (request) => {
+          setState((prev) => ({
+            ...prev,
+            requestToDelete: request,
+            showDeleteDialog: true,
           }))
         },
         t,
@@ -130,6 +166,43 @@ export function RequestsList() {
           onClose={() => setState((prev) => ({ ...prev, selectedRequest: null }))}
         />
       )}
+
+      {/* Edit Request Modal */}
+      <RequestsEdit
+        open={state.showEditForm}
+        onClose={() => {
+          setState((prev) => ({
+            ...prev,
+            showEditForm: false,
+            requestToEdit: null,
+          }))
+        }}
+        onSuccess={handleEditSuccess}
+        request={state.requestToEdit}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={state.showDeleteDialog}
+        onClose={() => {
+          setState((prev) => ({
+            ...prev,
+            showDeleteDialog: false,
+            requestToDelete: null,
+          }))
+        }}
+        onConfirm={handleDelete}
+        title={t('request.deleteTitle') || 'تأكيد حذف الطلب'}
+        description={
+          state.requestToDelete
+            ? t('request.deleteDescription', { reason: state.requestToDelete.reason }) ||
+              `هل أنت متأكد من حذف هذا الطلب؟ سيتم حذف الطلب نهائياً ولا يمكن التراجع عن هذا الإجراء.`
+            : ''
+        }
+        confirmLabel={t('common.delete') || 'حذف'}
+        cancelLabel={t('common.cancel')}
+        variant="destructive"
+      />
 
       {/* Cancel Confirmation Dialog */}
       <ConfirmDialog

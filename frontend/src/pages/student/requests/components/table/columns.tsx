@@ -1,15 +1,17 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import { Button } from "@/components/ui/button"
 import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
 import { StatusBadge } from "@/components/common/StatusBadge"
+import { ActionsDropdown } from "@/components/common/ActionsDropdown"
 import type { Request } from "@/types/request.types"
-import { Eye, X, User, Users, Briefcase, FileCheck, CheckCircle2, XCircle, Clock } from "lucide-react"
+import { Eye, X, Edit, Trash2, User, Users, Briefcase, FileCheck, CheckCircle2, XCircle, Clock } from "lucide-react"
 import { formatRelativeTime } from "@/lib/utils/format"
 import type { RequestTableColumnsProps } from '../../types/Requests.types'
 
 export function createRequestColumns({
   onView,
   onCancel,
+  onEdit,
+  onDelete,
   t,
 }: RequestTableColumnsProps): ColumnDef<Request>[] {
   const getRequestTypeLabel = (type: string) => {
@@ -141,37 +143,42 @@ export function createRequestColumns({
       ),
       cell: ({ row }) => {
         const request = row.original
-        const viewLabel = t('common.view')
-        const cancelLabel = t('request.cancel')
+        const isPending = request.status === 'pending'
 
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onView(request)}
-              className="h-8 w-8 p-0"
-              title={viewLabel}
-              aria-label={viewLabel}
-            >
-              <Eye className="h-4 w-4" />
-              <span className="sr-only">{viewLabel}</span>
-            </Button>
-            {request.status === 'pending' && onCancel && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onCancel(request)}
-                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                title={cancelLabel}
-                aria-label={cancelLabel}
-              >
-                <X className="h-4 w-4" />
-                <span className="sr-only">{cancelLabel}</span>
-              </Button>
-            )}
-          </div>
-        )
+        const actions = [
+          {
+            id: 'view',
+            label: t('common.view'),
+            icon: Eye,
+            onClick: () => onView(request),
+            variant: 'default' as const,
+          },
+          {
+            id: 'edit',
+            label: t('common.edit'),
+            icon: Edit,
+            onClick: () => onEdit?.(request),
+            hidden: () => !isPending || !onEdit,
+          },
+          {
+            id: 'delete',
+            label: t('common.delete'),
+            icon: Trash2,
+            onClick: () => onDelete?.(request),
+            variant: 'destructive' as const,
+            hidden: () => !isPending || !onDelete,
+          },
+          {
+            id: 'cancel',
+            label: t('request.cancel'),
+            icon: X,
+            onClick: () => onCancel?.(request),
+            variant: 'destructive' as const,
+            hidden: () => !isPending || !onCancel,
+          },
+        ]
+
+        return <ActionsDropdown row={request} actions={actions} />
       },
     },
   ]

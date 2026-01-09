@@ -55,4 +55,8 @@ export const committeeProjectService = {
   announce: async (projectIds: string[]): Promise<void> => {
     await apiClient.post('/projects-committee/projects/announce', { project_ids: projectIds })
   },
+
+  unannounce: async (projectIds: string[]): Promise<void> => {
+    await apiClient.post('/projects-committee/projects/unannounce', { project_ids: projectIds })
+  },
 }

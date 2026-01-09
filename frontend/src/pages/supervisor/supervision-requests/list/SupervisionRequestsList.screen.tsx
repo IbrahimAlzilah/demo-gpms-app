@@ -195,19 +195,17 @@ export function SupervisionRequestsList() {
         {state.selectedRequest && (
           <div className="space-y-4">
             <div className="text-sm space-y-2">
-              {state.selectedRequest.student && (
+              <div className="flex items-center gap-2">
+                <Briefcase className="h-4 w-4 text-muted-foreground" />
+                <span>
+                  <span className="font-medium">{t('supervision.projectTitle')}:</span> {state.selectedRequest.title}
+                </span>
+              </div>
+              {state.selectedRequest.specialization && (
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4 text-muted-foreground" />
                   <span>
-                    <span className="font-medium">{t('supervision.student')}:</span> {state.selectedRequest.student.name}
-                  </span>
-                </div>
-              )}
-              {state.selectedRequest.project && (
-                <div className="flex items-center gap-2">
-                  <Briefcase className="h-4 w-4 text-muted-foreground" />
-                  <span>
-                    <span className="font-medium">{t('supervision.project')}:</span> {state.selectedRequest.project.title}
+                    <span className="font-medium">{t('supervision.specialization')}:</span> {state.selectedRequest.specialization}
                   </span>
                 </div>
               )}
@@ -215,9 +213,9 @@ export function SupervisionRequestsList() {
             <div>
               <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1">
                 <MessageSquare className="h-3 w-3" />
-                {t('supervision.reason')}
+                {t('supervision.description')}
               </p>
-              <p className="text-sm whitespace-pre-wrap">{state.selectedRequest.reason}</p>
+              <p className="text-sm whitespace-pre-wrap">{state.selectedRequest.description}</p>
             </div>
             {(state.action === 'approve' || state.action === 'reject') && (
               <div className="space-y-2">

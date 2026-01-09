@@ -115,6 +115,61 @@ class ProjectController extends Controller
         }
     }
 
+    public function unannounce(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'project_ids' => 'required|array',
+            'project_ids.*' => 'exists:projects,id',
+        ]);
+
+        try {
+            $projectIds = $validated['project_ids'];
+            $projects = Project::whereIn('id', $projectIds)
+                ->where('status', ProjectStatus::AVAILABLE_FOR_REGISTRATION->value)
+                ->get();
+
+            foreach ($projects as $project) {
+                $project->update(['status' => ProjectStatus::DRAFT->value]);
+            }
+
+            // Get projects that were actually updated
+            $unannouncedProjectIds = $projects->pluck('id')->toArray();
+            $unannouncedProjects = Project::whereIn('id', $unannouncedProjectIds)
+                ->with(['supervisor', 'students'])
+                ->get();
+
+            // Notify all students about unannounced projects
+            $students = User::where('role', 'student')
+                ->where('status', 'active')
+                ->pluck('id')
+                ->toArray();
+
+            if (!empty($students) && !empty($unannouncedProjects)) {
+                $projectTitles = $unannouncedProjects->pluck('title')->implode(', ');
+                $message = "تم إلغاء إعلان المشاريع التالية: {$projectTitles}";
+                
+                $this->notificationService->createForUsers(
+                    $students,
+                    $message,
+                    'projects_unannounced',
+                    'project',
+                    null
+                );
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => ProjectResource::collection($unannouncedProjects),
+                'message' => 'Projects unannounced successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
     protected function applySearch($query, string $search)
     {
         return $query->where(function ($q) use ($search) {
