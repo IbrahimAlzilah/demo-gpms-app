@@ -27,7 +27,7 @@ export function ProposalsEdit({
     return (
       <ModalDialog open={open} onOpenChange={onClose} title={t('proposal.edit')}>
         <div className="p-4 text-center text-muted-foreground">
-          <p>{t('proposal.cannotEdit') || 'This proposal cannot be edited. Only proposals with pending_review status can be edited.'}</p>
+          <p>{t('proposal.cannotEdit')}</p>
         </div>
       </ModalDialog>
     )

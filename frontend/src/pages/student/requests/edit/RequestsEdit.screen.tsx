@@ -25,28 +25,28 @@ export function RequestsEdit({ open, onClose, onSuccess, request }: RequestsEdit
   const requestTypes: { value: string; label: string; icon: React.ReactNode }[] = [
     {
       value: 'change_supervisor',
-      label: t('request.changeSupervisor'),
+      label: t('requests.change_supervisor'),
       icon: <User className="h-4 w-4" />,
     },
     {
       value: 'change_group',
-      label: t('request.changeGroup'),
+      label: t('requests.change_group'),
       icon: <Users className="h-4 w-4" />,
     },
     {
       value: 'change_project',
-      label: t('request.changeProject'),
+      label: t('requests.change_project'),
       icon: <Briefcase className="h-4 w-4" />,
     },
     {
       value: 'other',
-      label: t('request.other'),
+      label: t('requests.other'),
       icon: <MoreHorizontal className="h-4 w-4" />,
     },
   ]
 
   return (
-    <ModalDialog open={open} onOpenChange={onClose} title={t('request.editRequest') || 'تعديل الطلب'}>
+    <ModalDialog open={open} onOpenChange={onClose} title={t('request.editRequest')}>
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
           <div className="flex items-start gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
@@ -59,7 +59,7 @@ export function RequestsEdit({ open, onClose, onSuccess, request }: RequestsEdit
           <div className="flex items-start gap-2 p-3 text-sm text-success bg-success/10 border border-success/20 rounded-md">
             <FileCheck className="h-4 w-4 mt-0.5 shrink-0" />
             <span>
-              {t('request.updateSuccess') || 'تم تحديث الطلب بنجاح'}
+              {t('request.updateSuccess')}
             </span>
           </div>
         )}
@@ -138,12 +138,12 @@ export function RequestsEdit({ open, onClose, onSuccess, request }: RequestsEdit
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {t('request.updating') || 'جاري التحديث...'}
+                {t('request.updating')}
               </>
             ) : (
               <>
                 <Edit className="mr-2 h-4 w-4" />
-                {t('request.update') || 'تحديث'}
+                {t('request.update')}
               </>
             )}
           </Button>

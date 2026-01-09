@@ -27,7 +27,7 @@ export function RegistrationDetailsView({
       <ModalDialog
         open={open}
         onOpenChange={onClose}
-        title={t('registration.viewDetails') || 'تفاصيل طلب التسجيل'}
+        title={t('registration.viewDetails')}
       >
         <div className="flex items-center justify-center p-8">
           <LoadingSpinner />
@@ -44,7 +44,7 @@ export function RegistrationDetailsView({
     <ModalDialog
       open={open}
       onOpenChange={onClose}
-      title={t('registration.registrationDetails') || 'تفاصيل طلب التسجيل'}
+      title={t('registration.registrationDetails')}
       size="xl"
     >
       <div className="max-w-4xl max-h-[90vh] overflow-y-auto space-y-4">
@@ -53,12 +53,12 @@ export function RegistrationDetailsView({
           <StatusBadge status={registration.status} />
           <div className="flex items-center gap-2 text-muted-foreground">
             <Calendar className="h-4 w-4" />
-            <span>{t('registration.submittedAt') || 'تاريخ التقديم'}: {formatDate(registration.submittedAt)}</span>
+            <span>{t('registration.submittedAt')}: {formatDate(registration.submittedAt)}</span>
           </div>
           {registration.reviewedAt && (
             <div className="flex items-center gap-2 text-muted-foreground">
               <Calendar className="h-4 w-4" />
-              <span>{t('registration.reviewedAt') || 'تاريخ المراجعة'}: {formatDate(registration.reviewedAt)}</span>
+              <span>{t('registration.reviewedAt')}: {formatDate(registration.reviewedAt)}</span>
             </div>
           )}
         </div>
@@ -68,7 +68,7 @@ export function RegistrationDetailsView({
           <div className="p-4 rounded-lg bg-muted border border-muted-foreground/20">
             <div className="flex items-center gap-2 mb-3">
               <User className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-sm font-semibold">{t('registration.student') || 'معلومات الطالب'}</h4>
+              <h4 className="text-sm font-semibold">{t('registration.student')}</h4>
             </div>
             <div className="space-y-2 text-sm">
               <div>
@@ -76,13 +76,13 @@ export function RegistrationDetailsView({
               </div>
               {registration.student.email && (
                 <div className="text-muted-foreground">
-                  <span className="font-medium">{t('common.email') || 'البريد الإلكتروني'}: </span>
+                  <span className="font-medium">{t('common.email')}: </span>
                   {registration.student.email}
                 </div>
               )}
               {registration.student.studentId && (
                 <div className="text-muted-foreground">
-                  <span className="font-medium">{t('common.studentId') || 'رقم الطالب'}: </span>
+                  <span className="font-medium">{t('common.studentId')}: </span>
                   {registration.student.studentId}
                 </div>
               )}
@@ -90,7 +90,7 @@ export function RegistrationDetailsView({
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Building2 className="h-3 w-3" />
                   <span>
-                    <span className="font-medium">{t('common.department') || 'القسم'}: </span>
+                    <span className="font-medium">{t('common.department')}: </span>
                     {registration.student.department}
                   </span>
                 </div>
@@ -104,7 +104,7 @@ export function RegistrationDetailsView({
           <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
             <div className="flex items-center gap-2 mb-3">
               <Briefcase className="h-4 w-4 text-primary" />
-              <h4 className="text-sm font-semibold">{t('registration.project') || 'معلومات المشروع'}</h4>
+              <h4 className="text-sm font-semibold">{t('registration.project')}</h4>
             </div>
             <div className="space-y-2 text-sm">
               <div>
@@ -114,7 +114,7 @@ export function RegistrationDetailsView({
                 <div className="text-muted-foreground">
                   <div className="flex items-center gap-2 mb-2">
                     <FileText className="h-3 w-3" />
-                    <span className="font-medium">{t('project.description') || 'الوصف'}:</span>
+                    <span className="font-medium">{t('project.description')}:</span>
                   </div>
                   <p className="whitespace-pre-wrap">{registration.project.description}</p>
                 </div>
@@ -123,7 +123,7 @@ export function RegistrationDetailsView({
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <User className="h-3 w-3" />
                   <span>
-                    <span className="font-medium">{t('project.supervisor') || 'المشرف'}: </span>
+                    <span className="font-medium">{t('project.supervisor')}: </span>
                     {registration.project.supervisor.name}
                   </span>
                 </div>
@@ -132,12 +132,12 @@ export function RegistrationDetailsView({
                 <StatusBadge status={registration.project.status} />
               </div>
               <div className="text-muted-foreground">
-                <span className="font-medium">{t('project.students') || 'الطلاب'}: </span>
+                <span className="font-medium">{t('project.students')}: </span>
                 {registration.project.currentStudents || 0} / {registration.project.maxStudents}
               </div>
               {registration.project.specialization && (
                 <div className="text-muted-foreground">
-                  <span className="font-medium">{t('project.specialization') || 'التخصص'}: </span>
+                  <span className="font-medium">{t('project.specialization')}: </span>
                   {registration.project.specialization}
                 </div>
               )}
@@ -150,14 +150,14 @@ export function RegistrationDetailsView({
           <div className="p-4 rounded-lg bg-muted border border-muted-foreground/20">
             <div className="flex items-center gap-2 mb-3">
               <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-sm font-semibold">{t('registration.reviewInformation') || 'معلومات المراجعة'}</h4>
+              <h4 className="text-sm font-semibold">{t('registration.reviewInformation')}</h4>
             </div>
             
             {registration.reviewComments && (
               <div className="mb-3">
                 <div className="flex items-center gap-2 mb-2">
                   <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                  <h5 className="text-sm font-medium">{t('registration.reviewComments') || 'ملاحظات المراجعة'}</h5>
+                  <h5 className="text-sm font-medium">{t('registration.reviewComments')}</h5>
                 </div>
                 <p className="text-sm whitespace-pre-wrap bg-background p-3 rounded border border-border">
                   {registration.reviewComments}
@@ -170,13 +170,13 @@ export function RegistrationDetailsView({
                 <div className="flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
                   <span>
-                    {t('registration.reviewedAt') || 'تاريخ المراجعة'}: {formatDate(registration.reviewedAt)}
+                    {t('registration.reviewedAt')}: {formatDate(registration.reviewedAt)}
                   </span>
                 </div>
               )}
               {registration.reviewedBy && (
                 <div>
-                  <span>{t('registration.reviewedBy') || 'تمت المراجعة بواسطة'}: {registration.reviewedBy}</span>
+                  <span>{t('registration.reviewedBy')}: {registration.reviewedBy}</span>
                 </div>
               )}
             </div>

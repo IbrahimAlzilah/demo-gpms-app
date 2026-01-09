@@ -93,10 +93,10 @@ export function ProposalsList() {
   const handleEdit = async (proposalId: string, data: Partial<Proposal>) => {
     try {
       await updateProposal.mutateAsync({ id: proposalId, data })
-      showToast(t('committee.proposal.updateSuccess') || 'تم تحديث المقترح بنجاح', 'success')
+      showToast(t('committee.proposal.updateSuccess'), 'success')
       setState((prev) => ({ ...prev, proposalToEdit: null }))
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : t('committee.proposal.updateError') || 'حدث خطأ أثناء تحديث المقترح'
+      const errorMsg = err instanceof Error ? err.message : t('committee.proposal.updateError')
       showToast(errorMsg, 'error')
     }
   }
@@ -105,10 +105,10 @@ export function ProposalsList() {
     if (!state.proposalToDelete) return
     try {
       await deleteProposal.mutateAsync(state.proposalToDelete.id)
-      showToast(t('committee.proposal.deleteSuccess') || 'تم حذف المقترح بنجاح', 'success')
+      showToast(t('committee.proposal.deleteSuccess'), 'success')
       setState((prev) => ({ ...prev, proposalToDelete: null }))
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : t('committee.proposal.deleteError') || 'حدث خطأ أثناء حذف المقترح'
+      const errorMsg = err instanceof Error ? err.message : t('committee.proposal.deleteError')
       showToast(errorMsg, 'error')
     }
   }
@@ -214,15 +214,14 @@ export function ProposalsList() {
           setState((prev) => ({ ...prev, proposalToDelete: null }))
         }}
         onConfirm={handleDelete}
-        title={t('committee.proposal.confirmDelete') || 'تأكيد الحذف'}
+        title={t('committee.proposal.confirmDelete')}
         description={
           state.proposalToDelete
-            ? t('committee.proposal.confirmDeleteDescription', { title: state.proposalToDelete.title }) || 
-              `هل أنت متأكد من حذف المقترح "${state.proposalToDelete.title}"؟`
+            ? t('committee.proposal.confirmDeleteDescription', { title: state.proposalToDelete.title })
             : ''
         }
-        confirmLabel={t('common.delete') || 'حذف'}
-        cancelLabel={t('common.cancel') || 'إلغاء'}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
         variant="destructive"
       />
 

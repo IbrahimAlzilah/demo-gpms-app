@@ -10,6 +10,7 @@
     "submit": "إرسال",
     "search": "بحث",
     "filter": "تصفية",
+    "filterByStatus": "فلترة حسب الحالة",
     "reset": "إعادة تعيين",
     "close": "إغلاق",
     "back": "رجوع",
@@ -25,6 +26,8 @@
     "confirm": "تأكيد",
     "yes": "نعم",
     "no": "لا",
+    "all": "الكل",
+    "view": "عرض",
     "viewAll": "عرض الكل",
     "actions": "الإجراءات",
     "status": "الحالة",
@@ -40,6 +43,7 @@
     "characters": "حرف",
     "accept": "قبول",
     "reject": "رفض",
+    "approve": "قبول",
     "create": "إنشاء",
     "update": "تحديث",
     "send": "إرسال",
@@ -51,7 +55,18 @@
     "unassigned": "غير معين",
     "students": "طلاب",
     "approved": "موافق عليه",
-    "rejected": "مرفوض"
+    "rejected": "مرفوض",
+    "createdAt": "تاريخ الإنشاء",
+    "updatedAt": "آخر تحديث",
+    "studentId": "رقم الطالب",
+    "employeeId": "رقم الموظف",
+    "department": "القسم",
+    "phone": "رقم الهاتف",
+    "role": "الدور",
+    "deleting": "جاري الحذف...",
+    "assigning": "جاري التعيين...",
+    "supervisor": "المشرف",
+    "maxStudents": "الحد الأقصى للطلاب"
   },
   "app": {
     "name": "نظام إدارة تقييم مشاريع التخرج",
@@ -274,7 +289,10 @@
     "registrationRequired": "التسجيل في المشروع مطلوب",
     "registrationRequiredTitle": "يجب أن تكون مسجلاً في مشروع معتمد",
     "registrationPendingMessage": "طلب التسجيل الخاص بك قيد المراجعة. يرجى الانتظار حتى يتم الموافقة عليه.",
-    "registrationNotApprovedMessage": "يجب أن تكون مسجلاً في مشروع معتمد قبل عرض معلومات المجموعة."
+    "registrationNotApprovedMessage": "يجب أن تكون مسجلاً في مشروع معتمد قبل عرض معلومات المجموعة.",
+    "members": "أعضاء المجموعة",
+    "groupDetails": "تفاصيل المجموعة",
+    "loadError": "حدث خطأ أثناء تحميل المجموعة"
   },
   "theme": {
     "light": "فاتح",
@@ -347,9 +365,14 @@
     "noProposalsDescription": "ابدأ بتقديم مقترح مشروع تخرج جديد",
     "noResultsDescription": "جرب تغيير الفلاتر للعثور على مقترحات",
     "total": "المجموع",
+    "submitter": "معلومات المقدم",
+    "reviewer": "المراجع",
+    "linkedProject": "المشروع المرتبط",
     "submittedAt": "تم الإرسال في",
     "reviewedAt": "تمت المراجعة في",
+    "reviewedBy": "تمت المراجعة بواسطة",
     "reviewNotes": "ملاحظات المراجعة",
+    "reviewInformation": "معلومات المراجعة",
     "status": {
       "pendingReview": "قيد المراجعة",
       "approved": "معتمد",
@@ -364,6 +387,7 @@
       "titleRequired": "عنوان المقترح مطلوب",
       "titleMinLength": "العنوان يجب أن يكون 5 أحرف على الأقل",
       "titleMaxLength": "العنوان يجب أن يكون أقل من 200 حرف",
+      "titleMaxLength255": "العنوان يجب أن يكون أقل من 255 حرف",
       "descriptionRequired": "الوصف مطلوب",
       "descriptionMinLength": "الوصف يجب أن يكون 50 حرفاً على الأقل",
       "objectivesRequired": "الأهداف مطلوبة",
@@ -380,7 +404,8 @@
     "update": "تحديث المقترح",
     "updating": "جاري التحديث...",
     "updateSuccess": "تم تحديث المقترح بنجاح",
-    "cannotEdit": "لا يمكن تعديل هذا المقترح. يمكن تعديل المقترحات ذات الحالة 'قيد المراجعة' فقط."
+    "cannotEdit": "لا يمكن تعديل هذا المقترح. يمكن تعديل المقترحات ذات الحالة 'قيد المراجعة' فقط.",
+    "loadError": "حدث خطأ أثناء تحميل المقترحات"
   },
   "group": {
     "pageDescription": "قم بإنشاء مجموعة جديدة، الانضمام إليها، دعوة زملاء، أو المغادرة",
@@ -428,13 +453,18 @@
       "groupRequired": "المجموعة مطلوبة"
     },
     "confirmRemove": "هل أنت متأكد من إزالة هذا العضو من المجموعة؟",
-    "confirmLeave": "هل أنت متأكد من مغادرة المجموعة؟"
+    "confirmLeave": "هل أنت متأكد من مغادرة المجموعة؟",
+    "registrationRequired": "التسجيل مطلوب",
+    "registrationRequiredTitle": "يجب الموافقة على تسجيلك أولاً",
+    "registrationPendingMessage": "طلب التسجيل قيد المراجعة. يرجى انتظار الموافقة من لجنة المشاريع.",
+    "registrationNotApprovedMessage": "يجب أن يكون لديك تسجيل معتمد في هذا المشروع قبل إدارة المجموعة."
   },
   "request": {
     "pageDescription": "تقديم طلب رسمي (تغيير مشرف، مجموعة، أو مشروع، إلخ)",
     "newRequest": "طلب جديد",
     "submitNew": "تقديم طلب جديد",
     "submitDescription": "املأ النموذج أدناه لتقديم طلبك",
+    "editRequest": "تعديل الطلب",
     "type": "نوع الطلب",
     "selectType": "اختر نوع الطلب",
     "reason": "السبب",
@@ -443,6 +473,10 @@
     "submitting": "جاري الإرسال...",
     "submitSuccess": "تم إرسال الطلب بنجاح، وسيتم مراجعته",
     "submitError": "فشل تقديم الطلب",
+    "update": "تحديث الطلب",
+    "updating": "جاري التحديث...",
+    "updateSuccess": "تم تحديث الطلب بنجاح",
+    "updateError": "فشل تحديث الطلب",
     "total": "المجموع",
     "workflow": "مسار الطلب",
     "submitted": "تم إرسال الطلب",
@@ -456,10 +490,6 @@
     "cancel": "إلغاء الطلب",
     "cancelTitle": "تأكيد الحذف",
     "cancelDescription": "هل أنت متأكد من إلغاء هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء.",
-    "changeSupervisor": "تغيير المشرف",
-    "changeGroup": "تغيير المجموعة",
-    "changeProject": "تغيير المشروع",
-    "other": "طلب آخر",
     "status": {
       "pending": "معلقة",
       "approved": "موافق عليها",
@@ -467,6 +497,10 @@
     },
     "noRequests": "لا توجد طلبات",
     "noRequestsDescription": "ابدأ بتقديم طلب جديد",
+    "deleteTitle": "تأكيد حذف الطلب",
+    "deleteDescription": "هل أنت متأكد من حذف هذا الطلب؟ سيتم حذف الطلب نهائياً ولا يمكن التراجع عن هذا الإجراء.",
+    "deleteSuccess": "تم حذف الطلب بنجاح",
+    "deleteError": "حدث خطأ أثناء حذف الطلب",
     "validation": {
       "reasonRequired": "سبب الطلب مطلوب",
       "reasonMinLength": "السبب يجب أن يكون 20 حرفاً على الأقل"
@@ -476,7 +510,7 @@
     "pageDescription": "قم برفع الوثائق المطلوبة للمشروع",
     "uploadNew": "رفع وثيقة جديدة",
     "uploadDescription": "اختر نوع الوثيقة وارفع الملف",
-    "type": "نوع الوثيقة",
+    "documentType": "نوع الوثيقة",
     "reviewStatus": "حالة المراجعة",
     "selectFile": "اختر الملف",
     "upload": "رفع الملف",
@@ -512,9 +546,13 @@
       "rejected": "مرفوض"
     },
     "validation": {
-      "fileRequired": "يرجى اختيار ملف"
+      "fileRequired": "يرجى اختيار ملف",
+      "typeRequired": "يرجى اختيار نوع الوثيقة"
     },
-    "fileTooLarge": "الملف كبير جداً (الحد الأقصى"
+    "fileTooLarge": "الملف كبير جداً (الحد الأقصى 10MB)",
+    "details": "تفاصيل الوثيقة",
+    "fileName": "اسم الملف",
+    "loadError": "حدث خطأ أثناء تحميل الوثيقة"
   },
   "followUp": {
     "pageDescription": "تابع تقدم مشروعك، بما في ذلك حالة المشروع، نسبة الإنجاز، ملاحظات المشرف، والمواعيد",
@@ -709,7 +747,16 @@
       "approveSuccess": "تم قبول المقترح بنجاح",
       "rejectSuccess": "تم رفض المقترح بنجاح",
       "modifySuccess": "تم طلب التعديل بنجاح",
-      "processError": "حدث خطأ أثناء معالجة المقترح"
+      "processError": "حدث خطأ أثناء معالجة المقترح",
+      "viewDetails": "تفاصيل المقترح",
+      "updateSuccess": "تم تحديث المقترح بنجاح",
+      "updateError": "حدث خطأ أثناء تحديث المقترح",
+      "deleteSuccess": "تم حذف المقترح بنجاح",
+      "deleteError": "حدث خطأ أثناء حذف المقترح",
+      "confirmDelete": "تأكيد الحذف",
+      "confirmDeleteDescription": "هل أنت متأكد من حذف المقترح \"{{title}}\"؟",
+      "editProposal": "تعديل المقترح",
+      "editDescription": "قم بتعديل تفاصيل المقترح"
     },
     "periods": {
       "createNew": "إعلان فترة زمنية جديدة",
@@ -740,7 +787,8 @@
         "documentSubmission": "تسليم الوثائق",
         "supervisorEvaluation": "تقييم المشرف",
         "committeeEvaluation": "تقييم اللجنة",
-        "finalDiscussion": "المناقشة النهائية"
+        "finalDiscussion": "المناقشة النهائية",
+        "general": "عام"
       }
     },
     "announce": {
@@ -753,7 +801,15 @@
       "selectedCount": "{{count}} محدد",
       "announcing": "جاري الإعلان...",
       "announceSelected": "إعلان المشاريع المحددة",
-      "supervisor": "المشرف"
+      "supervisor": "المشرف",
+      "viewDetails": "عرض التفاصيل",
+      "remove": "إزالة",
+      "announcedProjects": "المشاريع المعلنة",
+      "removeSuccess": "تم إزالة المشروع بنجاح",
+      "removeError": "حدث خطأ أثناء إزالة المشروع",
+      "confirmRemove": "تأكيد إزالة المشروع",
+      "confirmRemoveDescription": "هل أنت متأكد من إزالة المشروع \"{{title}}\"؟ سيتم تغيير حالة المشروع من \"متاح للتسجيل\" إلى \"مسودة\".",
+      "loadError": "حدث خطأ أثناء تحميل المشاريع"
     },
     "supervisors": {
       "selectBoth": "يرجى اختيار المشروع والمشرف",
@@ -822,18 +878,24 @@
       "totalRequests": "إجمالي الطلبات",
       "totalEvaluations": "إجمالي التقييمات",
       "noReport": "لا يوجد تقرير",
-      "generateFirst": "اضغط على \"توليد التقرير\" لعرض البيانات"
+      "generateFirst": "اضغط على \"توليد التقرير\" لعرض البيانات",
+      "noData": "لا يوجد تقرير",
+      "noDataDescription": "اضغط على \"توليد التقرير\" لعرض البيانات"
     }
   },
   "project": {
     "browseDescription": "تصفح المشاريع المتاحة للتسجيل واختر المشروع المناسب لك",
     "backToProjects": "العودة إلى قائمة المشاريع",
+    "title": "عنوان المشروع",
     "description": "الوصف",
     "supervisor": "المشرف",
     "noSupervisor": "غير معين",
     "students": "الطلاب",
+    "studentsCount": "طالب",
+    "registeredStudents": "الطلاب المسجلون",
     "specialization": "التخصص",
     "keywords": "الكلمات المفتاحية",
+    "documents": "المستندات",
     "register": "التسجيل في المشروع",
     "registerInProject": "التسجيل في المشروع",
     "registerDescription": "تأكد من تفاصيل المشروع قبل التسجيل",
@@ -856,7 +918,14 @@
     "cancelRegistration": "إلغاء طلب التسجيل",
     "cancelling": "جاري الإلغاء...",
     "searchPlaceholder": "البحث في المشاريع...",
-    "noAvailableProjects": "لا توجد مشاريع متاحة للتسجيل حالياً"
+    "noAvailableProjects": "لا توجد مشاريع متاحة للتسجيل حالياً",
+    "loadError": "حدث خطأ أثناء تحميل تفاصيل المشروع",
+    "projectDetails": "تفاصيل المشروع",
+    "createdAt": "تم الإنشاء",
+    "registered": "مسجل",
+    "unavailable": "غير متاح",
+    "details": "التفاصيل",
+    "cancelRegistrationError": "فشل إلغاء طلب التسجيل"
   },
   "registration": {
     "management": "إدارة طلبات التسجيل",
@@ -866,22 +935,26 @@
     "approved": "معتمد",
     "rejected": "مرفوض",
     "submittedAt": "تاريخ التقديم",
+    "reviewedAt": "تاريخ المراجعة",
+    "reviewedBy": "تمت المراجعة بواسطة",
     "approveTitle": "قبول طلب التسجيل",
     "rejectTitle": "رفض طلب التسجيل",
     "approveDescription": "هل أنت متأكد من قبول طلب التسجيل هذا؟",
     "rejectDescription": "هل أنت متأكد من رفض طلب التسجيل هذا؟",
+    "approveSuccess": "تم قبول طلب التسجيل بنجاح",
+    "approveError": "فشل قبول طلب التسجيل",
+    "rejectSuccess": "تم رفض طلب التسجيل بنجاح",
+    "rejectError": "فشل رفض طلب التسجيل",
     "approvalComments": "ملاحظات (اختياري)",
     "rejectionComments": "سبب الرفض (مطلوب)",
     "approvalCommentsPlaceholder": "ملاحظات إضافية...",
     "rejectionCommentsPlaceholder": "يرجى توضيح سبب الرفض...",
     "commentsRequired": "الرجاء إدخال سبب الرفض",
-    "noRegistrations": "لا توجد طلبات تسجيل"
-  },
-  "group": {
-    "registrationRequired": "التسجيل مطلوب",
-    "registrationRequiredTitle": "يجب الموافقة على تسجيلك أولاً",
-    "registrationPendingMessage": "طلب التسجيل قيد المراجعة. يرجى انتظار الموافقة من لجنة المشاريع.",
-    "registrationNotApprovedMessage": "يجب أن يكون لديك تسجيل معتمد في هذا المشروع قبل إدارة المجموعة."
+    "noRegistrations": "لا توجد طلبات تسجيل",
+    "viewDetails": "تفاصيل طلب التسجيل",
+    "registrationDetails": "تفاصيل طلب التسجيل",
+    "reviewInformation": "معلومات المراجعة",
+    "reviewComments": "ملاحظات المراجعة"
   },
   "admin": {
     "usersDescription": "التحكم الكامل في حسابات المستخدمين وإدارة صلاحياتهم"

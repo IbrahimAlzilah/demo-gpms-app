@@ -57,7 +57,7 @@ export function PeriodsList() {
             isActive: state.selectedPeriod.isActive,
           },
         })
-        showToast(t('committee.periods.periodUpdated') || 'Period updated successfully', 'success')
+        showToast(t('committee.periods.periodUpdated'), 'success')
         setState((prev) => ({ ...prev, selectedPeriod: null, showForm: false }))
       } else {
         await createPeriod.mutateAsync({
@@ -68,7 +68,7 @@ export function PeriodsList() {
         showToast(t('committee.periods.periodCreated'), 'success')
       }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : (state.selectedPeriod ? t('committee.periods.updateError') || 'Failed to update period' : t('committee.periods.createError'))
+      const errorMsg = err instanceof Error ? err.message : (state.selectedPeriod ? t('committee.periods.updateError') : t('committee.periods.createError'))
       showToast(errorMsg, 'error')
     }
   }
@@ -78,10 +78,10 @@ export function PeriodsList() {
 
     try {
       await deletePeriod.mutateAsync(state.selectedPeriod.id.toString())
-      showToast(t('committee.periods.periodDeleted') || 'Period deleted successfully', 'success')
+      showToast(t('committee.periods.periodDeleted'), 'success')
       setState((prev) => ({ ...prev, showDeleteDialog: false, selectedPeriod: null }))
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : t('committee.periods.deleteError') || 'Failed to delete period'
+      const errorMsg = err instanceof Error ? err.message : t('committee.periods.deleteError')
       showToast(errorMsg, 'error')
     }
   }
@@ -130,7 +130,7 @@ export function PeriodsList() {
           searchPlaceholder={t('common.search')}
           enableFiltering={true}
           enableViews={true}
-          emptyMessage={t('committee.periods.noPeriods') || 'No periods found'}
+          emptyMessage={t('committee.periods.noPeriods')}
         />
       </BlockContent>
 
@@ -155,7 +155,7 @@ export function PeriodsList() {
       <ModalDialog
         open={state.showDeleteDialog}
         onOpenChange={(open) => setState((prev) => ({ ...prev, showDeleteDialog: open }))}
-        title={t('common.confirmDelete') || 'Confirm Delete'}
+        title={t('common.confirmDelete')}
       >
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
@@ -183,7 +183,7 @@ export function PeriodsList() {
               {deletePeriod.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t('common.deleting') || 'Deleting...'}
+                  {t('common.deleting')}
                 </>
               ) : (
                 t('common.delete')

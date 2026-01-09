@@ -27,7 +27,7 @@ export function ProposalDetailsView({
       <ModalDialog
         open={open}
         onOpenChange={onClose}
-        title={t('committee.proposal.viewDetails') || 'تفاصيل المقترح'}
+        title={t('committee.proposal.viewDetails')}
       >
         <div className="flex items-center justify-center p-8">
           <LoadingSpinner />
@@ -58,7 +58,7 @@ export function ProposalDetailsView({
           {proposal.updatedAt && proposal.updatedAt !== proposal.createdAt && (
             <div className="flex items-center gap-2 text-muted-foreground">
               <span className="text-xs">
-                {t('common.updatedAt') || 'آخر تحديث'}: {formatDate(proposal.updatedAt)}
+                {t('common.updatedAt')}: {formatDate(proposal.updatedAt)}
               </span>
             </div>
           )}
@@ -69,7 +69,7 @@ export function ProposalDetailsView({
           <div className="p-4 rounded-lg bg-muted border border-muted-foreground/20">
             <div className="flex items-center gap-2 mb-3">
               <User className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-sm font-semibold">{t('proposal.submitter') || 'معلومات المقدم'}</h4>
+              <h4 className="text-sm font-semibold">{t('proposal.submitter')}</h4>
             </div>
             <div className="space-y-2 text-sm">
               <div>
@@ -77,13 +77,13 @@ export function ProposalDetailsView({
               </div>
               {proposal.submitter.email && (
                 <div className="text-muted-foreground">
-                  <span className="font-medium">{t('common.email') || 'البريد الإلكتروني'}: </span>
+                  <span className="font-medium">{t('common.email')}: </span>
                   {proposal.submitter.email}
                 </div>
               )}
               {(proposal.submitter as any).empId && (
                 <div className="text-muted-foreground">
-                  <span className="font-medium">{t('common.employeeId') || 'رقم الموظف'}: </span>
+                  <span className="font-medium">{t('common.employeeId')}: </span>
                   {(proposal.submitter as any).empId}
                 </div>
               )}
@@ -91,19 +91,19 @@ export function ProposalDetailsView({
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Building2 className="h-3 w-3" />
                   <span>
-                    <span className="font-medium">{t('common.department') || 'القسم'}: </span>
+                    <span className="font-medium">{t('common.department')}: </span>
                     {proposal.submitter.department}
                   </span>
                 </div>
               )}
               {proposal.submitter.phone && (
                 <div className="text-muted-foreground">
-                  <span className="font-medium">{t('common.phone') || 'الهاتف'}: </span>
+                  <span className="font-medium">{t('common.phone')}: </span>
                   {proposal.submitter.phone}
                 </div>
               )}
               <div className="text-muted-foreground">
-                <span className="font-medium">{t('common.role') || 'الدور'}: </span>
+                <span className="font-medium">{t('common.role')}: </span>
                 {t(`roles.${proposal.submitter.role}`) || proposal.submitter.role}
               </div>
             </div>
@@ -115,7 +115,7 @@ export function ProposalDetailsView({
           <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
             <div className="flex items-center gap-2 mb-3">
               <FileText className="h-4 w-4 text-primary" />
-              <h4 className="text-sm font-semibold">{t('proposal.linkedProject') || 'المشروع المرتبط'}</h4>
+              <h4 className="text-sm font-semibold">{t('proposal.linkedProject')}</h4>
             </div>
             <div className="space-y-2 text-sm">
               <div>
@@ -137,7 +137,7 @@ export function ProposalDetailsView({
         <div className="p-4 rounded-lg border border-border">
           <div className="flex items-center gap-2 mb-3">
             <FileText className="h-4 w-4 text-muted-foreground" />
-            <h4 className="text-sm font-semibold">{t('proposal.description') || 'الوصف'}</h4>
+            <h4 className="text-sm font-semibold">{t('proposal.description')}</h4>
           </div>
           <p className="text-sm text-muted-foreground whitespace-pre-wrap">
             {proposal.description}
@@ -149,7 +149,7 @@ export function ProposalDetailsView({
           <div className="p-4 rounded-lg border border-border">
             <div className="flex items-center gap-2 mb-3">
               <Target className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-sm font-semibold">{t('proposal.objectives') || 'الأهداف'}</h4>
+              <h4 className="text-sm font-semibold">{t('proposal.objectives')}</h4>
             </div>
             <p className="text-sm text-muted-foreground whitespace-pre-wrap">
               {proposal.objectives}
@@ -162,7 +162,7 @@ export function ProposalDetailsView({
           <div className="p-4 rounded-lg border border-border">
             <div className="flex items-center gap-2 mb-3">
               <FlaskConical className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-sm font-semibold">{t('proposal.methodology') || 'المنهجية'}</h4>
+              <h4 className="text-sm font-semibold">{t('proposal.methodology')}</h4>
             </div>
             <p className="text-sm text-muted-foreground whitespace-pre-wrap">
               {proposal.methodology}
@@ -176,7 +176,7 @@ export function ProposalDetailsView({
             <div className="flex items-center gap-2 mb-3">
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
               <h4 className="text-sm font-semibold">
-                {t('proposal.expectedOutcomes') || 'النتائج المتوقعة'}
+                {t('proposal.expectedOutcomes')}
               </h4>
             </div>
             <p className="text-sm text-muted-foreground whitespace-pre-wrap">
@@ -190,7 +190,7 @@ export function ProposalDetailsView({
           <div className="p-4 rounded-lg bg-muted border border-muted-foreground/20">
             <div className="flex items-center gap-2 mb-3">
               <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-sm font-semibold">{t('proposal.reviewInformation') || 'معلومات المراجعة'}</h4>
+              <h4 className="text-sm font-semibold">{t('proposal.reviewInformation')}</h4>
             </div>
             
             {proposal.reviewer && (
@@ -198,7 +198,7 @@ export function ProposalDetailsView({
                 <div className="flex items-center gap-2 mb-1">
                   <User className="h-3 w-3 text-muted-foreground" />
                   <span className="text-xs font-medium text-muted-foreground">
-                    {t('proposal.reviewer') || 'المراجع'}
+                    {t('proposal.reviewer')}
                   </span>
                 </div>
                 <div className="text-sm">
@@ -214,7 +214,7 @@ export function ProposalDetailsView({
               <div className="mb-3">
                 <div className="flex items-center gap-2 mb-2">
                   <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                  <h5 className="text-sm font-medium">{t('proposal.reviewNotes') || 'ملاحظات المراجعة'}</h5>
+                  <h5 className="text-sm font-medium">{t('proposal.reviewNotes')}</h5>
                 </div>
                 <p className="text-sm whitespace-pre-wrap bg-background p-3 rounded border border-border">
                   {proposal.reviewNotes}
@@ -227,13 +227,13 @@ export function ProposalDetailsView({
                 <div className="flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
                   <span>
-                    {t('proposal.reviewedAt') || 'تاريخ المراجعة'}: {formatDate(proposal.reviewedAt)}
+                    {t('proposal.reviewedAt')}: {formatDate(proposal.reviewedAt)}
                   </span>
                 </div>
               )}
               {proposal.reviewedBy && !proposal.reviewer && (
                 <div>
-                  <span>{t('proposal.reviewedBy') || 'تمت المراجعة بواسطة'}: {proposal.reviewedBy}</span>
+                  <span>{t('proposal.reviewedBy')}: {proposal.reviewedBy}</span>
                 </div>
               )}
             </div>

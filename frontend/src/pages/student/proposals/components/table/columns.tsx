@@ -92,13 +92,13 @@ export function createProposalColumns({
         const actions = [
           {
             id: 'view',
-            label: t('view'),
+            label: t('common.view'),
             icon: Eye,
             onClick: () => onView(proposal),
           },
           {
             id: 'edit',
-            label: t('edit'),
+            label: t('common.edit'),
             icon: Edit,
             onClick: () => onEdit?.(proposal),
             hidden: (row: Proposal) => row.status !== 'pending_review' || !onEdit,

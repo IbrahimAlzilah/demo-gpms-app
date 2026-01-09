@@ -43,12 +43,12 @@ export function ProjectRegistrationForm({
 
   const handleSubmit = async () => {
     if (!isPeriodActive) {
-      setError(t('project.periodClosed') || 'فترة التسجيل غير مفتوحة حالياً')
+      setError(t('project.periodClosed'))
       return
     }
 
     if (project.currentStudents >= project.maxStudents) {
-      setError(t('project.fullCapacity') || 'المشروع ممتلئ')
+      setError(t('project.fullCapacity'))
       return
     }
 
@@ -65,8 +65,7 @@ export function ProjectRegistrationForm({
       const errorMessage =
         err?.response?.data?.message ||
         err?.message ||
-        t('project.registrationError') ||
-        'فشل التسجيل في المشروع'
+        t('project.registrationError')
       setError(errorMessage)
     }
   }
@@ -82,7 +81,7 @@ export function ProjectRegistrationForm({
       const errorMessage =
         err?.response?.data?.message ||
         err?.message ||
-        'فشل إلغاء طلب التسجيل'
+        t('project.cancelRegistrationError')
       setError(errorMessage)
     }
   }
@@ -104,10 +103,10 @@ export function ProjectRegistrationForm({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5 text-warning" />
-            {t('project.registrationStatus') || 'حالة طلب التسجيل'}
+            {t('project.registrationStatus')}
           </CardTitle>
           <CardDescription>
-            {t('project.registrationPending') || 'طلب التسجيل قيد المراجعة'}
+            {t('project.registrationPending')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -120,16 +119,15 @@ export function ProjectRegistrationForm({
             <Clock className="h-5 w-5 text-info mt-0.5" />
             <div className="flex-1">
               <p className="text-info font-medium mb-1">
-                {t('project.registrationPending') || 'طلب التسجيل قيد المراجعة'}
+                {t('project.registrationPending')}
               </p>
               <p className="text-sm text-info/80">
-                {t('project.registrationPendingMessage') ||
-                  'تم إرسال طلب التسجيل إلى لجنة المشاريع. يرجى انتظار الموافقة.'}
+                {t('project.registrationPendingMessage')}
               </p>
               <div className="flex items-center gap-2 mt-2 text-xs text-info/60">
                 <Calendar className="h-3 w-3" />
                 <span>
-                  {t('project.submittedAt') || 'تاريخ التقديم'}:{' '}
+                  {t('project.submittedAt')}:{' '}
                   {formatDate(registration.submittedAt)}
                 </span>
               </div>
@@ -153,15 +151,15 @@ export function ProjectRegistrationForm({
               {cancelRegistration.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t('project.cancelling') || 'جاري الإلغاء...'}
+                  {t('project.cancelling')}
                 </>
               ) : (
-                t('project.cancelRegistration') || 'إلغاء طلب التسجيل'
+                t('project.cancelRegistration')
               )}
             </Button>
             {onCancel && (
               <Button onClick={onCancel} variant="outline">
-                {t('common.back') || 'العودة'}
+                {t('common.back')}
               </Button>
             )}
           </div>
@@ -182,12 +180,12 @@ export function ProjectRegistrationForm({
             ) : (
               <XCircle className="h-5 w-5 text-destructive" />
             )}
-            {t('project.registrationStatus') || 'حالة طلب التسجيل'}
+            {t('project.registrationStatus')}
           </CardTitle>
           <CardDescription>
             {isApproved
-              ? t('project.registrationApproved') || 'تم قبول طلب التسجيل'
-              : t('project.registrationRejected') || 'تم رفض طلب التسجيل'}
+              ? t('project.registrationApproved')
+              : t('project.registrationRejected')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -211,8 +209,8 @@ export function ProjectRegistrationForm({
                 className={`font-medium mb-1 ${isApproved ? 'text-success' : 'text-destructive'}`}
               >
                 {isApproved
-                  ? t('project.registrationApproved') || 'تم قبول طلب التسجيل'
-                  : t('project.registrationRejected') || 'تم رفض طلب التسجيل'}
+                  ? t('project.registrationApproved')
+                  : t('project.registrationRejected')}
               </p>
               {registration.reviewComments && (
                 <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">
@@ -221,7 +219,7 @@ export function ProjectRegistrationForm({
               )}
               {registration.reviewedAt && (
                 <p className="text-xs text-muted-foreground mt-2">
-                  {t('project.reviewedAt') || 'تمت المراجعة في'} {formatDate(registration.reviewedAt)}
+                  {t('project.reviewedAt')} {formatDate(registration.reviewedAt)}
                 </p>
               )}
             </div>
@@ -229,7 +227,7 @@ export function ProjectRegistrationForm({
 
           {onCancel && (
             <Button onClick={onCancel} variant="outline" className="w-full">
-              {t('common.back') || 'العودة'}
+              {t('common.back')}
             </Button>
           )}
         </CardContent>
@@ -242,10 +240,10 @@ export function ProjectRegistrationForm({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Users className="h-5 w-5 text-primary" />
-          {t('project.registerInProject') || 'التسجيل في المشروع'}
+          {t('project.registerInProject')}
         </CardTitle>
         <CardDescription>
-          {t('project.registerDescription') || 'تأكد من تفاصيل المشروع قبل التسجيل'}
+          {t('project.registerDescription')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -258,9 +256,9 @@ export function ProjectRegistrationForm({
           <div className="flex items-center gap-2">
             <User className="h-4 w-4 text-muted-foreground" />
             <div>
-              <p className="text-xs text-muted-foreground">{t('project.supervisor') || 'المشرف'}</p>
+              <p className="text-xs text-muted-foreground">{t('project.supervisor')}</p>
               <p className="text-sm font-medium">
-                {project.supervisor?.name || t('project.noSupervisor') || 'غير معين'}
+                {project.supervisor?.name || t('project.noSupervisor')}
               </p>
             </div>
           </div>
@@ -268,13 +266,13 @@ export function ProjectRegistrationForm({
             <Users className="h-4 w-4 text-muted-foreground" />
             <div>
               <p className="text-xs text-muted-foreground">
-                {t('project.students') || 'عدد الطلاب'}
+                {t('project.students')}
               </p>
               <p className="text-sm font-medium">
                 {project.currentStudents}/{project.maxStudents}
                 {project.currentStudents >= project.maxStudents && (
                   <span className="text-xs text-destructive ms-2">
-                    ({t('project.full') || 'ممتلئ'})
+                    ({t('project.full')})
                   </span>
                 )}
               </p>
@@ -285,7 +283,7 @@ export function ProjectRegistrationForm({
         {!isPeriodActive && (
           <div className="flex items-start gap-2 p-3 text-sm text-warning bg-warning/10 border border-warning/20 rounded-md">
             <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-            <span>{t('project.periodClosed') || 'فترة التسجيل غير مفتوحة حالياً'}</span>
+            <span>{t('project.periodClosed')}</span>
           </div>
         )}
 
@@ -300,8 +298,7 @@ export function ProjectRegistrationForm({
           <div className="flex items-start gap-2 p-3 text-sm text-success bg-success/10 border border-success/20 rounded-md">
             <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" />
             <span>
-              {t('project.registrationSuccess') ||
-                'تم إرسال طلب التسجيل بنجاح. يرجى انتظار الموافقة من لجنة المشاريع.'}
+              {t('project.registrationSuccess')}
             </span>
           </div>
         )}
@@ -320,10 +317,10 @@ export function ProjectRegistrationForm({
             {registerProject.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {t('project.registering') || 'جاري التسجيل...'}
+                {t('project.registering')}
               </>
             ) : (
-              t('project.confirmRegistration') || 'تأكيد التسجيل'
+              t('project.confirmRegistration')
             )}
           </Button>
           {onCancel && (

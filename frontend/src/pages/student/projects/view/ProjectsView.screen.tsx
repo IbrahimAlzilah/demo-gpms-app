@@ -29,7 +29,7 @@ export function ProjectsView({ projectId, open, onClose, onRegister }: ProjectsV
     return (
       <ModalDialog open={open} onOpenChange={onClose} title={t('project.projectDetails')}>
         <div className="text-center py-8 text-destructive">
-          {t('project.loadError') || 'حدث خطأ أثناء تحميل تفاصيل المشروع'}
+          {t('project.loadError')}
         </div>
       </ModalDialog>
     )

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { StatusBadge } from '@/components/common/StatusBadge'
@@ -20,6 +21,7 @@ export function ProjectCard({
   isRegistered = false,
   canRegister = false,
 }: ProjectCardProps) {
+  const { t } = useTranslation()
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader>
@@ -55,28 +57,28 @@ export function ProjectCard({
         )}
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground">
-            تم الإنشاء: {formatDate(project.createdAt)}
+            {t('project.createdAt')}: {formatDate(project.createdAt)}
           </span>
           <div className="flex gap-2">
             {isRegistered ? (
               <Button variant="outline" size="sm" disabled>
-                مسجل
+                {t('project.registered')}
               </Button>
             ) : canRegister ? (
               <Button
                 size="sm"
                 onClick={() => onRegister?.(project.id)}
               >
-                التسجيل
+                {t('project.register')}
               </Button>
             ) : (
               <Button variant="outline" size="sm" disabled>
-                غير متاح
+                {t('project.unavailable')}
               </Button>
             )}
             <Button variant="ghost" size="sm" asChild>
               <Link to={`/student/projects/${project.id}`}>
-                التفاصيل
+                {t('project.details')}
                 <ArrowLeft className="mr-1 h-3 w-3" />
               </Link>
             </Button>

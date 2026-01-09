@@ -10,6 +10,7 @@
     "submit": "Submit",
     "search": "Search",
     "filter": "Filter",
+    "filterByStatus": "Filter by status",
     "reset": "Reset",
     "close": "Close",
     "back": "Back",
@@ -25,6 +26,8 @@
     "confirm": "Confirm",
     "yes": "Yes",
     "no": "No",
+    "all": "All",
+    "view": "View",
     "viewAll": "View All",
     "actions": "Actions",
     "status": "Status",
@@ -40,6 +43,7 @@
     "characters": "characters",
     "accept": "Accept",
     "reject": "Reject",
+    "approve": "Approve",
     "create": "Create",
     "update": "Update",
     "send": "Send",
@@ -51,7 +55,18 @@
     "unassigned": "Unassigned",
     "students": "Students",
     "approved": "Approved",
-    "rejected": "Rejected"
+    "rejected": "Rejected",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At",
+    "studentId": "Student ID",
+    "employeeId": "Employee ID",
+    "department": "Department",
+    "phone": "Phone",
+    "role": "Role",
+    "deleting": "Deleting...",
+    "assigning": "Assigning...",
+    "supervisor": "Supervisor",
+    "maxStudents": "Max Students"
   },
   "app": {
     "name": "Graduation Project Management System",
@@ -273,7 +288,10 @@
     "registrationRequired": "Project Registration Required",
     "registrationRequiredTitle": "You must be registered in an approved project",
     "registrationPendingMessage": "Your registration request is pending review. Please wait until it is approved.",
-    "registrationNotApprovedMessage": "You must be registered in an approved project before viewing group information."
+    "registrationNotApprovedMessage": "You must be registered in an approved project before viewing group information.",
+    "members": "Group Members",
+    "groupDetails": "Group Details",
+    "loadError": "An error occurred while loading the group"
   },
   "theme": {
     "light": "Light",
@@ -346,9 +364,14 @@
     "noProposalsDescription": "Start by submitting a new graduation project proposal",
     "noResultsDescription": "Try changing filters to find proposals",
     "total": "Total",
+    "submitter": "Submitter Information",
+    "reviewer": "Reviewer",
+    "linkedProject": "Linked Project",
     "submittedAt": "Submitted at",
     "reviewedAt": "Reviewed at",
+    "reviewedBy": "Reviewed By",
     "reviewNotes": "Review Notes",
+    "reviewInformation": "Review Information",
     "status": {
       "pendingReview": "Pending Review",
       "approved": "Approved",
@@ -363,6 +386,7 @@
       "titleRequired": "Proposal title is required",
       "titleMinLength": "Title must be at least 5 characters",
       "titleMaxLength": "Title must be less than 200 characters",
+      "titleMaxLength255": "Title must be less than 255 characters",
       "descriptionRequired": "Description is required",
       "descriptionMinLength": "Description must be at least 50 characters",
       "objectivesRequired": "Objectives are required",
@@ -379,7 +403,8 @@
     "update": "Update Proposal",
     "updating": "Updating...",
     "updateSuccess": "Proposal updated successfully",
-    "cannotEdit": "This proposal cannot be edited. Only proposals with pending_review status can be edited."
+    "cannotEdit": "This proposal cannot be edited. Only proposals with pending_review status can be edited.",
+    "loadError": "An error occurred while loading proposals"
   },
   "group": {
     "pageDescription": "Create a new group, join one, invite colleagues, or leave",
@@ -434,6 +459,7 @@
     "newRequest": "New Request",
     "submitNew": "Submit New Request",
     "submitDescription": "Fill out the form below to submit your request",
+    "editRequest": "Edit Request",
     "type": "Request Type",
     "selectType": "Select request type",
     "reason": "Reason",
@@ -442,6 +468,10 @@
     "submitting": "Submitting...",
     "submitSuccess": "Request submitted successfully, it will be reviewed",
     "submitError": "Failed to submit request",
+    "update": "Update Request",
+    "updating": "Updating...",
+    "updateSuccess": "Request updated successfully",
+    "updateError": "Failed to update request",
     "total": "Total",
     "workflow": "Request Workflow",
     "submitted": "Request Submitted",
@@ -455,12 +485,6 @@
     "cancel": "Cancel Request",
     "cancelTitle": "Confirm Deletion",
     "cancelDescription": "Are you sure you want to cancel this request? This action cannot be undone.",
-    "type": {
-      "changeSupervisor": "Change Supervisor",
-      "changeGroup": "Change Group",
-      "changeProject": "Change Project",
-      "other": "Other Request"
-    },
     "status": {
       "pending": "Pending",
       "approved": "Approved",
@@ -468,6 +492,10 @@
     },
     "noRequests": "No requests",
     "noRequestsDescription": "Start by submitting a new request",
+    "deleteTitle": "Confirm Request Deletion",
+    "deleteDescription": "Are you sure you want to delete this request? The request will be permanently deleted and this action cannot be undone.",
+    "deleteSuccess": "Request deleted successfully",
+    "deleteError": "An error occurred while deleting the request",
     "validation": {
       "reasonRequired": "Request reason is required",
       "reasonMinLength": "Reason must be at least 20 characters"
@@ -513,9 +541,13 @@
       "rejected": "Rejected"
     },
     "validation": {
-      "fileRequired": "Please select a file"
+      "fileRequired": "Please select a file",
+      "typeRequired": "Please select a document type"
     },
-    "fileTooLarge": "File is too large (maximum"
+    "fileTooLarge": "File is too large (maximum 10MB)",
+    "details": "Document Details",
+    "fileName": "File Name",
+    "loadError": "An error occurred while loading the document"
   },
   "followUp": {
     "pageDescription": "Follow your project progress, including project status, completion percentage, supervisor notes, and deadlines",
@@ -585,6 +617,11 @@
     "supervisionRequest": "Supervision Request",
     "student": "Student",
     "project": "Project",
+    "projectTitle": "Project Title",
+    "description": "Description",
+    "specialization": "Specialization",
+    "maxStudents": "Maximum Students",
+    "assignedAt": "Assigned Date",
     "reason": "Reason",
     "comments": "Comments",
     "commentsPlaceholder": "Enter your comments about the decision (optional)",
@@ -705,7 +742,16 @@
       "approveSuccess": "Proposal approved successfully",
       "rejectSuccess": "Proposal rejected successfully",
       "modifySuccess": "Modification requested successfully",
-      "processError": "An error occurred while processing the proposal"
+      "processError": "An error occurred while processing the proposal",
+      "viewDetails": "View Proposal Details",
+      "updateSuccess": "Proposal updated successfully",
+      "updateError": "An error occurred while updating the proposal",
+      "deleteSuccess": "Proposal deleted successfully",
+      "deleteError": "An error occurred while deleting the proposal",
+      "confirmDelete": "Confirm Deletion",
+      "confirmDeleteDescription": "Are you sure you want to delete proposal \"{{title}}\"?",
+      "editProposal": "Edit Proposal",
+      "editDescription": "Edit proposal details"
     },
     "periods": {
       "createNew": "Announce New Time Period",
@@ -736,7 +782,8 @@
         "documentSubmission": "Document Submission",
         "supervisorEvaluation": "Supervisor Evaluation",
         "committeeEvaluation": "Committee Evaluation",
-        "finalDiscussion": "Final Discussion"
+        "finalDiscussion": "Final Discussion",
+        "general": "General"
       }
     },
     "announce": {
@@ -749,7 +796,15 @@
       "selectedCount": "{{count}} selected",
       "announcing": "Announcing...",
       "announceSelected": "Announce Selected Projects",
-      "supervisor": "Supervisor"
+      "supervisor": "Supervisor",
+      "viewDetails": "View Details",
+      "remove": "Remove",
+      "announcedProjects": "Announced Projects",
+      "removeSuccess": "Project removed successfully",
+      "removeError": "An error occurred while removing the project",
+      "confirmRemove": "Confirm Remove Project",
+      "confirmRemoveDescription": "Are you sure you want to remove project \"{{title}}\"? The project status will change from \"Available for Registration\" to \"Draft\".",
+      "loadError": "An error occurred while loading projects"
     },
     "supervisors": {
       "selectBoth": "Please select both project and supervisor",
@@ -818,18 +873,24 @@
       "totalRequests": "Total Requests",
       "totalEvaluations": "Total Evaluations",
       "noReport": "No report",
-      "generateFirst": "Click \"Generate Report\" to display data"
+      "generateFirst": "Click \"Generate Report\" to display data",
+      "noData": "No report",
+      "noDataDescription": "Click \"Generate Report\" to display data"
     }
   },
   "project": {
     "browseDescription": "Browse available projects for registration and choose the right project for you",
     "backToProjects": "Back to Projects List",
+    "title": "Project Title",
     "description": "Description",
     "supervisor": "Supervisor",
     "noSupervisor": "Not assigned",
     "students": "Students",
+    "studentsCount": "students",
+    "registeredStudents": "Registered Students",
     "specialization": "Specialization",
     "keywords": "Keywords",
+    "documents": "Documents",
     "register": "Register in Project",
     "registerInProject": "Register in Project",
     "registerDescription": "Review project details before registering",
@@ -852,7 +913,43 @@
     "cancelRegistration": "Cancel Registration Request",
     "cancelling": "Cancelling...",
     "searchPlaceholder": "Search projects...",
-    "noAvailableProjects": "No projects available for registration at the moment"
+    "noAvailableProjects": "No projects available for registration at the moment",
+    "loadError": "An error occurred while loading project details",
+    "projectDetails": "Project Details",
+    "createdAt": "Created at",
+    "registered": "Registered",
+    "unavailable": "Unavailable",
+    "details": "Details",
+    "cancelRegistrationError": "Failed to cancel registration request"
+  },
+  "registration": {
+    "management": "Registration Management",
+    "student": "Student",
+    "project": "Project",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "submittedAt": "Submission Date",
+    "reviewedAt": "Reviewed At",
+    "reviewedBy": "Reviewed By",
+    "approveTitle": "Approve Registration Request",
+    "rejectTitle": "Reject Registration Request",
+    "approveDescription": "Are you sure you want to approve this registration request?",
+    "rejectDescription": "Are you sure you want to reject this registration request?",
+    "approveSuccess": "Registration request approved successfully",
+    "approveError": "Failed to approve registration request",
+    "rejectSuccess": "Registration request rejected successfully",
+    "rejectError": "Failed to reject registration request",
+    "approvalComments": "Comments (optional)",
+    "rejectionComments": "Rejection Reason (required)",
+    "approvalCommentsPlaceholder": "Additional comments...",
+    "rejectionCommentsPlaceholder": "Please specify the reason for rejection...",
+    "commentsRequired": "Please provide a reason for rejection",
+    "noRegistrations": "No registration requests",
+    "viewDetails": "Registration Request Details",
+    "registrationDetails": "Registration Request Details",
+    "reviewInformation": "Review Information",
+    "reviewComments": "Review Comments"
   },
   "admin": {
     "usersDescription": "Full control over user accounts and permission management"

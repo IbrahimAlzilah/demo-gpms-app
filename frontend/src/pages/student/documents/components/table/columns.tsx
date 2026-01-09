@@ -39,7 +39,7 @@ export function createDocumentColumns({
     {
       accessorKey: 'type',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('document.type')} />
+        <DataTableColumnHeader column={column} title={t('document.documentType')} />
       ),
       cell: ({ row }) => (
         <div className="text-sm">{getDocumentTypeLabel(row.original.type)}</div>

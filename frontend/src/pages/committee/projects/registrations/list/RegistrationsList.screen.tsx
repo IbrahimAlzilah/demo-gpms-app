@@ -38,7 +38,7 @@ export function RegistrationsList() {
         registrationId: state.selectedRegistration.id,
         comments: state.comments || undefined,
       })
-      showToast(t('registration.approveSuccess') || 'تم قبول طلب التسجيل بنجاح', 'success')
+      showToast(t('registration.approveSuccess'), 'success')
       setState((prev) => ({
         ...prev,
         showDialog: false,
@@ -48,7 +48,7 @@ export function RegistrationsList() {
       }))
     } catch (err) {
       showToast(
-        err instanceof Error ? err.message : t('registration.approveError') || 'فشل قبول طلب التسجيل',
+        err instanceof Error ? err.message : t('registration.approveError'),
         'error'
       )
     }
@@ -57,7 +57,7 @@ export function RegistrationsList() {
   const handleReject = async () => {
     if (!state.selectedRegistration) return
     if (!state.comments.trim()) {
-      showToast(t('registration.commentsRequired') || 'الرجاء إدخال سبب الرفض', 'error')
+      showToast(t('registration.commentsRequired'), 'error')
       return
     }
     try {
@@ -65,7 +65,7 @@ export function RegistrationsList() {
         registrationId: state.selectedRegistration.id,
         comments: state.comments,
       })
-      showToast(t('registration.rejectSuccess') || 'تم رفض طلب التسجيل بنجاح', 'success')
+      showToast(t('registration.rejectSuccess'), 'success')
       setState((prev) => ({
         ...prev,
         showDialog: false,
@@ -75,7 +75,7 @@ export function RegistrationsList() {
       }))
     } catch (err) {
       showToast(
-        err instanceof Error ? err.message : t('registration.rejectError') || 'فشل رفض طلب التسجيل',
+        err instanceof Error ? err.message : t('registration.rejectError'),
         'error'
       )
     }
@@ -118,7 +118,7 @@ export function RegistrationsList() {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>{t('registration.management') || 'إدارة طلبات التسجيل'}</CardTitle>
+          <CardTitle>{t('registration.management')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex gap-2 mb-4">
@@ -127,28 +127,28 @@ export function RegistrationsList() {
               size="sm"
               onClick={() => setState((prev) => ({ ...prev, statusFilter: 'pending' }))}
             >
-              {t('registration.pending') || 'قيد الانتظار'}
+              {t('registration.pending')}
             </Button>
             <Button
               variant={state.statusFilter === 'approved' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setState((prev) => ({ ...prev, statusFilter: 'approved' }))}
             >
-              {t('registration.approved') || 'معتمد'}
+              {t('registration.approved')}
             </Button>
             <Button
               variant={state.statusFilter === 'rejected' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setState((prev) => ({ ...prev, statusFilter: 'rejected' }))}
             >
-              {t('registration.rejected') || 'مرفوض'}
+              {t('registration.rejected')}
             </Button>
             <Button
               variant={state.statusFilter === 'all' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setState((prev) => ({ ...prev, statusFilter: 'all' }))}
             >
-              {t('common.all') || 'الكل'}
+              {t('common.all')}
             </Button>
           </div>
 
@@ -171,7 +171,7 @@ export function RegistrationsList() {
             onSearchChange={setGlobalFilter}
             enableFiltering={true}
             enableViews={true}
-            emptyMessage={t('registration.noRegistrations') || 'لا توجد طلبات تسجيل'}
+            emptyMessage={t('registration.noRegistrations')}
           />
         </CardContent>
       </Card>
@@ -181,42 +181,42 @@ export function RegistrationsList() {
         onOpenChange={(open) => setState((prev) => ({ ...prev, showDialog: open }))}
         title={
           state.action === 'approve'
-            ? t('registration.approveTitle') || 'قبول طلب التسجيل'
-            : t('registration.rejectTitle') || 'رفض طلب التسجيل'
+            ? t('registration.approveTitle')
+            : t('registration.rejectTitle')
         }
         description={
           state.action === 'approve'
-            ? t('registration.approveDescription') || 'هل أنت متأكد من قبول طلب التسجيل هذا؟'
-            : t('registration.rejectDescription') || 'هل أنت متأكد من رفض طلب التسجيل هذا؟'
+            ? t('registration.approveDescription')
+            : t('registration.rejectDescription')
         }
-        confirmText={state.action === 'approve' ? t('common.approve') || 'قبول' : t('common.reject') || 'رفض'}
-        cancelText={t('common.cancel') || 'إلغاء'}
+        confirmText={state.action === 'approve' ? t('common.approve') : t('common.reject')}
+        cancelText={t('common.cancel')}
         onConfirm={state.action === 'approve' ? handleApprove : handleReject}
         variant={state.action === 'approve' ? 'default' : 'destructive'}
       >
         {state.selectedRegistration && (
           <div className="space-y-4 mt-4">
             <div>
-              <Label>{t('registration.student') || 'الطالب'}</Label>
+              <Label>{t('registration.student')}</Label>
               <p className="text-sm font-medium">{state.selectedRegistration.student?.name}</p>
             </div>
             <div>
-              <Label>{t('registration.project') || 'المشروع'}</Label>
+              <Label>{t('registration.project')}</Label>
               <p className="text-sm font-medium">{state.selectedRegistration.project?.title}</p>
             </div>
             <div>
               <Label>
                 {state.action === 'approve'
-                  ? t('registration.approvalComments') || 'ملاحظات (اختياري)'
-                  : t('registration.rejectionComments') || 'سبب الرفض (مطلوب)'}
+                  ? t('registration.approvalComments')
+                  : t('registration.rejectionComments')}
               </Label>
               <Textarea
                 value={state.comments}
                 onChange={(e) => setState((prev) => ({ ...prev, comments: e.target.value }))}
                 placeholder={
                   state.action === 'approve'
-                    ? t('registration.approvalCommentsPlaceholder') || 'ملاحظات إضافية...'
-                    : t('registration.rejectionCommentsPlaceholder') || 'يرجى توضيح سبب الرفض...'
+                    ? t('registration.approvalCommentsPlaceholder')
+                    : t('registration.rejectionCommentsPlaceholder')
                 }
                 rows={4}
                 required={state.action === 'reject'}

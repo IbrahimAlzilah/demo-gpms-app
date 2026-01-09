@@ -119,7 +119,7 @@ export function ProjectsList() {
         {data.error && (
           <BlockContent variant="container" className="border-destructive mt-4">
             <div className="flex items-center gap-2 text-destructive">
-              <span>{t('project.loadError') || 'حدث خطأ أثناء تحميل المشاريع'}</span>
+              <span>{t('project.loadError')}</span>
             </div>
           </BlockContent>
         )}

@@ -47,12 +47,12 @@ export function GroupsList() {
       setState((prev) => ({
         ...prev,
         showCreateGroupModal: false,
-        success: t('groups.createSuccess') || 'تم إنشاء المجموعة بنجاح',
+        success: t('groups.createSuccess'),
       }))
     } catch (err) {
       setState((prev) => ({
         ...prev,
-        error: err instanceof Error ? err.message : t('groups.createError') || 'فشل إنشاء المجموعة',
+        error: err instanceof Error ? err.message : t('groups.createError'),
       }))
     }
   }
@@ -215,7 +215,7 @@ export function GroupsList() {
           open={state.showCreateGroupModal}
           onOpenChange={(open) => setState((prev) => ({ ...prev, showCreateGroupModal: open }))}
           title={t('groups.createGroup')}
-          description={t('groups.createGroupDescription') || 'إنشاء مجموعة جديدة للمشروع'}
+          description={t('groups.createGroupDescription')}
         >
           <div className="space-y-4">
             {!registrations || registrations.length === 0 ? (
@@ -226,17 +226,17 @@ export function GroupsList() {
                     {t('groups.needProjectFirst')}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {t('groups.needProjectFirstDescription') || 'يجب أن يكون لديك تسجيل معتمد في مشروع أولاً قبل إنشاء مجموعة.'}
+                    {t('groups.needProjectFirstDescription')}
                   </p>
                 </div>
               </div>
             ) : (
               <>
                 <div className="space-y-2">
-                  <p className="text-sm font-medium">{t('groups.project') || 'المشروع'}</p>
+                  <p className="text-sm font-medium">{t('groups.project')}</p>
                   <p className="text-sm text-muted-foreground">
                     {registrations?.find(r => r.status === 'approved')?.project?.title ||
-                      t('groups.noApprovedProject') || 'لا يوجد مشروع معتمد'}
+                      t('groups.noApprovedProject')}
                   </p>
                 </div>
                 <div className="flex gap-3 pt-4">
@@ -256,12 +256,12 @@ export function GroupsList() {
                     {createGroup.isPending ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {t('groups.creating') || 'جاري الإنشاء...'}
+                        {t('groups.creating')}
                       </>
                     ) : (
                       <>
                         <Plus className="mr-2 h-4 w-4" />
-                        {t('groups.create') || 'إنشاء'}
+                        {t('groups.create')}
                       </>
                     )}
                   </Button>
@@ -276,7 +276,7 @@ export function GroupsList() {
           open={state.showJoinGroupModal}
           onOpenChange={(open) => setState((prev) => ({ ...prev, showJoinGroupModal: open }))}
           title={t('groups.joinGroup')}
-          description={t('groups.joinGroupDescription') || 'الانضمام إلى مجموعة موجودة باستخدام معرف المجموعة'}
+          description={t('groups.joinGroupDescription')}
         >
           <GroupJoinForm
             onSuccess={() => {

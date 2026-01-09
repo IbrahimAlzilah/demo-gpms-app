@@ -47,11 +47,11 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
   const documentType = watch('documentType')
 
   const documentTypeOptions: { value: DocumentType; label: string }[] = [
-    { value: 'chapters', label: t('document.type.chapters') || 'فصول المشروع' },
-    { value: 'final_report', label: t('document.type.finalReport') || 'التقرير النهائي' },
-    { value: 'code', label: t('document.type.code') || 'الأكواد' },
-    { value: 'presentation', label: t('document.type.presentation') || 'العرض' },
-    { value: 'other', label: t('document.type.other') || 'أخرى' },
+    { value: 'chapters', label: t('document.type.chapters') },
+    { value: 'final_report', label: t('document.type.finalReport') },
+    { value: 'code', label: t('document.type.code') },
+    { value: 'presentation', label: t('document.type.presentation') },
+    { value: 'other', label: t('document.type.other') },
   ]
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,10 +100,10 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
         <AlertTriangle className="h-5 w-5 text-warning mt-0.5" />
         <div>
           <p className="text-sm font-medium text-warning-foreground">
-            {t('document.periodClosed') || 'فترة تسليم الوثائق غير مفتوحة حالياً'}
+            {t('document.periodClosed')}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            {t('document.periodClosedDescription') || 'يرجى الانتظار حتى يتم فتح فترة التسليم'}
+            {t('document.periodClosedDescription')}
           </p>
         </div>
       </div>
@@ -121,7 +121,7 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
 
       <div className="space-y-2">
         <Label htmlFor="documentType">
-          {t('document.type') || 'نوع الوثيقة'} <span className="text-destructive">*</span>
+          {t('document.documentType')} <span className="text-destructive">*</span>
         </Label>
         <Select
           value={documentType}
@@ -153,7 +153,7 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
 
       <div className="space-y-2">
         <Label htmlFor="file">
-          {t('document.selectFile') || 'اختر الملف'} <span className="text-destructive">*</span>
+          {t('document.selectFile')} <span className="text-destructive">*</span>
         </Label>
         <div className="flex items-center gap-2">
           <input
@@ -181,8 +181,7 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
           </div>
         )}
         <p className="text-xs text-muted-foreground">
-          {t('document.fileUploadHint') ||
-            'يمكن رفع ملفات PDF, Word, أو أرشيف. الحد الأقصى 10MB'}
+          {t('document.fileUploadHint')}
         </p>
       </div>
 
@@ -194,12 +193,12 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
         {uploadDocument.isPending ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            {t('document.uploading') || 'جاري الرفع...'}
+            {t('document.uploading')}
           </>
         ) : (
           <>
             <Upload className="mr-2 h-4 w-4" />
-            {t('document.upload') || 'رفع الملف'}
+            {t('document.upload')}
           </>
         )}
       </Button>

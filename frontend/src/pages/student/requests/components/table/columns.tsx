@@ -16,10 +16,10 @@ export function createRequestColumns({
 }: RequestTableColumnsProps): ColumnDef<Request>[] {
   const getRequestTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
-      change_supervisor: t('request.changeSupervisor'),
-      change_group: t('request.changeGroup'),
-      change_project: t('request.changeProject'),
-      other: t('request.other'),
+      change_supervisor: t('requests.change_supervisor'),
+      change_group: t('requests.change_group'),
+      change_project: t('requests.change_project'),
+      other: t('requests.other'),
     }
     return labels[type] || type
   }

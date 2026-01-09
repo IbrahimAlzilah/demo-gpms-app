@@ -27,7 +27,7 @@ export function ProjectDetailsView({
       <ModalDialog
         open={open}
         onOpenChange={onClose}
-        title={t('committee.announce.viewDetails') || 'تفاصيل المشروع'}
+        title={t('committee.announce.viewDetails')}
       >
         <div className="flex items-center justify-center p-8">
           <LoadingSpinner />
@@ -53,12 +53,12 @@ export function ProjectDetailsView({
           <StatusBadge status={project.status} />
           <div className="flex items-center gap-2 text-muted-foreground">
             <Calendar className="h-4 w-4" />
-            <span>{t('common.createdAt') || 'تاريخ الإنشاء'}: {formatDate(project.createdAt)}</span>
+            <span>{t('common.createdAt')}: {formatDate(project.createdAt)}</span>
           </div>
           {project.updatedAt && project.updatedAt !== project.createdAt && (
             <div className="flex items-center gap-2 text-muted-foreground">
               <span className="text-xs">
-                {t('common.updatedAt') || 'آخر تحديث'}: {formatDate(project.updatedAt)}
+                {t('common.updatedAt')}: {formatDate(project.updatedAt)}
               </span>
             </div>
           )}
@@ -68,7 +68,7 @@ export function ProjectDetailsView({
         <div className="p-4 rounded-lg border border-border">
           <div className="flex items-center gap-2 mb-3">
             <FileText className="h-4 w-4 text-muted-foreground" />
-            <h4 className="text-sm font-semibold">{t('project.description') || 'الوصف'}</h4>
+            <h4 className="text-sm font-semibold">{t('project.description')}</h4>
           </div>
           <p className="text-sm text-muted-foreground whitespace-pre-wrap">
             {project.description}
@@ -82,7 +82,7 @@ export function ProjectDetailsView({
             <div className="p-4 rounded-lg bg-muted border border-muted-foreground/20">
               <div className="flex items-center gap-2 mb-3">
                 <User className="h-4 w-4 text-muted-foreground" />
-                <h4 className="text-sm font-semibold">{t('project.supervisor') || 'المشرف'}</h4>
+                <h4 className="text-sm font-semibold">{t('project.supervisor')}</h4>
               </div>
               <div className="space-y-2 text-sm">
                 <div>
@@ -90,7 +90,7 @@ export function ProjectDetailsView({
                 </div>
                 {project.supervisor.email && (
                   <div className="text-muted-foreground">
-                    <span className="font-medium">{t('common.email') || 'البريد الإلكتروني'}: </span>
+                    <span className="font-medium">{t('common.email')}: </span>
                     {project.supervisor.email}
                   </div>
                 )}
@@ -98,7 +98,7 @@ export function ProjectDetailsView({
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Building2 className="h-3 w-3" />
                     <span>
-                      <span className="font-medium">{t('common.department') || 'القسم'}: </span>
+                      <span className="font-medium">{t('common.department')}: </span>
                       {project.supervisor.department}
                     </span>
                   </div>
@@ -111,7 +111,7 @@ export function ProjectDetailsView({
           <div className="p-4 rounded-lg bg-muted border border-muted-foreground/20">
             <div className="flex items-center gap-2 mb-3">
               <Users className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-sm font-semibold">{t('project.students') || 'الطلاب'}</h4>
+              <h4 className="text-sm font-semibold">{t('project.students')}</h4>
             </div>
             <div className="space-y-2 text-sm">
               <div>
@@ -119,13 +119,13 @@ export function ProjectDetailsView({
                   {project.currentStudents || 0} / {project.maxStudents}
                 </span>
                 <span className="text-muted-foreground ml-2">
-                  {t('project.studentsCount') || 'طالب'}
+                  {t('project.studentsCount')}
                 </span>
               </div>
               {project.students && project.students.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-muted-foreground/20">
                   <p className="text-xs font-medium text-muted-foreground mb-2">
-                    {t('project.registeredStudents') || 'الطلاب المسجلون'}:
+                    {t('project.registeredStudents')}:
                   </p>
                   <div className="space-y-1">
                     {project.students.map((student) => (
@@ -149,7 +149,7 @@ export function ProjectDetailsView({
             <div className="p-4 rounded-lg border border-border">
               <div className="flex items-center gap-2 mb-2">
                 <Building2 className="h-4 w-4 text-muted-foreground" />
-                <h4 className="text-sm font-semibold">{t('project.specialization') || 'التخصص'}</h4>
+                <h4 className="text-sm font-semibold">{t('project.specialization')}</h4>
               </div>
               <p className="text-sm font-medium">{project.specialization}</p>
             </div>
@@ -160,7 +160,7 @@ export function ProjectDetailsView({
             <div className="p-4 rounded-lg border border-border">
               <div className="flex items-center gap-2 mb-3">
                 <Tag className="h-4 w-4 text-muted-foreground" />
-                <h4 className="text-sm font-semibold">{t('project.keywords') || 'الكلمات المفتاحية'}</h4>
+                <h4 className="text-sm font-semibold">{t('project.keywords')}</h4>
               </div>
               <div className="flex flex-wrap gap-2">
                 {project.keywords.map((keyword, index) => (
@@ -181,7 +181,7 @@ export function ProjectDetailsView({
           <div className="p-4 rounded-lg border border-border">
             <div className="flex items-center gap-2 mb-3">
               <Briefcase className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-sm font-semibold">{t('project.documents') || 'المستندات'}</h4>
+              <h4 className="text-sm font-semibold">{t('project.documents')}</h4>
             </div>
             <div className="space-y-2">
               {project.documents.map((doc, index) => (

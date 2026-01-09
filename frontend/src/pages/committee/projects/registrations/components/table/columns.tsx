@@ -1,5 +1,4 @@
 import type { ColumnDef } from '@tanstack/react-table'
-import { Button } from '@/components/ui'
 import { DataTableColumnHeader } from '@/components/ui/data-table/data-table-column-header'
 import { StatusBadge } from '@/components/common/StatusBadge'
 import { ActionsDropdown } from '@/components/common/ActionsDropdown'
@@ -15,6 +14,7 @@ export interface RegistrationTableColumnsProps {
 }
 
 export function createRegistrationColumns({
+  onView,
   onApprove,
   onReject,
   t,
@@ -23,7 +23,7 @@ export function createRegistrationColumns({
     {
       accessorKey: 'student',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('registration.student') || 'الطالب'} />
+        <DataTableColumnHeader column={column} title={t('registration.student')} />
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
@@ -37,7 +37,7 @@ export function createRegistrationColumns({
     {
       accessorKey: 'project',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('registration.project') || 'المشروع'} />
+        <DataTableColumnHeader column={column} title={t('registration.project')} />
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
@@ -49,21 +49,21 @@ export function createRegistrationColumns({
     {
       accessorKey: 'status',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.status') || 'الحالة'} />
+        <DataTableColumnHeader column={column} title={t('common.status')} />
       ),
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
     },
     {
       accessorKey: 'submittedAt',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('registration.submittedAt') || 'تاريخ التقديم'} />
+        <DataTableColumnHeader column={column} title={t('registration.submittedAt')} />
       ),
       cell: ({ row }) => formatDate(row.original.submittedAt),
     },
     {
       id: 'actions',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.actions') || 'الإجراءات'} />
+        <DataTableColumnHeader column={column} title={t('common.actions')} />
       ),
       cell: ({ row }) => {
         const registration = row.original
@@ -71,7 +71,7 @@ export function createRegistrationColumns({
         const actions = [
           {
             id: 'view',
-            label: t('common.view') || t('registration.viewDetails') || 'عرض التفاصيل',
+            label: t('registration.viewDetails'),
             icon: Eye,
             onClick: () => onView(registration),
             variant: 'default' as const,
@@ -79,7 +79,7 @@ export function createRegistrationColumns({
           },
           {
             id: 'approve',
-            label: t('common.approve') || 'قبول',
+            label: t('common.approve'),
             icon: CheckCircle2,
             onClick: () => onApprove(registration),
             hidden: () => registration.status !== 'pending',
@@ -87,7 +87,7 @@ export function createRegistrationColumns({
           },
           {
             id: 'reject',
-            label: t('common.reject') || 'رفض',
+            label: t('common.reject'),
             icon: XCircle,
             onClick: () => onReject(registration),
             hidden: () => registration.status !== 'pending',

@@ -14,14 +14,14 @@ export function createProjectColumns({
     {
       accessorKey: 'title',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('project.title') || 'العنوان'} />
+        <DataTableColumnHeader column={column} title={t('project.title')} />
       ),
       cell: ({ row }) => <div className="font-medium">{row.original.title}</div>,
     },
     {
       accessorKey: 'description',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('project.description') || 'الوصف'} />
+        <DataTableColumnHeader column={column} title={t('project.description')} />
       ),
       cell: ({ row }) => (
         <div className="max-w-[400px] truncate text-muted-foreground text-sm">
@@ -32,16 +32,16 @@ export function createProjectColumns({
     {
       accessorKey: 'supervisor',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('project.supervisor') || 'المشرف'} />
+        <DataTableColumnHeader column={column} title={t('project.supervisor')} />
       ),
       cell: ({ row }) => (
-        <div>{row.original.supervisor?.name || t('project.noSupervisor') || 'غير معين'}</div>
+        <div>{row.original.supervisor?.name || t('project.noSupervisor')}</div>
       ),
     },
     {
       accessorKey: 'currentStudents',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('project.students') || 'الطلاب'} />
+        <DataTableColumnHeader column={column} title={t('project.students')} />
       ),
       cell: ({ row }) => (
         <div>
@@ -52,7 +52,7 @@ export function createProjectColumns({
     {
       accessorKey: 'status',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.status') || 'الحالة'} />
+        <DataTableColumnHeader column={column} title={t('common.status')} />
       ),
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
       filterFn: (row, id, value) => {
@@ -64,7 +64,7 @@ export function createProjectColumns({
         {
           id: 'actions',
           header: ({ column }) => (
-            <DataTableColumnHeader column={column} title={t('common.actions') || 'الإجراءات'} />
+            <DataTableColumnHeader column={column} title={t('common.actions')} />
           ),
           cell: ({ row }) => {
             const project = row.original

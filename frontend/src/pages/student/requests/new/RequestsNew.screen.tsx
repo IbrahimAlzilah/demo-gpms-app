@@ -20,22 +20,22 @@ export function RequestsNew({ open, onClose, onSuccess }: RequestsNewProps) {
   const requestTypes: { value: string; label: string; icon: React.ReactNode }[] = [
     {
       value: 'change_supervisor',
-      label: t('request.changeSupervisor'),
+      label: t('requests.change_supervisor'),
       icon: <User className="h-4 w-4" />,
     },
     {
       value: 'change_group',
-      label: t('request.changeGroup'),
+      label: t('requests.change_group'),
       icon: <Users className="h-4 w-4" />,
     },
     {
       value: 'change_project',
-      label: t('request.changeProject'),
+      label: t('requests.change_project'),
       icon: <Briefcase className="h-4 w-4" />,
     },
     {
       value: 'other',
-      label: t('request.other'),
+      label: t('requests.other'),
       icon: <MoreHorizontal className="h-4 w-4" />,
     },
   ]

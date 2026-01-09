@@ -67,7 +67,7 @@ export function PeriodForm({
     <ModalDialog
       open={open}
       onOpenChange={handleClose}
-      title={isEditMode ? t('committee.periods.editPeriod') || 'Edit Period' : t('committee.periods.createNew')}
+      title={isEditMode ? t('committee.periods.editPeriod') : t('committee.periods.createNew')}
     >
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
         {success && !isEditMode && (

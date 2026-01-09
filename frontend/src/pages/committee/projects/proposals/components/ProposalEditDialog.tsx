@@ -16,9 +16,9 @@ import { z } from 'zod'
 
 const proposalEditSchema = (t: (key: string) => string) =>
   z.object({
-    title: z.string().min(1, t('proposal.titleRequired') || 'Title is required').max(255, t('proposal.titleMaxLength') || 'Title must be less than 255 characters'),
-    description: z.string().min(1, t('proposal.descriptionRequired') || 'Description is required'),
-    objectives: z.string().min(1, t('proposal.objectivesRequired') || 'Objectives are required'),
+    title: z.string().min(1, t('proposal.validation.titleRequired')).max(255, t('proposal.validation.titleMaxLength255')),
+    description: z.string().min(1, t('proposal.validation.descriptionRequired')),
+    objectives: z.string().min(1, t('proposal.validation.objectivesRequired')),
     methodology: z.string().optional(),
     expectedOutcomes: z.string().optional(),
   })
@@ -75,9 +75,9 @@ export function ProposalEditDialog({
     <Dialog open={!!proposal} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{t('committee.proposal.editProposal') || 'تعديل المقترح'}</DialogTitle>
+          <DialogTitle>{t('committee.proposal.editProposal')}</DialogTitle>
           <DialogDescription>
-            {t('committee.proposal.editDescription') || 'قم بتعديل تفاصيل المقترح'}
+            {t('committee.proposal.editDescription')}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -189,10 +189,10 @@ export function ProposalEditDialog({
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t('common.saving') || 'جاري الحفظ...'}
+                  {t('common.saving')}
                 </>
               ) : (
-                t('common.save') || 'حفظ'
+                t('common.save')
               )}
             </Button>
           </DialogFooter>

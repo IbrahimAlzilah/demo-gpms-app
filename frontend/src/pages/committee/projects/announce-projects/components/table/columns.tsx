@@ -72,14 +72,14 @@ export function createAnnounceProjectsColumns({
     {
       accessorKey: "title",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('title')} />
+        <DataTableColumnHeader column={column} title={t('proposal.title')} />
       ),
       cell: ({ row }) => <div className="font-medium max-w-[300px] truncate">{row.original.title}</div>,
     },
     {
       accessorKey: "description",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('description')} />
+        <DataTableColumnHeader column={column} title={t('proposal.description')} />
       ),
       cell: ({ row }) => (
         <div className="max-w-[400px] truncate text-muted-foreground">
@@ -90,7 +90,7 @@ export function createAnnounceProjectsColumns({
     {
       accessorKey: "supervisor",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.supervisor')} />
+        <DataTableColumnHeader column={column} title={t('project.supervisor')} />
       ),
       cell: ({ row }) => (
         <div className="text-sm">
@@ -101,7 +101,7 @@ export function createAnnounceProjectsColumns({
     {
       accessorKey: "maxStudents",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('maxStudents')} />
+        <DataTableColumnHeader column={column} title={t('common.maxStudents')} />
       ),
       cell: ({ row }) => (
         <div className="text-sm">
@@ -126,7 +126,7 @@ export function createAnnounceProjectsColumns({
     {
       id: "actions",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.actions') || 'الإجراءات'} />
+        <DataTableColumnHeader column={column} title={t('common.actions')} />
       ),
       cell: ({ row }) => {
         const project = row.original
@@ -134,7 +134,7 @@ export function createAnnounceProjectsColumns({
         const actions = [
           {
             id: 'view',
-            label: t('common.view') || t('committee.announce.viewDetails') || 'عرض التفاصيل',
+            label: t('committee.announce.viewDetails'),
             icon: Eye,
             onClick: () => onView(project),
             variant: 'default' as const,
@@ -145,7 +145,7 @@ export function createAnnounceProjectsColumns({
         if (onRemove && project.status === 'available_for_registration') {
           actions.push({
             id: 'remove',
-            label: t('committee.announce.remove') || t('common.remove') || 'إزالة',
+            label: t('committee.announce.remove'),
             icon: X,
             onClick: () => onRemove(project),
             variant: 'destructive' as const,

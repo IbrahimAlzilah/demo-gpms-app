@@ -43,10 +43,7 @@ export function ProposalsList() {
           if (proposal.status === 'pending_review') {
             setState((prev) => ({ ...prev, editingProposalId: String(proposal.id) }))
           } else {
-            showToast(
-              t('proposal.cannotEdit') || 'This proposal cannot be edited. Only proposals with pending_review status can be edited.',
-              'error'
-            )
+            showToast(t('proposal.cannotEdit'), 'error')
           }
         },
         t,
@@ -61,7 +58,7 @@ export function ProposalsList() {
 
   const handleEditSuccess = () => {
     setState((prev) => ({ ...prev, editingProposalId: null }))
-    showToast(t('proposal.updateSuccess') || 'Proposal updated successfully', 'success')
+    showToast(t('proposal.updateSuccess'), 'success')
   }
 
   const handleResubmit = async () => {

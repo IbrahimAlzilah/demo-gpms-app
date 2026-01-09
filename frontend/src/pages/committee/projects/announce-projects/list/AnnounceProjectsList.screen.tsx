@@ -64,7 +64,7 @@ export function AnnounceProjectsList() {
 
     try {
       await unannounceProjectsOperation.mutateAsync([state.projectToRemove.id])
-      showToast(t('committee.announce.removeSuccess') || 'تم إزالة المشروع بنجاح', 'success')
+      showToast(t('committee.announce.removeSuccess'), 'success')
       setState((prev) => ({
         ...prev,
         projectToRemove: null,
@@ -72,7 +72,7 @@ export function AnnounceProjectsList() {
       }))
     } catch (err) {
       showToast(
-        err instanceof Error ? err.message : t('committee.announce.removeError') || 'حدث خطأ أثناء إزالة المشروع',
+        err instanceof Error ? err.message : t('committee.announce.removeError'),
         'error'
       )
     }
@@ -121,7 +121,7 @@ export function AnnounceProjectsList() {
 
   const title = isDraftView
     ? t('committee.announce.approvedProjects')
-    : t('committee.announce.announcedProjects') || t('committee.announce.approvedProjects')
+    : t('committee.announce.announcedProjects')
 
   return (
     <>
@@ -135,14 +135,14 @@ export function AnnounceProjectsList() {
             onValueChange={(value) => setViewStatus(value as 'draft' | 'available_for_registration')}
           >
             <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder={t('common.filterByStatus') || 'Filter by status'} />
+              <SelectValue placeholder={t('common.filterByStatus')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="draft">
-                {t('committee.announce.projectsToAnnounce') || t('committee.announce.approvedProjects') || 'Projects to Announce'}
+                {t('committee.announce.approvedProjects')}
               </SelectItem>
               <SelectItem value="available_for_registration">
-                {t('committee.announce.announcedProjects') || 'المشاريع المعلنة'}
+                {t('committee.announce.announcedProjects')}
               </SelectItem>
             </SelectContent>
           </Select>
@@ -175,7 +175,7 @@ export function AnnounceProjectsList() {
         <BlockContent variant="container" className="border-destructive">
           <div className="flex items-center gap-2 text-destructive">
             <AlertCircle className="h-5 w-5" />
-            <span>{t('committee.announce.loadError') || 'حدث خطأ أثناء تحميل المشاريع'}</span>
+            <span>{t('committee.announce.loadError')}</span>
           </div>
         </BlockContent>
       )}
@@ -198,15 +198,14 @@ export function AnnounceProjectsList() {
           }))
         }}
         onConfirm={handleRemoveConfirm}
-        title={t('committee.announce.confirmRemove') || 'تأكيد إزالة المشروع'}
+        title={t('committee.announce.confirmRemove')}
         description={
           state.projectToRemove
-            ? t('committee.announce.confirmRemoveDescription', { title: state.projectToRemove.title }) ||
-              `هل أنت متأكد من إزالة المشروع "${state.projectToRemove.title}"؟ سيتم تغيير حالة المشروع من "متاح للتسجيل" إلى "مسودة".`
+            ? t('committee.announce.confirmRemoveDescription', { title: state.projectToRemove.title })
             : ''
         }
-        confirmLabel={t('common.confirm') || 'تأكيد'}
-        cancelLabel={t('common.cancel') || 'إلغاء'}
+        confirmLabel={t('common.confirm')}
+        cancelLabel={t('common.cancel')}
         variant="destructive"
       />
     </>

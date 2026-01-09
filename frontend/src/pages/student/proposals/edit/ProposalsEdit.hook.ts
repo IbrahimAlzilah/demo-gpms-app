@@ -22,14 +22,12 @@ export function useProposalsEdit(proposalId: string, onSuccess?: () => void) {
     onSubmit: async (data) => {
       // Validate proposal status before allowing edit
       if (!proposal) {
-        form.setError(t("proposal.loadError") || "Proposal not found");
+        form.setError(t("proposal.loadError"));
         throw new Error("Proposal not found");
       }
 
       if (proposal.status !== "pending_review") {
-        const errorMsg =
-          t("proposal.cannotEdit") ||
-          "This proposal cannot be edited. Only proposals with pending_review status can be edited.";
+        const errorMsg = t("proposal.cannotEdit");
         form.setError(errorMsg);
         throw new Error(errorMsg);
       }
@@ -46,7 +44,7 @@ export function useProposalsEdit(proposalId: string, onSuccess?: () => void) {
         const errorMessage =
           error instanceof Error
             ? error.message
-            : t("proposal.submitError") || "Failed to update proposal";
+            : t("proposal.submitError");
         form.setError(errorMessage);
         throw error; // Re-throw to prevent form from thinking it succeeded
       }

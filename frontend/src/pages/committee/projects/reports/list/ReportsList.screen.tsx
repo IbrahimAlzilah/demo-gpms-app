@@ -170,8 +170,8 @@ ${t('committee.reports.evaluations')}:
       ) : (
         <EmptyState
           icon={FileBarChart}
-          title={t('committee.reports.noData')}
-          description={t('committee.reports.noDataDescription')}
+          title={t('committee.reports.noReport')}
+          description={t('committee.reports.generateFirst')}
         />
       )}
     </div>

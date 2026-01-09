@@ -19,12 +19,12 @@ export function useProjectsRegister(project: Project) {
 
   const handleSubmit = async () => {
     if (!isPeriodActive) {
-      setError(t('project.periodClosed') || 'فترة التسجيل غير مفتوحة حالياً')
+      setError(t('project.periodClosed'))
       return
     }
 
     if (project.currentStudents >= project.maxStudents) {
-      setError(t('project.fullCapacity') || 'المشروع ممتلئ')
+      setError(t('project.fullCapacity'))
       return
     }
 
@@ -38,8 +38,7 @@ export function useProjectsRegister(project: Project) {
       const errorMessage =
         err?.response?.data?.message ||
         err?.message ||
-        t('project.registrationError') ||
-        'فشل التسجيل في المشروع'
+        t('project.registrationError')
       setError(errorMessage)
     }
   }
@@ -54,7 +53,7 @@ export function useProjectsRegister(project: Project) {
       const errorMessage =
         err?.response?.data?.message ||
         err?.message ||
-        'فشل إلغاء طلب التسجيل'
+        t('project.registrationError')
       setError(errorMessage)
     }
   }

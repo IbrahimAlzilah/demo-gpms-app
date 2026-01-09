@@ -50,20 +50,20 @@ export function RequestsList() {
     if (!state.requestToDelete) return
     try {
       await deleteRequest.mutateAsync(state.requestToDelete.id)
-      showToast(t('request.deleteSuccess') || 'تم حذف الطلب بنجاح', 'success')
+      showToast(t('request.deleteSuccess'), 'success')
       setState((prev) => ({
         ...prev,
         requestToDelete: null,
         showDeleteDialog: false,
       }))
     } catch {
-      showToast(t('request.deleteError') || 'حدث خطأ أثناء حذف الطلب', 'error')
+      showToast(t('request.deleteError'), 'error')
     }
   }
 
   const handleEditSuccess = () => {
     setState((prev) => ({ ...prev, requestToEdit: null, showEditForm: false }))
-    showToast(t('request.updateSuccess') || 'تم تحديث الطلب بنجاح', 'success')
+    showToast(t('request.updateSuccess'), 'success')
   }
 
   const columns = useMemo(
@@ -192,14 +192,13 @@ export function RequestsList() {
           }))
         }}
         onConfirm={handleDelete}
-        title={t('request.deleteTitle') || 'تأكيد حذف الطلب'}
+        title={t('request.deleteTitle')}
         description={
           state.requestToDelete
-            ? t('request.deleteDescription', { reason: state.requestToDelete.reason }) ||
-              `هل أنت متأكد من حذف هذا الطلب؟ سيتم حذف الطلب نهائياً ولا يمكن التراجع عن هذا الإجراء.`
+            ? t('request.deleteDescription')
             : ''
         }
-        confirmLabel={t('common.delete') || 'حذف'}
+        confirmLabel={t('common.delete')}
         cancelLabel={t('common.cancel')}
         variant="destructive"
       />
