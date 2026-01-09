@@ -56,8 +56,35 @@ export const documentService = {
     type: DocumentType,
     submittedBy: string
   ): Promise<Document> => {
+    // Sanitize filename to prevent issues with Arabic characters and special characters
+    const sanitizeFileName = (fileName: string): string => {
+      const lastDotIndex = fileName.lastIndexOf('.')
+      const extension = lastDotIndex > 0 ? fileName.slice(lastDotIndex) : ''
+      const nameWithoutExt = lastDotIndex > 0 ? fileName.slice(0, lastDotIndex) : fileName
+
+      let sanitized = nameWithoutExt
+        .replace(/[^\w\s-]/g, '_') // Replace special chars with underscore
+        .replace(/\s+/g, '_') // Replace spaces with underscore
+        .replace(/_+/g, '_') // Remove multiple underscores
+        .replace(/^_+|_+$/g, '') // Remove leading/trailing underscores
+        .slice(0, 200) // Limit length
+
+      if (!sanitized) {
+        sanitized = 'document'
+      }
+
+      return sanitized + extension
+    }
+
+    // Create a new File object with sanitized filename
+    const sanitizedFileName = sanitizeFileName(file.name)
+    const sanitizedFile = new File([file], sanitizedFileName, {
+      type: file.type,
+      lastModified: file.lastModified,
+    })
+
     const formData = new FormData()
-    formData.append('file', file)
+    formData.append('file', sanitizedFile)
     formData.append('project_id', projectId)
     formData.append('type', type)
 
@@ -68,5 +95,22 @@ export const documentService = {
 
   delete: async (id: string): Promise<void> => {
     await apiClient.delete(`/student/documents/${id}`)
+  },
+
+  download: async (id: string, fileName: string): Promise<void> => {
+    const response = await apiClient.get(`/student/documents/${id}/download`, {
+      responseType: 'blob',
+    })
+    
+    // Create a blob from the response
+    const blob = new Blob([response.data])
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = fileName
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
   },
 }

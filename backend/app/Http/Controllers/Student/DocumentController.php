@@ -62,6 +62,30 @@ class DocumentController extends Controller
         }
     }
 
+    public function show(Document $document): JsonResponse
+    {
+        $this->authorize('view', $document);
+
+        return response()->json([
+            'success' => true,
+            'data' => new DocumentResource($document->load(['project', 'submitter', 'reviewer'])),
+        ]);
+    }
+
+    public function download(Document $document)
+    {
+        $this->authorize('view', $document);
+
+        $filePath = $document->file_path;
+        $disk = \Storage::disk('documents');
+
+        if (!$disk->exists($filePath)) {
+            abort(404, 'File not found');
+        }
+
+        return $disk->download($filePath, $document->file_name);
+    }
+
     public function destroy(Document $document): JsonResponse
     {
         $this->authorize('delete', $document);

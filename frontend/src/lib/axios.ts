@@ -32,6 +32,11 @@ apiClient.interceptors.request.use(
 // Response interceptor
 apiClient.interceptors.response.use(
   (response) => {
+    // Skip processing for blob responses (file downloads)
+    if (response.config.responseType === 'blob') {
+      return response;
+    }
+
     // Backend returns { success: true, data: {...}, message?: string }
     // Extract the data property for easier access in services
     if (

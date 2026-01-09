@@ -82,6 +82,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('groups/{group}/leader', [App\Http\Controllers\Student\GroupController::class, 'updateLeader']);
         Route::post('groups/{group}/members', [App\Http\Controllers\Student\GroupController::class, 'addMember']);
         Route::delete('groups/{group}/members/{member}', [App\Http\Controllers\Student\GroupController::class, 'removeMember']);
+        Route::get('documents/{document}/download', [App\Http\Controllers\Student\DocumentController::class, 'download']);
         Route::apiResource('documents', App\Http\Controllers\Student\DocumentController::class);
         Route::apiResource('requests', App\Http\Controllers\Student\RequestController::class);
         Route::post('requests/{request}/cancel', [App\Http\Controllers\Student\RequestController::class, 'cancel']);

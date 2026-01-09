@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useUploadDocument } from '../../hooks/useDocumentOperations'
 import { usePeriodCheck } from '@/hooks/usePeriodCheck'
@@ -30,7 +30,7 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
   const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('document_submission')
 
   const {
-    register,
+    control,
     handleSubmit,
     formState: { errors },
     watch,
@@ -54,14 +54,6 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
     { value: 'other', label: t('document.type.other') },
   ]
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setValue('file', file, { shouldValidate: true })
-    } else {
-      setValue('file', undefined as any, { shouldValidate: true })
-    }
-  }
 
   const onSubmit = async (data: DocumentUploadSchema) => {
     if (!isPeriodActive) {
@@ -81,7 +73,7 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
       setTimeout(() => {
         onSuccess?.()
       }, 2000)
-    } catch (err) {
+    } catch {
       // Error will be handled by react-hook-form
     }
   }
@@ -156,16 +148,25 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
           {t('document.selectFile')} <span className="text-destructive">*</span>
         </Label>
         <div className="flex items-center gap-2">
-          <input
-            ref={fileInputRef}
-            id="file"
-            type="file"
-            {...register('file', {
-              onChange: handleFileChange,
-            })}
-            className="flex-1 h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium"
-            accept=".pdf,.doc,.docx,.zip,.rar"
-            aria-invalid={!!errors.file}
+          <Controller
+            name="file"
+            control={control}
+            render={({ field: { onChange, name, onBlur } }) => (
+              <input
+                name={name}
+                onBlur={onBlur}
+                ref={fileInputRef}
+                id="file"
+                type="file"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  onChange(file || undefined)
+                }}
+                className="flex-1 h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium"
+                accept=".pdf,.doc,.docx,.zip,.rar"
+                aria-invalid={!!errors.file}
+              />
+            )}
           />
         </div>
         {selectedFile && (

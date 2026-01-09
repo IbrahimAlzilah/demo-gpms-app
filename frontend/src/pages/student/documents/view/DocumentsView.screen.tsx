@@ -4,6 +4,7 @@ import { Button } from '@/components/ui'
 import { Download, MessageSquare, AlertCircle } from 'lucide-react'
 import { formatDate, formatFileSize } from '@/lib/utils/format'
 import { useDocumentsView } from './DocumentsView.hook'
+import { documentService } from '../api/document.service'
 
 interface DocumentsViewProps {
   documentId: string
@@ -76,16 +77,20 @@ export function DocumentsView({ documentId, open, onClose }: DocumentsViewProps)
           )}
 
           <div className="flex gap-2 pt-4 border-t">
-            {document.fileUrl && (
-              <Button
-                variant="outline"
-                onClick={() => window.open(document.fileUrl, '_blank')}
-                className="flex-1"
-              >
-                <Download className="mr-2 h-4 w-4" />
-                {t('document.download')}
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              onClick={async () => {
+                try {
+                  await documentService.download(document.id, document.fileName)
+                } catch (error) {
+                  console.error('Download failed:', error)
+                }
+              }}
+              className="flex-1"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              {t('document.download')}
+            </Button>
             <Button variant="outline" onClick={onClose}>
               {t('common.close')}
             </Button>

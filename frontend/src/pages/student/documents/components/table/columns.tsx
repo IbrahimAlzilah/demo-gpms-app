@@ -6,6 +6,7 @@ import type { Document } from '@/types/request.types'
 import { MessageSquare, Download, File } from 'lucide-react'
 import { formatRelativeTime, formatFileSize } from '@/lib/utils/format'
 import type { DocumentTableColumnsProps } from '../../types/Documents.types'
+import { documentService } from '../../api/document.service'
 
 export function createDocumentColumns({
   onView,
@@ -105,19 +106,23 @@ export function createDocumentColumns({
               <MessageSquare className="h-4 w-4" />
               <span className="sr-only">{viewLabel}</span>
             </Button>
-            {document.fileUrl && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => window.open(document.fileUrl, '_blank')}
-                className="h-8 w-8 p-0"
-                title={downloadLabel}
-                aria-label={downloadLabel}
-              >
-                <Download className="h-4 w-4" />
-                <span className="sr-only">{downloadLabel}</span>
-              </Button>
-            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={async () => {
+                try {
+                  await documentService.download(document.id, document.fileName)
+                } catch (error) {
+                  console.error('Download failed:', error)
+                }
+              }}
+              className="h-8 w-8 p-0"
+              title={downloadLabel}
+              aria-label={downloadLabel}
+            >
+              <Download className="h-4 w-4" />
+              <span className="sr-only">{downloadLabel}</span>
+            </Button>
           </div>
         )
       },

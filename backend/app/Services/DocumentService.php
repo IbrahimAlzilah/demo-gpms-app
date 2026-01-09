@@ -15,7 +15,26 @@ class DocumentService
      */
     public function upload(Project $project, UploadedFile $file, string $type, User $submitter): Document
     {
-        $fileName = time() . '_' . $file->getClientOriginalName();
+        // Sanitize filename to prevent issues with special characters and Arabic characters
+        $originalName = $file->getClientOriginalName();
+        $extension = $file->getClientOriginalExtension();
+        $nameWithoutExt = pathinfo($originalName, PATHINFO_FILENAME);
+        
+        // Replace special characters and Arabic characters with underscores
+        $sanitized = preg_replace('/[^\w\s-]/u', '_', $nameWithoutExt);
+        $sanitized = preg_replace('/\s+/u', '_', $sanitized);
+        $sanitized = preg_replace('/_+/u', '_', $sanitized);
+        $sanitized = trim($sanitized, '_');
+        
+        // If sanitized name is empty, use a default
+        if (empty($sanitized)) {
+            $sanitized = 'document';
+        }
+        
+        // Limit length to 200 characters
+        $sanitized = mb_substr($sanitized, 0, 200);
+        
+        $fileName = time() . '_' . $sanitized . ($extension ? '.' . $extension : '');
         $filePath = $file->storeAs('documents', $fileName, 'documents');
 
         return Document::create([

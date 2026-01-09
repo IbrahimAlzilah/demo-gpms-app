@@ -70,11 +70,11 @@ class Document extends Model
     }
 
     /**
-     * Get the file URL
+     * Get the file URL for download
      */
     public function getFileUrlAttribute(): string
     {
-        return asset('storage/documents/' . $this->file_path);
+        return url('/api/student/documents/' . $this->id . '/download');
     }
 }
 
