@@ -42,11 +42,22 @@ class DocumentController extends Controller
 
         try {
             $project = \App\Models\Project::findOrFail($validated['project_id']);
+            $user = $request->user();
+            
+            // UC-ST-06: Verify student is registered in the project
+            $isRegistered = $project->students()->where('users.id', $user->id)->exists();
+            if (!$isRegistered) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You must be registered in this project to upload documents',
+                ], 403);
+            }
+            
             $document = $this->documentService->upload(
                 $project,
                 $request->file('file'),
                 $validated['type'],
-                $request->user()
+                $user
             );
 
             return response()->json([

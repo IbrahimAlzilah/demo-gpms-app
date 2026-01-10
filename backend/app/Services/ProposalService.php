@@ -66,7 +66,7 @@ class ProposalService
                     'specialization' => null,
                     'keywords' => [],
                 ], $proposal->id);
-                
+
                 $projectId = $project->id;
             }
 
@@ -157,7 +157,7 @@ class ProposalService
 
     /**
      * Update a proposal
-     * 
+     *
      * @param Proposal $proposal The proposal to update
      * @param array $data The data to update
      * @param User|null $user The user performing the update (null for committee members)
@@ -166,24 +166,30 @@ class ProposalService
     {
         // If user is provided and not a committee member, enforce status restriction
         if ($user && !$user->isProjectsCommittee()) {
-            // Ensure proposal can be modified (status must be pending_review)
-            if ($proposal->status !== ProposalStatus::PENDING_REVIEW) {
+            // Ensure proposal can be modified (status must be pending_review or requires_modification)
+            if (!$proposal->canBeModified()) {
                 throw new \Illuminate\Http\Exceptions\HttpResponseException(
                     response()->json([
                         'success' => false,
-                        'message' => 'Proposal can only be edited when status is pending_review',
+                        'message' => 'Proposal can only be edited when status is pending_review or requires_modification',
                     ], 403)
                 );
             }
         }
 
-        $proposal->update([
+        // If proposal requires modification and is being updated, change status to pending_review
+        $statusUpdate = [];
+        if ($proposal->status === ProposalStatus::REQUIRES_MODIFICATION) {
+            $statusUpdate['status'] = ProposalStatus::PENDING_REVIEW;
+        }
+
+        $proposal->update(array_merge([
             'title' => $data['title'] ?? $proposal->title,
             'description' => $data['description'] ?? $proposal->description,
             'objectives' => $data['objectives'] ?? $proposal->objectives,
             'methodology' => $data['methodology'] ?? $proposal->methodology,
             'expected_outcomes' => $data['expected_outcomes'] ?? $proposal->expected_outcomes,
-        ]);
+        ], $statusUpdate));
 
         return $proposal->fresh();
     }

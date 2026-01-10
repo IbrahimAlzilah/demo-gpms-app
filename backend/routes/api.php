@@ -62,11 +62,13 @@ Route::middleware('auth:sanctum')->group(function () {
             ->middleware('window:proposal_submission');
         Route::delete('proposals/{proposal}', [App\Http\Controllers\Student\ProposalController::class, 'destroy']);
 
+        // Project registration routes must be defined before apiResource to prevent route conflicts
+        Route::get('projects/registrations', [App\Http\Controllers\Student\ProjectController::class, 'getRegistrations']);
+        Route::delete('projects/registrations/{registration}', [App\Http\Controllers\Student\ProjectController::class, 'cancelRegistration']);
+        
         Route::apiResource('projects', App\Http\Controllers\Student\ProjectController::class);
         Route::post('projects/{project}/register', [App\Http\Controllers\Student\ProjectController::class, 'register'])
             ->middleware('window:project_registration');
-        Route::get('projects/registrations', [App\Http\Controllers\Student\ProjectController::class, 'getRegistrations']);
-        Route::delete('projects/registrations/{registration}', [App\Http\Controllers\Student\ProjectController::class, 'cancelRegistration']);
         Route::get('projects/{project}/notes', [App\Http\Controllers\Student\ProjectController::class, 'getSupervisorNotes']);
         Route::post('projects/{project}/notes/{note}/reply', [App\Http\Controllers\Student\ProjectController::class, 'replyToNote']);
         Route::get('projects/{project}/milestones', [App\Http\Controllers\Student\ProjectController::class, 'getMilestones']);

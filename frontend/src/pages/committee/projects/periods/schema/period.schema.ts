@@ -15,6 +15,7 @@ export const timePeriodSchema = (t: (key: string) => string) => {
           "committee_evaluation",
           "discussion_evaluation",
           "final_discussion",
+          "grade_approval",
           "general",
         ],
         {

@@ -415,7 +415,7 @@
     "update": "Update Proposal",
     "updating": "Updating...",
     "updateSuccess": "Proposal updated successfully",
-    "cannotEdit": "This proposal cannot be edited. Only proposals with pending_review status can be edited.",
+    "cannotEdit": "This proposal cannot be edited. Only proposals with pending_review or requires_modification status can be edited.",
     "loadError": "An error occurred while loading proposals"
   },
   "group": {

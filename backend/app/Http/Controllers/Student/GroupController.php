@@ -32,11 +32,12 @@ class GroupController extends Controller
 
         $group = $query->first();
 
+        // Return 200 with null data when no group exists (graceful handling for frontend)
         if (!$group) {
             return response()->json([
-                'success' => false,
-                'message' => 'Group not found',
-            ], 404);
+                'success' => true,
+                'data' => null,
+            ]);
         }
 
         return response()->json([

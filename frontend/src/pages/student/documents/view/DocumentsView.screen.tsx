@@ -47,7 +47,7 @@ export function DocumentsView({ documentId, open, onClose }: DocumentsViewProps)
 
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <p className="text-xs text-muted-foreground">{t('document.type')}</p>
+              <p className="text-xs text-muted-foreground">{t('document.documentType')}</p>
               <p className="text-sm font-medium">{document.type}</p>
             </div>
             <div>

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { CardTitle, CardDescription, Badge, Button, Switch, Label } from '@/components/ui'
+import { CardTitle, CardDescription, Badge } from '@/components/ui'
 import { LoadingSpinner, EmptyState, BlockContent } from '@/components/common'
 import {
   Award,
@@ -9,14 +9,13 @@ import {
   AlertCircle,
   MessageSquare,
   TrendingUp,
-  Filter,
 } from 'lucide-react'
 import { formatDate } from '@/lib/utils/format'
 import { useGradesList } from './GradesList.hook'
 
 export function GradesList() {
   const { t } = useTranslation()
-  const { data, showOnlyApproved, setShowOnlyApproved } = useGradesList()
+  const { data } = useGradesList()
 
   if (data.isLoading) {
     return <LoadingSpinner />
@@ -43,21 +42,7 @@ export function GradesList() {
 
   return (
     <BlockContent title={t('grades.title')}>
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Filter className="h-4 w-4 text-muted-foreground" />
-          <div className="flex items-center gap-2">
-            <Switch
-              id="show-only-approved"
-              checked={showOnlyApproved}
-              onCheckedChange={setShowOnlyApproved}
-            />
-            <Label htmlFor="show-only-approved" className="cursor-pointer">
-              {t('grades.showOnlyApproved')}
-            </Label>
-          </div>
-        </div>
-      </div>
+      {/* UC-ST-08: Students can only view approved grades - filter toggle removed */}
       <div className="space-y-6">
         {data.grades.map((grade) => (
         <div key={grade.id}>

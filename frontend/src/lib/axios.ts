@@ -45,9 +45,11 @@ apiClient.interceptors.response.use(
       "success" in response.data
     ) {
       // Return the full response but with data extracted
+      // Use 'data' in response.data to properly handle null values
+      const extractedData = "data" in response.data ? response.data.data : response.data;
       return {
         ...response,
-        data: response.data.data || response.data,
+        data: extractedData,
         // Keep pagination if present
         pagination: response.data.pagination,
         message: response.data.message,

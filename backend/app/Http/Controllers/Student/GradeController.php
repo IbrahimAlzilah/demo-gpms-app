@@ -15,11 +15,8 @@ class GradeController extends Controller
         $query = Grade::where('student_id', $request->user()->id)
             ->with(['project', 'student']);
 
-        // Filter by approval status if provided
-        if ($request->has('is_approved')) {
-            $isApproved = filter_var($request->is_approved, FILTER_VALIDATE_BOOLEAN);
-            $query->where('is_approved', $isApproved);
-        }
+        // UC-ST-08: Students can only view approved grades
+        $query->where('is_approved', true);
 
         $grades = $query->get();
 

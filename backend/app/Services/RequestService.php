@@ -9,12 +9,19 @@ use Illuminate\Support\Facades\DB;
 
 class RequestService
 {
+    public function __construct(
+        protected ?NotificationService $notificationService = null
+    ) {
+        // Allow nullable for backward compatibility, but initialize if available
+        $this->notificationService = $this->notificationService ?? app(NotificationService::class);
+    }
+
     /**
      * Create a new request
      */
     public function create(array $data, User $student): ProjectRequest
     {
-        return ProjectRequest::create([
+        $request = ProjectRequest::create([
             'type' => $data['type'],
             'student_id' => $student->id,
             'project_id' => $data['project_id'] ?? null,
@@ -22,6 +29,31 @@ class RequestService
             'status' => 'pending',
             'additional_data' => $data['additional_data'] ?? null,
         ]);
+
+        // UC-ST-05: Notify supervisor when request is submitted
+        if ($request->project_id && $this->notificationService) {
+            $project = \App\Models\Project::find($request->project_id);
+            if ($project && $project->supervisor_id) {
+                $supervisor = User::find($project->supervisor_id);
+                if ($supervisor) {
+                    $requestTypeLabel = match($request->type) {
+                        'change_supervisor' => 'تغيير مشرف',
+                        'change_group' => 'تغيير مجموعة',
+                        'change_project' => 'تغيير مشروع',
+                        default => 'طلب آخر',
+                    };
+                    $this->notificationService->create(
+                        $supervisor,
+                        "طلب جديد من الطالب {$student->name}: {$requestTypeLabel} - {$project->title}",
+                        'request_submitted',
+                        'request',
+                        $request->id
+                    );
+                }
+            }
+        }
+
+        return $request;
     }
 
     /**

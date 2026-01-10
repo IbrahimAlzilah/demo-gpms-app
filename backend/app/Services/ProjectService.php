@@ -10,6 +10,13 @@ use Illuminate\Support\Facades\DB;
 
 class ProjectService
 {
+    public function __construct(
+        protected ?NotificationService $notificationService = null
+    ) {
+        // Allow nullable for backward compatibility, but initialize if available
+        $this->notificationService = $this->notificationService ?? app(NotificationService::class);
+    }
+
     /**
      * Create a new project from a proposal
      */
@@ -75,6 +82,22 @@ class ProjectService
                 'status' => 'pending',
                 'submitted_at' => now(),
             ]);
+
+            // UC-ST-03: Notify projects committee about new registration
+            $committeeMembers = User::where('role', 'projects_committee')
+                ->where('status', 'active')
+                ->pluck('id')
+                ->toArray();
+
+            if (!empty($committeeMembers) && $this->notificationService) {
+                $this->notificationService->createForUsers(
+                    $committeeMembers,
+                    "طلب تسجيل جديد من الطالب {$student->name} في المشروع: {$project->title}",
+                    'registration_submitted',
+                    'project',
+                    $project->id
+                );
+            }
 
             return $registration;
         });

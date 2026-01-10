@@ -101,7 +101,7 @@ export function ProjectDetails() {
   const actions = (
     <Button variant="outline" size="sm" onClick={() => navigate(ROUTES.SUPERVISOR.PROJECTS)}>
       <ArrowLeft className="h-4 w-4 mr-2" />
-      {t('supervisor.backToProjects')}
+      {t('common.back')}
     </Button>
   )
 

@@ -62,6 +62,8 @@ export function PeriodForm({
     { value: 'committee_evaluation', label: t('committee.periods.types.committeeEvaluation') },
     { value: 'discussion_evaluation', label: t('committee.periods.types.discussionEvaluation') },
     { value: 'final_discussion', label: t('committee.periods.types.finalDiscussion') },
+    { value: 'grade_approval', label: t('committee.periods.types.gradeApproval') },
+    { value: 'general', label: t('committee.periods.types.general') },
   ]
 
   return (

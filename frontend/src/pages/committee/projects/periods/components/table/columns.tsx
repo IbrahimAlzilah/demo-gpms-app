@@ -25,6 +25,7 @@ export function createPeriodColumns({
     committee_evaluation: t('committee.periods.types.committeeEvaluation'),
     discussion_evaluation: t('committee.periods.types.discussionEvaluation'),
     final_discussion: t('committee.periods.types.finalDiscussion'),
+    grade_approval: t('committee.periods.types.gradeApproval'),
     general: t('committee.periods.types.general'),
   }
 

@@ -101,7 +101,8 @@ export function createProposalColumns({
             label: t('common.edit'),
             icon: Edit,
             onClick: () => onEdit?.(proposal),
-            hidden: (row: Proposal) => row.status !== 'pending_review' || !onEdit,
+            // UC-ST-01: Allow edit for pending_review or requires_modification
+            hidden: (row: Proposal) => (row.status !== 'pending_review' && row.status !== 'requires_modification') || !onEdit,
           },
         ]
 

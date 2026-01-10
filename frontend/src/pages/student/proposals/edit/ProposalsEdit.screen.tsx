@@ -22,8 +22,8 @@ export function ProposalsEdit({
     onClose()
   })
 
-  // Validate proposal status before showing edit form
-  if (proposal && proposal.status !== 'pending_review') {
+  // UC-ST-01: Validate proposal status before showing edit form
+  if (proposal && proposal.status !== 'pending_review' && proposal.status !== 'requires_modification') {
     return (
       <ModalDialog open={open} onOpenChange={onClose} title={t('proposal.edit')}>
         <div className="p-4 text-center text-muted-foreground">

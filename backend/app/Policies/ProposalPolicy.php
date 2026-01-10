@@ -41,9 +41,9 @@ class ProposalPolicy
             return true;
         }
 
-        // Submitter can update their own proposal if pending
+        // Submitter can update their own proposal if it can be modified
         return $proposal->submitter_id === $user->id 
-            && $proposal->status === ProposalStatus::PENDING_REVIEW;
+            && $proposal->status->canBeModified();
     }
 
     /**
@@ -56,8 +56,8 @@ class ProposalPolicy
             return true;
         }
 
-        // Submitter can delete their own proposal if pending
+        // Submitter can delete their own proposal if it can be modified
         return $proposal->submitter_id === $user->id 
-            && $proposal->status === ProposalStatus::PENDING_REVIEW;
+            && $proposal->status->canBeModified();
     }
 }

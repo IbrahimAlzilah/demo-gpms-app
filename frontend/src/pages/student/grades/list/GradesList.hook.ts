@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGrades } from '../hooks/useGrades'
 import { useGradeOperations } from '../hooks/useGradeOperations'
@@ -6,8 +5,8 @@ import type { GradesListData } from './GradesList.types'
 
 export function useGradesList() {
   const { t } = useTranslation()
-  const [showOnlyApproved, setShowOnlyApproved] = useState(false)
-  const { data: grades, isLoading, error } = useGrades(showOnlyApproved ? true : undefined)
+  // UC-ST-08: Students can only view approved grades
+  const { data: grades, isLoading, error } = useGrades(true)
   const { handlePrint, handleExport } = useGradeOperations()
 
   const data: GradesListData = {
@@ -30,8 +29,6 @@ export function useGradesList() {
     data,
     onPrint,
     onExport,
-    showOnlyApproved,
-    setShowOnlyApproved,
     t,
   }
 }

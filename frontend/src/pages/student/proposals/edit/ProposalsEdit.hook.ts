@@ -26,7 +26,8 @@ export function useProposalsEdit(proposalId: string, onSuccess?: () => void) {
         throw new Error("Proposal not found");
       }
 
-      if (proposal.status !== "pending_review") {
+      // UC-ST-01: Allow editing for pending_review or requires_modification
+      if (proposal.status !== "pending_review" && proposal.status !== "requires_modification") {
         const errorMsg = t("proposal.cannotEdit");
         form.setError(errorMsg);
         throw new Error(errorMsg);
