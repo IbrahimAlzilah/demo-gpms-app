@@ -60,6 +60,7 @@ export function PeriodForm({
     { value: 'document_submission', label: t('committee.periods.types.documentSubmission') },
     { value: 'supervisor_evaluation', label: t('committee.periods.types.supervisorEvaluation') },
     { value: 'committee_evaluation', label: t('committee.periods.types.committeeEvaluation') },
+    { value: 'discussion_evaluation', label: t('committee.periods.types.discussionEvaluation') },
     { value: 'final_discussion', label: t('committee.periods.types.finalDiscussion') },
   ]
 

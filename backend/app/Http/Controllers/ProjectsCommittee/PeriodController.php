@@ -26,7 +26,7 @@ class PeriodController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'type' => 'required|in:proposal_submission,project_registration,document_submission,supervisor_evaluation,committee_evaluation,final_discussion,general',
+            'type' => 'required|in:proposal_submission,project_registration,document_submission,supervisor_evaluation,committee_evaluation,discussion_evaluation,final_discussion,general',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
             'academic_year' => 'nullable|string',
@@ -51,7 +51,7 @@ class PeriodController extends Controller
     {
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
-            'type' => 'sometimes|in:proposal_submission,project_registration,document_submission,supervisor_evaluation,committee_evaluation,final_discussion,general',
+            'type' => 'sometimes|in:proposal_submission,project_registration,document_submission,supervisor_evaluation,committee_evaluation,discussion_evaluation,final_discussion,general',
             'start_date' => 'sometimes|date',
             'end_date' => 'sometimes|date|after:start_date',
             'is_active' => 'sometimes|boolean',

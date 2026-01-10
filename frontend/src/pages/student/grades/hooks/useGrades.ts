@@ -4,14 +4,15 @@ import { useAuthStore } from '@/pages/auth/login'
 
 /**
  * Fetch all grades for the current user
+ * @param isApproved - Optional filter to show only approved grades
  */
-export function useGrades() {
+export function useGrades(isApproved?: boolean) {
   const { user } = useAuthStore()
   return useQuery({
-    queryKey: ['grades', user?.id],
+    queryKey: ['grades', user?.id, isApproved],
     queryFn: () => {
       if (!user) throw new Error('User not authenticated')
-      return gradeService.getGrades(user.id)
+      return gradeService.getGrades(user.id, isApproved)
     },
     enabled: !!user,
   })

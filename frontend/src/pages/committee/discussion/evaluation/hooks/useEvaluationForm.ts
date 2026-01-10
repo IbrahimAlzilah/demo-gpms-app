@@ -15,7 +15,7 @@ export interface UseEvaluationFormOptions {
  */
 export function useEvaluationForm(options: UseEvaluationFormOptions = {}) {
   const { t } = useTranslation()
-  const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('committee_evaluation')
+  const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('discussion_evaluation')
   const [error, setError] = useState('')
 
   const form = useForm<FinalEvaluationSchema>({

@@ -83,7 +83,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('groups/{group}/members', [App\Http\Controllers\Student\GroupController::class, 'addMember']);
         Route::delete('groups/{group}/members/{member}', [App\Http\Controllers\Student\GroupController::class, 'removeMember']);
         Route::get('documents/{document}/download', [App\Http\Controllers\Student\DocumentController::class, 'download']);
-        Route::apiResource('documents', App\Http\Controllers\Student\DocumentController::class);
+        Route::post('documents', [App\Http\Controllers\Student\DocumentController::class, 'store'])
+            ->middleware('window:document_submission');
+        Route::get('documents', [App\Http\Controllers\Student\DocumentController::class, 'index']);
+        Route::get('documents/{document}', [App\Http\Controllers\Student\DocumentController::class, 'show']);
+        Route::delete('documents/{document}', [App\Http\Controllers\Student\DocumentController::class, 'destroy']);
         Route::apiResource('requests', App\Http\Controllers\Student\RequestController::class);
         Route::post('requests/{request}/cancel', [App\Http\Controllers\Student\RequestController::class, 'cancel']);
         Route::get('grades', [App\Http\Controllers\Student\GradeController::class, 'index']);
@@ -103,13 +107,21 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('projects', [App\Http\Controllers\Supervisor\ProjectController::class, 'index']);
         Route::get('projects/{project}', [App\Http\Controllers\Supervisor\ProjectController::class, 'show']);
         Route::get('projects/{project}/progress', [App\Http\Controllers\Supervisor\ProjectController::class, 'getProgress']);
+        Route::get('projects/{project}/grades', [App\Http\Controllers\Supervisor\ProjectController::class, 'getGrades']);
+        // Document routes
+        Route::post('projects/{project}/documents/{document}/review', [App\Http\Controllers\Supervisor\DocumentController::class, 'review']);
+        Route::get('projects/{project}/documents/{document}/download', [App\Http\Controllers\Supervisor\DocumentController::class, 'download']);
         Route::get('supervision-requests', [App\Http\Controllers\Supervisor\SupervisionController::class, 'index']);
         Route::post('supervision-requests/{project}/approve', [App\Http\Controllers\Supervisor\SupervisionController::class, 'approve']);
         Route::post('supervision-requests/{project}/reject', [App\Http\Controllers\Supervisor\SupervisionController::class, 'reject']);
         // Custom evaluation routes (before apiResource to match frontend expectations)
         Route::get('evaluations', [App\Http\Controllers\Supervisor\EvaluationController::class, 'index']);
-        Route::post('evaluations', [App\Http\Controllers\Supervisor\EvaluationController::class, 'store']);
-        Route::apiResource('notes', App\Http\Controllers\Supervisor\NoteController::class);
+        Route::post('evaluations', [App\Http\Controllers\Supervisor\EvaluationController::class, 'store'])
+            ->middleware('window:supervisor_evaluation');
+        // Notes routes - custom routes to match frontend expectations (project-based)
+        Route::get('projects/{project}/notes', [App\Http\Controllers\Supervisor\NoteController::class, 'index']);
+        Route::post('projects/{project}/notes', [App\Http\Controllers\Supervisor\NoteController::class, 'store']);
+        Route::post('notes/{note}/reply', [App\Http\Controllers\Supervisor\NoteController::class, 'addReply']);
         // Milestones routes
         Route::get('projects/{project}/milestones', [App\Http\Controllers\Supervisor\MilestoneController::class, 'index']);
         Route::post('projects/{project}/milestones', [App\Http\Controllers\Supervisor\MilestoneController::class, 'store']);
@@ -143,6 +155,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('registrations/{registration}/reject', [App\Http\Controllers\ProjectsCommittee\RegistrationController::class, 'reject']);
         Route::post('committees/distribute', [App\Http\Controllers\ProjectsCommittee\CommitteeController::class, 'distribute']);
         Route::get('committees/members', [App\Http\Controllers\ProjectsCommittee\CommitteeController::class, 'members']);
+        Route::get('grades', [App\Http\Controllers\ProjectsCommittee\GradeController::class, 'index']);
+        Route::get('grades/{grade}', [App\Http\Controllers\ProjectsCommittee\GradeController::class, 'show']);
+        Route::post('grades/{grade}/approve', [App\Http\Controllers\ProjectsCommittee\GradeController::class, 'approve'])
+            ->middleware('window:grade_approval');
         Route::get('reports', [App\Http\Controllers\ProjectsCommittee\ReportController::class, 'index']);
     });
 
@@ -152,7 +168,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('projects/{id}', [App\Http\Controllers\DiscussionCommittee\ProjectController::class, 'show']);
         // Custom evaluation routes (before apiResource to match frontend expectations)
         Route::get('evaluations', [App\Http\Controllers\DiscussionCommittee\EvaluationController::class, 'index']);
-        Route::post('evaluations', [App\Http\Controllers\DiscussionCommittee\EvaluationController::class, 'store']);
+        Route::post('evaluations', [App\Http\Controllers\DiscussionCommittee\EvaluationController::class, 'store'])
+            ->middleware('window:discussion_evaluation');
     });
 
     // Admin routes

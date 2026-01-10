@@ -3,19 +3,24 @@ import { useTranslation } from 'react-i18next'
 import { MainLayout } from '@/layouts/MainLayout'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button } from '@/components/ui'
 import { LoadingSpinner, StatusBadge, BlockContent } from '@/components/common'
-import { 
-  AlertCircle, 
-  ArrowLeft, 
-  Briefcase, 
-  User, 
-  Users, 
-  Building2, 
+import {
+  AlertCircle,
+  ArrowLeft,
+  Briefcase,
+  User,
+  Users,
+  Building2,
   Calendar,
   Tag
 } from 'lucide-react'
 import { ROUTES } from '@/lib/constants'
 import { useProjectDetails } from './ProjectDetails.hook'
 import { formatDate } from '@/lib/utils/format'
+import { DocumentsSection } from './components/DocumentsSection'
+import { FinalGradesSection } from './components/FinalGradesSection'
+import type { Project } from '@/types/project.types'
+import type { Document } from '@/types/request.types'
+import type { Grade } from '@/types/evaluation.types'
 
 export function ProjectDetails() {
   const { id } = useParams<{ id: string }>()
@@ -93,20 +98,17 @@ export function ProjectDetails() {
     )
   }
 
+  const actions = (
+    <Button variant="outline" size="sm" onClick={() => navigate(ROUTES.SUPERVISOR.PROJECTS)}>
+      <ArrowLeft className="h-4 w-4 mr-2" />
+      {t('supervisor.backToProjects')}
+    </Button>
+  )
+
   return (
     <MainLayout>
-      <BlockContent title={t('project.projectDetails')}>
+      <BlockContent title={t('project.projectDetails')} actions={actions}>
         <div className="space-y-4">
-          {/* Back Button */}
-          <Button
-            onClick={() => navigate(ROUTES.SUPERVISOR.PROJECTS)}
-            variant="outline"
-            size="sm"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            {t('supervisor.backToProjects')}
-          </Button>
-
           {/* Project Overview */}
           <Card>
             <CardHeader>
@@ -227,6 +229,19 @@ export function ProjectDetails() {
               </CardContent>
             </Card>
           )}
+
+          {/* Documents Section */}
+          <DocumentsSection
+            documents={(project as Project & { documents?: Document[] }).documents}
+            isLoading={isLoading}
+            projectId={id}
+          />
+
+          {/* Final Grades Section */}
+          <FinalGradesSection
+            grades={(project as Project & { grades?: Grade[] }).grades}
+            isLoading={isLoading}
+          />
         </div>
       </BlockContent>
     </MainLayout>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Supervisor;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\GradeResource;
 use App\Http\Resources\ProjectResource;
 use App\Http\Traits\HasTableQuery;
 use App\Models\Project;
@@ -39,7 +40,7 @@ class ProjectController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => new ProjectResource($project->load(['supervisor', 'students', 'group', 'documents', 'grades'])),
+            'data' => new ProjectResource($project->load(['supervisor', 'students', 'group', 'documents', 'grades.student', 'grades.project'])),
         ]);
     }
 
@@ -62,6 +63,26 @@ class ProjectController extends Controller
             'data' => [
                 'progressPercentage' => $progressPercentage,
             ],
+        ]);
+    }
+
+    /**
+     * Get grades for a project
+     */
+    public function getGrades(Request $request, Project $project): JsonResponse
+    {
+        if ($project->supervisor_id !== $request->user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized - You are not the supervisor of this project',
+            ], 403);
+        }
+
+        $grades = $project->grades()->with(['student', 'project'])->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => GradeResource::collection($grades),
         ]);
     }
 

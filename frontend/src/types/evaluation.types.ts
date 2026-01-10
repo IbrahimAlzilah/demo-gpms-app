@@ -44,6 +44,7 @@ export type EvaluationPeriodType =
   | 'document_submission'
   | 'supervisor_evaluation'
   | 'committee_evaluation'
+  | 'discussion_evaluation'
   | 'final_discussion'
 
 export interface EvaluationPeriod extends BaseEntity {

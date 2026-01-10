@@ -51,8 +51,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
 
   const replyToNote = useMutation({
     mutationFn: async ({ noteId, content }: { noteId: string; content: string }) => {
-      // This would call an API endpoint to reply to a note
-      return projectService.replyToNote(noteId, content)
+      return projectService.replyToNote(projectId, noteId, content)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['supervisor-notes', projectId] })

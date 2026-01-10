@@ -1,0 +1,8 @@
+export { GradesPage } from './GradesPage'
+export { GradesList } from './list/GradesList.screen'
+export { useGradesList } from './list/GradesList.hook'
+export { useApproveGrade } from './hooks/useGradeOperations'
+export { committeeGradeService } from './api/grade.service'
+export { createGradeColumns } from './components/table'
+export type { Grade } from './types/grades.types'
+export type { GradeTableColumnsProps } from './components/table'

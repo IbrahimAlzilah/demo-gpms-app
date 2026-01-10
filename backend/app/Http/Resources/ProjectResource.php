@@ -38,9 +38,8 @@ class ProjectResource extends JsonResource
             'group' => $this->when($this->relationLoaded('group') && $this->group !== null, function () {
                 return new GroupResource($this->group);
             }),
-            'documents' => $this->whenLoaded('documents') ? array_map(function($doc) {
-                return $doc['file_path'] ?? $doc['fileUrl'] ?? '';
-            }, $this->documents->toArray()) : [],
+            'documents' => $this->whenLoaded('documents') ? DocumentResource::collection($this->documents) : [],
+            'grades' => $this->whenLoaded('grades') ? GradeResource::collection($this->grades) : [],
             'createdAt' => $this->created_at?->toISOString(),
             'updatedAt' => $this->updated_at?->toISOString(),
         ];

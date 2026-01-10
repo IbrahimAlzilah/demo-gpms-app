@@ -3,6 +3,8 @@ import { LoadingSpinner, useToast } from '@/components/common'
 import { MessageSquare, Award, Loader2 } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
 import { useProgressList } from './ProgressList.hook'
+import { MilestonesManager } from '../components/MilestonesManager'
+import { MeetingsManager } from '../components/MeetingsManager'
 
 interface ProgressListProps {
   projectId: string
@@ -37,6 +39,9 @@ export function ProgressList({ projectId }: ProgressListProps) {
 
   return (
     <div className="space-y-6">
+      <MilestonesManager projectId={projectId} />
+      <MeetingsManager projectId={projectId} project={data.project} />
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

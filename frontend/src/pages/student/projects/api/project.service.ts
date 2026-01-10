@@ -124,10 +124,11 @@ export const projectService = {
     }
   },
 
-  replyToNote: async (noteId: string, content: string): Promise<any> => {
-    const response = await apiClient.post<any>(`/student/projects/notes/${noteId}/reply`, {
-      content,
-    })
+  replyToNote: async (projectId: string, noteId: string, content: string): Promise<any> => {
+    const response = await apiClient.post<any>(
+      `/student/projects/${projectId}/notes/${noteId}/reply`,
+      { content }
+    )
     return response.data
   },
 

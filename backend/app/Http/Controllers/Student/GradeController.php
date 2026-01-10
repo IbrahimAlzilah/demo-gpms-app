@@ -12,9 +12,16 @@ class GradeController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $grades = Grade::where('student_id', $request->user()->id)
-            ->with(['project', 'student'])
-            ->get();
+        $query = Grade::where('student_id', $request->user()->id)
+            ->with(['project', 'student']);
+
+        // Filter by approval status if provided
+        if ($request->has('is_approved')) {
+            $isApproved = filter_var($request->is_approved, FILTER_VALIDATE_BOOLEAN);
+            $query->where('is_approved', $isApproved);
+        }
+
+        $grades = $query->get();
 
         return response()->json([
             'success' => true,

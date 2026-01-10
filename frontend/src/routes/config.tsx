@@ -35,6 +35,7 @@ import {
   LazySupervisorsPage,
   LazyCommitteeRequestsPage,
   LazyRegistrationsPage,
+  LazyCommitteeGradesPage,
   LazyDistributeCommitteesPage,
   LazyCommitteeReportsPage,
   // Admin
@@ -188,6 +189,10 @@ export const projectsCommitteeRoutes: RouteConfig[] = [
   {
     path: 'registrations',
     element: LazyRegistrationsPage,
+  },
+  {
+    path: 'grades',
+    element: LazyCommitteeGradesPage,
   },
   {
     path: 'distribute',

@@ -55,6 +55,7 @@ export const ROUTES = {
     ASSIGN_SUPERVISORS: "/supervisors",
     REQUESTS: "/requests",
     REGISTRATIONS: "/registrations",
+    GRADES: "/grades",
     DISTRIBUTE_COMMITTEES: "/distribute",
     REPORTS: "/reports",
   },
