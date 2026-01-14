@@ -32,7 +32,7 @@ export function Header({ className }: HeaderProps) {
   return (
     <header
       className={cn(
-        'sticky top-0 z-50 flex items-center border-b border-border bg-background',
+        'sticky top-0 z-50 flex items-center border-b border-border/40 bg-background/80 backdrop-blur-md shadow-sm transition-all',
         LAYOUT_CONSTANTS.headerHeight,
         className
       )}

@@ -30,26 +30,36 @@ class RequestService
             'additional_data' => $data['additional_data'] ?? null,
         ]);
 
-        // UC-ST-05: Notify supervisor when request is submitted
-        if ($request->project_id && $this->notificationService) {
-            $project = \App\Models\Project::find($request->project_id);
-            if ($project && $project->supervisor_id) {
-                $supervisor = User::find($project->supervisor_id);
-                if ($supervisor) {
-                    $requestTypeLabel = match($request->type) {
-                        'change_supervisor' => 'تغيير مشرف',
-                        'change_group' => 'تغيير مجموعة',
-                        'change_project' => 'تغيير مشروع',
-                        default => 'طلب آخر',
-                    };
-                    $this->notificationService->create(
-                        $supervisor,
-                        "طلب جديد من الطالب {$student->name}: {$requestTypeLabel} - {$project->title}",
-                        'request_submitted',
-                        'request',
-                        $request->id
-                    );
-                }
+        // UC-ST-05: Notify Projects Committee when request is submitted
+        if ($this->notificationService) {
+            $requestTypeLabel = match($request->type) {
+                'change_supervisor' => 'تغيير مشرف',
+                'change_group' => 'تغيير مجموعة',
+                'change_project' => 'تغيير مشروع',
+                default => 'طلب آخر',
+            };
+            
+            $projectTitle = $request->project_id 
+                ? (\App\Models\Project::find($request->project_id)?->title ?? '')
+                : '';
+            
+            $message = $projectTitle 
+                ? "طلب جديد من الطالب {$student->name}: {$requestTypeLabel} - {$projectTitle}"
+                : "طلب جديد من الطالب {$student->name}: {$requestTypeLabel}";
+            
+            // Notify all Projects Committee members
+            $committeeMembers = User::where('role', 'projects_committee')
+                ->where('status', 'active')
+                ->get();
+            
+            foreach ($committeeMembers as $member) {
+                $this->notificationService->create(
+                    $member,
+                    $message,
+                    'request_submitted',
+                    'request',
+                    $request->id
+                );
             }
         }
 
@@ -107,8 +117,8 @@ class RequestService
      */
     public function approveByCommittee(ProjectRequest $request, User $committeeMember, ?string $comments = null): ProjectRequest
     {
-        if ($request->status !== RequestStatus::SUPERVISOR_APPROVED) {
-            throw new \Exception('Request must be approved by supervisor first');
+        if ($request->status !== RequestStatus::PENDING) {
+            throw new \Exception('Request must be in pending status');
         }
 
         return DB::transaction(function () use ($request, $committeeMember, $comments) {
@@ -134,8 +144,8 @@ class RequestService
      */
     public function rejectByCommittee(ProjectRequest $request, User $committeeMember, ?string $comments = null): ProjectRequest
     {
-        if ($request->status !== RequestStatus::SUPERVISOR_APPROVED) {
-            throw new \Exception('Request must be approved by supervisor first');
+        if ($request->status !== RequestStatus::PENDING) {
+            throw new \Exception('Request must be in pending status');
         }
 
         $request->update([
@@ -212,7 +222,7 @@ class RequestService
             throw new \Exception('Unauthorized to cancel this request');
         }
 
-        if (!in_array($request->status, [RequestStatus::PENDING, RequestStatus::SUPERVISOR_APPROVED])) {
+        if ($request->status !== RequestStatus::PENDING) {
             throw new \Exception('Cannot cancel request in current status');
         }
 

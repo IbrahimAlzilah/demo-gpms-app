@@ -1,6 +1,9 @@
 // Public API Facade - Barrel exports only (no components for Fast Refresh)
 
 // Screens
+export { RequestDetailsView } from './view/RequestDetailsView.screen'
+
+// Screens
 export { RequestsList } from "./list/RequestsList.screen"
 
 // Components

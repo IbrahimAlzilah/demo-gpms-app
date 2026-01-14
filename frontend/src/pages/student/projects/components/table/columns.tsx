@@ -1,14 +1,16 @@
 import type { ColumnDef } from '@tanstack/react-table'
-import { Button } from '@/components/ui/button'
 import { DataTableColumnHeader } from '@/components/ui/data-table/data-table-column-header'
 import { StatusBadge } from '@/components/common/StatusBadge'
+import { ActionsDropdown } from '@/components/common/ActionsDropdown'
 import type { Project } from '@/types/project.types'
-import { Eye } from 'lucide-react'
+import { Eye, Clock, CheckCircle2, XCircle, AlertCircle } from 'lucide-react'
 import type { ProjectTableColumnsProps } from '../../types/Projects.types'
 
 export function createProjectColumns({
   onSelectProject,
+  onViewRejection,
   t,
+  registrationMap,
 }: ProjectTableColumnsProps): ColumnDef<Project>[] {
   return [
     {
@@ -59,6 +61,60 @@ export function createProjectColumns({
         return value.includes(row.getValue(id))
       },
     },
+    {
+      id: 'registrationStatus',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('project.registrationStatus')} />
+      ),
+      cell: ({ row }) => {
+        const project = row.original
+        const registration = registrationMap?.get(project.id)
+
+        if (!registration) {
+          return <span className="text-xs text-muted-foreground">-</span>
+        }
+
+        const statusConfig = {
+          pending: {
+            icon: Clock,
+            color: 'text-warning',
+            bg: 'bg-warning/10',
+            label: t('project.registrationPending'),
+          },
+          approved: {
+            icon: CheckCircle2,
+            color: 'text-success',
+            bg: 'bg-success/10',
+            label: t('project.registrationApproved'),
+          },
+          rejected: {
+            icon: XCircle,
+            color: 'text-destructive',
+            bg: 'bg-destructive/10',
+            label: t('project.registrationRejected'),
+          },
+          cancelled: {
+            icon: XCircle,
+            color: 'text-muted-foreground',
+            bg: 'bg-muted',
+            label: t('project.registrationCancelled'),
+          },
+        }
+
+        const config = statusConfig[registration.status as keyof typeof statusConfig]
+        if (!config) return null
+
+        const Icon = config.icon
+        return (
+          <div className={`flex items-center gap-2 px-2 py-1 rounded-md ${config.bg}`}>
+            <Icon className={`h-3 w-3 ${config.color}`} />
+            <span className={`text-xs font-medium ${config.color}`}>
+              {config.label}
+            </span>
+          </div>
+        )
+      },
+    },
     ...(onSelectProject
       ? [
         {
@@ -68,15 +124,31 @@ export function createProjectColumns({
           ),
           cell: ({ row }) => {
             const project = row.original
-            return (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onSelectProject(project)}
-              >
-                <Eye className="size-4" />
-              </Button>
-            )
+            const registration = registrationMap?.get(project.id)
+            const isRejected = registration?.status === 'rejected'
+
+            const actions = [
+              {
+                id: 'view',
+                label: t('common.view'),
+                icon: Eye,
+                onClick: () => onSelectProject(project),
+              },
+              ...(isRejected && onViewRejection
+                ? [
+                  {
+                    id: 'viewRejection',
+                    label: t('project.viewRejectionReason'),
+                    icon: AlertCircle,
+                    onClick: () => onViewRejection(project, registration),
+                    variant: 'destructive' as const,
+                    separator: true,
+                  },
+                ]
+                : []),
+            ]
+
+            return <ActionsDropdown row={project} actions={actions} />
           },
         } as ColumnDef<Project>,
       ]

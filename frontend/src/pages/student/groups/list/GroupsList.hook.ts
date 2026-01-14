@@ -13,6 +13,7 @@ export function useGroupsList() {
 
   const [state, setState] = useState<GroupsListState>({
     showInviteForm: false,
+    showInviteModal: false,
     showCreateGroupModal: false,
     showJoinGroupModal: false,
     error: '',

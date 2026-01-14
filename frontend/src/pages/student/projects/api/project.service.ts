@@ -47,8 +47,9 @@ export const projectService = {
     try {
       const response = await apiClient.get<Project>(`/student/projects/${id}`)
       return response.data
-    } catch {
-      return null
+    } catch (error) {
+      console.error('Error fetching project:', error)
+      throw error
     }
   },
 

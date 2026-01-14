@@ -14,6 +14,8 @@ export interface ProjectFilters {
  */
 export interface ProjectTableColumnsProps {
   t: (key: string) => string
+  onProjectSelect?: (project: Project) => void
+  navigate?: (path: string) => void
 }
 
 /**

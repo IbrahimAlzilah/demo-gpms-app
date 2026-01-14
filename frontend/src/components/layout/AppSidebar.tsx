@@ -86,22 +86,22 @@ export function AppSidebar() {
   }, [location.pathname, menuItems, expandedMenus])
 
   return (
-    <Sidebar side={isRtl ? 'right' : 'left'} collapsible="icon">
+    <Sidebar side={isRtl ? 'right' : 'left'} collapsible="icon" className="border-r border-sidebar-border/50 bg-sidebar/95 backdrop-blur supports-[backdrop-filter]:bg-sidebar/60">
       <SidebarHeader className={cn(
-        'flex flex-row items-center gap-3 border-b border-sidebar-border h-16 px-4')}>
+        'flex flex-row items-center gap-3 border-b border-sidebar-border/50 h-16 px-4 transition-all duration-300')}>
         <img
           src={logo}
           alt="GPMS Logo"
-          className="h-8 w-8 rounded-full shrink-0 object-contain"
+          className="h-9 w-9 rounded-xl shrink-0 object-contain shadow-sm"
         />
-        <h2 className="text-lg font-semibold tracking-tight text-sidebar-foreground truncate">
+        <h2 className="text-lg font-bold tracking-tight text-sidebar-primary truncate transition-opacity duration-300 group-data-[collapsible=icon]:opacity-0">
           {t('app.shortName')}
         </h2>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="px-2 py-2">
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
+            <SidebarMenu className="space-y-1.5">
               {menuItems.map((item) => {
                 const Icon = getIcon(item.icon)
                 const hasSubmenu = item.submenu && item.submenu.length > 0
@@ -118,32 +118,36 @@ export function AppSidebar() {
                           onClick={() => toggleMenu(item.labelKey)}
                           isActive={isActive}
                           tooltip={t(item.labelKey)}
-                          className="w-full text-md h-10"
+                          className={cn(
+                            "w-full text-sm font-medium h-10 transition-all duration-200",
+                            "hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
+                            "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[active=true]:shadow-sm"
+                          )}
                           data-state={isExpanded ? 'open' : 'closed'}
                         >
                           <Icon className="h-5 w-5 shrink-0" />
-                          <span>{t(item.labelKey)}</span>
+                          <span className="group-data-[collapsible=icon]:hidden">{t(item.labelKey)}</span>
                           {item.badge && item.badge > 0 && (
-                            <SidebarMenuBadge className="ms-auto">
+                            <SidebarMenuBadge className="ms-auto group-data-[collapsible=icon]:hidden">
                               {item.badge}
                             </SidebarMenuBadge>
                           )}
                           {isRtl ? (
                             isExpanded ? (
-                              <ChevronUp className="h-4 w-4 ms-auto" />
+                              <ChevronUp className="h-4 w-4 ms-auto group-data-[collapsible=icon]:hidden transition-transform" />
                             ) : (
-                              <ChevronDown className="h-4 w-4 ms-auto" />
+                              <ChevronDown className="h-4 w-4 ms-auto group-data-[collapsible=icon]:hidden transition-transform" />
                             )
                           ) : (
                             isExpanded ? (
-                              <ChevronUp className="h-4 w-4 ms-auto" />
+                              <ChevronUp className="h-4 w-4 ms-auto group-data-[collapsible=icon]:hidden transition-transform" />
                             ) : (
-                              <ChevronDown className="h-4 w-4 ms-auto" />
+                              <ChevronDown className="h-4 w-4 ms-auto group-data-[collapsible=icon]:hidden transition-transform" />
                             )
                           )}
                         </SidebarMenuButton>
                         {isExpanded && (
-                          <SidebarMenuSub>
+                          <SidebarMenuSub className="ms-2 border-s-sidebar-border/50">
                             {item.submenu?.map((subItem) => {
                               const SubIcon = subItem.icon ? getIcon(subItem.icon) : null
                               const isSubActive = isActiveRoute(subItem.path)
@@ -152,6 +156,10 @@ export function AppSidebar() {
                                   <SidebarMenuSubButton
                                     asChild
                                     isActive={isSubActive}
+                                    className={cn(
+                                      "h-9 text-sm transition-colors",
+                                      isSubActive ? "font-medium text-primary bg-sidebar-accent/30" : "text-muted-foreground hover:text-foreground"
+                                    )}
                                   >
                                     <NavLink to={subItem.path}>
                                       {SubIcon && <SubIcon className="h-4 w-4 shrink-0" />}
@@ -165,12 +173,20 @@ export function AppSidebar() {
                         )}
                       </>
                     ) : (
-                      <SidebarMenuButton asChild isActive={isActive} tooltip={t(item.labelKey)} className="w-full text-md h-10">
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive}
+                        tooltip={t(item.labelKey)}
+                        className={cn(
+                          "w-full text-sm font-medium h-10 transition-all duration-200",
+                          "hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
+                          "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[active=true]:shadow-sm"
+                        )}>
                         <NavLink to={item.path || '#'}>
                           <Icon className="h-5 w-5 shrink-0" />
-                          <span>{t(item.labelKey)}</span>
+                          <span className="group-data-[collapsible=icon]:hidden">{t(item.labelKey)}</span>
                           {item.badge && item.badge > 0 && (
-                            <SidebarMenuBadge className="ms-auto">
+                            <SidebarMenuBadge className="ms-auto group-data-[collapsible=icon]:hidden">
                               {item.badge}
                             </SidebarMenuBadge>
                           )}

@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import { Button } from "@/components/ui/button"
 import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
+import { ActionsDropdown } from "@/components/common/ActionsDropdown"
 import type { Project } from "@/types/project.types"
 import { CheckCircle2, XCircle, Briefcase, Tag, Users } from "lucide-react"
 import { formatRelativeTime } from "@/lib/utils/format"
@@ -78,36 +78,27 @@ export function createSupervisionRequestColumns({
       ),
       cell: ({ row }) => {
         const project = row.original
-        const approveLabel = t('common.accept')
-        const rejectLabel = t('common.reject')
 
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onApprove(project)}
-              disabled={!canAcceptMore}
-              className="h-8 text-success hover:text-success/80"
-              title={approveLabel}
-              aria-label={approveLabel}
-            >
-              <CheckCircle2 className="h-4 w-4" />
-              <span className="sr-only">{approveLabel}</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onReject(project)}
-              className="h-8 text-destructive hover:text-destructive"
-              title={rejectLabel}
-              aria-label={rejectLabel}
-            >
-              <XCircle className="h-4 w-4" />
-              <span className="sr-only">{rejectLabel}</span>
-            </Button>
-          </div>
-        )
+        const actions = [
+          {
+            id: 'approve',
+            label: t('common.accept'),
+            icon: CheckCircle2,
+            onClick: () => onApprove(project),
+            disabled: !canAcceptMore,
+            variant: 'success' as const,
+          },
+          {
+            id: 'reject',
+            label: t('common.reject'),
+            icon: XCircle,
+            onClick: () => onReject(project),
+            variant: 'destructive' as const,
+            separator: true,
+          },
+        ]
+
+        return <ActionsDropdown row={project} actions={actions} />
       },
     },
   ]

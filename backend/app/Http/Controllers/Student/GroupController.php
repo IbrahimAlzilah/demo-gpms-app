@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\GroupResource;
 use App\Models\ProjectGroup;
 use App\Models\GroupInvitation;
+use App\Models\GroupJoinRequest;
 use App\Services\GroupService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -85,6 +86,15 @@ class GroupController extends Controller
 
         try {
             $group = ProjectGroup::findOrFail($validated['group_id']);
+            
+            // Verify user is leader or member of the group
+            if ($group->leader_id !== $request->user()->id && !$group->hasMember($request->user()->id)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized to invite members. Only group leader or members can send invitations.',
+                ], 403);
+            }
+
             $invitee = \App\Models\User::findOrFail($validated['invitee_id']);
 
             $invitation = $this->groupService->inviteMember(
@@ -153,22 +163,6 @@ class GroupController extends Controller
             'success' => true,
             'data' => \App\Http\Resources\GroupInvitationResource::collection($invitations),
         ]);
-    }
-
-    public function joinGroup(Request $request, ProjectGroup $group): JsonResponse
-    {
-        try {
-            // Prevent joining by ID without invitation - require invitation
-            return response()->json([
-                'success' => false,
-                'message' => 'You cannot join a group directly. Please accept an invitation from a group member.',
-            ], 403);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 400);
-        }
     }
 
     /**
@@ -301,6 +295,114 @@ class GroupController extends Controller
                 'success' => true,
                 'data' => new GroupResource($updatedGroup->load(['project', 'leader', 'members'])),
                 'message' => 'Member removed successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Create a join request for a group by Group ID
+     * POST /student/groups/join-request
+     */
+    public function createJoinRequest(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'group_id' => 'required|exists:project_groups,id',
+            'message' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            $group = ProjectGroup::findOrFail($validated['group_id']);
+            $joinRequest = $this->groupService->createJoinRequest(
+                $group,
+                $request->user(),
+                $validated['message'] ?? null
+            );
+
+            return response()->json([
+                'success' => true,
+                'data' => new \App\Http\Resources\GroupJoinRequestResource($joinRequest->load(['group', 'student'])),
+                'message' => 'Join request submitted successfully',
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Get join requests for a group (leader only)
+     * GET /student/groups/{group}/join-requests
+     */
+    public function getJoinRequests(Request $request, ProjectGroup $group): JsonResponse
+    {
+        // Verify user is the group leader
+        if ($group->leader_id !== $request->user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only the group leader can view join requests',
+            ], 403);
+        }
+
+        $joinRequests = GroupJoinRequest::where('group_id', $group->id)
+            ->with(['student', 'reviewer'])
+            ->orderBy('requested_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => \App\Http\Resources\GroupJoinRequestResource::collection($joinRequests),
+        ]);
+    }
+
+    /**
+     * Approve a join request
+     * POST /student/groups/join-requests/{request}/approve
+     */
+    public function approveJoinRequest(Request $request, GroupJoinRequest $joinRequest): JsonResponse
+    {
+        try {
+            $group = $this->groupService->approveJoinRequest($joinRequest, $request->user());
+
+            return response()->json([
+                'success' => true,
+                'data' => new GroupResource($group->load(['project', 'leader', 'members'])),
+                'message' => 'Join request approved successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Reject a join request
+     * POST /student/groups/join-requests/{request}/reject
+     */
+    public function rejectJoinRequest(Request $request, GroupJoinRequest $joinRequest): JsonResponse
+    {
+        $validated = $request->validate([
+            'comments' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            $this->groupService->rejectJoinRequest(
+                $joinRequest,
+                $request->user(),
+                $validated['comments'] ?? null
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Join request rejected',
             ]);
         } catch (\Exception $e) {
             return response()->json([

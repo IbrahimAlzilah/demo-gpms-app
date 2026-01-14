@@ -76,12 +76,32 @@ class ProjectService
         }
 
         return DB::transaction(function () use ($project, $student) {
-            $registration = ProjectRegistration::create([
-                'project_id' => $project->id,
-                'student_id' => $student->id,
-                'status' => 'pending',
-                'submitted_at' => now(),
-            ]);
+            // Check if there's an existing cancelled registration for this project and student
+            // Note: Rejected registrations are handled in the controller and should not reach here
+            $existingCancelledRegistration = ProjectRegistration::where('project_id', $project->id)
+                ->where('student_id', $student->id)
+                ->where('status', 'cancelled')
+                ->first();
+
+            if ($existingCancelledRegistration) {
+                // Update the existing cancelled registration to pending
+                $existingCancelledRegistration->update([
+                    'status' => 'pending',
+                    'submitted_at' => now(),
+                    'reviewed_at' => null,
+                    'reviewed_by' => null,
+                    'review_comments' => null,
+                ]);
+                $registration = $existingCancelledRegistration->fresh();
+            } else {
+                // Create new registration
+                $registration = ProjectRegistration::create([
+                    'project_id' => $project->id,
+                    'student_id' => $student->id,
+                    'status' => 'pending',
+                    'submitted_at' => now(),
+                ]);
+            }
 
             // UC-ST-03: Notify projects committee about new registration
             $committeeMembers = User::where('role', 'projects_committee')

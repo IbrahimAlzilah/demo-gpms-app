@@ -1,9 +1,11 @@
-import type { Project } from '@/types/project.types'
+import type { Project, ProjectRegistration } from '@/types/project.types'
 
 export interface ProjectsListState {
   selectedProject: Project | null
   showRegistrationForm: boolean
   showDetails: boolean
+  rejectionRegistration: ProjectRegistration | null
+  showRejectionDetails: boolean
 }
 
 export interface ProjectsListData {

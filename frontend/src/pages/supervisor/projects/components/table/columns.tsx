@@ -1,15 +1,16 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import { Button } from "@/components/ui/button"
 import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
 import { StatusBadge } from "@/components/common/StatusBadge"
+import { ActionsDropdown } from "@/components/common/ActionsDropdown"
 import type { Project } from "@/types/project.types"
-import { Eye, Users } from "lucide-react"
-import { Link } from "react-router-dom"
+import { Eye, Users, TrendingUp, ClipboardCheck } from "lucide-react"
 import { ROUTES } from "@/lib/constants"
 import type { ProjectTableColumnsProps } from '../../types/Projects.types'
 
 export function createProjectColumns({
   t,
+  onProjectSelect,
+  navigate,
 }: ProjectTableColumnsProps): ColumnDef<Project>[] {
   return [
     {
@@ -62,13 +63,61 @@ export function createProjectColumns({
       cell: ({ row }) => {
         const project = row.original
 
-        return (
-          <Link to={`${ROUTES.SUPERVISOR.PROJECTS}/${project.id}`}>
-            <Button variant="outline" size="sm">
-              <Eye className="size-4" />
-            </Button>
-          </Link>
-        )
+        const handleNavigate = (path: string) => {
+          if (navigate) {
+            navigate(path)
+          } else {
+            window.location.href = path
+          }
+        }
+
+        const actions = [
+          {
+            id: 'view',
+            label: t('common.view'),
+            icon: Eye,
+            onClick: () => {
+              if (onProjectSelect) {
+                onProjectSelect(project)
+              } else {
+                handleNavigate(`${ROUTES.SUPERVISOR.PROJECTS}/${project.id}`)
+              }
+            },
+            variant: 'default' as const,
+          },
+          {
+            id: 'progress',
+            label: t('nav.progress'),
+            icon: TrendingUp,
+            onClick: () => {
+              if (onProjectSelect) {
+                onProjectSelect(project)
+              } else {
+                handleNavigate(`${ROUTES.SUPERVISOR.PROGRESS}/${project.id}`)
+              }
+            },
+            variant: 'primary' as const,
+          },
+          {
+            id: 'evaluation',
+            label: t('nav.evaluation'),
+            icon: ClipboardCheck,
+            onClick: () => {
+              if (project.students && project.students.length > 0) {
+                if (onProjectSelect) {
+                  onProjectSelect(project)
+                } else {
+                  handleNavigate(`${ROUTES.SUPERVISOR.EVALUATION}/${project.id}/${project.students[0].id}`)
+                }
+              }
+            },
+            hidden: (row: Project) => !row.students || row.students.length === 0,
+            variant: 'primary' as const,
+            separator: true,
+          },
+        ]
+
+        return <ActionsDropdown row={project} actions={actions} />
       },
     },
   ]

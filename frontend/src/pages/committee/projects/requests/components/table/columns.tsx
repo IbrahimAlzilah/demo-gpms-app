@@ -1,19 +1,20 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import { Button } from "@/components/ui/button"
 import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
 import { StatusBadge } from "@/components/common/StatusBadge"
+import { ActionsDropdown, type TableAction } from "@/components/common/ActionsDropdown"
 import type { Request } from "@/types/request.types"
-import { CheckCircle2, XCircle, User, AlertTriangle, CheckCircle } from "lucide-react"
+import { Eye, CheckCircle2, XCircle, User } from "lucide-react"
 import { formatRelativeTime } from "@/lib/utils/format"
-import { requiresSupervisorApproval } from "@/features/common/utils/requestRouting"
 
 export interface RequestTableColumnsProps {
+  onView: (request: Request) => void
   onApprove: (request: Request) => void
   onReject: (request: Request) => void
   t: (key: string) => string
 }
 
 export function createRequestColumns({
+  onView,
   onApprove,
   onReject,
   t,
@@ -75,47 +76,6 @@ export function createRequestColumns({
       },
     },
     {
-      id: "supervisorDecision",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('committee.requests.supervisorDecision')} />
-      ),
-      cell: ({ row }) => {
-        const request = row.original
-        const needsSupervisor = requiresSupervisorApproval(request.type)
-        
-        if (!needsSupervisor) {
-          return <span className="text-xs text-muted-foreground">-</span>
-        }
-        
-        if (request.supervisorApproval) {
-          return (
-            <div className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${
-              request.supervisorApproval.approved
-                ? 'bg-success/10 text-success'
-                : 'bg-destructive/10 text-destructive'
-            }`}>
-              {request.supervisorApproval.approved ? (
-                <CheckCircle className="h-3 w-3" />
-              ) : (
-                <XCircle className="h-3 w-3" />
-              )}
-              {request.supervisorApproval.approved
-                ? t('common.approved')
-                : t('common.rejected')
-              }
-            </div>
-          )
-        }
-        
-        return (
-          <div className="flex items-center gap-1 px-2 py-1 rounded bg-warning/10 text-warning text-xs">
-            <AlertTriangle className="h-3 w-3" />
-            {t('committee.requests.needsSupervisorApproval')}
-          </div>
-        )
-      },
-    },
-    {
       accessorKey: "createdAt",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('request.submittedAt')} />
@@ -133,42 +93,36 @@ export function createRequestColumns({
       ),
       cell: ({ row }) => {
         const request = row.original
-        const needsSupervisor = requiresSupervisorApproval(request.type)
-        const isFromSupervisor = request.status === 'supervisor_approved'
-        const canProcess = request.status === 'pending' || isFromSupervisor
-        const approveLabel = t('common.accept')
-        const rejectLabel = t('common.reject')
+        const canProcess = request.status === 'pending'
 
-        if (!canProcess) {
-          return <span className="text-xs text-muted-foreground">-</span>
-        }
+        const actions: TableAction<Request>[] = [
+          {
+            id: 'view',
+            label: t('common.view'),
+            icon: Eye,
+            onClick: () => onView(request),
+            variant: 'default',
+          },
+          {
+            id: 'approve',
+            label: t('common.accept'),
+            icon: CheckCircle2,
+            onClick: () => onApprove(request),
+            variant: 'success',
+            disabled: !canProcess,
+            separator: true,
+          },
+          {
+            id: 'reject',
+            label: t('common.reject'),
+            icon: XCircle,
+            onClick: () => onReject(request),
+            variant: 'destructive',
+            disabled: !canProcess,
+          },
+        ]
 
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onApprove(request)}
-              className="h-8 text-success hover:text-success/80"
-              title={approveLabel}
-              aria-label={approveLabel}
-            >
-              <CheckCircle2 className="h-4 w-4" />
-              <span className="sr-only">{approveLabel}</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onReject(request)}
-              className="h-8 text-destructive hover:text-destructive"
-              title={rejectLabel}
-              aria-label={rejectLabel}
-            >
-              <XCircle className="h-4 w-4" />
-              <span className="sr-only">{rejectLabel}</span>
-            </Button>
-          </div>
-        )
+        return <ActionsDropdown row={request} actions={actions} />
       },
     },
   ]

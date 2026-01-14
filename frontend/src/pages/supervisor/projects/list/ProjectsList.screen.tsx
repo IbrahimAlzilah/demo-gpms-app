@@ -1,11 +1,18 @@
 import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { DataTable } from '@/components/ui'
 import { BlockContent } from '@/components/common'
 import { AlertCircle } from 'lucide-react'
 import { createProjectColumns } from '../components/table'
 import { useProjectsList } from './ProjectsList.hook'
+import type { Project } from '@/types/project.types'
 
-export function ProjectsList() {
+interface ProjectsListProps {
+  onProjectSelect?: (project: Project) => void
+}
+
+export function ProjectsList({ onProjectSelect }: ProjectsListProps = {}) {
+  const navigate = useNavigate()
   const {
     data,
     pageCount,
@@ -21,8 +28,8 @@ export function ProjectsList() {
   } = useProjectsList()
 
   const columns = useMemo(
-    () => createProjectColumns({ t }),
-    [t]
+    () => createProjectColumns({ t, onProjectSelect, navigate }),
+    [t, onProjectSelect, navigate]
   )
 
   return (

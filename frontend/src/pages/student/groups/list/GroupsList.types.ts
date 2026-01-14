@@ -2,6 +2,7 @@ import type { ProjectGroup, GroupInvitation } from '@/types/project.types'
 
 export interface GroupsListState {
   showInviteForm: boolean
+  showInviteModal: boolean
   showCreateGroupModal: boolean
   showJoinGroupModal: boolean
   error: string

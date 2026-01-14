@@ -6,6 +6,7 @@ import { Calendar, ArrowRight } from 'lucide-react'
 import { ProjectBrowser } from '../components/ProjectBrowser'
 import { ProjectsView } from '../view/ProjectsView.screen'
 import { ProjectsRegister } from '../register/ProjectsRegister.screen'
+import { RejectionDetailsModal } from '../components/RejectionDetailsModal'
 import { useProjectsList } from './ProjectsList.hook'
 
 export function ProjectsList() {
@@ -16,6 +17,7 @@ export function ProjectsList() {
     setState,
     isPeriodActive,
     periodLoading,
+    registrations,
     pageCount,
     sorting,
     setSorting,
@@ -28,6 +30,7 @@ export function ProjectsList() {
   } = useProjectsList()
 
   const handleSelectProject = (project: any) => {
+    // Allow viewing project details even if rejected
     setState((prev) => ({
       ...prev,
       selectedProject: project,
@@ -35,8 +38,22 @@ export function ProjectsList() {
     }))
   }
 
+  const handleViewRejection = (project: any, registration: any) => {
+    setState((prev) => ({
+      ...prev,
+      rejectionRegistration: registration,
+      showRejectionDetails: true,
+    }))
+  }
+
   const handleRegisterClick = () => {
     if (state.selectedProject) {
+      // Check if project was rejected - prevent registration
+      const registration = registrations?.find((r) => r.projectId === state.selectedProject.id)
+      if (registration?.status === 'rejected') {
+        // Don't allow registration for rejected project
+        return
+      }
       setState((prev) => ({
         ...prev,
         showDetails: false,
@@ -114,7 +131,10 @@ export function ProjectsList() {
           </Card>
         ) : null}
 
-        <ProjectBrowser onSelectProject={handleSelectProject} />
+        <ProjectBrowser
+          onSelectProject={handleSelectProject}
+          onViewRejection={handleViewRejection}
+        />
 
         {data.error && (
           <BlockContent variant="container" className="border-destructive mt-4">
@@ -140,6 +160,19 @@ export function ProjectsList() {
           onRegister={handleRegisterClick}
         />
       )}
+
+      {/* Rejection Details Modal */}
+      <RejectionDetailsModal
+        registration={state.rejectionRegistration}
+        open={state.showRejectionDetails}
+        onClose={() => {
+          setState((prev) => ({
+            ...prev,
+            rejectionRegistration: null,
+            showRejectionDetails: false,
+          }))
+        }}
+      />
     </>
   )
 }

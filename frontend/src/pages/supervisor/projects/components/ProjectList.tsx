@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/pages/auth/login'
 import { createProjectColumns } from './table/columns'
@@ -10,6 +11,7 @@ import { AlertCircle } from 'lucide-react'
 
 export function ProjectList() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { user } = useAuthStore()
 
   const {
@@ -36,8 +38,9 @@ export function ProjectList() {
     () =>
       createProjectColumns({
         t,
+        navigate,
       }),
-    [t]
+    [t, navigate]
   )
 
   if (error) {

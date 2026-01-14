@@ -14,7 +14,9 @@ export interface ProjectFilters {
  */
 export interface ProjectTableColumnsProps {
   onSelectProject?: (project: Project) => void
+  onViewRejection?: (project: Project, registration: any) => void
   t: (key: string) => string
+  registrationMap?: Map<string, any>
 }
 
 /**

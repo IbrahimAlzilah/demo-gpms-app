@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\ProjectGroup;
 use App\Models\GroupInvitation;
+use App\Models\GroupJoinRequest;
 use App\Models\User;
 use App\Models\Project;
 use App\Models\ProjectRegistration;
@@ -43,12 +44,24 @@ class GroupService
         }
 
         return DB::transaction(function () use ($project, $leader, $memberIds) {
-            // Verify all members have approved registration
+            // Ensure leader is added to project students if not already there
+            if (!$project->students()->where('users.id', $leader->id)->exists()) {
+                $project->students()->attach($leader->id);
+                $project->increment('current_students');
+            }
+
+            // Verify and add all initial members
             if (!empty($memberIds)) {
                 foreach ($memberIds as $memberId) {
                     $member = User::findOrFail($memberId);
                     if (!$this->hasApprovedRegistration($member, $project)) {
                         throw new \Exception("Student {$member->name} does not have an approved registration for this project");
+                    }
+                    
+                    // Ensure member is added to project students
+                    if (!$project->students()->where('users.id', $member->id)->exists()) {
+                        $project->students()->attach($member->id);
+                        $project->increment('current_students');
                     }
                 }
             }
@@ -59,15 +72,15 @@ class GroupService
                 'max_members' => $project->max_students,
             ]);
 
-            // Add leader as member
+            // Add leader as group member
             $group->members()->attach($leader->id);
 
-            // Add other members
+            // Add other members to group
             if (!empty($memberIds)) {
                 $group->members()->attach($memberIds);
             }
 
-            return $group->fresh();
+            return $group->fresh()->load(['project', 'leader', 'members']);
         });
     }
 
@@ -84,15 +97,46 @@ class GroupService
             throw new \Exception('Member is already in the group');
         }
 
-        // Verify member has approved registration for the project
         $project = $group->project;
-        if (!$this->hasApprovedRegistration($member, $project)) {
-            throw new \Exception('Student must have an approved registration for this project to join the group');
+
+        // Check if student is already in another project
+        $hasOtherProject = Project::whereHas('students', function ($query) use ($member) {
+            $query->where('users.id', $member->id);
+        })->where('id', '!=', $project->id)->exists();
+
+        if ($hasOtherProject) {
+            throw new \Exception('Student is already registered in another project');
         }
 
-        $group->members()->attach($member->id);
+        return DB::transaction(function () use ($group, $member, $project) {
+            // Add to group members
+            $group->members()->attach($member->id);
 
-        return $group->fresh();
+            // Add to project if not already there
+            if (!$project->students()->where('users.id', $member->id)->exists()) {
+                $project->students()->attach($member->id);
+                
+                // Update project current_students count
+                $project->increment('current_students');
+                
+                // Create or update project registration record as approved
+                ProjectRegistration::updateOrCreate(
+                    [
+                        'project_id' => $project->id,
+                        'student_id' => $member->id,
+                    ],
+                    [
+                        'status' => 'approved',
+                        'submitted_at' => now(),
+                        'reviewed_at' => now(),
+                        'reviewed_by' => $group->leader_id,
+                        'review_comments' => 'Auto-approved by group leader',
+                    ]
+                );
+            }
+
+            return $group->fresh();
+        });
     }
 
     /**
@@ -112,9 +156,30 @@ class GroupService
             throw new \Exception('User is not a member of this group');
         }
 
-        $group->members()->detach($member->id);
+        return DB::transaction(function () use ($group, $member) {
+            $project = $group->project;
 
-        return $group->fresh();
+            // Remove from group members
+            $group->members()->detach($member->id);
+
+            // Remove from project students
+            if ($project->students()->where('users.id', $member->id)->exists()) {
+                $project->students()->detach($member->id);
+                
+                // Update project current_students count
+                $project->decrement('current_students');
+                
+                // Update project registration to cancelled
+                ProjectRegistration::where('project_id', $project->id)
+                    ->where('student_id', $member->id)
+                    ->update([
+                        'status' => 'cancelled',
+                        'review_comments' => 'Removed from group by leader',
+                    ]);
+            }
+
+            return $group->fresh();
+        });
     }
 
     /**
@@ -136,12 +201,26 @@ class GroupService
      */
     public function inviteMember(ProjectGroup $group, User $inviter, User $invitee, ?string $message = null): GroupInvitation
     {
+        // Verify inviter is leader or member of the group
+        if ($group->leader_id !== $inviter->id && !$group->hasMember($inviter->id)) {
+            throw new \Exception('Only group leader or members can invite new members');
+        }
+
         if ($group->isFull()) {
             throw new \Exception('Group is full');
         }
 
         if ($group->hasMember($invitee->id)) {
             throw new \Exception('User is already a member of this group');
+        }
+
+        // Check if invitee is already in another project
+        $hasOtherProject = Project::whereHas('students', function ($query) use ($invitee) {
+            $query->where('users.id', $invitee->id);
+        })->where('id', '!=', $group->project_id)->exists();
+
+        if ($hasOtherProject) {
+            throw new \Exception('Student is already registered in another project');
         }
 
         // Check for existing pending invitation
@@ -180,16 +259,46 @@ class GroupService
             $group = $invitation->group;
             $project = $group->project;
 
-            // Verify invitee has approved registration
-            if (!$this->hasApprovedRegistration($invitee, $project)) {
-                throw new \Exception('You must have an approved registration for this project to accept the invitation');
-            }
-
             if ($group->isFull()) {
                 throw new \Exception('Group is now full');
             }
 
+            // Check if student is already in another project (prevent multiple project registrations)
+            $hasOtherProject = Project::whereHas('students', function ($query) use ($invitee) {
+                $query->where('users.id', $invitee->id);
+            })->where('id', '!=', $project->id)->exists();
+
+            if ($hasOtherProject) {
+                throw new \Exception('You are already registered in another project');
+            }
+
+            // Add student to group members
             $group->members()->attach($invitation->invitee_id);
+
+            // Add student to project (auto-approve registration when accepting invitation)
+            if (!$project->students()->where('users.id', $invitee->id)->exists()) {
+                $project->students()->attach($invitee->id);
+                
+                // Update project current_students count
+                $project->increment('current_students');
+                
+                // Create or update project registration record as approved
+                ProjectRegistration::updateOrCreate(
+                    [
+                        'project_id' => $project->id,
+                        'student_id' => $invitee->id,
+                    ],
+                    [
+                        'status' => 'approved',
+                        'submitted_at' => now(),
+                        'reviewed_at' => now(),
+                        'reviewed_by' => $invitation->inviter_id,
+                        'review_comments' => 'Auto-approved via group invitation',
+                    ]
+                );
+            }
+
+            // Update invitation status
             $invitation->update(['status' => 'accepted']);
 
             return $group->fresh();
@@ -210,6 +319,136 @@ class GroupService
         }
 
         $invitation->update(['status' => 'rejected']);
+    }
+
+    /**
+     * Create a join request for a group
+     */
+    public function createJoinRequest(ProjectGroup $group, User $student, ?string $message = null): GroupJoinRequest
+    {
+        if ($group->isFull()) {
+            throw new \Exception('Group is full');
+        }
+
+        if ($group->hasMember($student->id)) {
+            throw new \Exception('You are already a member of this group');
+        }
+
+        // Check if student is already in another project
+        $hasOtherProject = Project::whereHas('students', function ($query) use ($student) {
+            $query->where('users.id', $student->id);
+        })->where('id', '!=', $group->project_id)->exists();
+
+        if ($hasOtherProject) {
+            throw new \Exception('You are already registered in another project');
+        }
+
+        // Check for existing pending request
+        $existingRequest = GroupJoinRequest::where('group_id', $group->id)
+            ->where('student_id', $student->id)
+            ->where('status', 'pending')
+            ->first();
+
+        if ($existingRequest) {
+            throw new \Exception('You already have a pending join request for this group');
+        }
+
+        return GroupJoinRequest::create([
+            'group_id' => $group->id,
+            'student_id' => $student->id,
+            'status' => 'pending',
+            'message' => $message,
+            'requested_at' => now(),
+        ]);
+    }
+
+    /**
+     * Approve a join request
+     */
+    public function approveJoinRequest(GroupJoinRequest $request, User $reviewer): ProjectGroup
+    {
+        // Verify reviewer is the group leader
+        if ($request->group->leader_id !== $reviewer->id) {
+            throw new \Exception('Only the group leader can approve join requests');
+        }
+
+        if (!$request->isPending()) {
+            throw new \Exception('Join request is no longer valid');
+        }
+
+        return DB::transaction(function () use ($request, $reviewer) {
+            $group = $request->group;
+            $project = $group->project;
+            $student = $request->student;
+
+            if ($group->isFull()) {
+                throw new \Exception('Group is now full');
+            }
+
+            // Check if student is already in another project
+            $hasOtherProject = Project::whereHas('students', function ($query) use ($student) {
+                $query->where('users.id', $student->id);
+            })->where('id', '!=', $project->id)->exists();
+
+            if ($hasOtherProject) {
+                throw new \Exception('Student is already registered in another project');
+            }
+
+            // Add student to group members
+            $group->members()->attach($student->id);
+
+            // Add student to project if not already there
+            if (!$project->students()->where('users.id', $student->id)->exists()) {
+                $project->students()->attach($student->id);
+                $project->increment('current_students');
+
+                // Create or update project registration record as approved
+                ProjectRegistration::updateOrCreate(
+                    [
+                        'project_id' => $project->id,
+                        'student_id' => $student->id,
+                    ],
+                    [
+                        'status' => 'approved',
+                        'submitted_at' => now(),
+                        'reviewed_at' => now(),
+                        'reviewed_by' => $reviewer->id,
+                        'review_comments' => 'Auto-approved by group leader via join request',
+                    ]
+                );
+            }
+
+            // Update request status
+            $request->update([
+                'status' => 'approved',
+                'reviewed_at' => now(),
+                'reviewed_by' => $reviewer->id,
+            ]);
+
+            return $group->fresh();
+        });
+    }
+
+    /**
+     * Reject a join request
+     */
+    public function rejectJoinRequest(GroupJoinRequest $request, User $reviewer, ?string $comments = null): void
+    {
+        // Verify reviewer is the group leader
+        if ($request->group->leader_id !== $reviewer->id) {
+            throw new \Exception('Only the group leader can reject join requests');
+        }
+
+        if (!$request->isPending()) {
+            throw new \Exception('Join request is no longer valid');
+        }
+
+        $request->update([
+            'status' => 'rejected',
+            'reviewed_at' => now(),
+            'reviewed_by' => $reviewer->id,
+            'review_comments' => $comments,
+        ]);
     }
 }
 

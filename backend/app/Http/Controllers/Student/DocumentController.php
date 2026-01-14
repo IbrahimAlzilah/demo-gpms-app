@@ -20,10 +20,22 @@ class DocumentController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = Document::where('submitted_by', $request->user()->id)
+        // Get all documents for projects where the student is registered
+        $studentProjects = \App\Models\Project::whereHas('students', function ($q) use ($request) {
+            $q->where('users.id', $request->user()->id);
+        })->pluck('id');
+
+        $query = Document::whereIn('project_id', $studentProjects)
             ->with(['project', 'submitter', 'reviewer']);
 
         if ($request->has('project_id')) {
+            // Verify student is registered in the requested project
+            if (!$studentProjects->contains($request->project_id)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized - You are not registered in this project',
+                ], 403);
+            }
             $query->where('project_id', $request->project_id);
         }
 

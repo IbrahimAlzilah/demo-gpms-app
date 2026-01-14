@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Button, Label, Input } from '@/components/ui'
+import { Button, Label, Input, Textarea } from '@/components/ui'
 import { AlertCircle, Users, Loader2 } from 'lucide-react'
+import { useCreateJoinRequest } from '../hooks/useGroupOperations'
 import { groupJoinSchema, type GroupJoinSchema } from '../schema'
-import { useJoinGroup } from '../hooks/useGroupOperations'
 
 interface GroupJoinFormProps {
   onSuccess?: () => void
@@ -13,7 +13,7 @@ interface GroupJoinFormProps {
 
 export function GroupJoinForm({ onSuccess, onError }: GroupJoinFormProps) {
   const { t } = useTranslation()
-  const joinGroup = useJoinGroup()
+  const createJoinRequest = useCreateJoinRequest()
 
   const {
     register,
@@ -23,54 +23,77 @@ export function GroupJoinForm({ onSuccess, onError }: GroupJoinFormProps) {
   } = useForm<GroupJoinSchema>({
     resolver: zodResolver(groupJoinSchema(t)),
     defaultValues: {
-      joinGroupId: '',
+      groupId: '',
+      message: '',
     },
   })
 
   const onSubmit = async (data: GroupJoinSchema) => {
     try {
-      await joinGroup.mutateAsync(data.joinGroupId)
+      await createJoinRequest.mutateAsync({
+        groupId: data.groupId,
+        message: data.message,
+      })
       reset()
       onSuccess?.()
     } catch (err) {
-      onError?.(err instanceof Error ? err.message : t('groups.joinError'))
+      onError?.(err instanceof Error ? err.message : t('groups.joinRequestError'))
     }
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div>
-        <Label htmlFor="joinGroupId">
+        <Label htmlFor="groupId">
           {t('groups.groupId')} <span className="text-red-500">*</span>
         </Label>
         <Input
-          id="joinGroupId"
-          {...register('joinGroupId')}
+          id="groupId"
+          {...register('groupId')}
           placeholder={t('groups.groupIdPlaceholder')}
-          className={errors.joinGroupId ? 'border-red-500' : ''}
-          aria-invalid={!!errors.joinGroupId}
+          className={errors.groupId ? 'border-red-500' : ''}
+          aria-invalid={!!errors.groupId}
         />
-        {errors?.joinGroupId && (
+        {errors?.groupId && (
           <p className="text-sm text-red-600 flex items-center gap-1 mt-1">
             <AlertCircle className="h-3 w-3" />
-            {errors.joinGroupId.message}
+            {errors.groupId.message}
+          </p>
+        )}
+        <p className="text-xs text-muted-foreground mt-1">
+          {t('groups.groupIdDescription')}
+        </p>
+      </div>
+      <div>
+        <Label htmlFor="message">{t('groups.message')} (Optional)</Label>
+        <Textarea
+          id="message"
+          {...register('message')}
+          placeholder={t('groups.messagePlaceholder')}
+          rows={3}
+          className={errors.message ? 'border-red-500' : ''}
+        />
+        {errors?.message && (
+          <p className="text-sm text-red-600 flex items-center gap-1 mt-1">
+            <AlertCircle className="h-3 w-3" />
+            {errors.message.message}
           </p>
         )}
       </div>
       <Button
         type="submit"
-        disabled={joinGroup.isPending}
+        disabled={createJoinRequest.isPending}
         className="w-full bg-primary text-white hover:bg-primary/90"
       >
-        {joinGroup.isPending ? (
+        {createJoinRequest.isPending ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            {t('groups.joining')}
+            {t('groups.submittingRequest')}
           </>
         ) : (
           <>
             <Users className="mr-2 h-4 w-4" />
-            {t('groups.join')}
+            {t('groups.submitJoinRequest')}
           </>
         )}
       </Button>

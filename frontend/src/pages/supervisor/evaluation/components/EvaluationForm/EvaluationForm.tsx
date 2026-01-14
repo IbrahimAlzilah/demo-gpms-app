@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useSubmitGrade } from '../../hooks/useEvaluationOperations'
+import { useEvaluationList } from '../../list/EvaluationList.hook'
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label, Textarea } from '@/components/ui'
 import { LoadingSpinner, useToast } from '@/components/common'
 import { AlertCircle, Loader2, Award } from 'lucide-react'
@@ -17,7 +18,7 @@ export function EvaluationForm({ projectId, studentId, onSuccess }: EvaluationFo
   const { t } = useTranslation()
   const { showToast } = useToast()
   const submitGrade = useSubmitGrade()
-  const { isPeriodActive, isLoading: periodLoading } = useEvaluationList().data
+  const { data: { isPeriodActive, isLoading: periodLoading } } = useEvaluationList()
 
   const {
     register,

@@ -98,6 +98,34 @@ class ProposalController extends Controller
         ]);
     }
 
+    public function destroy(Request $request, Proposal $proposal): JsonResponse
+    {
+        $this->authorize('delete', $proposal);
+
+        // Only allow deletion if proposal is in draft or pending_review status
+        // Once approved or rejected, it should not be deleted
+        if (!in_array($proposal->status, ['draft', 'pending_review', 'requires_modification'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot delete proposal that has been reviewed',
+            ], 400);
+        }
+
+        try {
+            $this->proposalService->delete($proposal);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Proposal deleted successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
     protected function applySearch($query, string $search)
     {
         return $query->where(function ($q) use ($search) {

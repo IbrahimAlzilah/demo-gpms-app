@@ -5,13 +5,17 @@ import { DataTable } from '@/components/ui/data-table'
 import { createProjectColumns } from '../table'
 import { useDataTable } from '@/hooks/useDataTable'
 import { projectService } from '../../api/project.service'
+import { useStudentRegistrations } from '../../hooks/useProjects'
 
 interface ProjectBrowserProps {
   onSelectProject?: (project: Project) => void
+  onViewRejection?: (project: Project, registration: any) => void
 }
 
-export function ProjectBrowser({ onSelectProject }: ProjectBrowserProps) {
+export function ProjectBrowser({ onSelectProject, onViewRejection }: ProjectBrowserProps) {
   const { t } = useTranslation()
+  const { data: registrations } = useStudentRegistrations()
+
   const {
     data: projects,
     pageCount,
@@ -36,13 +40,25 @@ export function ProjectBrowser({ onSelectProject }: ProjectBrowserProps) {
     enableServerSide: true,
   })
 
+  // Create a map of projectId -> registration for quick lookup
+  const registrationMap = useMemo(() => {
+    if (!registrations) return new Map()
+    const map = new Map()
+    registrations.forEach((reg) => {
+      map.set(reg.projectId, reg)
+    })
+    return map
+  }, [registrations])
+
   const columns = useMemo(
     () =>
       createProjectColumns({
         onSelectProject,
+        onViewRejection,
         t,
+        registrationMap,
       }),
-    [onSelectProject, t]
+    [onSelectProject, onViewRejection, t, registrationMap]
   )
 
   return (

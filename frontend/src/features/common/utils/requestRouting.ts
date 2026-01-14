@@ -3,16 +3,12 @@ import type { RequestType } from "../../../types/request.types";
 /**
  * Determines if a request type requires supervisor approval first
  * @param requestType The type of request
- * @returns true if supervisor approval is required first, false if it goes directly to committee
+ * @returns Always false - all requests now go directly to Projects Committee
+ * @deprecated All requests now go directly to Projects Committee. This function is kept for backward compatibility.
  */
 export function requiresSupervisorApproval(requestType: RequestType): boolean {
-  // Requests that need supervisor approval first
-  const supervisorFirstTypes: RequestType[] = [
-    "change_supervisor",
-    "change_group",
-  ];
-
-  return supervisorFirstTypes.includes(requestType);
+  // All requests now go directly to Projects Committee
+  return false;
 }
 
 /**
@@ -25,13 +21,8 @@ export function getNextApprovalStep(
   requestType: RequestType,
   currentStatus: string
 ): "supervisor" | "committee" | "complete" | null {
-  const needsSupervisor = requiresSupervisorApproval(requestType);
-
+  // All requests go directly to committee
   if (currentStatus === "pending") {
-    return needsSupervisor ? "supervisor" : "committee";
-  }
-
-  if (currentStatus === "supervisor_approved" && needsSupervisor) {
     return "committee";
   }
 

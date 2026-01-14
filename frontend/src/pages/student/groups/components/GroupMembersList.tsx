@@ -37,22 +37,6 @@ export function GroupMembersList({ group, onError, onSuccess }: GroupMembersList
     }
   }
 
-  const handleLeave = (memberId: string) => {
-    if (window.confirm(t('groups.confirmLeave'))) {
-      removeMember.mutate(
-        {
-          groupId: group.id,
-          memberId,
-        },
-        {
-          onError: (err) => {
-            onError?.(err instanceof Error ? err.message : t('groups.leaveError'))
-          },
-        }
-      )
-    }
-  }
-
   return (
     <div>
       <h4 className="font-semibold mb-3 flex items-center gap-2">
@@ -88,19 +72,14 @@ export function GroupMembersList({ group, onError, onSuccess }: GroupMembersList
                 {t('groups.remove')}
               </Button>
             )}
-            {member.id !== group.leaderId && !isLeader && member.id === user?.id && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleLeave(member.id)}
-              >
-                <UserMinus className="mr-1 h-4 w-4" />
-                {t('groups.leave')}
-              </Button>
-            )}
           </div>
         ))}
       </div>
+      {!isLeader && (
+        <div className="mt-3 p-3 bg-info/10 border border-info/20 rounded-lg text-sm text-muted-foreground">
+          {t('groups.onlyLeaderCanRemoveMembers')}
+        </div>
+      )}
     </div>
   )
 }

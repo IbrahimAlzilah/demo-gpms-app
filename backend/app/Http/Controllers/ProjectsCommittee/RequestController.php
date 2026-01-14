@@ -20,7 +20,7 @@ class RequestController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = ProjectRequest::where('status', 'supervisor_approved')
+        $query = ProjectRequest::where('status', 'pending')
             ->with(['student', 'project']);
 
         $query = $this->applyTableQuery($query, $request);

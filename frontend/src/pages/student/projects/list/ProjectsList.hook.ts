@@ -3,17 +3,21 @@ import { useTranslation } from 'react-i18next'
 import { useDataTable } from '@/hooks/useDataTable'
 import { projectService } from '../api/project.service'
 import { usePeriodCheck } from '@/hooks/usePeriodCheck'
+import { useStudentRegistrations } from '../hooks/useProjects'
 import type { Project } from '@/types/project.types'
 import type { ProjectsListState, ProjectsListData } from './ProjectsList.types'
 
 export function useProjectsList() {
   const { t } = useTranslation()
   const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('project_registration')
+  const { data: registrations } = useStudentRegistrations()
 
   const [state, setState] = useState<ProjectsListState>({
     selectedProject: null,
     showRegistrationForm: false,
     showDetails: false,
+    rejectionRegistration: null,
+    showRejectionDetails: false,
   })
 
   const {
@@ -52,6 +56,7 @@ export function useProjectsList() {
     setState,
     isPeriodActive,
     periodLoading,
+    registrations,
     // Table controls
     pageCount,
     sorting,

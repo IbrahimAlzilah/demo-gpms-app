@@ -23,9 +23,11 @@ class ProposalPolicy
             return true;
         }
 
-        // Supervisor can view their own proposals
-        if ($user->isSupervisor() && $proposal->submitter_id === $user->id) {
-            return true;
+        // All students and supervisors can view approved proposals
+        if ($proposal->status === ProposalStatus::APPROVED) {
+            if ($user->isStudent() || $user->isSupervisor()) {
+                return true;
+            }
         }
 
         return false;

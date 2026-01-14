@@ -1,20 +1,22 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useApproveRequest, useRejectRequest } from '../hooks/useRequestOperations'
-import { requiresSupervisorApproval } from '@/features/common/utils/requestRouting'
 import { createRequestColumns } from '../components/table'
 import { DataTable } from '@/components/ui'
 import { BlockContent, ConfirmDialog } from '@/components/common'
-import { AlertCircle, User, MessageSquare, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { AlertCircle, User, MessageSquare } from 'lucide-react'
 import { Textarea, Label } from '@/components/ui'
 import { useToast } from '@/components/common'
 import { useRequestsList } from './RequestsList.hook'
+import { RequestDetailsView } from '../view/RequestDetailsView.screen'
+import type { Request } from '@/types/request.types'
 
 export function RequestsList() {
   const { t } = useTranslation()
   const { showToast } = useToast()
   const approveRequest = useApproveRequest()
   const rejectRequest = useRejectRequest()
+  const [viewingRequestId, setViewingRequestId] = useState<string | null>(null)
   
   const {
     data,
@@ -71,8 +73,7 @@ export function RequestsList() {
     }
   }
 
-  const handleApproveClick = (request: typeof state.selectedRequest) => {
-    if (!request) return
+  const handleApproveClick = (request: Request) => {
     setState((prev) => ({
       ...prev,
       selectedRequest: request,
@@ -81,8 +82,7 @@ export function RequestsList() {
     }))
   }
 
-  const handleRejectClick = (request: typeof state.selectedRequest) => {
-    if (!request) return
+  const handleRejectClick = (request: Request) => {
     setState((prev) => ({
       ...prev,
       selectedRequest: request,
@@ -91,9 +91,14 @@ export function RequestsList() {
     }))
   }
 
+  const handleViewClick = (request: Request) => {
+    setViewingRequestId(request.id)
+  }
+
   const columns = useMemo(
     () =>
       createRequestColumns({
+        onView: handleViewClick,
         onApprove: handleApproveClick,
         onReject: handleRejectClick,
         t,
@@ -180,40 +185,11 @@ export function RequestsList() {
                   </span>
                 </div>
               )}
-              {state.selectedRequest.supervisorApproval && (
-                <div className="mt-2 p-3 bg-info/10 rounded-lg border border-info/20">
-                  <div className="flex items-center gap-2 mb-1">
-                    <MessageSquare className="h-4 w-4 text-info" />
-                    <p className="font-medium text-info">
-                      {t('committee.requests.supervisorDecision')}:{' '}
-                      <span className={state.selectedRequest.supervisorApproval.approved ? 'text-success' : 'text-destructive'}>
-                        {state.selectedRequest.supervisorApproval.approved 
-                          ? t('common.approved')
-                          : t('common.rejected')
-                        }
-                      </span>
-                    </p>
-                  </div>
-                  {state.selectedRequest.supervisorApproval.comments && (
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {state.selectedRequest.supervisorApproval.comments}
-                    </p>
-                  )}
-                </div>
-              )}
-              {requiresSupervisorApproval(state.selectedRequest.type) && state.selectedRequest.status === 'pending' && (
-                <div className="flex items-start gap-2 p-2 bg-warning/10 rounded border border-warning/20">
-                  <AlertTriangle className="h-4 w-4 text-warning mt-0.5 shrink-0" />
-                  <p className="text-xs text-warning-foreground">
-                    {t('committee.requests.needsSupervisorApproval')}
-                  </p>
-                </div>
-              )}
-              {state.selectedRequest.status === 'supervisor_approved' && (
+              {state.selectedRequest.status === 'pending' && (
                 <div className="flex items-start gap-2 p-2 bg-info/10 rounded border border-info/20">
-                  <CheckCircle2 className="h-4 w-4 text-info mt-0.5 shrink-0" />
+                  <AlertCircle className="h-4 w-4 text-info mt-0.5 shrink-0" />
                   <p className="text-xs text-info-foreground">
-                    {t('committee.requests.supervisorApproved')}
+                    {t('committee.requests.awaitingCommitteeReview')}
                   </p>
                 </div>
               )}
@@ -241,6 +217,15 @@ export function RequestsList() {
           </div>
         )}
       </ConfirmDialog>
+
+      {/* Request Details View */}
+      {viewingRequestId && (
+        <RequestDetailsView
+          requestId={viewingRequestId}
+          open={!!viewingRequestId}
+          onClose={() => setViewingRequestId(null)}
+        />
+      )}
     </>
   )
 }

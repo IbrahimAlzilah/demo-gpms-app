@@ -15,7 +15,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   return (
     <SidebarProvider defaultOpen={true}>
       <AppSidebar />
-      <SidebarInset className="bg-[#f1f3f6] dark:bg-transparent">
+      <SidebarInset className="bg-muted/30 dark:bg-background transition-colors">
         <div className="flex min-h-screen flex-col">
           <Header />
           {/* main content */}

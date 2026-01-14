@@ -51,32 +51,61 @@ export function useCreateGroup() {
       if (!user) throw new Error('User not authenticated')
       return groupService.create(projectId, user.id, members)
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Invalidate all group queries
       queryClient.invalidateQueries({ queryKey: ['groups'] })
+      // Invalidate specific student group query
+      if (user) {
+        queryClient.invalidateQueries({ queryKey: ['groups', 'student', user.id] })
+      }
+      // Invalidate project-specific group query
+      if (data?.projectId) {
+        queryClient.invalidateQueries({ queryKey: ['groups', 'project', data.projectId] })
+      }
     },
   })
 }
 
 export function useAddGroupMember() {
   const queryClient = useQueryClient()
+  const { user } = useAuthStore()
 
   return useMutation({
     mutationFn: ({ groupId, member }: { groupId: string; member: User }) =>
       groupService.addMember(groupId, member),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Invalidate all group queries
       queryClient.invalidateQueries({ queryKey: ['groups'] })
+      // Invalidate specific student group query
+      if (user) {
+        queryClient.invalidateQueries({ queryKey: ['groups', 'student', user.id] })
+      }
+      // Invalidate project-specific group query
+      if (data?.projectId) {
+        queryClient.invalidateQueries({ queryKey: ['groups', 'project', data.projectId] })
+      }
     },
   })
 }
 
 export function useRemoveGroupMember() {
   const queryClient = useQueryClient()
+  const { user } = useAuthStore()
 
   return useMutation({
     mutationFn: ({ groupId, memberId }: { groupId: string; memberId: string }) =>
       groupService.removeMember(groupId, memberId),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Invalidate all group queries
       queryClient.invalidateQueries({ queryKey: ['groups'] })
+      // Invalidate specific student group query
+      if (user) {
+        queryClient.invalidateQueries({ queryKey: ['groups', 'student', user.id] })
+      }
+      // Invalidate project-specific group query
+      if (data?.projectId) {
+        queryClient.invalidateQueries({ queryKey: ['groups', 'project', data.projectId] })
+      }
     },
   })
 }
@@ -99,7 +128,12 @@ export function useInviteGroupMember() {
       return groupService.inviteMember(groupId, user.id, inviteeId, message)
     },
     onSuccess: () => {
+      // Invalidate all group invitation queries
       queryClient.invalidateQueries({ queryKey: ['group-invitations'] })
+      // Invalidate specific user invitations
+      if (user) {
+        queryClient.invalidateQueries({ queryKey: ['group-invitations', user.id] })
+      }
     },
   })
 }
@@ -113,9 +147,22 @@ export function useAcceptInvitation() {
       if (!user) throw new Error('User not authenticated')
       return groupService.acceptInvitation(invitationId, user.id)
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Invalidate all group queries
       queryClient.invalidateQueries({ queryKey: ['groups'] })
+      // Invalidate specific student group query
+      if (user) {
+        queryClient.invalidateQueries({ queryKey: ['groups', 'student', user.id] })
+      }
+      // Invalidate project-specific group query
+      if (data?.projectId) {
+        queryClient.invalidateQueries({ queryKey: ['groups', 'project', data.projectId] })
+      }
+      // Invalidate all group invitation queries
       queryClient.invalidateQueries({ queryKey: ['group-invitations'] })
+      if (user) {
+        queryClient.invalidateQueries({ queryKey: ['group-invitations', user.id] })
+      }
     },
   })
 }
@@ -130,22 +177,12 @@ export function useRejectInvitation() {
       return groupService.rejectInvitation(invitationId, user.id)
     },
     onSuccess: () => {
+      // Invalidate all group invitation queries
       queryClient.invalidateQueries({ queryKey: ['group-invitations'] })
+      if (user) {
+        queryClient.invalidateQueries({ queryKey: ['group-invitations', user.id] })
+      }
     },
   })
 }
 
-export function useJoinGroup() {
-  const queryClient = useQueryClient()
-  const { user } = useAuthStore()
-
-  return useMutation({
-    mutationFn: (groupId: string) => {
-      if (!user) throw new Error('User not authenticated')
-      return groupService.joinGroup(groupId, user.id)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['groups'] })
-    },
-  })
-}

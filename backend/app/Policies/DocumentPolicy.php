@@ -12,9 +12,11 @@ class DocumentPolicy
      */
     public function view(User $user, Document $document): bool
     {
-        // Submitter can view their own documents
-        if ($document->submitted_by === $user->id) {
-            return true;
+        // Students can view documents of projects they are registered in
+        if ($user->isStudent() && $document->project) {
+            if ($document->project->students()->where('users.id', $user->id)->exists()) {
+                return true;
+            }
         }
 
         // Supervisor can view documents of their projects
@@ -40,7 +42,16 @@ class DocumentPolicy
      */
     public function delete(User $user, Document $document): bool
     {
-        // Only submitter can delete their own documents
-        return $document->submitted_by === $user->id;
+        // Students can delete documents if they are registered in the project
+        if ($user->isStudent() && $document->project) {
+            return $document->project->students()->where('users.id', $user->id)->exists();
+        }
+
+        // Projects committee can delete any document
+        if ($user->isProjectsCommittee()) {
+            return true;
+        }
+
+        return false;
     }
 }

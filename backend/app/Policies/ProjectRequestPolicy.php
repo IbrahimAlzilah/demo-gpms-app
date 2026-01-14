@@ -88,8 +88,8 @@ class ProjectRequestPolicy
      */
     public function committeeApprove(User $user, ProjectRequest $request): bool
     {
-        // Projects committee can approve/reject
+        // Projects committee can approve/reject pending requests
         return $user->isProjectsCommittee()
-            && in_array($request->status, ['pending', 'supervisor_approved']);
+            && $request->status === 'pending';
     }
 }

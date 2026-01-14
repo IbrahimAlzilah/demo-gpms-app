@@ -2,13 +2,14 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { BlockContent, ModalDialog, LoadingSpinner } from '@/components/common'
-import { AlertCircle, Users, Mail, Crown, Loader2, CheckCircle2, XCircle, Plus, ArrowLeft } from 'lucide-react'
+import { AlertCircle, Users, Mail, Crown, Loader2, CheckCircle2, XCircle, Plus, UserPlus } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
 import { useAuthStore } from '@/pages/auth/login'
 import { useAcceptInvitation, useRejectInvitation, useCreateGroup } from '../hooks/useGroupOperations'
 import { GroupInviteForm } from '../components/GroupInviteForm'
 import { GroupJoinForm } from '../components/GroupJoinForm'
 import { GroupMembersList } from '../components/GroupMembersList'
+import { GroupJoinRequestsList } from '../components/GroupJoinRequestsList'
 import { useGroupsList } from './GroupsList.hook'
 
 export function GroupsList() {
@@ -72,22 +73,21 @@ export function GroupsList() {
       <div className="flex items-center gap-3">
         <Button
           onClick={() => {
+            setState((prev) => ({ ...prev, showJoinGroupModal: true, error: '' }))
+          }}
+          variant="outline"
+        >
+          <UserPlus className="h-4 w-4 ml-2" />
+          {t('groups.joinGroup')}
+        </Button>
+        <Button
+          onClick={() => {
             setState((prev) => ({ ...prev, showCreateGroupModal: true, error: '' }))
           }}
           className="bg-primary text-white hover:bg-primary/90"
         >
           <Plus className="h-4 w-4 ml-2" />
           {t('groups.createGroup')}
-        </Button>
-        <Button
-          onClick={() => {
-            setState((prev) => ({ ...prev, showJoinGroupModal: true, error: '' }))
-          }}
-          variant="outline"
-          className="border-gray-300 text-primary hover:bg-gray-50"
-        >
-          <ArrowLeft className="h-4 w-4 ml-2" />
-          {t('groups.joinGroup')}
         </Button>
       </div>
     )
@@ -195,20 +195,32 @@ export function GroupsList() {
                   <Plus className="h-4 w-4 ml-2" />
                   {t('groups.createGroup')}
                 </Button>
-                <Button
-                  onClick={() => {
-                    setState((prev) => ({ ...prev, showJoinGroupModal: true, error: '' }))
-                  }}
-                  variant="outline"
-                  className="border-gray-300 text-primary hover:bg-gray-50"
-                >
-                  <ArrowLeft className="h-4 w-4 ml-2" />
-                  {t('groups.joinGroup')}
-                </Button>
               </div>
             </div>
           </div>
         </BlockContent>
+
+        {/* Join Group Modal */}
+        <ModalDialog
+          open={state.showJoinGroupModal}
+          onOpenChange={(open) => setState((prev) => ({ ...prev, showJoinGroupModal: open }))}
+          title={t('groups.joinGroup')}
+          description={t('groups.joinGroupDescription')}
+        >
+          <GroupJoinForm
+            onSuccess={() => {
+              setState((prev) => ({
+                ...prev,
+                showJoinGroupModal: false,
+                success: t('groups.joinSuccess'),
+                error: '',
+              }))
+            }}
+            onError={(error) => {
+              setState((prev) => ({ ...prev, error }))
+            }}
+          />
+        </ModalDialog>
 
         {/* Create Group Modal */}
         <ModalDialog
@@ -270,27 +282,6 @@ export function GroupsList() {
             )}
           </div>
         </ModalDialog>
-
-        {/* Join Group Modal */}
-        <ModalDialog
-          open={state.showJoinGroupModal}
-          onOpenChange={(open) => setState((prev) => ({ ...prev, showJoinGroupModal: open }))}
-          title={t('groups.joinGroup')}
-          description={t('groups.joinGroupDescription')}
-        >
-          <GroupJoinForm
-            onSuccess={() => {
-              setState((prev) => ({
-                ...prev,
-                showJoinGroupModal: false,
-                success: t('groups.joinSuccess'),
-              }))
-            }}
-            onError={(error) => {
-              setState((prev) => ({ ...prev, error }))
-            }}
-          />
-        </ModalDialog>
       </>
     )
   }
@@ -298,11 +289,21 @@ export function GroupsList() {
   const isLeader = user?.id === data.group.leaderId
   const isFull = data.group.members.length >= data.group.maxMembers
 
+  // Check if user has an approved registration for the group's project
+  const groupProjectRegistration = data.group.projectId 
+    ? registrations?.find(r => r.projectId === data.group.projectId && r.status === 'approved')
+    : null
+
   const hasApprovedRegistration =
-    registration?.status === 'approved' ||
+    groupProjectRegistration ||
     (data.group.project?.students && data.group.project.students.some(s => s.id === user?.id))
 
   if (!hasApprovedRegistration) {
+    // Find the registration for this project to show appropriate message
+    const projectRegistration = data.group.projectId
+      ? registrations?.find(r => r.projectId === data.group.projectId)
+      : null
+
     return (
       <Card>
         <CardHeader>
@@ -319,7 +320,7 @@ export function GroupsList() {
                 {t('groups.registrationRequiredTitle')}
               </p>
               <p className="text-sm text-muted-foreground">
-                {registration?.status === 'pending'
+                {projectRegistration?.status === 'pending'
                   ? t('groups.registrationPendingMessage')
                   : t('groups.registrationNotApprovedMessage')}
               </p>
@@ -330,175 +331,218 @@ export function GroupsList() {
     )
   }
 
+  const headerActions = isLeader && !isFull ? (
+    <Button
+      onClick={() => {
+        setState((prev) => ({
+          ...prev,
+          showInviteModal: true,
+          error: '',
+        }))
+      }}
+      className="bg-primary text-white hover:bg-primary/90"
+    >
+      <Plus className="h-4 w-4 ml-2" />
+      {t('groups.inviteMember')}
+    </Button>
+  ) : null
+
   return (
-    <div className="space-y-6">
-      {state.success && (
-        <Card className="border-success">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 text-success">
-              <CheckCircle2 className="h-5 w-5" />
-              <span>{state.success}</span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {data.invitations && data.invitations.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5 text-primary" />
-              {t('groups.invitations')}
-            </CardTitle>
-            <CardDescription>
-              {t('groups.invitationsDescription')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {data.invitations.map((invitation) => (
-                <div
-                  key={invitation.id}
-                  className="flex items-start gap-3 p-4 bg-info/10 border border-info/20 rounded-lg"
-                >
-                  <Mail className="h-5 w-5 text-info mt-0.5" />
-                  <div className="flex-1">
-                    <p className="font-medium mb-1">
-                      {t('groups.invitationFrom')}
-                    </p>
-                    {invitation.inviter && (
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {t('groups.from')}: {invitation.inviter.name}
-                      </p>
-                    )}
-                    {invitation.message && (
-                      <p className="text-sm text-muted-foreground mb-2">{invitation.message}</p>
-                    )}
-                    <p className="text-xs text-muted-foreground">
-                      {formatRelativeTime(invitation.createdAt)}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={() => acceptInvitation.mutate(invitation.id)}
-                      disabled={acceptInvitation.isPending || rejectInvitation.isPending}
-                    >
-                      {acceptInvitation.isPending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <>
-                          <CheckCircle2 className="mr-1 h-4 w-4" />
-                          {t('common.accept')}
-                        </>
-                      )}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => rejectInvitation.mutate(invitation.id)}
-                      disabled={acceptInvitation.isPending || rejectInvitation.isPending}
-                    >
-                      {rejectInvitation.isPending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <>
-                          <XCircle className="mr-1 h-4 w-4" />
-                          {t('common.reject')}
-                        </>
-                      )}
-                    </Button>
-                  </div>
+    <>
+      <BlockContent
+        title={t('groups.management')}
+        actions={headerActions}
+        className="bg-white"
+      >
+        <div className="space-y-6">
+          {state.success && (
+            <Card className="border-success">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2 text-success">
+                  <CheckCircle2 className="h-5 w-5" />
+                  <span>{state.success}</span>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-primary" />
-                {t('groups.myGroup')}
-              </CardTitle>
-              <CardDescription>
-                {t('groups.membersCount')}: {data.group.members.length}/{data.group.maxMembers}
-                {isFull && <span className="text-destructive ms-2">({t('groups.full')})</span>}
-              </CardDescription>
-            </div>
-            {isLeader && (
-              <div className="flex items-center gap-1 text-primary">
-                <Crown className="h-4 w-4" />
-                <span className="text-sm font-medium">{t('groups.leader')}</span>
-              </div>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {state.error && (
-            <div className="flex items-start gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
-              <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-              <span>{state.error}</span>
-            </div>
+              </CardContent>
+            </Card>
           )}
 
-          <GroupMembersList
-            group={data.group}
-            onError={(error) => setState((prev) => ({ ...prev, error }))}
-            onSuccess={(message) => setState((prev) => ({ ...prev, success: message, error: '' }))}
-          />
+          {data.invitations && data.invitations.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Mail className="h-5 w-5 text-primary" />
+                  {t('groups.invitations')}
+                </CardTitle>
+                <CardDescription>
+                  {t('groups.invitationsDescription')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {data.invitations.map((invitation) => (
+                    <div
+                      key={invitation.id}
+                      className="flex items-start gap-3 p-4 bg-info/10 border border-info/20 rounded-lg"
+                    >
+                      <Mail className="h-5 w-5 text-info mt-0.5" />
+                      <div className="flex-1">
+                        <p className="font-medium mb-1">
+                          {t('groups.invitationFrom')}
+                        </p>
+                        {invitation.inviter && (
+                          <p className="text-sm text-muted-foreground mb-2">
+                            {t('groups.from')}: {invitation.inviter.name}
+                          </p>
+                        )}
+                        {invitation.message && (
+                          <p className="text-sm text-muted-foreground mb-2">{invitation.message}</p>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          {formatRelativeTime(invitation.createdAt)}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => acceptInvitation.mutate(invitation.id)}
+                          disabled={acceptInvitation.isPending || rejectInvitation.isPending}
+                        >
+                          {acceptInvitation.isPending ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <>
+                              <CheckCircle2 className="mr-1 h-4 w-4" />
+                              {t('common.accept')}
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => rejectInvitation.mutate(invitation.id)}
+                          disabled={acceptInvitation.isPending || rejectInvitation.isPending}
+                        >
+                          {rejectInvitation.isPending ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <>
+                              <XCircle className="mr-1 h-4 w-4" />
+                              {t('common.reject')}
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-          {isLeader && !isFull && (
-            <div className="border-t pt-4">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setState((prev) => ({
-                    ...prev,
-                    showInviteForm: !prev.showInviteForm,
-                    error: '',
-                  }))
-                }}
-                className="w-full"
-              >
-                {state.showInviteForm ? (
-                  <>
-                    <XCircle className="mr-2 h-4 w-4" />
-                    {t('common.cancel')}
-                  </>
-                ) : (
-                  <>
-                    <Plus className="mr-2 h-4 w-4" />
-                    {t('groups.inviteMember')}
-                  </>
-                )}
-              </Button>
-
-              {state.showInviteForm && (
-                <div className="mt-4">
-                  <GroupInviteForm
-                    group={data.group}
-                    onSuccess={() => {
+          {/* Group ID Display for Leader */}
+          {isLeader && (
+            <Card className="border-primary">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Crown className="h-5 w-5 text-primary" />
+                  {t('groups.groupId')}
+                </CardTitle>
+                <CardDescription>{t('groups.groupIdDescription')}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-3 p-4 bg-primary/10 border border-primary/20 rounded-lg">
+                  <div className="flex-1">
+                    <p className="text-sm text-muted-foreground mb-1">{t('groups.shareGroupId')}</p>
+                    <p className="text-2xl font-bold text-primary font-mono">{data.group.id}</p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      navigator.clipboard.writeText(data.group.id)
                       setState((prev) => ({
                         ...prev,
-                        showInviteForm: false,
-                        success: t('groups.inviteSuccess'),
-                        error: '',
+                        success: t('groups.groupIdCopied'),
                       }))
                     }}
-                    onError={(error) => {
-                      setState((prev) => ({ ...prev, error }))
-                    }}
-                  />
+                  >
+                    {t('common.copy')}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Join Requests for Leader */}
+          {isLeader && (
+            <GroupJoinRequestsList
+              group={data.group}
+              onError={(error) => setState((prev) => ({ ...prev, error }))}
+              onSuccess={(message) => setState((prev) => ({ ...prev, success: message, error: '' }))}
+            />
+          )}
+
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-primary" />
+                    {t('groups.myGroup')}
+                  </CardTitle>
+                  <CardDescription>
+                    {t('groups.membersCount')}: {data.group.members.length}/{data.group.maxMembers}
+                    {isFull && <span className="text-destructive ms-2">({t('groups.full')})</span>}
+                  </CardDescription>
+                </div>
+                {isLeader && (
+                  <div className="flex items-center gap-1 text-primary">
+                    <Crown className="h-4 w-4" />
+                    <span className="text-sm font-medium">{t('groups.leader')}</span>
+                  </div>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {state.error && (
+                <div className="flex items-start gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
+                  <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                  <span>{state.error}</span>
                 </div>
               )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+
+              <GroupMembersList
+                group={data.group}
+                onError={(error) => setState((prev) => ({ ...prev, error }))}
+                onSuccess={(message) => setState((prev) => ({ ...prev, success: message, error: '' }))}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      </BlockContent>
+
+      {/* Invite Member Modal */}
+      {isLeader && !isFull && (
+        <ModalDialog
+          open={state.showInviteModal}
+          onOpenChange={(open) => setState((prev) => ({ ...prev, showInviteModal: open }))}
+          title={t('groups.inviteMember')}
+        >
+          <GroupInviteForm
+            group={data.group}
+            onSuccess={() => {
+              setState((prev) => ({
+                ...prev,
+                showInviteModal: false,
+                success: t('groups.inviteSuccess'),
+                error: '',
+              }))
+            }}
+            onError={(error) => {
+              setState((prev) => ({ ...prev, error }))
+            }}
+          />
+        </ModalDialog>
+      )}
+    </>
   )
 }

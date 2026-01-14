@@ -122,3 +122,18 @@ export interface GroupInvitation extends BaseEntity {
   message?: string
 }
 
+export type GroupJoinRequestStatus = 'pending' | 'approved' | 'rejected'
+
+export interface GroupJoinRequest extends BaseEntity {
+  groupId: string
+  group?: ProjectGroup
+  studentId: string
+  student?: User
+  status: GroupJoinRequestStatus
+  message?: string
+  requestedAt: string
+  reviewedAt?: string
+  reviewedBy?: string
+  reviewer?: User
+  reviewComments?: string
+}

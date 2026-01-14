@@ -8,6 +8,7 @@ export { GroupsView } from './view/GroupsView.screen'
 export { GroupInviteForm } from './components/GroupInviteForm'
 export { GroupJoinForm } from './components/GroupJoinForm'
 export { GroupMembersList } from './components/GroupMembersList'
+export { GroupJoinRequestsList } from './components/GroupJoinRequestsList'
 
 // Hooks
 export { 
@@ -30,6 +31,9 @@ export {
   useAcceptInvitation as useAcceptInvitationOp,
   useRejectInvitation as useRejectInvitationOp,
   useJoinGroup as useJoinGroupOp,
+  useCreateJoinRequest,
+  useApproveJoinRequest,
+  useRejectJoinRequest,
 } from './hooks/useGroupOperations'
 
 // Types

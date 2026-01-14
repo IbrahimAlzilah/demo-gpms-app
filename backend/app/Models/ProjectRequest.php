@@ -84,9 +84,6 @@ class ProjectRequest extends Model
      */
     public function needsCommitteeApproval(): bool
     {
-        return in_array($this->status, [
-            RequestStatus::PENDING,
-            RequestStatus::SUPERVISOR_APPROVED,
-        ]);
+        return $this->status === RequestStatus::PENDING;
     }
 }

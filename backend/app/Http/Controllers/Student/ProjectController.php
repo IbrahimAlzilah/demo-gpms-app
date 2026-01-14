@@ -30,7 +30,7 @@ class ProjectController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = Project::with(['supervisor', 'students']);
+        $query = Project::with(['supervisor', 'students', 'group.members', 'group.leader']);
 
         // Check if requesting available projects via 'available' parameter or filters
         $filters = $request->filters ?? [];
@@ -97,6 +97,19 @@ class ProjectController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'You already have a pending registration for this project',
+            ], 403);
+        }
+
+        // Check if student has a rejected registration for this same project - prevent re-registration
+        $rejectedRegistration = ProjectRegistration::where('student_id', $user->id)
+            ->where('project_id', $project->id)
+            ->where('status', 'rejected')
+            ->exists();
+
+        if ($rejectedRegistration) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Your registration request for this project has been rejected. You cannot re-register for the same project.',
             ], 403);
         }
 

@@ -80,10 +80,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('groups/invitations', [App\Http\Controllers\Student\GroupController::class, 'getInvitations']);
         Route::post('groups/invitations/{invitation}/accept', [App\Http\Controllers\Student\GroupController::class, 'acceptInvitation']);
         Route::post('groups/invitations/{invitation}/reject', [App\Http\Controllers\Student\GroupController::class, 'rejectInvitation']);
-        Route::post('groups/{group}/join', [App\Http\Controllers\Student\GroupController::class, 'joinGroup']);
         Route::put('groups/{group}/leader', [App\Http\Controllers\Student\GroupController::class, 'updateLeader']);
         Route::post('groups/{group}/members', [App\Http\Controllers\Student\GroupController::class, 'addMember']);
         Route::delete('groups/{group}/members/{member}', [App\Http\Controllers\Student\GroupController::class, 'removeMember']);
+        // Join requests routes
+        Route::post('groups/join-request', [App\Http\Controllers\Student\GroupController::class, 'createJoinRequest']);
+        Route::get('groups/{group}/join-requests', [App\Http\Controllers\Student\GroupController::class, 'getJoinRequests']);
+        Route::post('groups/join-requests/{joinRequest}/approve', [App\Http\Controllers\Student\GroupController::class, 'approveJoinRequest']);
+        Route::post('groups/join-requests/{joinRequest}/reject', [App\Http\Controllers\Student\GroupController::class, 'rejectJoinRequest']);
         Route::get('documents/{document}/download', [App\Http\Controllers\Student\DocumentController::class, 'download']);
         Route::post('documents', [App\Http\Controllers\Student\DocumentController::class, 'store'])
             ->middleware('window:document_submission');

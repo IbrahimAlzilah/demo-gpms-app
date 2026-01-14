@@ -52,6 +52,14 @@ class ProjectGroup extends Model
     }
 
     /**
+     * Get all join requests for this group
+     */
+    public function joinRequests(): HasMany
+    {
+        return $this->hasMany(GroupJoinRequest::class, 'group_id');
+    }
+
+    /**
      * Check if group is full
      */
     public function isFull(): bool
