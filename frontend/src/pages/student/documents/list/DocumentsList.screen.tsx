@@ -97,7 +97,7 @@ export function DocumentsList() {
       )}
 
       {/* Project Info */}
-      <Card className="mb-6">
+      {/* <Card className="mb-6">
         <CardHeader>
           <CardTitle>{t('document.currentProject')}</CardTitle>
         </CardHeader>
@@ -107,7 +107,7 @@ export function DocumentsList() {
             {userProject?.description}
           </p>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Statistics Cards */}
       <StatisticsCards statistics={data.statistics} t={t} />
