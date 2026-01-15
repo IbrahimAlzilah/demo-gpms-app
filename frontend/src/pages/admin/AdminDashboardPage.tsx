@@ -5,18 +5,17 @@ import { ROUTES } from '../../lib/constants'
 import { Link } from 'react-router-dom'
 import {
   Users,
-  FileBarChart,
-  Settings,
-  Shield,
-  Activity,
-  Server,
-  Database,
   Briefcase,
   FileText,
+  Activity,
+  TrendingUp,
+  Database,
+  Shield,
+  Server,
+  Settings,
+  FileBarChart,
   ArrowLeft,
-  ArrowRight,
-  TrendingDown,
-  TrendingUp
+  ArrowRight
 } from 'lucide-react'
 import { useAuthStore } from '@/pages/auth/login'
 import { cn } from '@/lib/utils'
@@ -39,16 +38,12 @@ export function AdminDashboardPage() {
 
   return (
     <MainLayout>
-      <div className="space-y-8 animate-in fade-in duration-700 pb-10">
+      <div className="space-y-8 animate-in fade-in duration-500 pb-10">
 
-        {/* Welcome Section */}
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            {t('dashboard.welcome', { defaultValue: 'System Administration' })}
-          </h1>
-          <p className="text-muted-foreground text-lg">
-            {t('dashboard.admin.subtitle', { defaultValue: 'Monitor system usage, manage users, and generate reports.' })}
-          </p>
+        {/* Page Header */}
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground text-start">System Administration</h1>
+          <p className="text-sm text-muted-foreground">{new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </div>
 
         {/* Stats Grid */}
@@ -57,29 +52,28 @@ export function AdminDashboardPage() {
             title={t('dashboard.admin.totalUsers')}
             value={stats.totalUsers}
             icon={Users}
-            description={t('dashboard.admin.activeUsers', { count: stats.activeUsers })}
+            subValue={t('dashboard.admin.activeUsers', { count: stats.activeUsers })}
             color="blue"
           />
           <StatsCard
             title={t('dashboard.admin.projects')}
             value={stats.totalProjects}
             icon={Briefcase}
-            description={t('dashboard.admin.registeredProjects')}
+            subValue={t('dashboard.admin.registeredProjects')}
             color="green"
-            trend="positive"
           />
           <StatsCard
             title={t('dashboard.admin.proposals')}
             value={stats.totalProposals}
             icon={FileText}
-            description={t('dashboard.admin.submittedProposals')}
+            subValue={t('dashboard.admin.submittedProposals')}
             color="orange"
           />
           <StatsCard
             title={t('dashboard.admin.systemStatus')}
             value={stats.systemHealth}
             icon={Activity}
-            description={t('dashboard.admin.allSystemsOperational')}
+            subValue={t('dashboard.admin.allSystemsOperational')}
             color="slate"
           />
         </div>
@@ -88,57 +82,64 @@ export function AdminDashboardPage() {
           {/* Main Content Area (2/3) */}
           <div className="lg:col-span-2 space-y-8">
 
-            {/* System Overview Section - Placeholder for charts/graphs */}
-            <div className="grid gap-4 md:grid-cols-2">
-              <Card className="hover:border-primary/50 transition-colors">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
+            {/* System Overview Section */}
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card className="hover:border-primary/50 transition-colors shadow-none border-border">
+                <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-border/50 bg-muted/20">
                   <CardTitle className="text-base font-medium">
                     {t('dashboard.admin.userGrowth', { defaultValue: 'User Growth' })}
                   </CardTitle>
                   <TrendingUp className="h-4 w-4 text-green-500" />
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-6">
                   <div className="text-2xl font-bold">+12%</div>
                   <p className="text-xs text-muted-foreground">
                     {t('dashboard.admin.sinceLastMonth', { defaultValue: 'from last month' })}
                   </p>
-                  <div className="h-[80px] w-full bg-gradient-to-t from-primary/10 to-transparent mt-4 rounded-md border border-dashed flex items-end justify-center pb-2 text-xs text-muted-foreground">
-                    [Chart Placeholder]
+                  {/* Simplified Chart Placeholder */}
+                  <div className="h-[100px] w-full mt-4 flex items-end justify-between gap-2 px-2">
+                    {[40, 65, 45, 80, 55, 90, 70].map((h, i) => (
+                      <div key={i} className="w-full bg-primary/20 hover:bg-primary/40 rounded-t-sm transition-all" style={{ height: `${h}%` }}></div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="hover:border-primary/50 transition-colors">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <Card className="hover:border-primary/50 transition-colors shadow-none border-border">
+                <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-border/50 bg-muted/20">
                   <CardTitle className="text-base font-medium">
                     {t('dashboard.admin.storageUsage', { defaultValue: 'Storage Usage' })}
                   </CardTitle>
                   <Database className="h-4 w-4 text-primary" />
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-6">
                   <div className="text-2xl font-bold">45%</div>
                   <p className="text-xs text-muted-foreground">
                     2.1 TB / 5 TB
                   </p>
-                  <div className="h-2 w-full bg-secondary mt-4 rounded-full overflow-hidden">
-                    <div className="h-full bg-primary w-[45%]" />
+                  <div className="h-2.5 w-full bg-secondary mt-4 rounded-full overflow-hidden">
+                    <div className="h-full bg-primary w-[45%] rounded-full" />
+                  </div>
+                  <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-primary"></div> Documents</div>
+                    <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-muted"></div> Available</div>
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Recent System Alerts */}
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('dashboard.admin.recentAlerts', { defaultValue: 'Recent System Alerts' })}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
-                  <Shield className="h-12 w-12 text-muted-foreground/20 mb-3" />
-                  <p>{t('dashboard.admin.noAlerts', { defaultValue: 'No critical security alerts.' })}</p>
+            {/* Recent System Alerts - Clean List */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold tracking-tight">{t('dashboard.admin.recentAlerts', { defaultValue: 'Recent System Alerts' })}</h2>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-8 text-center text-muted-foreground">
+                <div className="bg-muted inline-flex p-3 rounded-full mb-3">
+                  <Shield className="h-6 w-6 text-muted-foreground" />
                 </div>
-              </CardContent>
-            </Card>
+                <p className="text-sm font-medium">{t('dashboard.admin.noAlerts', { defaultValue: 'System is running smoothly. No critical alerts.' })}</p>
+              </div>
+            </div>
 
           </div>
 
@@ -146,11 +147,9 @@ export function AdminDashboardPage() {
           <div className="space-y-8">
 
             {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('dashboard.admin.quickActions')}</CardTitle>
-              </CardHeader>
-              <CardContent className="grid gap-3">
+            <div className="space-y-4">
+              <h3 className="text-base font-semibold tracking-tight">{t('dashboard.admin.quickActions')}</h3>
+              <div className="grid grid-cols-1 gap-2">
                 <QuickActionButton
                   to={ROUTES.ADMIN.USERS}
                   icon={Users}
@@ -166,34 +165,22 @@ export function AdminDashboardPage() {
                   icon={Settings}
                   label={t('dashboard.admin.systemSettings', { defaultValue: 'System Settings' })}
                 />
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* System Health Status Detailed */}
-            <Card className="border-border bg-card">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2">
-                  <Server className="h-4 w-4" />
+            <Card className="border-border bg-card shadow-none overflow-hidden">
+              <CardHeader className="border-b border-border/50 bg-muted/20 pb-4">
+                <CardTitle className="text-base font-medium flex items-center gap-2">
+                  <Server className="h-4 w-4 text-primary" />
                   {t('dashboard.admin.serverStatus', { defaultValue: 'Server Status' })}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">API Server</span>
-                  <StatusDot status="online" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Database Node 1</span>
-                  <StatusDot status="online" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Storage Service</span>
-                  <StatusDot status="online" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Email Gateway</span>
-                  <StatusDot status="maintenance" />
-                </div>
+              <CardContent className="space-y-4 pt-6">
+                <StatusRow label="API Server" status="online" />
+                <StatusRow label="Database Cluster" status="online" />
+                <StatusRow label="File Storage" status="online" />
+                <StatusRow label="Email Gateway" status="maintenance" />
               </CardContent>
             </Card>
 
@@ -206,63 +193,64 @@ export function AdminDashboardPage() {
 
 // Sub-components
 
-function StatsCard({ title, value, icon: Icon, description, color, trend }: any) {
+function StatsCard({ title, value, icon: Icon, subValue, color }: any) {
   const colorStyles = {
-    blue: "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400",
-    green: "bg-green-50 text-green-700 dark:bg-green-950/50 dark:text-green-400",
-    orange: "bg-orange-50 text-orange-700 dark:bg-orange-950/50 dark:text-orange-400",
-    slate: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400",
+    blue: "text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400",
+    green: "text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400",
+    orange: "text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-400",
+    slate: "text-slate-600 bg-slate-50 dark:bg-slate-900/20 dark:text-slate-400",
   }
 
   // @ts-ignore
   const iconColor = colorStyles[color] || colorStyles.blue
 
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-md border-muted">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between space-y-0 pb-2">
-          <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <div className={cn("p-2 rounded-full", iconColor)}>
-            <Icon className="h-4 w-4" />
-          </div>
+    <div className="rounded-xl border border-border bg-card p-6 flex flex-col justify-between h-full transition-colors hover:border-primary/20">
+      <div className="flex items-start justify-between mb-4">
+        <div className={cn("p-2.5 rounded-lg", iconColor)}>
+          <Icon className="h-5 w-5" />
         </div>
-        <div className="flex flex-col gap-1">
-          <div className="text-2xl font-bold tracking-tight">{value}</div>
-          <p className="text-xs text-muted-foreground flex items-center gap-1">
-            {trend === 'positive' && <TrendingUp className="h-3 w-3 text-green-500" />}
-            {trend === 'negative' && <TrendingDown className="h-3 w-3 text-red-500" />}
-            {description}
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+        <span className="text-3xl font-bold tracking-tight text-foreground">{value}</span>
+      </div>
+      <div>
+        <h3 className="font-medium text-sm text-foreground mb-1">{title}</h3>
+        <p className="text-xs text-muted-foreground">{subValue}</p>
+      </div>
+    </div>
   )
 }
 
 function QuickActionButton({ to, icon: Icon, label }: any) {
   return (
-    <Button asChild variant="outline" className="w-full justify-start h-12 px-4 hover:bg-accent hover:text-accent-foreground transition-all duration-200">
+    <Button asChild variant="outline" className="w-full justify-start h-11 px-4 bg-card hover:bg-accent hover:text-accent-foreground border-border shadow-none transition-all duration-200">
       <Link to={to} className="flex items-center">
-        <div className="bg-primary/10 p-2 rounded mr-3 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-          <Icon className="h-4 w-4" />
-        </div>
+        <Icon className="h-4 w-4 mr-3 text-muted-foreground group-hover:text-primary transition-colors" />
         <span className="font-medium">{label}</span>
       </Link>
     </Button>
   )
 }
 
-function StatusDot({ status }: { status: 'online' | 'offline' | 'maintenance' }) {
+function StatusRow({ label, status }: { label: string, status: 'online' | 'offline' | 'maintenance' }) {
   const styles = {
-    online: "bg-green-500 shadow-[0_0_0_2px_rgba(34,197,94,0.2)]",
-    offline: "bg-red-500 shadow-[0_0_0_2px_rgba(239,68,68,0.2)]",
-    maintenance: "bg-amber-500 shadow-[0_0_0_2px_rgba(245,158,11,0.2)]",
+    online: "bg-green-500",
+    offline: "bg-red-500",
+    maintenance: "bg-amber-500",
+  }
+
+  const textStyles = {
+    online: "text-green-600 dark:text-green-400",
+    offline: "text-red-600 dark:text-red-400",
+    maintenance: "text-amber-600 dark:text-amber-400",
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <span className={cn("h-2.5 w-2.5 rounded-full", styles[status])} />
-      <span className="text-xs text-muted-foreground capitalize">{status}</span>
+    <div className="flex items-center justify-between">
+      <span className="text-sm font-medium">{label}</span>
+      <div className="flex items-center gap-2">
+        <span className={cn("text-xs font-medium capitalize", textStyles[status])}>{status}</span>
+        <span className={cn("h-2.5 w-2.5 rounded-full ring-2 ring-transparent", styles[status])} />
+      </div>
     </div>
   )
 }

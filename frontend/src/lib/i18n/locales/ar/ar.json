@@ -689,6 +689,7 @@
     },
     "documentSubmission": "تسليم الوثائق",
     "documentSubmissionDescription": "رفع الوثائق المطلوبة للمشروع",
+    "uploadNewDocument": "رفع وثيقة جديدة",
     "submittedDocuments": "الوثائق المسلمة",
     "submittedDocumentsDescription": "قائمة الوثائق التي تم تسليمها",
     "noDocuments": "لم يتم تسليم أي وثائق بعد",

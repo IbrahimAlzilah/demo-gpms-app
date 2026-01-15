@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { MainLayout } from '../../layouts/MainLayout'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
 import { LoadingSpinner } from '../../components/common/LoadingSpinner'
 import { useProposals } from './proposals'
 import { useRequests } from './requests'
@@ -18,7 +18,8 @@ import {
   ArrowRight,
   Plus,
   Search,
-  Activity
+  ChevronRight,
+  Clock
 } from 'lucide-react'
 import { StatusBadge } from '../../components/common/StatusBadge'
 import { formatRelativeTime } from '../../lib/utils/format'
@@ -39,12 +40,10 @@ export function StudentDashboardPage() {
     proposals: {
       total: proposals?.length || 0,
       pending: proposals?.filter((p) => p.status === 'pending_review').length || 0,
-      approved: proposals?.filter((p) => p.status === 'approved').length || 0,
     },
     requests: {
       total: requests?.length || 0,
       pending: requests?.filter((r) => r.status === 'pending').length || 0,
-      approved: requests?.filter((r) => r.status === 'committee_approved').length || 0,
     },
     projects: {
       registered: projects?.filter((p) => p.students.some((s) => s.id === user?.id)).length || 0,
@@ -58,11 +57,6 @@ export function StudentDashboardPage() {
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 3)
 
-  // Get recent requests
-  const recentRequests = requests
-    ?.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 3)
-
   if (isLoading) {
     return (
       <MainLayout>
@@ -74,42 +68,46 @@ export function StudentDashboardPage() {
   }
 
   const ArrowIcon = isRTL ? ArrowLeft : ArrowRight
+  const ChevronIcon = isRTL ? ArrowLeft : ChevronRight // Use ArrowLeft for RTL "next" indicator in some contexts or Chevron
 
   return (
     <MainLayout>
-      <div className="space-y-8 animate-in fade-in duration-700 pb-10">
-        {/* Stats Grid - Modern & Spacious */}
+      <div className="space-y-8 animate-in fade-in duration-500 pb-10">
+
+        {/* Page Header (Minimal) */}
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('nav.dashboard')}</h1>
+          <p className="text-sm text-muted-foreground">{new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        </div>
+
+        {/* Stats Grid - Clean & Flat */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <StatsCard
             title={t('dashboard.student.proposals')}
             value={stats.proposals.total}
             icon={FileText}
-            description={`${stats.proposals.pending} ${t('dashboard.student.pendingReview')}`}
-            trend="neutral"
+            subValue={t('dashboard.student.pendingReviewCount', { count: stats.proposals.pending, defaultValue: `${stats.proposals.pending} pending` })}
             color="blue"
           />
           <StatsCard
             title={t('dashboard.student.projects')}
             value={stats.projects.registered}
             icon={Briefcase}
-            description={`${stats.projects.available} ${t('dashboard.student.availableForRegistration')}`}
-            trend="positive"
+            subValue={t('dashboard.student.availableCount', { count: stats.projects.available, defaultValue: `${stats.projects.available} available` })}
             color="green"
           />
           <StatsCard
             title={t('dashboard.student.requests')}
             value={stats.requests.total}
             icon={FileCheck}
-            description={`${stats.requests.pending} ${t('dashboard.student.pending')}`}
-            trend="warning"
+            subValue={t('dashboard.student.pendingCount', { count: stats.requests.pending, defaultValue: `${stats.requests.pending} pending` })}
             color="orange"
           />
           <StatsCard
             title={t('dashboard.student.grades')}
             value="-"
             icon={Award}
-            description={t('dashboard.student.notEvaluated')}
-            trend="neutral"
+            subValue={t('dashboard.student.notEvaluated')}
             color="purple"
           />
         </div>
@@ -121,29 +119,39 @@ export function StudentDashboardPage() {
             {/* Recent Proposals Section */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold tracking-tight">{t('dashboard.student.recentProposals')}</h2>
-                <Button variant="ghost" className="text-primary hover:text-primary/80" asChild>
+                <h2 className="text-lg font-semibold tracking-tight flex items-center gap-2">
+                  {t('dashboard.student.recentProposals')}
+                </h2>
+                <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 h-8" asChild>
                   <Link to={ROUTES.STUDENT.PROPOSALS}>
-                    {t('common.viewAll')} <ArrowIcon className="ms-2 h-4 w-4" />
+                    {t('common.viewAll')} <ArrowIcon className="ms-1 h-3.5 w-3.5" />
                   </Link>
                 </Button>
               </div>
 
-              <div className="grid gap-4">
+              <div className="grid gap-3">
                 {recentProposals && recentProposals.length > 0 ? (
                   recentProposals.map((proposal) => (
-                    <Card key={proposal.id} className="group hover:border-primary/50 transition-colors duration-300">
-                      <CardContent className="p-5 flex items-start justify-between">
-                        <div className="space-y-1.5">
-                          <h3 className="font-semibold group-hover:text-primary transition-colors">{proposal.title}</h3>
-                          <p className="text-sm text-muted-foreground flex items-center gap-2">
-                            <Activity className="h-3.5 w-3.5" />
-                            {formatRelativeTime(proposal.createdAt)}
-                          </p>
+                    <div
+                      key={proposal.id}
+                      className="group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:bg-accent/5"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="mt-1 p-2 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400">
+                          <FileText className="h-4 w-4" />
                         </div>
-                        <StatusBadge status={proposal.status} />
-                      </CardContent>
-                    </Card>
+                        <div className="space-y-1">
+                          <h3 className="font-medium text-base group-hover:text-primary transition-colors">{proposal.title}</h3>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {formatRelativeTime(proposal.createdAt)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <StatusBadge status={proposal.status} />
+                    </div>
                   ))
                 ) : (
                   <EmptyState
@@ -156,69 +164,28 @@ export function StudentDashboardPage() {
               </div>
             </div>
 
-            {/* Recent Requests Section */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold tracking-tight">{t('dashboard.student.recentRequests')}</h2>
-                <Button variant="ghost" className="text-primary hover:text-primary/80" asChild>
-                  <Link to={ROUTES.STUDENT.REQUESTS}>
-                    {t('common.viewAll')} <ArrowIcon className="ms-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
-
-              <div className="grid gap-4">
-                {recentRequests && recentRequests.length > 0 ? (
-                  recentRequests.map((request) => (
-                    <Card key={request.id} className="group hover:border-primary/50 transition-colors duration-300">
-                      <CardContent className="p-5 flex items-start justify-between">
-                        <div className="space-y-1.5">
-                          <h3 className="font-semibold group-hover:text-primary transition-colors">
-                            {request.type === 'change_supervisor' && t('requests.change_supervisor')}
-                            {request.type === 'change_group' && t('requests.change_group')}
-                            {request.type === 'change_project' && t('requests.change_project')}
-                            {request.type === 'other' && t('requests.other')}
-                          </h3>
-                          <p className="text-sm text-muted-foreground flex items-center gap-2">
-                            <Activity className="h-3.5 w-3.5" />
-                            {formatRelativeTime(request.createdAt)}
-                          </p>
-                        </div>
-                        <StatusBadge status={request.status} />
-                      </CardContent>
-                    </Card>
-                  ))
-                ) : (
-                  <EmptyState
-                    icon={FileCheck}
-                    message={t('request.noRequests')}
-                    actionLabel={t('dashboard.student.submitNewRequest')}
-                    actionLink={ROUTES.STUDENT.REQUESTS}
-                  />
-                )}
-              </div>
-            </div>
-
           </div>
 
           {/* Sidebar Area (1/3) */}
           <div className="space-y-8">
 
-            {/* Current Project Status */}
-            <Card className="overflow-hidden border-primary/20 bg-primary/5">
-              <CardHeader className="border-b border-primary/10 bg-primary/10 pb-4">
-                <CardTitle className="text-primary flex items-center gap-2">
-                  <Briefcase className="h-5 w-5" />
+            {/* Current Project Status - Clean Card */}
+            <Card className="overflow-hidden border-border bg-card shadow-none">
+              <CardHeader className="border-b border-border/50 bg-muted/20 pb-4">
+                <CardTitle className="text-base font-medium flex items-center gap-2">
+                  <Briefcase className="h-4 w-4 text-primary" />
                   {t('dashboard.student.currentProject')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-6">
                 {stats.projects.registered > 0 ? (
                   <div className="space-y-4">
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {t('dashboard.student.registeredInProject')}
-                    </p>
-                    <Button asChild className="w-full shadow-lg shadow-primary/20" size="lg">
+                    <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+                      <p className="text-sm font-medium text-primary">
+                        {t('dashboard.student.registeredInProject')}
+                      </p>
+                    </div>
+                    <Button asChild className="w-full" size="default">
                       <Link to={ROUTES.STUDENT.FOLLOW_UP}>
                         {t('dashboard.student.followProject')}
                         <ArrowIcon className="ms-2 h-4 w-4" />
@@ -230,7 +197,7 @@ export function StudentDashboardPage() {
                     <p className="text-sm text-muted-foreground leading-relaxed">
                       {t('dashboard.student.notRegisteredInProject')}
                     </p>
-                    <Button asChild className="w-full" size="lg">
+                    <Button asChild className="w-full" variant="outline">
                       <Link to={ROUTES.STUDENT.PROJECTS}>
                         {t('dashboard.student.browseAvailableProjects')}
                         <ArrowIcon className="ms-2 h-4 w-4" />
@@ -241,10 +208,10 @@ export function StudentDashboardPage() {
               </CardContent>
             </Card>
 
-            {/* Quick Actions */}
+            {/* Quick Actions - Clean List */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold tracking-tight">{t('dashboard.student.quickActions')}</h3>
-              <div className="grid grid-cols-1 gap-3">
+              <h3 className="text-base font-semibold tracking-tight">{t('dashboard.student.quickActions')}</h3>
+              <div className="grid grid-cols-1 gap-2">
                 <QuickActionButton
                   to={ROUTES.STUDENT.PROPOSALS}
                   icon={Plus}
@@ -270,46 +237,44 @@ export function StudentDashboardPage() {
   )
 }
 
-// Sub-components for cleaner code
+// Simplified Sub-components
 
-function StatsCard({ title, value, icon: Icon, description, color }: any) {
+function StatsCard({ title, value, icon: Icon, subValue, color }: any) {
   const colorStyles = {
-    blue: "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400",
-    green: "bg-green-50 text-green-700 dark:bg-green-950/50 dark:text-green-400",
-    orange: "bg-orange-50 text-orange-700 dark:bg-orange-950/50 dark:text-orange-400",
-    purple: "bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-400",
+    blue: "text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400",
+    green: "text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400",
+    orange: "text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-400",
+    purple: "text-purple-600 bg-purple-50 dark:bg-purple-900/20 dark:text-purple-400",
   }
 
   // @ts-ignore
   const iconColor = colorStyles[color] || colorStyles.blue
 
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-md border-muted">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between space-y-0 pb-2">
-          <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <div className={cn("p-2 rounded-full", iconColor)}>
-            <Icon className="h-4 w-4" />
-          </div>
+    <div className="rounded-xl border border-border bg-card p-6 flex flex-col justify-between h-full transition-colors hover:border-primary/20">
+      <div className="flex items-start justify-between mb-4">
+        <div className={cn("p-2.5 rounded-lg", iconColor)}>
+          <Icon className="h-5 w-5" />
         </div>
-        <div className="flex flex-col gap-1">
-          <div className="text-2xl font-bold tracking-tight">{value}</div>
-          <p className="text-xs text-muted-foreground">{description}</p>
-        </div>
-      </CardContent>
-    </Card>
+        <span className="text-3xl font-bold tracking-tight text-foreground">{value}</span>
+      </div>
+      <div>
+        <h3 className="font-medium text-sm text-foreground mb-1">{title}</h3>
+        <p className="text-xs text-muted-foreground">{subValue}</p>
+      </div>
+    </div>
   )
 }
 
 function EmptyState({ icon: Icon, message, actionLabel, actionLink }: any) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center animate-in fade-in zoom-in-95 duration-500">
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-        <Icon className="h-6 w-6 text-muted-foreground" />
+    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-muted-foreground/25 p-8 text-center bg-muted/5">
+      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+        <Icon className="h-5 w-5 text-muted-foreground" />
       </div>
-      <p className="mt-4 text-sm text-muted-foreground">{message}</p>
+      <p className="mt-3 text-sm text-muted-foreground font-medium">{message}</p>
       {actionLabel && (
-        <Button variant="link" asChild className="mt-2 text-primary">
+        <Button variant="link" asChild className="mt-1 h-auto p-0 text-primary">
           <Link to={actionLink}>{actionLabel}</Link>
         </Button>
       )}
@@ -319,11 +284,9 @@ function EmptyState({ icon: Icon, message, actionLabel, actionLink }: any) {
 
 function QuickActionButton({ to, icon: Icon, label }: any) {
   return (
-    <Button asChild variant="outline" className="w-full justify-start h-12 px-4 hover:bg-accent hover:text-accent-foreground transition-all duration-200">
+    <Button asChild variant="outline" className="w-full justify-start h-11 px-4 bg-card hover:bg-accent hover:text-accent-foreground border-border shadow-none transition-all duration-200">
       <Link to={to} className="flex items-center">
-        <div className="bg-primary/10 p-2 rounded mr-3 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-          <Icon className="h-4 w-4" />
-        </div>
+        <Icon className="h-4 w-4 mr-3 text-muted-foreground group-hover:text-primary transition-colors" />
         <span className="font-medium">{label}</span>
       </Link>
     </Button>

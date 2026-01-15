@@ -618,6 +618,7 @@
     "notes": "Notes",
     "documentSubmission": "Document Submission",
     "documentSubmissionDescription": "Upload required project documents",
+    "uploadNewDocument": "Upload New Document",
     "submittedDocuments": "Submitted Documents",
     "submittedDocumentsDescription": "List of submitted documents",
     "noDocuments": "No documents have been submitted yet",
