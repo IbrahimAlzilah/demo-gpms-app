@@ -135,6 +135,29 @@ class RequestService
             // Process the request based on type
             $this->processRequest($request);
 
+            // Notify student about approval
+            if ($this->notificationService && $request->student) {
+                $requestTypeLabel = match($request->type) {
+                    'change_supervisor' => 'تغيير المشرف',
+                    'change_group' => 'تغيير المجموعة',
+                    'change_project' => 'تغيير المشروع',
+                    default => 'الطلب',
+                };
+                
+                $message = "تم قبول {$requestTypeLabel}";
+                if ($comments) {
+                    $message .= "\nملاحظات: {$comments}";
+                }
+
+                $this->notificationService->create(
+                    $request->student,
+                    $message,
+                    'request_approved',
+                    'request',
+                    $request->id
+                );
+            }
+
             return $request->fresh();
         });
     }
@@ -157,6 +180,31 @@ class RequestService
                 'approved_by' => $committeeMember->id,
             ],
         ]);
+
+        // Notify student about rejection
+        if ($this->notificationService && $request->student) {
+            $requestTypeLabel = match($request->type) {
+                'change_supervisor' => 'تغيير المشرف',
+                'change_group' => 'تغيير المجموعة',
+                'change_project' => 'تغيير المشروع',
+                default => 'الطلب',
+            };
+            
+            $message = "تم رفض {$requestTypeLabel}";
+            if ($comments) {
+                $message .= "\nملاحظات: {$comments}";
+            } else {
+                $message .= ". يرجى مراجعة الملاحظات";
+            }
+
+            $this->notificationService->create(
+                $request->student,
+                $message,
+                'request_rejected',
+                'request',
+                $request->id
+            );
+        }
 
         return $request->fresh();
     }

@@ -5,8 +5,9 @@ import { useAuthStore } from '@/pages/auth/login'
 import { ROUTES } from '@/lib/constants'
 import { SidebarTrigger, Button, Separator } from '@/components/ui'
 import { cn } from '@/lib/utils'
-import { Bell, LogOut, User, ChevronDown } from 'lucide-react'
+import { LogOut, User, ChevronDown } from 'lucide-react'
 import { DropdownMenu, DropdownMenuItem } from './DropdownMenu'
+import { NotificationsPopover } from './NotificationsPopover'
 import { LAYOUT_CONSTANTS, responsivePadding, responsiveSpacing } from './constants'
 // Import Components
 import { ModeToggle } from './theme-toggle'
@@ -45,10 +46,7 @@ export function Header({ className }: HeaderProps) {
         <div className={cn('flex items-center shrink-0', responsiveSpacing.gapSmall)}>
           <LanguageToggle />
           <ModeToggle />
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-1 end-1 h-2 w-2 rounded-full bg-destructive" />
-          </Button>
+          <NotificationsPopover />
           <div className="relative">
             <Button
               variant="ghost"

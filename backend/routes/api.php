@@ -183,5 +183,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('users', App\Http\Controllers\Admin\UserController::class);
         Route::get('reports', [App\Http\Controllers\Admin\ReportController::class, 'index']);
     });
+
+    // Notifications routes (available to all authenticated users)
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [App\Http\Controllers\NotificationController::class, 'index']);
+        Route::get('/unread-count', [App\Http\Controllers\NotificationController::class, 'unreadCount']);
+        Route::post('/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead']);
+        Route::post('/read-all', [App\Http\Controllers\NotificationController::class, 'markAllAsRead']);
+        Route::delete('/', [App\Http\Controllers\NotificationController::class, 'deleteAll']);
+        Route::delete('/{id}', [App\Http\Controllers\NotificationController::class, 'destroy']);
+    });
 });
 

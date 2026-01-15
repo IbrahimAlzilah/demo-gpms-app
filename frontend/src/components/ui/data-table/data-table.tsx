@@ -186,7 +186,7 @@ export function DataTable<TData, TValue>({
                                     colSpan={columns.length}
                                     className="h-24 text-center"
                                 >
-                                    <LoadingSpinner className="min-h-auto" />
+                                    <LoadingSpinner className="min-h-[calc(100vh-430px)]" />
                                     <p className="mt-2 text-sm text-muted-foreground">
                                         {defaultLoadingMessage}
                                     </p>

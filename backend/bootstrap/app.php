@@ -23,6 +23,13 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Http\Middleware\HandleCors::class,
         ]);
     })
+    ->withSchedule(function ($schedule): void {
+        // Schedule deadline reminders to run daily at 9:00 AM
+        $schedule->command('notifications:send-deadline-reminders')
+            ->dailyAt('09:00')
+            ->timezone('Asia/Riyadh')
+            ->withoutOverlapping();
+    })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
