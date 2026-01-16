@@ -14,67 +14,88 @@ import {
   Server,
   Settings,
   FileBarChart,
-  ArrowLeft,
-  ArrowRight
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react'
-import { useAuthStore } from '@/pages/auth/login'
-import { cn } from '@/lib/utils'
+import { StatsCard as StatsCardComponent, LoadingSpinner, BlockContent } from '@/components/common'
+import { useAdminDashboard } from './hooks/useAdminDashboard'
 
 export function AdminDashboardPage() {
-  const { t, i18n } = useTranslation()
-  const isRTL = i18n.dir() === 'rtl'
-  const { user } = useAuthStore()
+  const { t } = useTranslation()
+  const { data, isLoading, error, refetch } = useAdminDashboard()
 
-  // Mock data - in real app, fetch from API
-  const stats = {
-    totalUsers: 150,
-    activeUsers: 120,
-    totalProjects: 45,
-    totalProposals: 78,
-    systemHealth: 'Good'
+  // Loading state
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <LoadingSpinner />
+        </div>
+      </MainLayout>
+    )
   }
 
-  const ArrowIcon = isRTL ? ArrowLeft : ArrowRight
+  // Error state
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="space-y-8 animate-in fade-in duration-500 pb-10">
+          <BlockContent variant="container" className="border-destructive">
+            <div className="flex flex-col items-center justify-center gap-4 p-8">
+              <div className="bg-destructive/10 p-3 rounded-full">
+                <AlertCircle className="h-6 w-6 text-destructive" />
+              </div>
+              <div className="text-center space-y-2">
+                <h3 className="font-semibold text-destructive">{t('common.error', { defaultValue: 'Error' })}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {error.message || t('dashboard.admin.loadError', { defaultValue: 'Failed to load dashboard data.' })}
+                </p>
+              </div>
+              <Button onClick={() => refetch()} variant="outline" className="mt-2">
+                <RefreshCw className="h-4 w-4 me-2" />
+                {t('common.retry', { defaultValue: 'Retry' })}
+              </Button>
+            </div>
+          </BlockContent>
+        </div>
+      </MainLayout>
+    )
+  }
+
+  const stats = data.stats
 
   return (
     <MainLayout>
       <div className="space-y-8 animate-in fade-in duration-500 pb-10">
-
-        {/* Page Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground text-start">System Administration</h1>
-          <p className="text-sm text-muted-foreground">{new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-        </div>
-
         {/* Stats Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <StatsCard
+          <StatsCardComponent
             title={t('dashboard.admin.totalUsers')}
             value={stats.totalUsers}
             icon={Users}
             subValue={t('dashboard.admin.activeUsers', { count: stats.activeUsers })}
             color="blue"
           />
-          <StatsCard
+          <StatsCardComponent
             title={t('dashboard.admin.projects')}
             value={stats.totalProjects}
             icon={Briefcase}
             subValue={t('dashboard.admin.registeredProjects')}
             color="green"
           />
-          <StatsCard
+          <StatsCardComponent
             title={t('dashboard.admin.proposals')}
             value={stats.totalProposals}
             icon={FileText}
             subValue={t('dashboard.admin.submittedProposals')}
-            color="orange"
+            color="purple"
           />
-          <StatsCard
+          <StatsCardComponent
             title={t('dashboard.admin.systemStatus')}
             value={stats.systemHealth}
             icon={Activity}
             subValue={t('dashboard.admin.allSystemsOperational')}
-            color="slate"
+            color="yellow"
           />
         </div>
 
@@ -92,15 +113,14 @@ export function AdminDashboardPage() {
                   <TrendingUp className="h-4 w-4 text-green-500" />
                 </CardHeader>
                 <CardContent className="pt-6">
-                  <div className="text-2xl font-bold">+12%</div>
-                  <p className="text-xs text-muted-foreground">
-                    {t('dashboard.admin.sinceLastMonth', { defaultValue: 'from last month' })}
-                  </p>
-                  {/* Simplified Chart Placeholder */}
-                  <div className="h-[100px] w-full mt-4 flex items-end justify-between gap-2 px-2">
-                    {[40, 65, 45, 80, 55, 90, 70].map((h, i) => (
-                      <div key={i} className="w-full bg-primary/20 hover:bg-primary/40 rounded-t-sm transition-all" style={{ height: `${h}%` }}></div>
-                    ))}
+                  <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
+                    <TrendingUp className="h-8 w-8 mb-2 opacity-50" />
+                    <p className="text-sm font-medium">
+                      {t('dashboard.admin.comingSoon', { defaultValue: 'Coming Soon' })}
+                    </p>
+                    <p className="text-xs mt-1">
+                      {t('dashboard.admin.userGrowthDesc', { defaultValue: 'User growth analytics will be available soon.' })}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -113,16 +133,14 @@ export function AdminDashboardPage() {
                   <Database className="h-4 w-4 text-primary" />
                 </CardHeader>
                 <CardContent className="pt-6">
-                  <div className="text-2xl font-bold">45%</div>
-                  <p className="text-xs text-muted-foreground">
-                    2.1 TB / 5 TB
-                  </p>
-                  <div className="h-2.5 w-full bg-secondary mt-4 rounded-full overflow-hidden">
-                    <div className="h-full bg-primary w-[45%] rounded-full" />
-                  </div>
-                  <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-primary"></div> Documents</div>
-                    <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-muted"></div> Available</div>
+                  <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
+                    <Database className="h-8 w-8 mb-2 opacity-50" />
+                    <p className="text-sm font-medium">
+                      {t('dashboard.admin.comingSoon', { defaultValue: 'Coming Soon' })}
+                    </p>
+                    <p className="text-xs mt-1">
+                      {t('dashboard.admin.storageUsageDesc', { defaultValue: 'Storage usage metrics will be available soon.' })}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -177,10 +195,15 @@ export function AdminDashboardPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 pt-6">
-                <StatusRow label="API Server" status="online" />
-                <StatusRow label="Database Cluster" status="online" />
-                <StatusRow label="File Storage" status="online" />
-                <StatusRow label="Email Gateway" status="maintenance" />
+                <div className="flex flex-col items-center justify-center py-6 text-center text-muted-foreground">
+                  <Server className="h-8 w-8 mb-2 opacity-50" />
+                  <p className="text-sm font-medium">
+                    {t('dashboard.admin.comingSoon', { defaultValue: 'Coming Soon' })}
+                  </p>
+                  <p className="text-xs mt-1">
+                    {t('dashboard.admin.serverStatusDesc', { defaultValue: 'Server status monitoring will be available soon.' })}
+                  </p>
+                </div>
               </CardContent>
             </Card>
 
@@ -193,34 +216,13 @@ export function AdminDashboardPage() {
 
 // Sub-components
 
-function StatsCard({ title, value, icon: Icon, subValue, color }: any) {
-  const colorStyles = {
-    blue: "text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400",
-    green: "text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400",
-    orange: "text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-400",
-    slate: "text-slate-600 bg-slate-50 dark:bg-slate-900/20 dark:text-slate-400",
-  }
-
-  // @ts-ignore
-  const iconColor = colorStyles[color] || colorStyles.blue
-
-  return (
-    <div className="rounded-xl border border-border bg-card p-6 flex flex-col justify-between h-full transition-colors hover:border-primary/20">
-      <div className="flex items-start justify-between mb-4">
-        <div className={cn("p-2.5 rounded-lg", iconColor)}>
-          <Icon className="h-5 w-5" />
-        </div>
-        <span className="text-3xl font-bold tracking-tight text-foreground">{value}</span>
-      </div>
-      <div>
-        <h3 className="font-medium text-sm text-foreground mb-1">{title}</h3>
-        <p className="text-xs text-muted-foreground">{subValue}</p>
-      </div>
-    </div>
-  )
+interface QuickActionButtonProps {
+  to: string
+  icon: React.ComponentType<{ className?: string }>
+  label: string
 }
 
-function QuickActionButton({ to, icon: Icon, label }: any) {
+function QuickActionButton({ to, icon: Icon, label }: QuickActionButtonProps) {
   return (
     <Button asChild variant="outline" className="w-full justify-start h-11 px-4 bg-card hover:bg-accent hover:text-accent-foreground border-border shadow-none transition-all duration-200">
       <Link to={to} className="flex items-center">
@@ -231,26 +233,3 @@ function QuickActionButton({ to, icon: Icon, label }: any) {
   )
 }
 
-function StatusRow({ label, status }: { label: string, status: 'online' | 'offline' | 'maintenance' }) {
-  const styles = {
-    online: "bg-green-500",
-    offline: "bg-red-500",
-    maintenance: "bg-amber-500",
-  }
-
-  const textStyles = {
-    online: "text-green-600 dark:text-green-400",
-    offline: "text-red-600 dark:text-red-400",
-    maintenance: "text-amber-600 dark:text-amber-400",
-  }
-
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-sm font-medium">{label}</span>
-      <div className="flex items-center gap-2">
-        <span className={cn("text-xs font-medium capitalize", textStyles[status])}>{status}</span>
-        <span className={cn("h-2.5 w-2.5 rounded-full ring-2 ring-transparent", styles[status])} />
-      </div>
-    </div>
-  )
-}

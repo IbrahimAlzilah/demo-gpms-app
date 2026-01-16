@@ -73,27 +73,17 @@ export function DocumentsList() {
     <>
       {/* Period Status */}
       {!isPeriodActive && !periodLoading && (
-        <Card className="border-warning mb-6">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-warning" />
-              <CardTitle>{t('document.periodClosed')}</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-start gap-3 p-4 bg-warning/10 border border-warning/20 rounded-lg">
-              <Calendar className="h-5 w-5 text-warning mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-warning-foreground">
-                  {t('document.periodClosedMessage')}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {t('document.periodClosedDescription')}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex items-start gap-3 p-4 bg-warning/10 border border-warning/20 rounded-lg">
+          <Calendar className="h-5 w-5 text-warning mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-warning-foreground">
+              {t('document.periodClosedMessage')}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {t('document.periodClosedDescription')}
+            </p>
+          </div>
+        </div>
       )}
 
       {/* Project Info */}

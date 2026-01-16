@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Button } from '@/components/ui'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button } from '@/components/ui'
 import { BlockContent, ModalDialog, LoadingSpinner } from '@/components/common'
 import { AlertCircle, Users, Mail, Crown, Loader2, CheckCircle2, XCircle, Plus, UserPlus } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
@@ -19,7 +18,6 @@ export function GroupsList() {
     data,
     state,
     setState,
-    registration,
     registrations,
   } = useGroupsList()
 
@@ -290,46 +288,46 @@ export function GroupsList() {
   const isFull = data.group.members.length >= data.group.maxMembers
 
   // Check if user has an approved registration for the group's project
-  const groupProjectRegistration = data.group.projectId 
-    ? registrations?.find(r => r.projectId === data.group.projectId && r.status === 'approved')
-    : null
+  // const groupProjectRegistration = data.group.projectId
+  //   ? registrations?.find(r => r.projectId === data.group.projectId && r.status === 'approved')
+  //   : null
 
-  const hasApprovedRegistration =
-    groupProjectRegistration ||
-    (data.group.project?.students && data.group.project.students.some(s => s.id === user?.id))
+  // const hasApprovedRegistration =
+  //   groupProjectRegistration ||
+  //   (data.group.project?.students && data.group.project.students.some(s => s.id === user?.id))
 
-  if (!hasApprovedRegistration) {
-    // Find the registration for this project to show appropriate message
-    const projectRegistration = data.group.projectId
-      ? registrations?.find(r => r.projectId === data.group.projectId)
-      : null
+  // if (!hasApprovedRegistration) {
+  //   // Find the registration for this project to show appropriate message
+  //   const projectRegistration = data.group.projectId
+  //     ? registrations?.find(r => r.projectId === data.group.projectId)
+  //     : null
 
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-warning" />
-            {t('groups.registrationRequired')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-start gap-3 p-4 bg-warning/10 border border-warning/20 rounded-lg">
-            <AlertCircle className="h-5 w-5 text-warning mt-0.5" />
-            <div className="flex-1">
-              <p className="font-medium mb-1 text-warning">
-                {t('groups.registrationRequiredTitle')}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {projectRegistration?.status === 'pending'
-                  ? t('groups.registrationPendingMessage')
-                  : t('groups.registrationNotApprovedMessage')}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
+  //   return (
+  //     <Card>
+  //       <CardHeader>
+  //         <CardTitle className="flex items-center gap-2">
+  //           <AlertCircle className="h-5 w-5 text-warning" />
+  //           {t('groups.registrationRequired')}
+  //         </CardTitle>
+  //       </CardHeader>
+  //       <CardContent>
+  //         <div className="flex items-start gap-3 p-4 bg-warning/10 border border-warning/20 rounded-lg">
+  //           <AlertCircle className="h-5 w-5 text-warning mt-0.5" />
+  //           <div className="flex-1">
+  //             <p className="font-medium mb-1 text-warning">
+  //               {t('groups.registrationRequiredTitle')}
+  //             </p>
+  //             <p className="text-sm text-muted-foreground">
+  //               {projectRegistration?.status === 'pending'
+  //                 ? t('groups.registrationPendingMessage')
+  //                 : t('groups.registrationNotApprovedMessage')}
+  //             </p>
+  //           </div>
+  //         </div>
+  //       </CardContent>
+  //     </Card>
+  //   )
+  // }
 
   const headerActions = isLeader && !isFull ? (
     <Button
@@ -458,7 +456,7 @@ export function GroupsList() {
                   <Button
                     variant="outline"
                     onClick={() => {
-                      navigator.clipboard.writeText(data.group.id)
+                      navigator.clipboard.writeText(data.group?.id || '')
                       setState((prev) => ({
                         ...prev,
                         success: t('groups.groupIdCopied'),

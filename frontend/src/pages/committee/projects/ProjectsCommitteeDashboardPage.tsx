@@ -14,23 +14,85 @@ import {
   ArrowLeft,
   ArrowRight,
   Clock,
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react'
-import { StatsCard as StatsCardComponent } from '@/components/common'
+import { StatsCard as StatsCardComponent, LoadingSpinner, BlockContent } from '@/components/common'
 import { cn } from '@/lib/utils'
+import { useProjectsCommitteeDashboard } from './hooks/useProjectsCommitteeDashboard'
+import type { PeriodType } from '@/types/period.types'
 
 export function ProjectsCommitteeDashboardPage() {
   const { t, i18n } = useTranslation()
   const isRTL = i18n.dir() === 'rtl'
-
-  // Mock data - in real app, fetch from API
-  const stats = {
-    pendingProposals: 12,
-    pendingRequests: 8,
-    projectsToAnnounce: 5,
-    supervisorsToAssign: 3,
-  }
+  const { data, isLoading, error, refetch } = useProjectsCommitteeDashboard()
 
   const ArrowIcon = isRTL ? ArrowLeft : ArrowRight
+
+  // Helper function to get period type label
+  const getPeriodTypeLabel = (type: PeriodType): string => {
+    const labels: Record<PeriodType, string> = {
+      proposal_submission: t('phase.proposalSubmission', { defaultValue: 'Proposal Submission' }),
+      project_registration: t('phase.projectRegistration', { defaultValue: 'Project Registration' }),
+      document_submission: t('phase.documentSubmission', { defaultValue: 'Document Submission' }),
+      supervisor_evaluation: t('phase.supervisorEvaluation', { defaultValue: 'Supervisor Evaluation' }),
+      committee_evaluation: t('phase.committeeEvaluation', { defaultValue: 'Committee Evaluation' }),
+      discussion_evaluation: t('phase.discussionEvaluation', { defaultValue: 'Discussion Evaluation' }),
+      final_discussion: t('phase.finalDiscussion', { defaultValue: 'Final Discussion' }),
+      grade_approval: t('phase.gradeApproval', { defaultValue: 'Grade Approval' }),
+      general: t('phase.general', { defaultValue: 'General' }),
+    }
+    return labels[type] || type
+  }
+
+  // Helper function to format "Ends in X days"
+  const formatEndsIn = (days: number | null): string => {
+    if (days === null) return ''
+    if (days === 0) return t('common.endsToday', { defaultValue: 'Ends today' })
+    if (days === 1) return t('common.endsTomorrow', { defaultValue: 'Ends tomorrow' })
+    return t('common.endsInDays', { count: days, defaultValue: `Ends in ${days} days` })
+  }
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <LoadingSpinner />
+        </div>
+      </MainLayout>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="space-y-8 animate-in fade-in duration-500 pb-10">
+          <BlockContent variant="container" className="border-destructive">
+            <div className="flex flex-col items-center justify-center gap-4 p-8">
+              <div className="bg-destructive/10 p-3 rounded-full">
+                <AlertCircle className="h-6 w-6 text-destructive" />
+              </div>
+              <div className="text-center space-y-2">
+                <h3 className="font-semibold text-destructive">{t('common.error', { defaultValue: 'Error' })}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {error.message || t('dashboard.committee.loadError', { defaultValue: 'Failed to load dashboard data.' })}
+                </p>
+              </div>
+              <Button onClick={() => refetch()} variant="outline" className="mt-2">
+                <RefreshCw className="h-4 w-4 me-2" />
+                {t('common.retry', { defaultValue: 'Retry' })}
+              </Button>
+            </div>
+          </BlockContent>
+        </div>
+      </MainLayout>
+    )
+  }
+
+  const stats = data.stats
+  const currentPhase = data.currentPhase
 
   return (
     <MainLayout>
@@ -100,7 +162,7 @@ export function ProjectsCommitteeDashboardPage() {
                   />
                 )}
 
-                {/* Example of empty state if no urgent tasks */}
+                {/* Empty state if no urgent tasks */}
                 {stats.pendingProposals === 0 && stats.pendingRequests === 0 && (
                   <div className="flex flex-col items-center justify-center p-8 text-center rounded-xl border border-dashed border-muted-foreground/25 bg-muted/5">
                     <div className="bg-green-100 dark:bg-green-900/20 p-3 rounded-full mb-4">
@@ -112,38 +174,61 @@ export function ProjectsCommitteeDashboardPage() {
               </div>
             </div>
 
-            {/* Workflow Timeline Placeholder */}
+            {/* Current Phase Card */}
             <Card className="overflow-hidden border-border bg-card shadow-none">
               <CardHeader className="border-b border-border/50 bg-muted/20">
                 <CardTitle className="text-base font-medium">{t('dashboard.committee.currentPhase', { defaultValue: 'Current Phase' })}</CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                      <div className="p-1.5 bg-primary/10 rounded-md text-primary">
-                        <Clock className="w-4 h-4" />
+                {currentPhase.period ? (
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-primary/10 rounded-md text-primary">
+                          <Clock className="w-4 h-4" />
+                        </div>
+                        <span className="font-medium text-foreground">
+                          {currentPhase.period.name || getPeriodTypeLabel(currentPhase.period.type)}
+                        </span>
                       </div>
-                      <span className="font-medium text-foreground">{t('phase.proposalSubmission', { defaultValue: 'Proposal Submission' })}</span>
+                      {currentPhase.endsInDays !== null && (
+                        <span className="text-muted-foreground bg-secondary px-2 py-0.5 rounded text-xs">
+                          {formatEndsIn(currentPhase.endsInDays)}
+                        </span>
+                      )}
                     </div>
-                    <span className="text-muted-foreground bg-secondary px-2 py-0.5 rounded text-xs">{t('common.endsIn', { defaultValue: 'Ends in 3 days' })}</span>
-                  </div>
 
-                  <div className="relative pt-2">
-                    <div className="flex mb-2 items-center justify-between text-xs text-muted-foreground">
-                      <span>0%</span>
-                      <span>75% Complete</span>
-                      <span>100%</span>
+                    <div className="relative pt-2">
+                      <div className="flex mb-2 items-center justify-between text-xs text-muted-foreground">
+                        <span>0%</span>
+                        <span>{currentPhase.progressPercent}% {t('common.complete', { defaultValue: 'Complete' })}</span>
+                        <span>100%</span>
+                      </div>
+                      <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-primary transition-all duration-300" 
+                          style={{ width: `${Math.min(100, Math.max(0, currentPhase.progressPercent))}%` }} 
+                        />
+                      </div>
                     </div>
-                    <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
-                      <div className="h-full bg-primary w-[75%]" />
-                    </div>
-                  </div>
 
-                  <p className="text-xs text-muted-foreground border-t border-border/50 pt-4 mt-2">
-                    <span className="font-semibold">{t('common.next', { defaultValue: 'Next' })}:</span> {t('phase.nextPhase', { defaultValue: 'Project Announcement' })}
-                  </p>
-                </div>
+                    {currentPhase.nextPeriod && (
+                      <p className="text-xs text-muted-foreground border-t border-border/50 pt-4 mt-2">
+                        <span className="font-semibold">{t('common.next', { defaultValue: 'Next' })}:</span>{' '}
+                        {currentPhase.nextPeriod.name || getPeriodTypeLabel(currentPhase.nextPeriod.type)}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center p-6 text-center">
+                    <div className="p-3 rounded-full bg-muted mb-3">
+                      <Clock className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {t('dashboard.committee.noActivePhase', { defaultValue: 'No active phase at the moment.' })}
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 

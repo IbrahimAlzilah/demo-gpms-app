@@ -1,10 +1,12 @@
 import { useTranslation } from 'react-i18next'
+import { useMemo } from 'react'
 import { MainLayout } from '../../layouts/MainLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
-import { LoadingSpinner } from '../../components/common/LoadingSpinner'
+import { LoadingSpinner, BlockContent } from '../../components/common'
 import { useProposals } from './proposals'
 import { useRequests } from './requests'
 import { useProjects } from './projects'
+import { useDocuments } from './documents'
 import { useAuthStore } from '../../pages/auth/login'
 import { ROUTES } from '../../lib/constants'
 import { Link } from 'react-router-dom'
@@ -21,6 +23,8 @@ import {
   Folder,
   Send,
   Upload,
+  AlertCircle,
+  RefreshCw,
   type LucideIcon
 } from 'lucide-react'
 import { StatusBadge, StatsCard as StatsCardComponent } from '@/components/common'
@@ -30,11 +34,20 @@ export function StudentDashboardPage() {
   const { t, i18n } = useTranslation()
   const isRTL = i18n.dir() === 'rtl'
   const { user } = useAuthStore()
-  const { data: proposals, isLoading: proposalsLoading } = useProposals()
-  const { data: requests, isLoading: requestsLoading } = useRequests()
-  const { data: projects, isLoading: projectsLoading } = useProjects()
+  const { data: proposals, isLoading: proposalsLoading, error: proposalsError, refetch: refetchProposals } = useProposals()
+  const { data: requests, isLoading: requestsLoading, error: requestsError, refetch: refetchRequests } = useRequests()
+  const { data: projects, isLoading: projectsLoading, error: projectsError, refetch: refetchProjects } = useProjects()
 
-  const isLoading = proposalsLoading || requestsLoading || projectsLoading
+  // Get user's registered project
+  const userProject = useMemo(() => {
+    return projects?.find((p) => p.students.some((s) => s.id === user?.id))
+  }, [projects, user?.id])
+
+  // Fetch documents for user's project (if they have one)
+  const { data: documents, isLoading: documentsLoading, error: documentsError, refetch: refetchDocuments } = useDocuments(userProject?.id)
+
+  const isLoading = proposalsLoading || requestsLoading || projectsLoading || documentsLoading
+  const error = proposalsError || requestsError || projectsError || documentsError
 
   // Calculate statistics
   const stats = {
@@ -50,6 +63,9 @@ export function StudentDashboardPage() {
       registered: projects?.filter((p) => p.students.some((s) => s.id === user?.id)).length || 0,
       available: projects?.filter((p) => p.status === 'available_for_registration').length || 0,
     },
+    documents: {
+      total: documents?.length || 0,
+    },
   }
 
   // Get recent proposals
@@ -58,11 +74,46 @@ export function StudentDashboardPage() {
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 3)
 
+  // Refetch all queries
+  const refetchAll = () => {
+    refetchProposals()
+    refetchRequests()
+    refetchProjects()
+    refetchDocuments()
+  }
+
   if (isLoading) {
     return (
       <MainLayout>
         <div className="flex items-center justify-center min-h-[50vh]">
           <LoadingSpinner />
+        </div>
+      </MainLayout>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="space-y-8 animate-in fade-in duration-500 pb-10">
+          <BlockContent variant="container" className="border-destructive">
+            <div className="flex flex-col items-center justify-center gap-4 p-8">
+              <div className="bg-destructive/10 p-3 rounded-full">
+                <AlertCircle className="h-6 w-6 text-destructive" />
+              </div>
+              <div className="text-center space-y-2">
+                <h3 className="font-semibold text-destructive">{t('common.error', { defaultValue: 'Error' })}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {error instanceof Error ? error.message : t('dashboard.student.loadError', { defaultValue: 'Failed to load dashboard data.' })}
+                </p>
+              </div>
+              <Button onClick={refetchAll} variant="outline" className="mt-2">
+                <RefreshCw className="h-4 w-4 me-2" />
+                {t('common.retry', { defaultValue: 'Retry' })}
+              </Button>
+            </div>
+          </BlockContent>
         </div>
       </MainLayout>
     )
@@ -99,7 +150,7 @@ export function StudentDashboardPage() {
 
           <StatsCardComponent
             title={t('nav.documents',)}
-            value="12"
+            value={stats.documents.total}
             icon={Upload}
             color="purple"
           />

@@ -324,15 +324,10 @@
     "joinError": "فشل الانضمام إلى المجموعة",
     "joining": "جاري الانضمام...",
     "join": "انضم",
-    "messagePlaceholder": "رسالة الدعوة (اختياري)",
     "sending": "جاري الإرسال...",
     "sendInvitation": "إرسال الدعوة",
     "fullCapacity": "المجموعة ممتلئة",
-    "groupId": "معرف المجموعة",
-    "groupIdPlaceholder": "أدخل معرف المجموعة",
-    "joining": "جاري الانضمام...",
-    "join": "الانضمام",
-    "joinError": "فشل الانضمام إلى المجموعة"
+    "onlyLeaderCanRemoveMembers": "يمكن فقط مشرف المجموعة إزالة الأعضاء"
   },
   "theme": {
     "light": "فاتح",

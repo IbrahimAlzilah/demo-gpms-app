@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
+import { LoadingSpinner, BlockContent } from '@/components/common'
+import { useSupervisorDashboard } from './hooks/useSupervisorDashboard'
 import {
   Briefcase,
   UserCheck,
@@ -13,22 +15,71 @@ import {
   ArrowRight,
   TrendingUp,
   CheckCircle2,
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react'
 import { StatsCard as StatsCardComponent } from '@/components/common'
 
 export function SupervisorDashboardPage() {
   const { t, i18n } = useTranslation()
   const isRTL = i18n.dir() === 'rtl'
-
-  // Mock data - in real app, fetch from API
-  const stats = {
-    projects: 5,
-    pendingRequests: 3,
-    upcomingMeetings: 2,
-    pendingEvaluations: 4,
-  }
+  const { data, isLoading, error, refetch } = useSupervisorDashboard()
 
   const ArrowIcon = isRTL ? ArrowLeft : ArrowRight
+
+  // Format date for meeting display
+  const formatMeetingDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const day = date.getDate()
+    const month = date.toLocaleDateString(isRTL ? 'ar-SA' : 'en-US', { month: 'short' }).toUpperCase()
+    const time = date.toLocaleTimeString(isRTL ? 'ar-SA' : 'en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: true 
+    })
+    return { day, month, time }
+  }
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <LoadingSpinner />
+        </div>
+      </MainLayout>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="space-y-8 animate-in fade-in duration-500 pb-10">
+          <BlockContent variant="container" className="border-destructive">
+            <div className="flex flex-col items-center justify-center gap-4 p-8">
+              <div className="bg-destructive/10 p-3 rounded-full">
+                <AlertCircle className="h-6 w-6 text-destructive" />
+              </div>
+              <div className="text-center space-y-2">
+                <h3 className="font-semibold text-destructive">{t('common.error', { defaultValue: 'Error' })}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {error.message || t('dashboard.supervisor.loadError', { defaultValue: 'Failed to load dashboard data.' })}
+                </p>
+              </div>
+              <Button onClick={() => refetch()} variant="outline" className="mt-2">
+                <RefreshCw className="h-4 w-4 me-2" />
+                {t('common.retry', { defaultValue: 'Retry' })}
+              </Button>
+            </div>
+          </BlockContent>
+        </div>
+      </MainLayout>
+    )
+  }
+
+  const stats = data.stats
+  const upcomingMeetings = data.upcomingMeetings
 
   return (
     <MainLayout>
@@ -174,39 +225,40 @@ export function SupervisorDashboardPage() {
               </CardHeader>
               <CardContent className="pt-6">
                 <div className="space-y-4">
-                  {stats.upcomingMeetings > 0 ? (
+                  {upcomingMeetings.length > 0 ? (
                     <>
-                      <div className="flex items-start gap-4">
-                        <div className="bg-background border px-2 py-1.5 rounded-lg text-center min-w-[52px]">
-                          <div className="font-bold text-primary text-lg">15</div>
-                          <div className="text-[10px] uppercase text-muted-foreground font-semibold">JAN</div>
-                        </div>
-                        <div className="space-y-0.5">
-                          <p className="font-medium text-sm">Thesis Review - Groups A</p>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <TrendingUp className="h-3 w-3" /> 10:00 AM - Room 302
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-4">
-                        <div className="bg-background border px-2 py-1.5 rounded-lg text-center min-w-[52px]">
-                          <div className="font-bold text-primary text-lg">16</div>
-                          <div className="text-[10px] uppercase text-muted-foreground font-semibold">JAN</div>
-                        </div>
-                        <div className="space-y-0.5">
-                          <p className="font-medium text-sm">Proposal Defense</p>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <TrendingUp className="h-3 w-3" /> 02:00 PM - Online
-                          </p>
-                        </div>
-                      </div>
+                      {upcomingMeetings.slice(0, 5).map((meeting) => {
+                        const { day, month, time } = formatMeetingDate(meeting.scheduledDate)
+                        return (
+                          <div key={meeting.id} className="flex items-start gap-4">
+                            <div className="bg-background border px-2 py-1.5 rounded-lg text-center min-w-[52px]">
+                              <div className="font-bold text-primary text-lg">{day}</div>
+                              <div className="text-[10px] uppercase text-muted-foreground font-semibold">{month}</div>
+                            </div>
+                            <div className="space-y-0.5 flex-1">
+                              <p className="font-medium text-sm">{meeting.projectTitle}</p>
+                              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Calendar className="h-3 w-3" /> {time}
+                                {meeting.location && ` - ${meeting.location}`}
+                              </p>
+                              {meeting.agenda && (
+                                <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                                  {meeting.agenda}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })}
                     </>
                   ) : (
                     <p className="text-sm text-muted-foreground">{t('supervisor.noMeetings', { defaultValue: 'No upcoming meetings scheduled.' })}</p>
                   )}
 
-                  <Button variant="outline" className="w-full text-xs h-9 mt-2" size="sm">
-                    {t('common.viewCalendar', { defaultValue: 'View Calendar' })}
+                  <Button variant="outline" className="w-full text-xs h-9 mt-2" size="sm" asChild>
+                    <Link to={ROUTES.SUPERVISOR.PROGRESS}>
+                      {t('common.viewCalendar', { defaultValue: 'View Calendar' })}
+                    </Link>
                   </Button>
                 </div>
               </CardContent>

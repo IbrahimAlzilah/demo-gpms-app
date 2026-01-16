@@ -5,7 +5,7 @@ import { useAuthStore } from '@/pages/auth/login'
 import { ROUTES } from '@/lib/constants'
 import { Button } from '@/components/ui'
 import { cn } from '@/lib/utils'
-import { LogOut, ChevronDown } from 'lucide-react'
+import { User, LogOut, ChevronDown } from 'lucide-react'
 import { DropdownMenu, DropdownMenuItem } from './DropdownMenu'
 import { NotificationsPopover } from './NotificationsPopover'
 import { LAYOUT_CONSTANTS, responsivePadding, responsiveSpacing } from './constants'
@@ -64,7 +64,8 @@ export function Header({ className }: HeaderProps) {
               onClick={() => setShowUserMenu(!showUserMenu)}
             >
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                <span className="text-xs font-semi-bold">{user.name.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase()}</span>
+                {/* <span className="text-xs font-semi-bold">{user.name.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase()}</span> */}
+                <User className="size-4" />
               </div>
               <div className="hidden flex-col items-start text-sm lg:flex">
                 <span className="font-medium truncate max-w-[120px]">{user.name}</span>

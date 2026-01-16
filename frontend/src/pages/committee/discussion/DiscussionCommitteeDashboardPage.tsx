@@ -10,25 +10,83 @@ import {
   CheckCircle2,
   Clock,
   ArrowLeft,
-  ArrowRight
+  ArrowRight,
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useAuthStore } from '@/pages/auth/login'
+import { LoadingSpinner, BlockContent } from '@/components/common'
+import { useDiscussionCommitteeDashboard } from './hooks/useDiscussionCommitteeDashboard'
+import { formatRelativeTime } from '@/lib/utils/format'
 
 export function DiscussionCommitteeDashboardPage() {
   const { t, i18n } = useTranslation()
   const isRTL = i18n.dir() === 'rtl'
-  const { user } = useAuthStore()
-
-  // Mock data - in real app, fetch from API
-  const stats = {
-    assignedProjects: 8,
-    pendingEvaluations: 5,
-    completedEvaluations: 12,
-    upcomingDefenses: 3
-  }
+  const { data, isLoading, error, refetch } = useDiscussionCommitteeDashboard()
 
   const ArrowIcon = isRTL ? ArrowLeft : ArrowRight
+
+  // Format date for defense schedule display
+  const formatDefenseDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffDays = Math.floor((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    
+    if (diffDays === 0) {
+      return t('common.today', { defaultValue: 'Today' })
+    } else if (diffDays === 1) {
+      return t('common.tomorrow', { defaultValue: 'Tomorrow' })
+    }
+    
+    const time = date.toLocaleTimeString(isRTL ? 'ar-SA' : 'en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    })
+    return `${formatRelativeTime(date)}, ${time}`
+  }
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <LoadingSpinner />
+        </div>
+      </MainLayout>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="space-y-8 animate-in fade-in duration-500 pb-10">
+          <BlockContent variant="container" className="border-destructive">
+            <div className="flex flex-col items-center justify-center gap-4 p-8">
+              <div className="bg-destructive/10 p-3 rounded-full">
+                <AlertCircle className="h-6 w-6 text-destructive" />
+              </div>
+              <div className="text-center space-y-2">
+                <h3 className="font-semibold text-destructive">{t('common.error', { defaultValue: 'Error' })}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {error.message || t('dashboard.discussion.loadError', { defaultValue: 'Failed to load dashboard data.' })}
+                </p>
+              </div>
+              <Button onClick={() => refetch()} variant="outline" className="mt-2">
+                <RefreshCw className="h-4 w-4 me-2" />
+                {t('common.retry', { defaultValue: 'Retry' })}
+              </Button>
+            </div>
+          </BlockContent>
+        </div>
+      </MainLayout>
+    )
+  }
+
+  const stats = data.stats
+  const pendingEvaluations = data.pendingEvaluations
+  const defenseSchedule = data.defenseSchedule
 
   return (
     <MainLayout>
@@ -83,23 +141,23 @@ export function DiscussionCommitteeDashboardPage() {
               </div>
 
               <div className="grid gap-3">
-                {stats.pendingEvaluations > 0 ? (
-                  Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="group flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:bg-accent/5 hover:border-primary/20">
+                {pendingEvaluations.length > 0 ? (
+                  pendingEvaluations.map((evaluation) => (
+                    <div key={evaluation.projectId} className="group flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:bg-accent/5 hover:border-primary/20">
                       <div className="flex items-start gap-3 w-full sm:w-auto">
                         <div className="p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-600 dark:text-blue-400 shrink-0">
                           <Briefcase className="h-5 w-5" />
                         </div>
                         <div>
-                          <h3 className="font-medium text-sm group-hover:text-primary transition-colors">Smart City Traffic System {i + 1}</h3>
+                          <h3 className="font-medium text-sm group-hover:text-primary transition-colors">{evaluation.projectTitle}</h3>
                           <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
                             <Clock className="h-3 w-3" />
-                            {t('common.daysAgo', { count: i + 2, defaultValue: `${i + 2} days ago` })}
+                            {formatRelativeTime(evaluation.createdAt)}
                           </p>
                         </div>
                       </div>
                       <Button asChild size="sm" variant="ghost" className="shrink-0 w-full sm:w-auto">
-                        <Link to={ROUTES.DISCUSSION_COMMITTEE.EVALUATION}>
+                        <Link to={`${ROUTES.DISCUSSION_COMMITTEE.EVALUATION}?projectId=${evaluation.projectId}`}>
                           {t('dashboard.discussion.evaluate', { defaultValue: 'Evaluate' })}
                           <ArrowIcon className="ms-2 h-4 w-4" />
                         </Link>
@@ -149,25 +207,42 @@ export function DiscussionCommitteeDashboardPage() {
               </CardHeader>
               <CardContent className="pt-6">
                 <div className="space-y-6">
-                  <div className="relative border-l-2 border-primary/20 pl-4 ml-2 space-y-6">
-                    <div className="relative">
-                      <span className="absolute -left-[21px] top-1.5 h-3 w-3 rounded-full bg-primary ring-4 ring-card" />
-                      <p className="text-sm font-medium">Group A - AI Research</p>
-                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                        <Clock className="w-3 h-3" /> Today, 10:00 AM
+                  {defenseSchedule.length > 0 ? (
+                    <>
+                      <div className="relative border-l-2 border-primary/20 pl-4 ml-2 space-y-6">
+                        {defenseSchedule.map((defense, index) => (
+                          <div key={defense.projectId} className="relative">
+                            <span className={`absolute -left-[21px] top-1.5 h-3 w-3 rounded-full ring-4 ring-card ${
+                              index === 0 ? 'bg-primary' : 'bg-muted-foreground/30'
+                            }`} />
+                            <p className={`text-sm font-medium ${index === 0 ? '' : 'text-muted-foreground'}`}>
+                              {defense.projectTitle}
+                            </p>
+                            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                              <Clock className="w-3 h-3" /> {formatDefenseDate(defense.scheduledDate)}
+                              {defense.location && ` - ${defense.location}`}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                      <Button variant="outline" className="w-full h-8 text-xs" asChild>
+                        <Link to={ROUTES.DISCUSSION_COMMITTEE.PROJECTS}>
+                          {t('common.viewFullSchedule', { defaultValue: 'View Full Schedule' })}
+                        </Link>
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm text-muted-foreground">
+                        {t('dashboard.discussion.noDefensesScheduled', { defaultValue: 'No defense schedules available.' })}
                       </p>
-                    </div>
-                    <div className="relative">
-                      <span className="absolute -left-[21px] top-1.5 h-3 w-3 rounded-full bg-muted-foreground/30 ring-4 ring-card" />
-                      <p className="text-sm font-medium text-muted-foreground">Group B - Robotics</p>
-                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                        <Clock className="w-3 h-3" /> Tomorrow, 02:00 PM
-                      </p>
-                    </div>
-                  </div>
-                  <Button variant="outline" className="w-full h-8 text-xs">
-                    {t('common.viewFullSchedule', { defaultValue: 'View Full Schedule' })}
-                  </Button>
+                      <Button variant="outline" className="w-full h-8 text-xs" asChild>
+                        <Link to={ROUTES.DISCUSSION_COMMITTEE.PROJECTS}>
+                          {t('dashboard.discussion.viewProjects', { defaultValue: 'View Projects' })}
+                        </Link>
+                      </Button>
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>

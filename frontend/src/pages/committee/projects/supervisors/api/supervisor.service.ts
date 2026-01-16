@@ -8,6 +8,22 @@ export const supervisorAssignmentService = {
     return Array.isArray(response.data) ? response.data : []
   },
 
+  getProjectsWithoutSupervisorCount: async (): Promise<number> => {
+    try {
+      const response = await apiClient.get<{ data: Project[], pagination?: { total?: number } }>(
+        '/projects-committee/projects?supervisor_id=null&pageSize=1'
+      )
+      // Try to get count from pagination first
+      if (response.pagination?.total !== undefined) {
+        return response.pagination.total
+      }
+      // Fallback to data length if pagination not available
+      return Array.isArray(response.data) ? response.data.length : 0
+    } catch {
+      return 0
+    }
+  },
+
   getAvailableSupervisors: async (): Promise<User[]> => {
     const response = await apiClient.get<User[]>('/projects-committee/supervisors')
     return Array.isArray(response.data) ? response.data : []
