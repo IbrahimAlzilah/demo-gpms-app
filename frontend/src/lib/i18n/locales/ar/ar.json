@@ -144,7 +144,9 @@
     "manageRegistrations": "إدارة طلبات التسجيل",
     "distributeCommittees": "توزيع اللجان",
     "reports": "التقارير",
-    "users": "إدارة المستخدمين"
+    "users": "إدارة المستخدمين",
+    "notifications": "الإشعارات",
+    "announce": "إعلان المشاريع"
   },
   "dashboard": {
     "student": {

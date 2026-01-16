@@ -18,7 +18,7 @@ export function createProjectColumns({
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('project.title')} />
       ),
-      cell: ({ row }) => <div className="font-medium">{row.original.title}</div>,
+      cell: ({ row }) => <div className="font-medium" dir="auto">{row.original.title}</div>,
     },
     {
       accessorKey: 'description',
@@ -26,7 +26,7 @@ export function createProjectColumns({
         <DataTableColumnHeader column={column} title={t('project.description')} />
       ),
       cell: ({ row }) => (
-        <div className="max-w-[400px] truncate text-muted-foreground text-sm">
+        <div className="max-w-[400px] truncate text-muted-foreground text-sm" dir="auto">
           {row.original.description}
         </div>
       ),

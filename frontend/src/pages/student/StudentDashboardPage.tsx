@@ -74,11 +74,7 @@ export function StudentDashboardPage() {
     <MainLayout>
       <div className="space-y-8 animate-in fade-in duration-500 pb-10">
 
-        {/* Page Header (Minimal) */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('nav.dashboard')}</h1>
-          <p className="text-sm text-muted-foreground">{new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-        </div>
+
 
         {/* Stats Grid - Clean & Flat */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">

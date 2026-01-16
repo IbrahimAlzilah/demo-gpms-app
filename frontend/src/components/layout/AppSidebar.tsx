@@ -2,11 +2,11 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/pages/auth/login'
 import { NAV_MENU } from '@/lib/constants'
-import { useDirection } from '@/hooks/use-direction'
 import { cn } from '@/lib/utils'
 import * as Icons from 'lucide-react'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronDown, ChevronUp, ChevronsLeft, ChevronsRight } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
 import {
   Sidebar,
   SidebarContent,
@@ -20,6 +20,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
+  useSidebar,
 } from '@/components/ui/sidebar'
 import type { ComponentType } from 'react'
 import type { SVGProps } from 'react'
@@ -31,10 +32,11 @@ const getIcon = (iconName: string): ComponentType<SVGProps<SVGSVGElement>> => {
 
 export function AppSidebar() {
   const { user } = useAuthStore()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const location = useLocation()
-  const isRtl = useDirection()
+  const isRtl = i18n.dir() === 'rtl'
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set())
+  const { toggleSidebar, state } = useSidebar()
 
   if (!user) return null
 
@@ -88,17 +90,38 @@ export function AppSidebar() {
   return (
     <Sidebar side={isRtl ? 'right' : 'left'} collapsible="icon" className="border-r border-sidebar-border/50 bg-sidebar/95 backdrop-blur supports-[backdrop-filter]:bg-sidebar/60">
       <SidebarHeader className={cn(
-        'flex flex-row items-center gap-3 border-b border-sidebar-border/50 h-16 px-4 transition-all duration-300')}>
-        <img
-          src={logo}
-          alt="GPMS Logo"
-          className="h-9 w-9 rounded-xl shrink-0 object-contain shadow-sm"
-        />
-        <h2 className="text-lg font-bold tracking-tight text-sidebar-primary truncate transition-opacity duration-300 group-data-[collapsible=icon]:opacity-0">
-          {t('app.shortName')}
-        </h2>
+        'flex flex-row items-center h-16 px-4 border-b border-sidebar-border/50 transition-all duration-300',
+        'group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center'
+      )}>
+        <div className="flex items-center gap-3 overflow-hidden flex-1 group-data-[collapsible=icon]:hidden">
+          <img
+            src={logo}
+            alt="GPMS Logo"
+            className="h-8 w-8 rounded-lg shrink-0 object-contain shadow-none"
+          />
+          <div className="flex flex-col overflow-hidden">
+            <span className="text-sm font-bold leading-tight tracking-tight text-sidebar-primary truncate">
+              {t('app.shortName', { defaultValue: 'GPMS' })}
+            </span>
+            <span className="text-[10px] text-muted-foreground truncate">
+              {t('app.name', { defaultValue: 'Project Management' })}
+            </span>
+          </div>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 text-sidebar-foreground/50 hover:text-sidebar-foreground shrink-0"
+          onClick={toggleSidebar}
+        >
+          {isRtl ? (
+            state === 'expanded' ? <ChevronsRight className="h-4 w-4" /> : <ChevronsLeft className="h-4 w-4" />
+          ) : (
+            state === 'expanded' ? <ChevronsLeft className="h-4 w-4" /> : <ChevronsRight className="h-4 w-4" />
+          )}
+        </Button>
       </SidebarHeader>
-      <SidebarContent className="px-2 py-2">
+      <SidebarContent className="px-2 py-2 group-data-[collapsible=icon]:px-0">
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1.5">
@@ -121,7 +144,7 @@ export function AppSidebar() {
                           className={cn(
                             "w-full text-sm font-medium h-10 transition-all duration-200",
                             "hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
-                            "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[active=true]:shadow-sm"
+                            "data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-none"
                           )}
                           data-state={isExpanded ? 'open' : 'closed'}
                         >
@@ -180,7 +203,7 @@ export function AppSidebar() {
                         className={cn(
                           "w-full text-sm font-medium h-10 transition-all duration-200",
                           "hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
-                          "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[active=true]:shadow-sm"
+                          "data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-none"
                         )}>
                         <NavLink to={item.path || '#'}>
                           <Icon className="h-5 w-5 shrink-0" />

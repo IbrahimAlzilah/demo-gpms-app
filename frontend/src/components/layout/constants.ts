@@ -13,8 +13,8 @@ export const LAYOUT_CONSTANTS = {
  * Mobile-first approach: base -> sm -> lg
  */
 export const responsivePadding = {
-  container: 'ps-3 pe-3 sm:ps-4 sm:pe-4 lg:ps-8 lg:pe-8',
-  header: 'ps-3 pe-3 sm:ps-4 sm:pe-4 lg:ps-5 lg:pe-5',
+  container: 'ps-3 pe-3 sm:ps-4 sm:pe-4 lg:ps-6 lg:pe-6',
+  header: 'ps-3 pe-3 sm:ps-4 sm:pe-4 lg:ps-6 lg:pe-6',
   footer: 'ps-3 pe-3 sm:ps-4 sm:pe-4',
   sidebar: 'ps-4 pe-4',
 } as const

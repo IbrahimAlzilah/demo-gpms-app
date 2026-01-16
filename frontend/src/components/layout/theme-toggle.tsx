@@ -12,7 +12,7 @@ export function ModeToggle() {
   return (
     <>
       <Button
-        variant='secondary'
+        variant='ghost'
         size='icon'
         className='size-9 relative border border-input hover:bg-accent hover:text-accent-foreground'
         onClick={toggleTheme}
