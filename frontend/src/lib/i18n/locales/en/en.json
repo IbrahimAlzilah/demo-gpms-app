@@ -119,6 +119,7 @@
     "admin": "System Administrator"
   },
   "nav": {
+    "home": "Home",
     "dashboard": "Dashboard",
     "proposals": "Proposals",
     "myProposals": "My Proposals",
@@ -141,7 +142,9 @@
     "processRequests": "Process Requests",
     "distributeCommittees": "Distribute Committees",
     "reports": "Reports",
-    "users": "User Management"
+    "users": "User Management",
+    "notifications": "Notifications",
+    "announce": "Announce Projects"
   },
   "dashboard": {
     "student": {

@@ -189,7 +189,7 @@ export function DataTable<TData, TValue>({
                                         className="h-24 text-center"
                                     >
                                         <div className="flex flex-col items-center justify-center min-h-[200px]">
-                                            <LoadingSpinner />
+                                            <LoadingSpinner className="min-h-[calc(100vh-400px)]" />
                                             <p className="mt-4 text-sm text-muted-foreground">
                                                 {defaultLoadingMessage}
                                             </p>

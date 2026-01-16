@@ -13,13 +13,15 @@ import {
   FileText,
   Briefcase,
   FileCheck,
-  Award,
   ArrowLeft,
   ArrowRight,
   Plus,
   Search,
-  ChevronRight,
-  Clock
+  Clock,
+  Folder,
+  Send,
+  Upload,
+  type LucideIcon
 } from 'lucide-react'
 import { StatusBadge } from '../../components/common/StatusBadge'
 import { formatRelativeTime } from '../../lib/utils/format'
@@ -68,42 +70,38 @@ export function StudentDashboardPage() {
   }
 
   const ArrowIcon = isRTL ? ArrowLeft : ArrowRight
-  const ChevronIcon = isRTL ? ArrowLeft : ChevronRight // Use ArrowLeft for RTL "next" indicator in some contexts or Chevron
 
   return (
     <MainLayout>
       <div className="space-y-8 animate-in fade-in duration-500 pb-10">
 
-
-
-        {/* Stats Grid - Clean & Flat */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {/* Stats Grid */}
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
           <StatsCard
             title={t('dashboard.student.proposals')}
             value={stats.proposals.total}
             icon={FileText}
-            subValue={t('dashboard.student.pendingReviewCount', { count: stats.proposals.pending, defaultValue: `${stats.proposals.pending} pending` })}
-            color="blue"
+            color="green"
           />
+
           <StatsCard
             title={t('dashboard.student.projects')}
             value={stats.projects.registered}
-            icon={Briefcase}
-            subValue={t('dashboard.student.availableCount', { count: stats.projects.available, defaultValue: `${stats.projects.available} available` })}
-            color="green"
+            icon={Folder}
+            color="blue"
           />
+
           <StatsCard
             title={t('dashboard.student.requests')}
             value={stats.requests.total}
-            icon={FileCheck}
-            subValue={t('dashboard.student.pendingCount', { count: stats.requests.pending, defaultValue: `${stats.requests.pending} pending` })}
-            color="orange"
+            icon={Send}
+            color="yellow"
           />
+
           <StatsCard
-            title={t('dashboard.student.grades')}
-            value="-"
-            icon={Award}
-            subValue={t('dashboard.student.notEvaluated')}
+            title={t('nav.documents',)}
+            value="12"
+            icon={Upload}
             color="purple"
           />
         </div>
@@ -235,50 +233,74 @@ export function StudentDashboardPage() {
 
 // Simplified Sub-components
 
-function StatsCard({ title, value, icon: Icon, subValue, color }: any) {
-  const colorStyles = {
-    blue: "text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400",
-    green: "text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400",
-    orange: "text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-400",
-    purple: "text-purple-600 bg-purple-50 dark:bg-purple-900/20 dark:text-purple-400",
+interface StatsCardProps {
+  title: string
+  value: string | number
+  icon: LucideIcon
+  subValue?: string
+  color?: 'blue' | 'green' | 'yellow' | 'purple'
+}
+
+function StatsCard({ title, value, icon: Icon, subValue, color = 'blue' }: StatsCardProps) {
+  const colorStyles: Record<'blue' | 'green' | 'yellow' | 'purple', string> = {
+    blue: "text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400",
+    green: "text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400",
+    yellow: "text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400",
+    purple: "text-purple-600 bg-purple-100 dark:bg-purple-900/30 dark:text-purple-400",
   }
 
-  // @ts-ignore
-  const iconColor = colorStyles[color] || colorStyles.blue
+  const style = colorStyles[color]
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6 flex flex-col justify-between h-full transition-colors hover:border-primary/20">
-      <div className="flex items-start justify-between mb-4">
-        <div className={cn("p-2.5 rounded-lg", iconColor)}>
-          <Icon className="h-5 w-5" />
+    <div className="rounded-xl border border-border bg-card p-4 flex items-center justify-between transition-all duration-300">
+
+      {/* Content Section */}
+      <div className="flex flex-col space-y-1">
+        <h3 className="text-sm font-medium text-muted-foreground/80">{title}</h3>
+        <div className="flex items-baseline gap-2">
+          <span className="text-2xl font-bold tracking-tight text-foreground">{value}</span>
         </div>
-        <span className="text-3xl font-bold tracking-tight text-foreground">{value}</span>
+        {subValue && <p className="text-xs font-medium text-muted-foreground/80 mt-1">{subValue}</p>}
       </div>
-      <div>
-        <h3 className="font-medium text-sm text-foreground mb-1">{title}</h3>
-        <p className="text-xs text-muted-foreground">{subValue}</p>
+
+      {/* Icon Section */}
+      <div className={cn("h-12 w-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105", style)}>
+        <Icon className="h-6 w-6" />
       </div>
     </div>
   )
 }
 
-function EmptyState({ icon: Icon, message, actionLabel, actionLink }: any) {
+interface EmptyStateProps {
+  icon: LucideIcon
+  message: string
+  actionLabel?: string
+  actionLink?: string
+}
+
+function EmptyState({ icon: Icon, message, actionLabel, actionLink }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-muted-foreground/25 p-8 text-center bg-muted/5">
       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
         <Icon className="h-5 w-5 text-muted-foreground" />
       </div>
       <p className="mt-3 text-sm text-muted-foreground font-medium">{message}</p>
-      {actionLabel && (
+      {actionLabel && actionLink && (
         <Button variant="link" asChild className="mt-1 h-auto p-0 text-primary">
-          <Link to={actionLink}>{actionLabel}</Link>
+          <Link to={actionLink as string}>{actionLabel}</Link>
         </Button>
       )}
     </div>
   )
 }
 
-function QuickActionButton({ to, icon: Icon, label }: any) {
+interface QuickActionButtonProps {
+  to: string
+  icon: LucideIcon
+  label: string
+}
+
+function QuickActionButton({ to, icon: Icon, label }: QuickActionButtonProps) {
   return (
     <Button asChild variant="outline" className="w-full justify-start h-11 px-4 bg-card hover:bg-accent hover:text-accent-foreground border-border shadow-none transition-all duration-200">
       <Link to={to} className="flex items-center">

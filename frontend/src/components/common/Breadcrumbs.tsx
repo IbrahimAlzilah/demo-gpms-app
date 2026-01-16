@@ -70,7 +70,8 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
                   )}
                   itemProp="item"
                 >
-                  <Home className="h-4 w-4" />
+                  {/* <Home className="h-4 w-4" /> */}
+                  <span className="text-sm font-medium">{item.label}</span>
                 </Link>
               ) : (
                 <>
