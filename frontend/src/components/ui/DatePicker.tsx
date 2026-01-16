@@ -12,6 +12,7 @@ import {
   PopoverTrigger,
 } from "./popover"
 import { Label } from "./label"
+import type { Matcher } from "react-day-picker"
 
 interface DatePickerProps {
   id?: string
@@ -30,7 +31,6 @@ interface DatePickerProps {
 
 export function DatePicker({
   id,
-  name,
   label,
   value,
   onChange,
@@ -122,7 +122,7 @@ export function DatePicker({
             selected={date}
             onSelect={handleSelect}
             initialFocus
-            disabled={disabledDays}
+            disabled={disabledDays as Matcher}
             // Use required prop only if it is explicitly true
             required={required}
           />

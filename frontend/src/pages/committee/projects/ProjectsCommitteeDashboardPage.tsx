@@ -35,13 +35,6 @@ export function ProjectsCommitteeDashboardPage() {
   return (
     <MainLayout>
       <div className="space-y-8 animate-in fade-in duration-500 pb-10">
-
-        {/* Page Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('dashboard.welcome', { defaultValue: 'Projects Committee' })}</h1>
-          <p className="text-sm text-muted-foreground">{new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-        </div>
-
         {/* Stats Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <StatsCardComponent
@@ -121,10 +114,10 @@ export function ProjectsCommitteeDashboardPage() {
 
             {/* Workflow Timeline Placeholder */}
             <Card className="overflow-hidden border-border bg-card shadow-none">
-              <CardHeader className="border-b border-border/50 bg-muted/20 pb-4">
+              <CardHeader className="border-b border-border/50 bg-muted/20">
                 <CardTitle className="text-base font-medium">{t('dashboard.committee.currentPhase', { defaultValue: 'Current Phase' })}</CardTitle>
               </CardHeader>
-              <CardContent className="pt-6">
+              <CardContent className="pt-0">
                 <div className="space-y-6">
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">

@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -52,7 +53,33 @@ export function PeriodForm({
     },
   })
 
-  const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = form
+  const { register, handleSubmit, formState: { errors }, reset, setValue, watch, control } = form
+
+  // Reset form when modal opens or period changes
+  useEffect(() => {
+    if (open) {
+      if (period) {
+        reset({
+          name: period.name,
+          type: period.type,
+          startDate: formatDateForInput(period.startDate),
+          endDate: formatDateForInput(period.endDate),
+          academicYear: period.academicYear || '',
+          semester: period.semester || '',
+          isActive: period.isActive,
+        })
+      } else {
+        reset({
+          name: '',
+          type: 'general',
+          startDate: '',
+          endDate: '',
+          academicYear: '',
+          semester: '',
+        })
+      }
+    }
+  }, [open, period, reset])
 
   const handleFormSubmit = async (data: TimePeriodSchema) => {
     await onSubmit(data)
