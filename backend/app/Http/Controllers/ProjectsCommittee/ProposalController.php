@@ -124,9 +124,10 @@ class ProposalController extends Controller
         $validated = $request->validate([
             'title' => 'sometimes|string|max:255',
             'description' => 'sometimes|string',
-            'objectives' => 'sometimes|string',
-            'methodology' => 'nullable|string',
-            'expected_outcomes' => 'nullable|string',
+            'proposed_supervisor_id' => 'nullable|exists:users,id',
+            'team_members' => 'nullable|array',
+            'team_members.*.name' => 'required_with:team_members|string|max:255',
+            'team_members.*.role' => 'required_with:team_members|string|max:255',
         ]);
 
         try {

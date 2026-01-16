@@ -52,9 +52,8 @@ export const proposalService = {
     const response = await apiClient.post<Proposal>('/supervisor/proposals', {
       title: data.title,
       description: data.description,
-      objectives: data.objectives,
-      methodology: data.methodology,
-      expected_outcomes: data.expectedOutcomes,
+      proposed_supervisor_id: data.proposedSupervisorId || null,
+      team_members: data.teamMembers || [],
     })
     return response.data
   },
@@ -63,9 +62,8 @@ export const proposalService = {
     const response = await apiClient.put<Proposal>(`/supervisor/proposals/${id}`, {
       title: data.title,
       description: data.description,
-      objectives: data.objectives,
-      methodology: data.methodology,
-      expected_outcomes: data.expectedOutcomes,
+      proposed_supervisor_id: data.proposedSupervisorId || null,
+      team_members: data.teamMembers || [],
     })
     return response.data
   },

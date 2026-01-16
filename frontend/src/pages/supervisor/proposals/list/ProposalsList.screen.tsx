@@ -129,32 +129,6 @@ export function ProposalsList() {
               </p>
             </div>
 
-            {state.selectedProposal?.objectives && (
-              <div>
-                <h4 className="text-sm font-medium mb-2">{t('proposal.objectives')}</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {state.selectedProposal?.objectives}
-                </p>
-              </div>
-            )}
-
-            {state.selectedProposal?.methodology && (
-              <div>
-                <h4 className="text-sm font-medium mb-2">{t('proposal.methodology')}</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {state.selectedProposal?.methodology}
-                </p>
-              </div>
-            )}
-
-            {state.selectedProposal?.expectedOutcomes && (
-              <div>
-                <h4 className="text-sm font-medium mb-2">{t('proposal.expectedOutcomes')}</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {state.selectedProposal?.expectedOutcomes}
-                </p>
-              </div>
-            )}
 
             {state.selectedProposal?.reviewNotes && (
               <div className="rounded-lg bg-muted p-4 border border-muted-foreground/20">

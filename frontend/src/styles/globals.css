@@ -251,10 +251,10 @@ body {
   }
 
   /* Modern Scrollbar */
-  ::-webkit-scrollbar {
+  /* ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
-  }
+  } */
 
   ::-webkit-scrollbar-track {
     @apply bg-transparent;

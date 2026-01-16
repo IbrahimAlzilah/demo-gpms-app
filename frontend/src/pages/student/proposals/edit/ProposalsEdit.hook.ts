@@ -10,15 +10,14 @@ export function useProposalsEdit(proposalId: string, onSuccess?: () => void) {
   const updateProposal = useUpdateProposal();
 
   const form = useProposalForm({
-    defaultValues: proposal
-      ? {
-          title: proposal.title,
-          description: proposal.description,
-          objectives: proposal.objectives,
-          methodology: proposal.methodology,
-          expectedOutcomes: proposal.expectedOutcomes,
-        }
-      : undefined,
+        defaultValues: proposal
+          ? {
+              title: proposal.title,
+              description: proposal.description,
+              proposedSupervisorId: proposal.proposedSupervisorId || '',
+              teamMembers: proposal.teamMembers || [],
+            }
+          : undefined,
     onSubmit: async (data) => {
       // Validate proposal status before allowing edit
       if (!proposal) {
@@ -58,9 +57,8 @@ export function useProposalsEdit(proposalId: string, onSuccess?: () => void) {
       form.form.reset({
         title: proposal.title,
         description: proposal.description,
-        objectives: proposal.objectives,
-        methodology: proposal.methodology,
-        expectedOutcomes: proposal.expectedOutcomes,
+        proposedSupervisorId: proposal.proposedSupervisorId || undefined,
+        teamMembers: proposal.teamMembers || [],
       });
     }
   }, [proposal, form.form]);

@@ -61,6 +61,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('proposals/{proposal}', [App\Http\Controllers\Student\ProposalController::class, 'update'])
             ->middleware('window:proposal_submission');
         Route::delete('proposals/{proposal}', [App\Http\Controllers\Student\ProposalController::class, 'destroy']);
+        // Supervisors
+        Route::get('supervisors', [App\Http\Controllers\Student\SupervisorController::class, 'index']);
 
         // Project registration routes must be defined before apiResource to prevent route conflicts
         Route::get('projects/registrations', [App\Http\Controllers\Student\ProjectController::class, 'getRegistrations']);
@@ -110,6 +112,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('proposals/{proposal}', [App\Http\Controllers\Supervisor\ProposalController::class, 'update'])
             ->middleware('window:proposal_submission');
         Route::delete('proposals/{proposal}', [App\Http\Controllers\Supervisor\ProposalController::class, 'destroy']);
+        // Supervisors
+        Route::get('supervisors', [App\Http\Controllers\Supervisor\SupervisorController::class, 'index']);
         Route::get('projects', [App\Http\Controllers\Supervisor\ProjectController::class, 'index']);
         Route::get('projects/{project}', [App\Http\Controllers\Supervisor\ProjectController::class, 'show']);
         Route::get('projects/{project}/progress', [App\Http\Controllers\Supervisor\ProjectController::class, 'getProgress']);

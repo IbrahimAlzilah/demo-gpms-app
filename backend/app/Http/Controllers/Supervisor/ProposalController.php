@@ -48,16 +48,17 @@ class ProposalController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'objectives' => 'required|string',
-            'methodology' => 'nullable|string',
-            'expected_outcomes' => 'nullable|string',
+            'proposed_supervisor_id' => 'nullable|exists:users,id',
+            'team_members' => 'nullable|array',
+            'team_members.*.name' => 'required_with:team_members|string|max:255',
+            'team_members.*.role' => 'required_with:team_members|string|max:255',
         ]);
 
         $proposal = $this->proposalService->create($validated, $request->user());
 
         return response()->json([
             'success' => true,
-            'data' => new ProposalResource($proposal->load(['submitter'])),
+            'data' => new ProposalResource($proposal->load(['submitter', 'proposedSupervisor'])),
             'message' => 'Proposal created successfully',
         ], 201);
     }
@@ -79,9 +80,10 @@ class ProposalController extends Controller
         $validated = $request->validate([
             'title' => 'sometimes|string|max:255',
             'description' => 'sometimes|string',
-            'objectives' => 'sometimes|string',
-            'methodology' => 'nullable|string',
-            'expected_outcomes' => 'nullable|string',
+            'proposed_supervisor_id' => 'nullable|exists:users,id',
+            'team_members' => 'nullable|array',
+            'team_members.*.name' => 'required_with:team_members|string|max:255',
+            'team_members.*.role' => 'required_with:team_members|string|max:255',
         ]);
 
         // If proposal requires modification, allow resubmission by changing status to pending_review

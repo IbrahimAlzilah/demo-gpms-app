@@ -14,12 +14,13 @@ export const proposalFormSchema = (t: (key: string) => string) => {
       .string()
       .min(1, t('proposal.validation.descriptionRequired'))
       .min(50, t('proposal.validation.descriptionMinLength')),
-    objectives: z
-      .string()
-      .min(1, t('proposal.validation.objectivesRequired'))
-      .min(30, t('proposal.validation.objectivesMinLength')),
-    methodology: z.string().optional(),
-    expectedOutcomes: z.string().optional(),
+    proposedSupervisorId: z.string().optional(),
+    teamMembers: z.array(
+      z.object({
+        name: z.string().min(1, 'Member name is required'),
+        role: z.string().min(1, 'Role is required'),
+      })
+    ).optional(),
   })
 }
 

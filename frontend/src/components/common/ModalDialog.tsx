@@ -37,11 +37,13 @@ export function ModalDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className={`p-0! ${sizeClasses[size]} ${className}`}>
         <DialogHeader className={`p-5 pb-1! ${headerClassName}`}>
-          <DialogTitle className='text-base font-bold'>{title}</DialogTitle>
-          {description && <DialogDescription>{description}</DialogDescription>}
+          <DialogTitle className='text-base font-bold mb-0'>{title}</DialogTitle>
+          <DialogDescription className={description ? '' : 'sr-only'}>
+            {description || ''}
+          </DialogDescription>
         </DialogHeader>
         <Separator />
-        <div className='flex-1 overflow-y-auto p-5 pt-0! overflow-x-hidden'>{children}</div>
+        <div className='flex-1 p-5 pt-0! max-h-[calc(100vh-8rem)] overflow-y-auto overflow-x-hidden'>{children}</div>
       </DialogContent>
     </Dialog>
   );

@@ -144,46 +144,6 @@ export function ProposalDetailsView({
           </p>
         </div>
 
-        {/* Objectives */}
-        {proposal.objectives && (
-          <div className="p-4 rounded-lg border border-border">
-            <div className="flex items-center gap-2 mb-3">
-              <Target className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-sm font-semibold">{t('proposal.objectives')}</h4>
-            </div>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-              {proposal.objectives}
-            </p>
-          </div>
-        )}
-
-        {/* Methodology */}
-        {proposal.methodology && (
-          <div className="p-4 rounded-lg border border-border">
-            <div className="flex items-center gap-2 mb-3">
-              <FlaskConical className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-sm font-semibold">{t('proposal.methodology')}</h4>
-            </div>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-              {proposal.methodology}
-            </p>
-          </div>
-        )}
-
-        {/* Expected Outcomes */}
-        {proposal.expectedOutcomes && (
-          <div className="p-4 rounded-lg border border-border">
-            <div className="flex items-center gap-2 mb-3">
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-sm font-semibold">
-                {t('proposal.expectedOutcomes')}
-              </h4>
-            </div>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-              {proposal.expectedOutcomes}
-            </p>
-          </div>
-        )}
 
         {/* Review Information */}
         {(proposal.reviewNotes || proposal.reviewedAt || proposal.reviewer) && (

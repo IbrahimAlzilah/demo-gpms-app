@@ -26,7 +26,7 @@ export function useUpdateProposal() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Proposal> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<ProposalFormData> }) =>
       proposalService.update(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["proposals"] });

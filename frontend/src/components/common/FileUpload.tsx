@@ -94,7 +94,7 @@ export function FileUpload({
     <div className={cn('space-y-4', className)}>
       <div
         className={cn(
-          'relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition-colors',
+          'relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors',
           dragActive ? 'border-primary bg-primary/5' : 'border-muted-foreground/25',
           disabled && 'opacity-50 cursor-not-allowed'
         )}
@@ -112,13 +112,13 @@ export function FileUpload({
           className="hidden"
           disabled={disabled}
         />
-        <Upload className="mb-4 h-10 w-10 text-muted-foreground" />
-        <p className="mb-2 text-sm font-medium">
+        <Upload className="mb-4 size-8 text-muted-foreground" />
+        <p className="mb-2 text-sm text-muted-foreground">
           {t('fileUpload.dragDrop')}
         </p>
-        <p className="mb-4 text-xs text-muted-foreground">
+        {/* <p className="mb-4 text-xs text-muted-foreground">
           {t('fileUpload.maxSize')} {formatFileSize(maxSize)}
-        </p>
+        </p> */}
         <Button
           type="button"
           variant="outline"

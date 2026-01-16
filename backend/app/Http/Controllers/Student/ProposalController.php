@@ -48,16 +48,28 @@ class ProposalController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'objectives' => 'required|string',
-            'methodology' => 'nullable|string',
-            'expected_outcomes' => 'nullable|string',
+            'proposed_supervisor_id' => 'nullable|exists:users,id',
+            'team_members' => 'nullable|array',
+            'team_members.*.name' => 'required_with:team_members|string|max:255',
+            'team_members.*.role' => 'required_with:team_members|string|max:255',
         ]);
+
+        // Validate that proposed_supervisor_id is actually a supervisor
+        if (isset($validated['proposed_supervisor_id'])) {
+            $supervisor = \App\Models\User::find($validated['proposed_supervisor_id']);
+            if (!$supervisor || !$supervisor->isSupervisor()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'The selected user is not a supervisor',
+                ], 422);
+            }
+        }
 
         $proposal = $this->proposalService->create($validated, $request->user());
 
         return response()->json([
             'success' => true,
-            'data' => new ProposalResource($proposal->load(['submitter'])),
+            'data' => new ProposalResource($proposal->load(['submitter', 'proposedSupervisor'])),
             'message' => 'Proposal created successfully',
         ], 201);
     }
@@ -79,17 +91,29 @@ class ProposalController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'objectives' => 'required|string',
-            'methodology' => 'nullable|string',
-            'expected_outcomes' => 'nullable|string',
+            'proposed_supervisor_id' => 'nullable|exists:users,id',
+            'team_members' => 'nullable|array',
+            'team_members.*.name' => 'required_with:team_members|string|max:255',
+            'team_members.*.role' => 'required_with:team_members|string|max:255',
         ]);
+
+        // Validate that proposed_supervisor_id is actually a supervisor
+        if (isset($validated['proposed_supervisor_id'])) {
+            $supervisor = \App\Models\User::find($validated['proposed_supervisor_id']);
+            if (!$supervisor || !$supervisor->isSupervisor()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'The selected user is not a supervisor',
+                ], 422);
+            }
+        }
 
         // Use service to update proposal (enforces status check)
         $proposal = $this->proposalService->update($proposal, $validated, $request->user());
 
         return response()->json([
             'success' => true,
-            'data' => new ProposalResource($proposal->load(['submitter', 'reviewer'])),
+            'data' => new ProposalResource($proposal->load(['submitter', 'reviewer', 'proposedSupervisor'])),
             'message' => 'Proposal updated successfully',
         ]);
     }

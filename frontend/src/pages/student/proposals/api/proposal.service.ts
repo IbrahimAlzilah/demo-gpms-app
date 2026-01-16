@@ -4,6 +4,7 @@ import type {
   TableQueryParams,
   TableResponse,
 } from "../../../../types/table.types";
+import type { ProposalFormData } from "../types/Proposals.types";
 
 export const proposalService = {
   getAll: async (): Promise<Proposal[]> => {
@@ -55,27 +56,25 @@ export const proposalService = {
   },
 
   create: async (
-    data: Omit<Proposal, "id" | "createdAt" | "updatedAt" | "status">
+    data: ProposalFormData & { submitterId: string }
   ): Promise<Proposal> => {
-    const response = await apiClient.post<Proposal>("/student/proposals", {
+    const response = await apiClient.post<{ success: boolean; data: Proposal }>("/student/proposals", {
       title: data.title,
       description: data.description,
-      objectives: data.objectives,
-      methodology: data.methodology,
-      expected_outcomes: data.expectedOutcomes,
+      proposed_supervisor_id: data.proposedSupervisorId || null,
+      team_members: data.teamMembers || [],
     });
-    return response.data;
+    return response.data?.data || response.data;
   },
 
-  update: async (id: string, data: Partial<Proposal>): Promise<Proposal> => {
+  update: async (id: string, data: Partial<ProposalFormData>): Promise<Proposal> => {
     const response = await apiClient.put<{ success: boolean; data: Proposal; message?: string }>(
       `/student/proposals/${id}`,
       {
         title: data.title,
         description: data.description,
-        objectives: data.objectives,
-        methodology: data.methodology,
-        expected_outcomes: data.expectedOutcomes,
+        proposed_supervisor_id: data.proposedSupervisorId || null,
+        team_members: data.teamMembers || [],
       }
     );
     // Handle both response structures (wrapped or unwrapped)

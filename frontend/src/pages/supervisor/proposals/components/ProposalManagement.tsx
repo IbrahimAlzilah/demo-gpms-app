@@ -88,12 +88,6 @@ export function ProposalManagement() {
                 ) : (
                   <div className="space-y-2">
                     <p className="text-sm">{proposal.description}</p>
-                    {proposal.objectives && (
-                      <div>
-                        <h4 className="font-medium text-sm mb-1">{t('proposal.objectives')}</h4>
-                        <p className="text-sm text-muted-foreground">{proposal.objectives}</p>
-                      </div>
-                    )}
                   </div>
                 )}
               </CardContent>

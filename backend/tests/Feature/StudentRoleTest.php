@@ -58,7 +58,6 @@ class StudentRoleTest extends TestCase
         $proposal = Proposal::create([
             'title' => 'Original Title',
             'description' => 'Original Description',
-            'objectives' => 'Original Objectives',
             'submitter_id' => $this->student->id,
             'status' => ProposalStatus::REQUIRES_MODIFICATION->value,
         ]);
@@ -67,7 +66,6 @@ class StudentRoleTest extends TestCase
             ->putJson("/api/student/proposals/{$proposal->id}", [
                 'title' => 'Updated Title',
                 'description' => 'Updated Description',
-                'objectives' => 'Updated Objectives',
             ]);
 
         $response->assertOk();
@@ -93,7 +91,6 @@ class StudentRoleTest extends TestCase
         $proposal = Proposal::create([
             'title' => 'Approved Proposal',
             'description' => 'Description',
-            'objectives' => 'Objectives',
             'submitter_id' => $this->student->id,
             'status' => ProposalStatus::APPROVED->value,
         ]);
@@ -102,7 +99,6 @@ class StudentRoleTest extends TestCase
             ->putJson("/api/student/proposals/{$proposal->id}", [
                 'title' => 'Trying to Update',
                 'description' => 'Description',
-                'objectives' => 'Objectives',
             ]);
 
         $response->assertForbidden();
@@ -240,7 +236,6 @@ class StudentRoleTest extends TestCase
         $proposal = [
             'title' => 'Test Proposal',
             'description' => 'This is a test description with enough characters to pass validation',
-            'objectives' => 'These are the test objectives for the proposal',
         ];
 
         // No active time window
@@ -269,7 +264,6 @@ class StudentRoleTest extends TestCase
         $proposal = [
             'title' => 'Test Proposal',
             'description' => 'This is a test description with enough characters to pass validation',
-            'objectives' => 'These are the test objectives for the proposal',
         ];
 
         $response = $this->actingAs($this->student)
@@ -290,7 +284,6 @@ class StudentRoleTest extends TestCase
         $proposal = [
             'title' => 'Committee Proposal',
             'description' => 'This is a committee proposal with enough characters',
-            'objectives' => 'Committee objectives for testing bypass',
         ];
 
         // Committee should still be able to create proposals

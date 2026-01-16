@@ -18,9 +18,13 @@ const proposalEditSchema = (t: (key: string) => string) =>
   z.object({
     title: z.string().min(1, t('proposal.validation.titleRequired')).max(255, t('proposal.validation.titleMaxLength255')),
     description: z.string().min(1, t('proposal.validation.descriptionRequired')),
-    objectives: z.string().min(1, t('proposal.validation.objectivesRequired')),
-    methodology: z.string().optional(),
-    expectedOutcomes: z.string().optional(),
+    proposedSupervisorId: z.string().optional(),
+    teamMembers: z.array(
+      z.object({
+        name: z.string().min(1, 'Member name is required'),
+        role: z.string().min(1, 'Role is required'),
+      })
+    ).optional(),
   })
 
 type ProposalEditSchema = z.infer<ReturnType<typeof proposalEditSchema>>
@@ -51,9 +55,8 @@ export function ProposalEditDialog({
       ? {
           title: proposal.title,
           description: proposal.description,
-          objectives: proposal.objectives,
-          methodology: proposal.methodology || '',
-          expectedOutcomes: proposal.expectedOutcomes || '',
+          proposedSupervisorId: proposal.proposedSupervisorId || '',
+          teamMembers: proposal.teamMembers || [],
         }
       : undefined,
   })
@@ -64,9 +67,8 @@ export function ProposalEditDialog({
     onConfirm(proposal.id, {
       title: data.title,
       description: data.description,
-      objectives: data.objectives,
-      methodology: data.methodology || undefined,
-      expected_outcomes: data.expectedOutcomes || undefined,
+      proposedSupervisorId: data.proposedSupervisorId || undefined,
+      teamMembers: data.teamMembers || [],
     })
     reset()
   }
@@ -121,65 +123,6 @@ export function ProposalEditDialog({
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="objectives">
-                {t('proposal.objectives')} <span className="text-destructive">*</span>
-              </Label>
-              <Textarea
-                id="objectives"
-                {...register('objectives')}
-                placeholder={t('proposal.objectivesPlaceholder')}
-                rows={4}
-                className={errors.objectives ? 'border-destructive' : ''}
-                aria-invalid={!!errors.objectives}
-              />
-              {errors.objectives && (
-                <p className="text-sm text-destructive flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
-                  {errors.objectives.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="methodology">
-                {t('proposal.methodology')} ({t('common.optional')})
-              </Label>
-              <Textarea
-                id="methodology"
-                {...register('methodology')}
-                placeholder={t('proposal.methodologyPlaceholder')}
-                rows={4}
-                className={errors.methodology ? 'border-destructive' : ''}
-                aria-invalid={!!errors.methodology}
-              />
-              {errors.methodology && (
-                <p className="text-sm text-destructive flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
-                  {errors.methodology.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="expectedOutcomes">
-                {t('proposal.expectedOutcomes')} ({t('common.optional')})
-              </Label>
-              <Textarea
-                id="expectedOutcomes"
-                {...register('expectedOutcomes')}
-                placeholder={t('proposal.expectedOutcomesPlaceholder')}
-                rows={4}
-                className={errors.expectedOutcomes ? 'border-destructive' : ''}
-                aria-invalid={!!errors.expectedOutcomes}
-              />
-              {errors.expectedOutcomes && (
-                <p className="text-sm text-destructive flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
-                  {errors.expectedOutcomes.message}
-                </p>
-              )}
-            </div>
           </div>
           <DialogFooter className="mt-4">
             <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>

@@ -29,9 +29,8 @@ export function useProposalForm(options: UseProposalFormOptions = {}) {
     defaultValues: {
       title: "",
       description: "",
-      objectives: "",
-      methodology: "",
-      expectedOutcomes: "",
+      proposedSupervisorId: "",
+      teamMembers: [],
       ...options.defaultValues,
     },
   });
@@ -53,9 +52,8 @@ export function useProposalForm(options: UseProposalFormOptions = {}) {
       const formData: ProposalFormData = {
         title: data.title.trim(),
         description: data.description.trim(),
-        objectives: data.objectives.trim(),
-        methodology: data.methodology?.trim(),
-        expectedOutcomes: data.expectedOutcomes?.trim(),
+        proposedSupervisorId: data.proposedSupervisorId || undefined,
+        teamMembers: data.teamMembers?.filter(m => m.name.trim() && m.role.trim()) || [],
       };
 
       await options.onSubmit?.(formData);

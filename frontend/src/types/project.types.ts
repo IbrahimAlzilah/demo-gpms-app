@@ -32,9 +32,12 @@ export interface Project extends BaseEntity {
 export interface Proposal extends BaseEntity {
   title: string
   description: string
-  objectives: string
-  methodology?: string
-  expectedOutcomes?: string
+  proposedSupervisorId?: string
+  proposedSupervisor?: User
+  teamMembers?: Array<{
+    name: string
+    role: string
+  }>
   submitterId: string
   submitter?: User
   status: 'pending_review' | 'approved' | 'rejected' | 'requires_modification'

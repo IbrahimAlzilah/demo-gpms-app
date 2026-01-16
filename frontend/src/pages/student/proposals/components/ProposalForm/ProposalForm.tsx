@@ -1,8 +1,10 @@
 import { useTranslation } from 'react-i18next'
-import { Button, Input, Textarea, Label } from '@/components/ui'
+import { Button, Input, Textarea, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { LoadingSpinner, FileUpload } from '@/components/common'
-import { AlertCircle, FileText, Loader2, Calendar } from 'lucide-react'
+import { AlertCircle, Loader2, Calendar, FileIcon, Users, Upload, Plus, X, Save } from 'lucide-react'
 import type { UseProposalFormReturn } from '../../hooks/useProposalForm'
+import { useSupervisors } from '../../hooks/useSupervisors'
+import { useFieldArray } from 'react-hook-form'
 
 interface ProposalFormProps {
   form: UseProposalFormReturn['form']
@@ -32,11 +34,13 @@ export function ProposalForm({
   onCancel,
 }: ProposalFormProps) {
   const { t } = useTranslation()
-  const { register, formState: { errors } } = form
+  const { register, formState: { errors }, control } = form
+  const { data: supervisors = [], isLoading: supervisorsLoading, error: supervisorsError } = useSupervisors()
 
-  const title = watch('title')
-  const description = watch('description')
-  const objectives = watch('objectives')
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'teamMembers',
+  })
 
   if (periodLoading) {
     return <LoadingSpinner />
@@ -58,6 +62,10 @@ export function ProposalForm({
     )
   }
 
+  const handleAddMember = () => {
+    append({ name: '', role: '' })
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6" noValidate>
       {error && (
@@ -67,7 +75,12 @@ export function ProposalForm({
         </div>
       )}
 
+      {/* Basic Information Section */}
       <div className="space-y-4">
+        <div className="flex items-center gap-2 mb-4">
+          <h3 className="text-base font-semibold">{t('proposal.basicInfo')}</h3>
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="title">
             {t('proposal.title')} <span className="text-destructive">*</span>
@@ -85,9 +98,6 @@ export function ProposalForm({
               {errors.title.message}
             </p>
           )}
-          <p className="text-xs text-muted-foreground">
-            {title?.length || 0} / 200 {t('common.characters')}
-          </p>
         </div>
 
         <div className="space-y-2">
@@ -108,91 +118,142 @@ export function ProposalForm({
               {errors.description.message}
             </p>
           )}
-          <p className="text-xs text-muted-foreground">
-            {description?.length || 0} {t('common.characters')}
-          </p>
         </div>
 
+        {/* Proposed Supervisor Section */}
         <div className="space-y-2">
-          <Label htmlFor="objectives">
-            {t('proposal.objectives')} <span className="text-destructive">*</span>
+          <Label htmlFor="proposedSupervisorId">
+            {t('proposal.proposedSupervisor')}
           </Label>
-          <Textarea
-            id="objectives"
-            {...register('objectives')}
-            placeholder={t('proposal.objectivesPlaceholder')}
-            rows={4}
-            className={errors.objectives ? 'border-destructive' : ''}
-            aria-invalid={!!errors.objectives}
-          />
-          {errors.objectives && (
+          {supervisorsLoading ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>{t('common.loading')}</span>
+            </div>
+          ) : supervisorsError ? (
+            <div className="text-sm text-destructive flex items-center gap-1">
+              <AlertCircle className="h-4 w-4" />
+              <span>{t('proposal.supervisorsLoadError') || 'Failed to load supervisors'}</span>
+            </div>
+          ) : (
+            <Select
+              value={watch('proposedSupervisorId') || ''}
+              onValueChange={(value) => form.setValue('proposedSupervisorId', value)}
+            >
+              <SelectTrigger id="proposedSupervisorId" className={errors.proposedSupervisorId ? 'border-destructive' : ''}>
+                <SelectValue placeholder={t('proposal.selectSupervisor')} />
+              </SelectTrigger>
+              <SelectContent>
+                {supervisors.length === 0 ? (
+                  <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                    {t('proposal.noSupervisorsAvailable') || 'No supervisors available'}
+                  </div>
+                ) : (
+                  supervisors.map((supervisor) => (
+                    <SelectItem key={supervisor.id} value={supervisor.id}>
+                      {supervisor.name}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          )}
+          {errors.proposedSupervisorId && (
             <p className="text-sm text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
-              {errors.objectives.message}
+              {errors.proposedSupervisorId.message}
             </p>
           )}
-          <p className="text-xs text-muted-foreground">
-            {objectives?.length || 0} {t('common.characters')}
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="methodology">
-            {t('proposal.methodology')} ({t('common.optional')})
-          </Label>
-          <Textarea
-            id="methodology"
-            {...register('methodology')}
-            placeholder={t('proposal.methodologyPlaceholder')}
-            rows={4}
-            className={errors.methodology ? 'border-destructive' : ''}
-            aria-invalid={!!errors.methodology}
-          />
-          {errors.methodology && (
-            <p className="text-sm text-destructive flex items-center gap-1">
-              <AlertCircle className="h-3 w-3" />
-              {errors.methodology.message}
-            </p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="expectedOutcomes">
-            {t('proposal.expectedOutcomes')} ({t('common.optional')})
-          </Label>
-          <Textarea
-            id="expectedOutcomes"
-            {...register('expectedOutcomes')}
-            placeholder={t('proposal.expectedOutcomesPlaceholder')}
-            rows={4}
-            className={errors.expectedOutcomes ? 'border-destructive' : ''}
-            aria-invalid={!!errors.expectedOutcomes}
-          />
-          {errors.expectedOutcomes && (
-            <p className="text-sm text-destructive flex items-center gap-1">
-              <AlertCircle className="h-3 w-3" />
-              {errors.expectedOutcomes.message}
-            </p>
-          )}
-        </div>
-
-        <div className="space-y-2 col-span-2">
-          <Label>
-            {t('proposal.attachments')} ({t('common.optional')})
-          </Label>
-          <FileUpload
-            value={attachedFiles}
-            onChange={handleFileChange}
-            accept=".pdf,.doc,.docx,.txt"
-            maxSize={10 * 1024 * 1024}
-            multiple={true}
-          />
-          <p className="text-xs text-muted-foreground">
-            {t('proposal.fileUploadHint')}
-          </p>
         </div>
       </div>
-      <div className="flex gap-2 justify-end pt-4 border-t">
+
+      {/* Team Members Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 mb-4">
+            <h3 className="text-base font-semibold">{t('proposal.teamMembers')}</h3>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleAddMember}
+            className="mb-4"
+          >
+            <Plus className="size-4" />
+            {t('proposal.addMember')}
+          </Button>
+        </div>
+        <div className="space-y-3">
+          {fields.map((field, index) => (
+            <div key={field.id} className="flex gap-3 items-end">
+              <div className="flex-1 space-y-2">
+                <Label htmlFor={`teamMembers.${index}.name`}>
+                  {t('proposal.memberName')}
+                </Label>
+                <Input
+                  id={`teamMembers.${index}.name`}
+                  {...register(`teamMembers.${index}.name`)}
+                  placeholder={t('proposal.memberNamePlaceholder')}
+                  className={errors.teamMembers?.[index]?.name ? 'border-destructive' : ''}
+                />
+                {errors.teamMembers?.[index]?.name && (
+                  <p className="text-sm text-destructive flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.teamMembers[index]?.name?.message}
+                  </p>
+                )}
+              </div>
+              <div className="flex-1 space-y-2">
+                <Label htmlFor={`teamMembers.${index}.role`}>
+                  {t('proposal.role')}
+                </Label>
+                <Input
+                  id={`teamMembers.${index}.role`}
+                  {...register(`teamMembers.${index}.role`)}
+                  placeholder={t('proposal.rolePlaceholder')}
+                  className={errors.teamMembers?.[index]?.role ? 'border-destructive' : ''}
+                />
+                {errors.teamMembers?.[index]?.role && (
+                  <p className="text-sm text-destructive flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.teamMembers[index]?.role?.message}
+                  </p>
+                )}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => remove(index)}
+                className='text-destructive hover:text-destructive/80'
+              >
+                <X className="size-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Attachments Section */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <h3 className="text-base font-semibold">{t('proposal.attachments')}</h3>
+        </div>
+        <FileUpload
+          value={attachedFiles}
+          onChange={handleFileChange}
+          accept=".pdf,.doc,.docx,.txt"
+          maxSize={10 * 1024 * 1024}
+          multiple={true}
+        />
+        <p className="text-xs text-muted-foreground">
+          {t('proposal.fileUploadHint')}
+        </p>
+      </div>
+
+      {/* Form Actions */}
+      <div className="flex gap-2 justify-between pt-4 border-t">
         {onCancel && (
           <Button
             type="button"
@@ -200,6 +261,7 @@ export function ProposalForm({
             onClick={onCancel}
             disabled={isSubmitting}
           >
+            <X className="h-4 w-4 mr-2" />
             {t('common.cancel')}
           </Button>
         )}
@@ -214,8 +276,8 @@ export function ProposalForm({
             </>
           ) : (
             <>
-              <FileText className="mr-2 h-4 w-4" />
-              {isEditMode ? t('proposal.update') : t('proposal.submit')}
+              <Save className="mr-2 h-4 w-4" />
+              {isEditMode ? t('proposal.update') : t('proposal.save')}
             </>
           )}
         </Button>

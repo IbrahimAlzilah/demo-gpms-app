@@ -23,9 +23,8 @@ class ProposalService
         $proposal = Proposal::create([
             'title' => $data['title'],
             'description' => $data['description'],
-            'objectives' => $data['objectives'],
-            'methodology' => $data['methodology'] ?? null,
-            'expected_outcomes' => $data['expected_outcomes'] ?? null,
+            'proposed_supervisor_id' => $data['proposed_supervisor_id'] ?? null,
+            'team_members' => $data['team_members'] ?? null,
             'submitter_id' => $submitter->id,
             'status' => 'pending_review',
         ]);
@@ -186,9 +185,8 @@ class ProposalService
         $proposal->update(array_merge([
             'title' => $data['title'] ?? $proposal->title,
             'description' => $data['description'] ?? $proposal->description,
-            'objectives' => $data['objectives'] ?? $proposal->objectives,
-            'methodology' => $data['methodology'] ?? $proposal->methodology,
-            'expected_outcomes' => $data['expected_outcomes'] ?? $proposal->expected_outcomes,
+            'proposed_supervisor_id' => $data['proposed_supervisor_id'] ?? $proposal->proposed_supervisor_id,
+            'team_members' => $data['team_members'] ?? $proposal->team_members,
         ], $statusUpdate));
 
         return $proposal->fresh();

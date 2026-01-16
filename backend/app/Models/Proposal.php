@@ -14,10 +14,9 @@ class Proposal extends Model
     protected $fillable = [
         'title',
         'description',
-        'objectives',
-        'methodology',
-        'expected_outcomes',
         'submitter_id',
+        'proposed_supervisor_id',
+        'team_members',
         'status',
         'review_notes',
         'reviewed_by',
@@ -28,6 +27,7 @@ class Proposal extends Model
     protected $casts = [
         'reviewed_at' => 'datetime',
         'status' => ProposalStatus::class,
+        'team_members' => 'array',
     ];
 
     /**
@@ -52,6 +52,14 @@ class Proposal extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    /**
+     * Get the proposed supervisor
+     */
+    public function proposedSupervisor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'proposed_supervisor_id');
     }
 
     /**
