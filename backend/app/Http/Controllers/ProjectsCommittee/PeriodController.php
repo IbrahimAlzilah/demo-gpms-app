@@ -57,12 +57,29 @@ class PeriodController extends Controller
             'name' => 'sometimes|string|max:255',
             'type' => 'sometimes|in:' . implode(',', $allowedTypes),
             'start_date' => 'sometimes|date',
-            'end_date' => 'sometimes|date|after:start_date',
+            'end_date' => 'sometimes|date',
             'is_active' => 'sometimes|boolean',
             'academic_year' => 'nullable|string',
             'semester' => 'nullable|string',
             'description' => 'nullable|string',
         ]);
+
+        // Validate date range: end_date must be after start_date
+        // Use validated start_date if provided, otherwise use existing period start_date
+        $startDate = $validated['start_date'] ?? $period->start_date?->toDateString();
+        $endDate = $validated['end_date'] ?? $period->end_date?->toDateString();
+
+        if ($startDate && $endDate) {
+            if (strtotime($endDate) <= strtotime($startDate)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'The end date must be after the start date.',
+                    'errors' => [
+                        'end_date' => ['The end date must be after the start date.'],
+                    ],
+                ], 422);
+            }
+        }
 
         $period->update($validated);
 

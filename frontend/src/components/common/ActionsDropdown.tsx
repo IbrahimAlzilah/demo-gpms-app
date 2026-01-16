@@ -125,7 +125,6 @@ export function ActionsDropdown<T = unknown>({
   row,
   trigger,
   triggerClassName,
-  align = "start",
   side = "bottom",
 }: ActionsDropdownProps<T>) {
   const isRTL = useDirection()
@@ -161,7 +160,7 @@ export function ActionsDropdown<T = unknown>({
       <DropdownMenuTrigger asChild>
         {trigger || defaultTrigger}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align={isRTL ? "end" : "start"} side={side} className="w-30">
+      <DropdownMenuContent align={isRTL ? "end" : "start"} side={side} className="w-40">
         {visibleActions.map((action, index) => {
           const Icon = action.icon
           const isDisabled =

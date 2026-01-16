@@ -69,7 +69,8 @@
     "supervisor": "المشرف",
     "maxStudents": "الحد الأقصى للطلاب",
     "backTo": "العودة إلى",
-    "download": "تحميل"
+    "download": "تحميل",
+    "lastUpdated": "آخر تحديث"
   },
   "app": {
     "name": "نظام إدارة تقييم مشاريع التخرج",

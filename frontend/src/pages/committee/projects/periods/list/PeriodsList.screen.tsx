@@ -54,7 +54,8 @@ export function PeriodsList() {
           id: state.selectedPeriod.id.toString(),
           data: {
             ...data,
-            isActive: state.selectedPeriod.isActive,
+            // Include isActive from form data if present (edit mode)
+            isActive: 'isActive' in data ? data.isActive : undefined,
           },
         })
         showToast(t('committee.periods.periodUpdated'), 'success')
@@ -88,7 +89,6 @@ export function PeriodsList() {
 
   const handleFormClose = () => {
     setState((prev) => ({ ...prev, showForm: false, selectedPeriod: null }))
-    reset()
   }
 
   const actions = useMemo(() => (

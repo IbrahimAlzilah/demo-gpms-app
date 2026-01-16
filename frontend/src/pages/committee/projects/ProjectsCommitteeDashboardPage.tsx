@@ -14,15 +14,13 @@ import {
   ArrowLeft,
   ArrowRight,
   Clock,
-  CheckCircle2
 } from 'lucide-react'
+import { StatsCard as StatsCardComponent } from '@/components/common'
 import { cn } from '@/lib/utils'
-import { useAuthStore } from '@/pages/auth/login'
 
 export function ProjectsCommitteeDashboardPage() {
   const { t, i18n } = useTranslation()
   const isRTL = i18n.dir() === 'rtl'
-  const { user } = useAuthStore()
 
   // Mock data - in real app, fetch from API
   const stats = {
@@ -46,33 +44,33 @@ export function ProjectsCommitteeDashboardPage() {
 
         {/* Stats Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <StatsCard
+          <StatsCardComponent
             title={t('dashboard.committee.proposals')}
             value={stats.pendingProposals}
             icon={FileText}
             subValue={t('dashboard.committee.pendingReview')}
             color="blue"
           />
-          <StatsCard
+          <StatsCardComponent
             title={t('dashboard.committee.requests')}
             value={stats.pendingRequests}
             icon={FileCheck}
             subValue={t('dashboard.committee.pendingRequests')}
-            color="orange"
+            color="yellow"
           />
-          <StatsCard
+          <StatsCardComponent
             title={t('dashboard.committee.projects')}
             value={stats.projectsToAnnounce}
             icon={Megaphone}
             subValue={t('dashboard.committee.projectsToAnnounce')}
             color="green"
           />
-          <StatsCard
+          <StatsCardComponent
             title={t('dashboard.committee.supervisors')}
             value={stats.supervisorsToAssign}
             icon={UserPlus}
             subValue={t('dashboard.committee.projectsNeedSupervisors')}
-            color="purple"
+            color="green"
           />
         </div>
 
@@ -212,33 +210,6 @@ export function ProjectsCommitteeDashboardPage() {
 
 
 // Sub-components
-
-function StatsCard({ title, value, icon: Icon, subValue, color }: any) {
-  const colorStyles = {
-    blue: "text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400",
-    green: "text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400",
-    orange: "text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-400",
-    purple: "text-purple-600 bg-purple-50 dark:bg-purple-900/20 dark:text-purple-400",
-  }
-
-  // @ts-ignore
-  const iconColor = colorStyles[color] || colorStyles.blue
-
-  return (
-    <div className="rounded-xl border border-border bg-card p-6 flex flex-col justify-between h-full transition-colors hover:border-primary/20">
-      <div className="flex items-start justify-between mb-4">
-        <div className={cn("p-2.5 rounded-lg", iconColor)}>
-          <Icon className="h-5 w-5" />
-        </div>
-        <span className="text-3xl font-bold tracking-tight text-foreground">{value}</span>
-      </div>
-      <div>
-        <h3 className="font-medium text-sm text-foreground mb-1">{title}</h3>
-        <p className="text-xs text-muted-foreground">{subValue}</p>
-      </div>
-    </div>
-  )
-}
 
 function TaskRow({ icon: Icon, title, description, actionLabel, actionLink, type, ArrowIcon }: any) {
   const typeStyles = type === 'warning'

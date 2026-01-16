@@ -184,11 +184,39 @@ export function ProjectDetailsView({
               <h4 className="text-sm font-semibold">{t('project.documents')}</h4>
             </div>
             <div className="space-y-2">
-              {project.documents.map((doc, index) => (
-                <div key={index} className="text-sm text-muted-foreground">
-                  {doc}
-                </div>
-              ))}
+              {project.documents.map((doc, index) => {
+                // Handle both string and Document object formats
+                const docDisplay = typeof doc === 'string' 
+                  ? doc 
+                  : (doc as any)?.fileName || (doc as any)?.fileUrl || 'Document'
+                const docId = typeof doc === 'string' 
+                  ? `doc-${index}` 
+                  : (doc as any)?.id || `doc-${index}`
+                const docUrl = typeof doc === 'string' 
+                  ? null 
+                  : (doc as any)?.fileUrl
+                
+                return (
+                  <div key={docId} className="text-sm text-muted-foreground">
+                    {docUrl ? (
+                      <a 
+                        href={docUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline flex items-center gap-2"
+                      >
+                        <FileText className="h-3 w-3" />
+                        {docDisplay}
+                      </a>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-3 w-3" />
+                        {docDisplay}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}

@@ -67,7 +67,8 @@
     "deleting": "Deleting...",
     "assigning": "Assigning...",
     "supervisor": "Supervisor",
-    "maxStudents": "Max Students"
+    "maxStudents": "Max Students",
+    "lastUpdated": "Last Updated"
   },
   "app": {
     "name": "Graduation Project Management System",

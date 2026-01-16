@@ -23,9 +23,8 @@ import {
   Upload,
   type LucideIcon
 } from 'lucide-react'
-import { StatusBadge } from '../../components/common/StatusBadge'
+import { StatusBadge, StatsCard as StatsCardComponent } from '@/components/common'
 import { formatRelativeTime } from '../../lib/utils/format'
-import { cn } from '../../lib/utils'
 
 export function StudentDashboardPage() {
   const { t, i18n } = useTranslation()
@@ -77,28 +76,28 @@ export function StudentDashboardPage() {
 
         {/* Stats Grid */}
         <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-          <StatsCard
+          <StatsCardComponent
             title={t('dashboard.student.proposals')}
             value={stats.proposals.total}
             icon={FileText}
             color="green"
           />
 
-          <StatsCard
+          <StatsCardComponent
             title={t('dashboard.student.projects')}
             value={stats.projects.registered}
             icon={Folder}
             color="blue"
           />
 
-          <StatsCard
+          <StatsCardComponent
             title={t('dashboard.student.requests')}
             value={stats.requests.total}
             icon={Send}
             color="yellow"
           />
 
-          <StatsCard
+          <StatsCardComponent
             title={t('nav.documents',)}
             value="12"
             icon={Upload}
@@ -232,45 +231,6 @@ export function StudentDashboardPage() {
 }
 
 // Simplified Sub-components
-
-interface StatsCardProps {
-  title: string
-  value: string | number
-  icon: LucideIcon
-  subValue?: string
-  color?: 'blue' | 'green' | 'yellow' | 'purple'
-}
-
-function StatsCard({ title, value, icon: Icon, subValue, color = 'blue' }: StatsCardProps) {
-  const colorStyles: Record<'blue' | 'green' | 'yellow' | 'purple', string> = {
-    blue: "text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400",
-    green: "text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400",
-    yellow: "text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400",
-    purple: "text-purple-600 bg-purple-100 dark:bg-purple-900/30 dark:text-purple-400",
-  }
-
-  const style = colorStyles[color]
-
-  return (
-    <div className="rounded-xl border border-border bg-card p-4 flex items-center justify-between transition-all duration-300">
-
-      {/* Content Section */}
-      <div className="flex flex-col space-y-1">
-        <h3 className="text-sm font-medium text-muted-foreground/80">{title}</h3>
-        <div className="flex items-baseline gap-2">
-          <span className="text-2xl font-bold tracking-tight text-foreground">{value}</span>
-        </div>
-        {subValue && <p className="text-xs font-medium text-muted-foreground/80 mt-1">{subValue}</p>}
-      </div>
-
-      {/* Icon Section */}
-      <div className={cn("h-12 w-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105", style)}>
-        <Icon className="h-6 w-6" />
-      </div>
-    </div>
-  )
-}
-
 interface EmptyStateProps {
   icon: LucideIcon
   message: string

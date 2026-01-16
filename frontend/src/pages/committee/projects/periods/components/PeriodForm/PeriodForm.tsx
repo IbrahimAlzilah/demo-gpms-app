@@ -1,12 +1,11 @@
 import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Button, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
+import { Button, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, DatePicker } from '@/components/ui'
 import { ModalDialog } from '@/components/common'
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
 import { timePeriodSchema, type TimePeriodSchema } from '../../schema'
 import type { TimePeriod } from '@/types/period.types'
-import type { UsePeriodFormReturn } from '../../hooks/usePeriodForm'
 
 interface PeriodFormProps {
   open: boolean
@@ -28,15 +27,28 @@ export function PeriodForm({
   const { t } = useTranslation()
   const isEditMode = !!period
 
+  // Convert ISO date strings to YYYY-MM-DD format for date inputs
+  const formatDateForInput = (dateString?: string): string => {
+    if (!dateString) return ''
+    try {
+      const date = new Date(dateString)
+      if (isNaN(date.getTime())) return ''
+      return date.toISOString().split('T')[0]
+    } catch {
+      return ''
+    }
+  }
+
   const form = useForm<TimePeriodSchema>({
-    resolver: zodResolver(timePeriodSchema(t)),
+    resolver: zodResolver(timePeriodSchema(t, isEditMode)),
     defaultValues: {
       name: period?.name || '',
       type: period?.type || 'general',
-      startDate: period?.startDate || '',
-      endDate: period?.endDate || '',
+      startDate: formatDateForInput(period?.startDate) || '',
+      endDate: formatDateForInput(period?.endDate) || '',
       academicYear: period?.academicYear || '',
       semester: period?.semester || '',
+      ...(isEditMode && { isActive: period?.isActive ?? false }),
     },
   })
 
@@ -126,40 +138,44 @@ export function PeriodForm({
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="startDate">{t('committee.periods.startDate')} *</Label>
-            <Input
-              id="startDate"
-              type="date"
-              {...register('startDate')}
-              className={errors.startDate ? 'border-destructive' : ''}
-              aria-invalid={!!errors.startDate}
-            />
-            {errors.startDate && (
-              <p className="text-sm text-destructive flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
-                {errors.startDate.message}
-              </p>
-            )}
-          </div>
+          <DatePicker
+            name="startDate"
+            label={t('committee.periods.startDate')}
+            value={watch('startDate') || ''}
+            onChange={(value) => setValue('startDate', value, { shouldValidate: true })}
+            required
+            error={errors.startDate?.message}
+            max={watch('endDate') || undefined}
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="endDate">{t('committee.periods.endDate')} *</Label>
-            <Input
-              id="endDate"
-              type="date"
-              {...register('endDate')}
-              className={errors.endDate ? 'border-destructive' : ''}
-              aria-invalid={!!errors.endDate}
-            />
-            {errors.endDate && (
-              <p className="text-sm text-destructive flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
-                {errors.endDate.message}
-              </p>
-            )}
-          </div>
+          <DatePicker
+            id="endDate"
+            label={t('committee.periods.endDate')}
+            value={watch('endDate') || ''}
+            onChange={(value) => setValue('endDate', value, { shouldValidate: true })}
+            required
+            error={errors.endDate?.message}
+            min={watch('startDate') || undefined}
+          />
         </div>
+
+        {isEditMode && (
+          <div className="flex items-center justify-between p-4 rounded-lg border border-border">
+            <div className="space-y-0.5">
+              <Label htmlFor="isActive" className="text-base">
+                {t('committee.periods.status')}
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                {t('committee.periods.statusDescription')}
+              </p>
+            </div>
+            <Switch
+              id="isActive"
+              checked={watch('isActive') ?? false}
+              onCheckedChange={(checked) => setValue('isActive', checked, { shouldValidate: true })}
+            />
+          </div>
+        )}
 
         <div className="flex gap-2 justify-end">
           <Button

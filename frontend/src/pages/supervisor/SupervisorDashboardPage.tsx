@@ -1,7 +1,9 @@
 import { MainLayout } from '@/layouts/MainLayout'
 import { ROUTES } from '@/lib/constants'
 import { Link } from 'react-router-dom'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
+import { useTranslation } from 'react-i18next'
+import { cn } from '@/lib/utils'
+import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
 import {
   Briefcase,
   UserCheck,
@@ -10,18 +12,13 @@ import {
   ArrowLeft,
   ArrowRight,
   TrendingUp,
-  Search,
-  CheckCircle2
+  CheckCircle2,
 } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
-import { useAuthStore } from '@/pages/auth/login'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
+import { StatsCard as StatsCardComponent } from '@/components/common'
 
 export function SupervisorDashboardPage() {
   const { t, i18n } = useTranslation()
   const isRTL = i18n.dir() === 'rtl'
-  const { user } = useAuthStore()
 
   // Mock data - in real app, fetch from API
   const stats = {
@@ -45,33 +42,33 @@ export function SupervisorDashboardPage() {
 
         {/* Stats Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <StatsCard
+          <StatsCardComponent
             title={t('nav.projects')}
             value={stats.projects}
             icon={Briefcase}
             subValue={t('supervisor.projectsUnderSupervision')}
             color="blue"
           />
-          <StatsCard
+          <StatsCardComponent
             title={t('nav.supervisionRequests')}
             value={stats.pendingRequests}
             icon={UserCheck}
             subValue={t('supervisor.pendingRequests')}
-            color="orange"
+            color="yellow"
           />
-          <StatsCard
+          <StatsCardComponent
             title={t('nav.meetings')}
             value={stats.upcomingMeetings}
             icon={Calendar}
             subValue={t('supervisor.upcomingMeetings')}
-            color="purple"
+            color="green"
           />
-          <StatsCard
+          <StatsCardComponent
             title={t('nav.evaluations')}
             value={stats.pendingEvaluations}
             icon={ClipboardCheck}
             subValue={t('supervisor.pendingEvaluations')}
-            color="red"
+            color="purple"
           />
         </div>
 
@@ -224,34 +221,6 @@ export function SupervisorDashboardPage() {
 }
 
 // Sub-components
-
-function StatsCard({ title, value, icon: Icon, subValue, color }: any) {
-  const colorStyles = {
-    blue: "text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400",
-    green: "text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400",
-    orange: "text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-400",
-    purple: "text-purple-600 bg-purple-50 dark:bg-purple-900/20 dark:text-purple-400",
-    red: "text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400",
-  }
-
-  // @ts-ignore
-  const iconColor = colorStyles[color] || colorStyles.blue
-
-  return (
-    <div className="rounded-xl border border-border bg-card p-6 flex flex-col justify-between h-full transition-colors hover:border-primary/20">
-      <div className="flex items-start justify-between mb-4">
-        <div className={cn("p-2.5 rounded-lg", iconColor)}>
-          <Icon className="h-5 w-5" />
-        </div>
-        <span className="text-3xl font-bold tracking-tight text-foreground">{value}</span>
-      </div>
-      <div>
-        <h3 className="font-medium text-sm text-foreground mb-1">{title}</h3>
-        <p className="text-xs text-muted-foreground">{subValue}</p>
-      </div>
-    </div>
-  )
-}
 
 function TaskRow({ icon: Icon, title, description, actionLabel, actionLink, type, ArrowIcon }: any) {
   const typeStyles = type === 'error'

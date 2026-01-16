@@ -7,7 +7,7 @@ import { BlockContent, ConfirmDialog, LoadingSpinner } from '@/components/common
 import { createProposalColumns } from '../components/table'
 import { ProposalReviewDialog } from '../components/ProposalReviewDialog'
 import { ProposalEditDialog } from '../components/ProposalEditDialog'
-import { ProposalDetailsView } from '../components/ProposalDetailsView'
+import { ProposalsView } from '../view/ProposalsView.screen'
 import { useProposalsList } from './ProposalsList.hook'
 import { AlertCircle } from 'lucide-react'
 import { useToast } from '@/components/common'
@@ -225,7 +225,7 @@ export function ProposalsList() {
         variant="destructive"
       />
 
-      <ProposalDetailsView
+      <ProposalsView
         proposalId={state.proposalToViewId}
         open={!!state.proposalToViewId}
         onClose={() => {
