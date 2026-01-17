@@ -11,6 +11,7 @@ export function createProjectColumns({
   t,
   onProjectSelect,
   navigate,
+  onEvaluate,
 }: ProjectTableColumnsProps): ColumnDef<Project>[] {
   return [
     {
@@ -93,7 +94,7 @@ export function createProjectColumns({
               if (onProjectSelect) {
                 onProjectSelect(project)
               } else {
-                handleNavigate(`${ROUTES.SUPERVISOR.PROGRESS}/${project.id}`)
+                handleNavigate(`${ROUTES.SUPERVISOR.PROJECTS}/${project.id}?tab=progress`)
               }
             },
             variant: 'primary' as const,
@@ -104,10 +105,12 @@ export function createProjectColumns({
             icon: ClipboardCheck,
             onClick: () => {
               if (project.students && project.students.length > 0) {
-                if (onProjectSelect) {
+                if (onEvaluate) {
+                  onEvaluate(project)
+                } else if (onProjectSelect) {
                   onProjectSelect(project)
                 } else {
-                  handleNavigate(`${ROUTES.SUPERVISOR.EVALUATION}/${project.id}/${project.students[0].id}`)
+                  handleNavigate(`${ROUTES.SUPERVISOR.PROJECTS}/${project.id}?tab=evaluate`)
                 }
               }
             },

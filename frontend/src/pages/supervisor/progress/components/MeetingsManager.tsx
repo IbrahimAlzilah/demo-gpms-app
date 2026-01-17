@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
-import { LoadingSpinner, ConfirmDialog, useToast } from '@/components/common'
+import { LoadingSpinner, ConfirmDialog } from '@/components/common'
+import { toast } from 'sonner'
 import { Calendar, Edit, Trash2, Plus, Users, MapPin, Clock } from 'lucide-react'
 import { formatDate } from '@/lib/utils/format'
 import { meetingService } from '../api/meeting.service'
@@ -22,7 +23,6 @@ interface MeetingsManagerProps {
 
 export function MeetingsManager({ projectId, project }: MeetingsManagerProps) {
   const { t } = useTranslation()
-  const { showToast } = useToast()
   const [showForm, setShowForm] = useState(false)
   const [editingMeeting, setEditingMeeting] = useState<ProjectMeeting | null>(null)
   const [deletingMeeting, setDeletingMeeting] = useState<ProjectMeeting | null>(null)
@@ -46,13 +46,10 @@ export function MeetingsManager({ projectId, project }: MeetingsManagerProps) {
         agenda: data.agenda,
         attendee_ids: data.attendeeIds,
       })
-      showToast(t('meeting.createSuccess'), 'success')
+      toast.success(t('meeting.createSuccess'))
       setShowForm(false)
     } catch (err) {
-      showToast(
-        err instanceof Error ? err.message : t('meeting.createError'),
-        'error'
-      )
+      toast.error(err instanceof Error ? err.message : t('meeting.createError'))
     }
   }
 
@@ -69,13 +66,10 @@ export function MeetingsManager({ projectId, project }: MeetingsManagerProps) {
           attendee_ids: data.attendeeIds,
         },
       })
-      showToast(t('meeting.updateSuccess'), 'success')
+      toast.success(t('meeting.updateSuccess'))
       setEditingMeeting(null)
     } catch (err) {
-      showToast(
-        err instanceof Error ? err.message : t('meeting.updateError'),
-        'error'
-      )
+      toast.error(err instanceof Error ? err.message : t('meeting.updateError'))
     }
   }
 
@@ -83,13 +77,10 @@ export function MeetingsManager({ projectId, project }: MeetingsManagerProps) {
     if (!deletingMeeting) return
     try {
       await deleteMeeting.mutateAsync(deletingMeeting.id)
-      showToast(t('meeting.deleteSuccess'), 'success')
+      toast.success(t('meeting.deleteSuccess'))
       setDeletingMeeting(null)
     } catch (err) {
-      showToast(
-        err instanceof Error ? err.message : t('meeting.deleteError'),
-        'error'
-      )
+      toast.error(err instanceof Error ? err.message : t('meeting.deleteError'))
     }
   }
 
@@ -215,8 +206,8 @@ export function MeetingsManager({ projectId, project }: MeetingsManagerProps) {
         onOpenChange={(open) => !open && setDeletingMeeting(null)}
         title={t('meeting.deleteTitle')}
         description={t('meeting.deleteDescription')}
-        confirmText={t('common.delete')}
-        cancelText={t('common.cancel')}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
         onConfirm={handleDelete}
         variant="destructive"
       />

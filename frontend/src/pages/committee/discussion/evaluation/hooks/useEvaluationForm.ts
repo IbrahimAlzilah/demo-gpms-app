@@ -55,6 +55,7 @@ export function useEvaluationForm(options: UseEvaluationFormOptions = {}) {
     isPeriodActive,
     periodLoading,
     handleSubmit: form.handleSubmit(handleSubmit),
+    validateAndSubmit: handleSubmit,
     resetForm,
     watch: form.watch,
   } as const

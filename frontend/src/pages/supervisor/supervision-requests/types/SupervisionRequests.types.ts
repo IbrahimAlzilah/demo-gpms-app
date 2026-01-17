@@ -13,6 +13,7 @@ export interface SupervisionRequestFilters {
  * Supervision request table column definition props
  */
 export interface SupervisionRequestTableColumnsProps {
+  onView: (project: Project) => void
   onApprove: (project: Project) => void
   onReject: (project: Project) => void
   canAcceptMore: boolean

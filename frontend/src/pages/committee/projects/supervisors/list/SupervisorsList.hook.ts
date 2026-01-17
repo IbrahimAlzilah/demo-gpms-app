@@ -5,7 +5,13 @@ import type { SupervisorsListState, SupervisorsListData } from './SupervisorsLis
 
 export function useSupervisorsList() {
   const { t } = useTranslation()
-  const { data: projects, isLoading: projectsLoading } = useProjectsWithoutSupervisor()
+  const { 
+    data: projectsData, 
+    isLoading: projectsLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useProjectsWithoutSupervisor()
   const { data: supervisors, isLoading: supervisorsLoading } = useAvailableSupervisors()
   
   const [state, setState] = useState<SupervisorsListState>({
@@ -13,8 +19,12 @@ export function useSupervisorsList() {
     selectedSupervisor: '',
   })
 
+  // Flatten projects from infinite query pages
+  const projects = projectsData ? projectsData.pages.flatMap(page => page.data) : []
+  const totalProjects = projectsData?.pages[0]?.meta?.total || 0
+
   const data: SupervisorsListData = {
-    projects: projects || [],
+    projects,
     supervisors: (supervisors || []).map(s => ({ id: s.id, name: s.name })),
     isLoading: projectsLoading || supervisorsLoading,
     error: null,
@@ -25,5 +35,11 @@ export function useSupervisorsList() {
     state,
     setState,
     t,
+    pagination: {
+      fetchNextPage,
+      hasNextPage,
+      isFetchingNextPage,
+      totalProjects
+    }
   }
 }

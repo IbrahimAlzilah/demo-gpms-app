@@ -11,6 +11,11 @@ export function useProjectsList() {
   
   const [state, setState] = useState<ProjectsListState>({
     selectedProject: null,
+    evaluationModal: {
+      open: false,
+      project: null,
+      studentId: null
+    }
   })
 
   const {
@@ -39,10 +44,45 @@ export function useProjectsList() {
     error: error as Error | null,
   }
 
+  const openEvaluationModal = (project: any) => {
+    setState(prev => ({
+      ...prev,
+      evaluationModal: {
+        open: true,
+        project,
+        studentId: null
+      }
+    }))
+  }
+
+  const closeEvaluationModal = () => {
+    setState(prev => ({
+      ...prev,
+      evaluationModal: {
+        open: false,
+        project: null,
+        studentId: null
+      }
+    }))
+  }
+
+  const selectStudentForEvaluation = (studentId: string) => {
+    setState(prev => ({
+      ...prev,
+      evaluationModal: {
+        ...prev.evaluationModal,
+        studentId
+      }
+    }))
+  }
+
   return {
     data,
     state,
     setState,
+    openEvaluationModal,
+    closeEvaluationModal,
+    selectStudentForEvaluation,
     // Table controls
     pageCount,
     sorting,

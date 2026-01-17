@@ -4,7 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useProjectGrades } from '@/pages/supervisor/evaluation/hooks/useEvaluation'
 import { projectService } from '@/pages/supervisor/projects/api/project.service'
 import { Card, CardContent, CardHeader, CardTitle, Button, Label, Textarea } from '@/components/ui'
-import { LoadingSpinner, useToast } from '@/components/common'
+import { LoadingSpinner } from '@/components/common'
+import { toast } from 'sonner'
 import { MessageSquare, Award, Loader2 } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
 
@@ -14,7 +15,6 @@ interface ProjectProgressTrackerProps {
 
 export function ProjectProgressTracker({ projectId }: ProjectProgressTrackerProps) {
   const { t } = useTranslation()
-  const { showToast } = useToast()
   const [notes, setNotes] = useState('')
   const { data: grades, isLoading } = useProjectGrades(projectId)
 
@@ -33,18 +33,11 @@ export function ProjectProgressTracker({ projectId }: ProjectProgressTrackerProp
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['supervisor-notes', projectId] })
       setNotes('')
-      showToast({
-        title: t('common.success'),
-        description: t('supervisor.noteSaved'),
-        variant: 'default',
-      })
+      setNotes('')
+      toast.success(t('supervisor.noteSaved'))
     },
     onError: () => {
-      showToast({
-        title: t('common.error'),
-        description: t('supervisor.failedToSaveNote'),
-        variant: 'destructive',
-      })
+      toast.error(t('supervisor.failedToSaveNote'))
     },
   })
 
@@ -85,10 +78,10 @@ export function ProjectProgressTracker({ projectId }: ProjectProgressTrackerProp
                     </div>
                     <div className="flex items-center gap-4">
                       <span className="text-lg font-bold">
-                        {grade.score} / {grade.maxScore}
+                        {grade.supervisorGrade?.score} / {grade.supervisorGrade?.maxScore}
                       </span>
-                      {grade.comments && (
-                        <p className="text-sm text-muted-foreground">{grade.comments}</p>
+                      {grade.supervisorGrade?.comments && (
+                        <p className="text-sm text-muted-foreground">{grade.supervisorGrade.comments}</p>
                       )}
                     </div>
                   </div>

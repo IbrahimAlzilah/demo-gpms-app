@@ -4,13 +4,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useProject } from '../../projects/hooks/useProjects'
 import { useDocuments, DocumentUpload } from '@/pages/student/documents'
 import { projectService } from '../../projects/api/project.service'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Textarea, Label, Badge } from '@/components/ui'
-import { LoadingSpinner, StatusBadge, ModalDialog } from '@/components/common'
+import { Card, CardContent, Button, Textarea, Label, Badge } from '@/components/ui'
+import { LoadingSpinner, StatusBadge, ModalDialog, BlockContent } from '@/components/common'
 import {
-  Briefcase, User, Calendar, FileText, MessageSquare, CheckCircle2, Clock,
-  MapPin, Users, TrendingUp, Loader2, Send, X, AlertCircle, Upload
+  Calendar, FileText, MessageSquare, CheckCircle2, Clock, Loader2, Send, X, AlertCircle, Upload
 } from 'lucide-react'
 import { formatDate, formatRelativeTime } from '@/lib/utils/format'
+import type { NoteReply } from '@/types/project.types'
 
 interface ProjectDashboardProps {
   projectId: string
@@ -96,113 +96,87 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
     )
   }
 
+  // Get the next upcoming meeting
+  const upcomingMeeting = meetings?.find(m => new Date(m.scheduledDate) >= new Date())
+
   return (
     <>
-      {/* Project Overview */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <CardTitle className="flex items-center gap-2 mb-2">
-                <Briefcase className="h-6 w-6 text-primary" />
-                {project.title}
-              </CardTitle>
-              <CardDescription className="line-clamp-2">
-                {project.description}
-              </CardDescription>
-            </div>
-            <StatusBadge status={project.status} />
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="flex items-center gap-2">
-              <User className="h-4 w-4 text-muted-foreground" />
+      {/* Main Unified Card */}
+      <BlockContent title={t('nav.followUp')}>
+        {/* Project Header Section */}
+        <div className="px-6 pb-6 border-b">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            {/* Project Info - Left Side */}
+            <div className="space-y-3 flex-1">
               <div>
-                <p className="text-xs text-muted-foreground">{t('followUp.supervisor')}</p>
-                <p className="text-sm font-medium">
+                <p className="text-sm text-muted-foreground">{t('followUp.projectName')}:</p>
+                <p className="text-lg font-semibold text-foreground">{project.title}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">{t('followUp.supervisor')}:</p>
+                <p className="font-medium text-foreground">
                   {project.supervisor?.name || t('followUp.noSupervisor')}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-muted-foreground" />
+
+            {/* Status & Progress - Right Side */}
+            <div className="space-y-3 md:text-end md:min-w-[200px]">
               <div>
-                <p className="text-xs text-muted-foreground">{t('followUp.students')}</p>
-                <p className="text-sm font-medium">
-                  {project.currentStudents}/{project.maxStudents}
-                </p>
+                <p className="text-sm text-muted-foreground">{t('common.status')}:</p>
+                <StatusBadge status={project.status} />
               </div>
+              {!progressLoading && progressPercentage !== undefined && (
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('followUp.completionRate')}:</p>
+                  <p className="text-lg font-bold text-foreground">{progressPercentage}%</p>
+                </div>
+              )}
             </div>
           </div>
 
+          {/* Progress Bar */}
           {!progressLoading && progressPercentage !== undefined && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium flex items-center gap-1">
-                  <TrendingUp className="h-4 w-4" />
-                  {t('followUp.progress')}
-                </span>
-                <span className="text-lg font-bold">{progressPercentage}%</span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-2.5">
+            <div className="mt-4">
+              <div className="w-full bg-muted rounded-full h-3">
                 <div
-                  className="bg-primary h-2.5 rounded-full transition-all"
+                  className="bg-primary/70 h-3 rounded-full transition-all duration-500"
                   style={{ width: `${progressPercentage}%` }}
                 />
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Supervisor Notes */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5 text-primary" />
-            {t('followUp.supervisorNotes')}
-          </CardTitle>
-          <CardDescription>
-            {t('followUp.supervisorNotesDescription')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+        {/* Supervisor Notes Section */}
+        <div className="px-6 py-5 border-b bg-amber-50/50 dark:bg-amber-950/10">
+          <div className="flex items-center gap-2 mb-4">
+            <MessageSquare className="h-5 w-5 text-amber-600 dark:text-amber-500" />
+            <h2 className="font-semibold text-foreground">{t('followUp.supervisorNotes')}</h2>
+          </div>
+
           {notesLoading ? (
             <LoadingSpinner />
           ) : notes && notes.length > 0 ? (
             <div className="space-y-4">
-              {notes.map((note) => (
-                <div key={note.id} className="p-4 bg-info/10 border border-info/20 rounded-lg">
+              {notes.slice(0, 3).map((note) => (
+                <div key={note.id} className="bg-white dark:bg-card rounded-lg border p-4">
                   <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <User className="h-4 w-4 text-info" />
-                        <p className="font-medium text-info">
-                          {t('followUp.noteFromSupervisor')}
-                        </p>
-                      </div>
-                      <p className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {formatRelativeTime(note.createdAt)}
-                      </p>
-                    </div>
+                    <p className="text-sm text-foreground whitespace-pre-wrap flex-1">{note.content}</p>
+                    <span className="text-xs text-muted-foreground shrink-0 ms-4">
+                      {formatDate(note.createdAt)}
+                    </span>
                   </div>
-                  <p className="text-foreground mb-3 whitespace-pre-wrap">{note.content}</p>
 
                   {note.studentReplies && note.studentReplies.length > 0 && (
-                    <div className="mt-3 space-y-2 border-t pt-3">
-                      <p className="text-xs font-medium text-muted-foreground mb-2">
-                        {t('followUp.replies')}
-                      </p>
-                      {note.studentReplies.map((reply) => (
+                    <div className="mt-3 pt-3 border-t space-y-2">
+                      {note.studentReplies.map((reply: NoteReply) => (
                         <div
                           key={reply.id}
-                          className="p-3 bg-card rounded-lg border border-border"
+                          className="ps-4 border-s-2 border-primary/30"
                         >
-                          <p className="text-sm text-foreground whitespace-pre-wrap">{reply.content}</p>
-                          <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
+                          <p className="text-sm text-muted-foreground">{reply.content}</p>
+                          <p className="text-xs text-muted-foreground/70 mt-1">
                             {formatRelativeTime(reply.createdAt)}
                           </p>
                         </div>
@@ -212,177 +186,105 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
 
                   <Button
                     size="sm"
-                    variant="outline"
+                    variant="ghost"
                     onClick={() => setShowReplyModal(note.id)}
-                    className="mt-2"
+                    className="mt-2 h-7 text-xs"
                   >
-                    <MessageSquare className="mr-1 h-3 w-3" />
+                    <MessageSquare className="me-1 h-3 w-3" />
                     {t('followUp.reply')}
                   </Button>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-muted-foreground text-center py-4">
+            <p className="text-sm text-muted-foreground">
               {t('followUp.noNotes')}
             </p>
           )}
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Timeline */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+        {/* Timeline Section */}
+        <div className="px-6 py-5 border-b">
+          <div className="flex items-center gap-2 mb-4">
             <Calendar className="h-5 w-5 text-primary" />
-            {t('followUp.timeline')}
-          </CardTitle>
-          <CardDescription>
-            {t('followUp.timelineDescription')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+            <h2 className="font-semibold text-foreground">{t('followUp.timeline')}</h2>
+          </div>
+
           {milestonesLoading || meetingsLoading ? (
             <LoadingSpinner />
           ) : (
-            <div className="space-y-6">
-              {milestones && milestones.length > 0 ? (
-                <div>
-                  <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    {t('followUp.milestones')}
-                  </h4>
-                  <div className="space-y-3">
-                    {milestones.map((milestone) => (
-                      <div
-                        key={milestone.id}
-                        className="p-4 bg-muted rounded-lg border border-border hover:shadow-sm transition-shadow"
-                      >
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              {milestone.completed ? (
-                                <CheckCircle2 className="h-4 w-4 text-success" />
-                              ) : (
-                                <Clock className="h-4 w-4 text-warning" />
-                              )}
-                              <p className="font-medium">{milestone.title}</p>
-                            </div>
-                            {milestone.description && (
-                              <p className="text-sm text-muted-foreground mb-2">{milestone.description}</p>
-                            )}
-                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                {t('followUp.dueDate')}: {formatDate(milestone.dueDate)}
-                              </span>
-                              {milestone.completed && milestone.completedAt && (
-                                <span className="flex items-center gap-1">
-                                  <CheckCircle2 className="h-3 w-3" />
-                                  {t('followUp.completedAt')}: {formatDate(milestone.completedAt)}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <Badge
-                            variant={milestone.completed ? 'default' : 'secondary'}
-                            className={milestone.completed ? 'bg-success/10 text-success' : ''}
-                          >
-                            {milestone.completed
-                              ? (t('followUp.completed'))
-                              : (t('followUp.inProgress'))
-                            }
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
+            <div className="space-y-4">
+              {/* Upcoming Meeting */}
+              {upcomingMeeting && (
+                <div className="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200/50 dark:border-amber-800/30">
+                  <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg shrink-0">
+                    <Calendar className="h-5 w-5 text-amber-600 dark:text-amber-500" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">{t('followUp.upcomingMeeting')}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {formatDate(upcomingMeeting.scheduledDate)}
+                    </p>
                   </div>
                 </div>
-              ) : (
-                <p className="text-muted-foreground text-center py-4">
+              )}
+
+              {/* Milestones */}
+              {milestones && milestones.length > 0 ? (
+                <div className="space-y-2">
+                  {milestones.slice(0, 3).map((milestone) => (
+                    <div
+                      key={milestone.id}
+                      className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg"
+                    >
+                      {milestone.completed ? (
+                        <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
+                      ) : (
+                        <Clock className="h-5 w-5 text-amber-500 shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">{milestone.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {t('followUp.dueDate')}: {formatDate(milestone.dueDate)}
+                        </p>
+                      </div>
+                      <Badge
+                        variant="secondary"
+                        className={milestone.completed
+                          ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                          : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                        }
+                      >
+                        {milestone.completed ? t('followUp.completed') : t('followUp.inProgress')}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : !upcomingMeeting && (
+                <p className="text-sm text-muted-foreground">
                   {t('followUp.noMilestones')}
                 </p>
               )}
-
-              {meetings && meetings.length > 0 && (
-                <div className="border-t pt-6">
-                  <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    {t('followUp.meetings')}
-                  </h4>
-                  <div className="space-y-3">
-                    {meetings.map((meeting) => (
-                      <div
-                        key={meeting.id}
-                        className="p-4 bg-info/10 rounded-lg border border-info/20"
-                      >
-                        <p className="font-medium mb-2">
-                          {meeting.agenda || t('followUp.meetingWithSupervisor')}
-                        </p>
-                        <div className="grid gap-2 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4" />
-                            <span>
-                              {t('followUp.date')}: {formatDate(meeting.scheduledDate)}
-                            </span>
-                          </div>
-                          {meeting.location && (
-                            <div className="flex items-center gap-1">
-                              <MapPin className="h-4 w-4" />
-                              <span>
-                                {t('followUp.location')}: {meeting.location}
-                              </span>
-                            </div>
-                          )}
-                          {meeting.duration && (
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-4 w-4" />
-                              <span>
-                                {t('followUp.duration')}: {meeting.duration} {t('followUp.minutes')}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                        {meeting.notes && (
-                          <div className="mt-2 p-2 bg-card rounded border border-border">
-                            <p className="text-xs font-medium mb-1">{t('followUp.notes')}</p>
-                            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{meeting.notes}</p>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Submitted Documents */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-primary" />
-                {t('followUp.submittedDocuments')}
-              </CardTitle>
-              <CardDescription>
-                {t('followUp.submittedDocumentsDescription')}
-              </CardDescription>
+        {/* Documents Section */}
+        <div className="px-6 py-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              <h2 className="font-semibold text-foreground">{t('followUp.submittedDocuments')}</h2>
             </div>
             <Button
               size="sm"
               onClick={() => setShowUploadModal(true)}
-              className="shrink-0"
             >
-              <Upload className="mr-2 h-4 w-4" />
+              <Upload className="me-2 h-4 w-4" />
               {t('followUp.uploadNewDocument')}
             </Button>
           </div>
-        </CardHeader>
-        <CardContent>
+
           {documentsLoading ? (
             <LoadingSpinner />
           ) : documents && documents.length > 0 ? (
@@ -390,17 +292,15 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
               {documents.map((doc) => (
                 <div
                   key={doc.id}
-                  className="flex items-center justify-between p-3 bg-muted rounded-lg border hover:shadow-sm transition-shadow"
+                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{doc.fileName}</p>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                        <span>{doc.type}</span>
-                        <span>•</span>
-                        <span>{formatRelativeTime(doc.createdAt)}</span>
-                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {doc.type} • {formatRelativeTime(doc.createdAt)}
+                      </p>
                     </div>
                   </div>
                   <StatusBadge status={`reviewStatus_${doc.reviewStatus}`} />
@@ -408,12 +308,12 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
               ))}
             </div>
           ) : (
-            <p className="text-muted-foreground text-center py-4">
+            <p className="text-sm text-muted-foreground">
               {t('followUp.noDocuments')}
             </p>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </BlockContent>
 
       {/* Document Upload Modal */}
       <ModalDialog
@@ -466,7 +366,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                   setReplyContent((prev) => ({ ...prev, [noteId]: '' }))
                 }}
               >
-                <X className="mr-2 h-4 w-4" />
+                <X className="me-2 h-4 w-4" />
                 {t('common.cancel')}
               </Button>
               <Button
@@ -475,12 +375,12 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
               >
                 {replyToNote.isPending ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="me-2 h-4 w-4 animate-spin" />
                     {t('common.sending')}
                   </>
                 ) : (
                   <>
-                    <Send className="mr-2 h-4 w-4" />
+                    <Send className="me-2 h-4 w-4" />
                     {t('common.send')}
                   </>
                 )}

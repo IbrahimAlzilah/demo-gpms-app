@@ -7,14 +7,14 @@ import { useAuthStore } from '../store/auth.store'
 import { authService } from '../api/auth.service'
 import { Button, Input, Label } from '@/components/ui'
 import { ROUTES } from '@/lib/constants'
-import { useToast } from '@/components/common/NotificationToast'
+import { toast } from 'sonner'
 import { AlertCircle, Eye, EyeOff, Loader2, LogIn } from 'lucide-react'
 import { loginSchema, type LoginSchema } from '../schema/login.schema'
 import logo from '@/assets/logo2.png'
 
 export function LoginForm() {
   const { t } = useTranslation()
-  const { showToast } = useToast()
+
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -54,12 +54,12 @@ export function LoginForm() {
       }
 
       const redirectPath = roleRoutes[response.user.role] || from
-      showToast(t('auth.loginSuccess'), 'success')
+      toast.success(t('auth.loginSuccess'))
       navigate(redirectPath, { replace: true })
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : t('auth.loginError')
       setError(errorMessage)
-      showToast(errorMessage, 'error')
+      toast.error(errorMessage)
     } finally {
       setIsLoading(false)
     }

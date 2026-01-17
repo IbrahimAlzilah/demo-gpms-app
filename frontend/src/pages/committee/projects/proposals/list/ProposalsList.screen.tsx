@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useApproveProposal, useRejectProposal, useRequestModification, useUpdateProposal, useDeleteProposal } from '../hooks/useProposalOperations'
 import { useProposal } from '../hooks/useProposals'
-import { DataTable, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Label, Dialog, DialogContent } from '@/components/ui'
+import { DataTable, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Dialog, DialogContent } from '@/components/ui'
 import { BlockContent, ConfirmDialog, LoadingSpinner } from '@/components/common'
 import { createProposalColumns } from '../components/table'
 import { ProposalReviewDialog } from '../components/ProposalReviewDialog'
@@ -10,18 +10,18 @@ import { ProposalEditDialog } from '../components/ProposalEditDialog'
 import { ProposalsView } from '../view/ProposalsView.screen'
 import { useProposalsList } from './ProposalsList.hook'
 import { AlertCircle } from 'lucide-react'
-import { useToast } from '@/components/common'
+import { toast } from 'sonner'
 import type { Proposal } from '@/types/project.types'
 
 export function ProposalsList() {
   const { t } = useTranslation()
-  const { showToast } = useToast()
+
   const approveProposal = useApproveProposal()
   const rejectProposal = useRejectProposal()
   const requestModification = useRequestModification()
   const updateProposal = useUpdateProposal()
   const deleteProposal = useDeleteProposal()
-  
+
   const {
     data,
     state,
@@ -71,33 +71,33 @@ export function ProposalsList() {
     try {
       if (actionType === 'approve') {
         await approveProposal.mutateAsync({ id: proposalId })
-        showToast(t('committee.proposal.approveSuccess'), 'success')
+        toast.success(t('committee.proposal.approveSuccess'))
       } else if (actionType === 'reject') {
         await rejectProposal.mutateAsync({ id: proposalId, reviewNotes: notes })
-        showToast(t('committee.proposal.rejectSuccess'), 'success')
+        toast.success(t('committee.proposal.rejectSuccess'))
       } else if (actionType === 'modify') {
         if (!notes) {
-          showToast(t('committee.proposal.modificationsRequired'), 'error')
+          toast.error(t('committee.proposal.modificationsRequired'))
           return
         }
         await requestModification.mutateAsync({ id: proposalId, reviewNotes: notes })
-        showToast(t('committee.proposal.modifySuccess'), 'success')
+        toast.success(t('committee.proposal.modifySuccess'))
       }
       setState((prev) => ({ ...prev, selectedProposal: null, action: null }))
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : t('committee.proposal.processError')
-      showToast(errorMsg, 'error')
+      toast.error(errorMsg)
     }
   }
 
   const handleEdit = async (proposalId: string, data: Partial<Proposal>) => {
     try {
       await updateProposal.mutateAsync({ id: proposalId, data })
-      showToast(t('committee.proposal.updateSuccess'), 'success')
+      toast.success(t('committee.proposal.updateSuccess'))
       setState((prev) => ({ ...prev, proposalToEdit: null }))
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : t('committee.proposal.updateError')
-      showToast(errorMsg, 'error')
+      toast.error(errorMsg)
     }
   }
 
@@ -105,11 +105,11 @@ export function ProposalsList() {
     if (!state.proposalToDelete) return
     try {
       await deleteProposal.mutateAsync(state.proposalToDelete.id)
-      showToast(t('committee.proposal.deleteSuccess'), 'success')
+      toast.success(t('committee.proposal.deleteSuccess'))
       setState((prev) => ({ ...prev, proposalToDelete: null }))
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : t('committee.proposal.deleteError')
-      showToast(errorMsg, 'error')
+      toast.error(errorMsg)
     }
   }
 
@@ -122,9 +122,9 @@ export function ProposalsList() {
   return (
     <>
       <BlockContent title={t('committee.proposal.reviewPanel')}>
-        <div className="mb-4 flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Label htmlFor="status-filter">{t('committee.proposal.filterByStatus')}</Label>
+
+        <DataTable
+          toolbarContent={
             <Select
               value={state.statusFilter}
               onValueChange={(value) => setState((prev) => ({ ...prev, statusFilter: value as typeof prev.statusFilter }))}
@@ -140,9 +140,7 @@ export function ProposalsList() {
                 <SelectItem value="requires_modification">{t('proposal.status.requiresModification')}</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-        </div>
-        <DataTable
+          }
           columns={columns}
           data={data.proposals}
           isLoading={data.isLoading}

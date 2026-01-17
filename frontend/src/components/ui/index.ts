@@ -20,3 +20,5 @@ export * from "./skeleton";
 export * from "./switch";
 export * from './DatePicker'
 export * from './calendar'
+export * from './alert'
+export * from './tabs'

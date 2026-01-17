@@ -3,19 +3,20 @@ import { useTranslation } from 'react-i18next'
 import { useApproveRegistration, useRejectRegistration } from '../hooks/useRegistrationOperations'
 import { createRegistrationColumns } from '../components/table'
 import { RegistrationDetailsView } from '../components/RegistrationDetailsView'
-import { DataTable, Button, Textarea, Label } from '@/components/ui'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { LoadingSpinner, ConfirmDialog } from '@/components/common'
+import { DataTable, Textarea, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
+import { Card, CardContent } from '@/components/ui/card'
+import { LoadingSpinner, ConfirmDialog, BlockContent } from '@/components/common'
 import type { ProjectRegistration } from '@/types/project.types'
 import { useRegistrationsList } from './RegistrationsList.hook'
-import { useToast } from '@/components/common'
+import { toast } from 'sonner'
+import { AlertCircle } from 'lucide-react'
 
 export function RegistrationsList() {
   const { t } = useTranslation()
-  const { showToast } = useToast()
+
   const approveRegistration = useApproveRegistration()
   const rejectRegistration = useRejectRegistration()
-  
+
   const {
     data,
     state,
@@ -38,7 +39,7 @@ export function RegistrationsList() {
         registrationId: state.selectedRegistration.id,
         comments: state.comments || undefined,
       })
-      showToast(t('registration.approveSuccess'), 'success')
+      toast.success(t('registration.approveSuccess'))
       setState((prev) => ({
         ...prev,
         showDialog: false,
@@ -47,9 +48,8 @@ export function RegistrationsList() {
         comments: '',
       }))
     } catch (err) {
-      showToast(
-        err instanceof Error ? err.message : t('registration.approveError'),
-        'error'
+      toast.error(
+        err instanceof Error ? err.message : t('registration.approveError')
       )
     }
   }
@@ -57,7 +57,7 @@ export function RegistrationsList() {
   const handleReject = async () => {
     if (!state.selectedRegistration) return
     if (!state.comments.trim()) {
-      showToast(t('registration.commentsRequired'), 'error')
+      toast.error(t('registration.commentsRequired'))
       return
     }
     try {
@@ -65,7 +65,7 @@ export function RegistrationsList() {
         registrationId: state.selectedRegistration.id,
         comments: state.comments,
       })
-      showToast(t('registration.rejectSuccess'), 'success')
+      toast.success(t('registration.rejectSuccess'))
       setState((prev) => ({
         ...prev,
         showDialog: false,
@@ -74,9 +74,8 @@ export function RegistrationsList() {
         comments: '',
       }))
     } catch (err) {
-      showToast(
-        err instanceof Error ? err.message : t('registration.rejectError'),
-        'error'
+      toast.error(
+        err instanceof Error ? err.message : t('registration.rejectError')
       )
     }
   }
@@ -115,66 +114,56 @@ export function RegistrationsList() {
   }
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('registration.management')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-2 mb-4">
-            <Button
-              variant={state.statusFilter === 'pending' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setState((prev) => ({ ...prev, statusFilter: 'pending' }))}
+    <>
+      <BlockContent title={t('registration.management')}>
+        <DataTable
+          toolbarContent={
+            <Select
+              value={state.statusFilter}
+              onValueChange={(value) => setState((prev) => ({ ...prev, statusFilter: value as typeof prev.statusFilter }))}
             >
-              {t('registration.pending')}
-            </Button>
-            <Button
-              variant={state.statusFilter === 'approved' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setState((prev) => ({ ...prev, statusFilter: 'approved' }))}
-            >
-              {t('registration.approved')}
-            </Button>
-            <Button
-              variant={state.statusFilter === 'rejected' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setState((prev) => ({ ...prev, statusFilter: 'rejected' }))}
-            >
-              {t('registration.rejected')}
-            </Button>
-            <Button
-              variant={state.statusFilter === 'all' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setState((prev) => ({ ...prev, statusFilter: 'all' }))}
-            >
-              {t('common.all')}
-            </Button>
-          </div>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder={t('common.filterByStatus')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('common.all')}</SelectItem>
+                <SelectItem value="pending">{t('registration.pending')}</SelectItem>
+                <SelectItem value="approved">{t('registration.approved')}</SelectItem>
+                <SelectItem value="rejected">{t('registration.rejected')}</SelectItem>
+              </SelectContent>
+            </Select>
+          }
+          columns={columns}
+          data={data.registrations}
+          isLoading={data.isLoading}
+          error={data.error}
+          pageCount={pageCount}
+          pageIndex={pagination.pageIndex}
+          pageSize={pagination.pageSize}
+          onPaginationChange={(pageIndex, pageSize) => {
+            setPagination({ pageIndex, pageSize })
+          }}
+          sorting={sorting}
+          onSortingChange={setSorting}
+          columnFilters={columnFilters}
+          onColumnFiltersChange={setColumnFilters}
+          searchValue={globalFilter}
+          onSearchChange={setGlobalFilter}
+          enableFiltering={true}
+          enableViews={true}
+          emptyMessage={t('registration.noRegistrations')}
+        />
+      </BlockContent>
 
-          <DataTable
-            columns={columns}
-            data={data.registrations}
-            isLoading={data.isLoading}
-            error={data.error}
-            pageCount={pageCount}
-            pageIndex={pagination.pageIndex}
-            pageSize={pagination.pageSize}
-            onPaginationChange={(pageIndex, pageSize) => {
-              setPagination({ pageIndex, pageSize })
-            }}
-            sorting={sorting}
-            onSortingChange={setSorting}
-            columnFilters={columnFilters}
-            onColumnFiltersChange={setColumnFilters}
-            searchValue={globalFilter}
-            onSearchChange={setGlobalFilter}
-            enableFiltering={true}
-            enableViews={true}
-            emptyMessage={t('registration.noRegistrations')}
-          />
-        </CardContent>
-      </Card>
+
+      {data.error && (
+        <BlockContent variant="container" className="border-destructive">
+          <div className="flex items-center gap-2 text-destructive">
+            <AlertCircle className="h-5 w-5" />
+            <span>{t('registration.loadError')}</span>
+          </div>
+        </BlockContent>
+      )}
 
       <ConfirmDialog
         open={state.showDialog}
@@ -189,8 +178,8 @@ export function RegistrationsList() {
             ? t('registration.approveDescription')
             : t('registration.rejectDescription')
         }
-        confirmText={state.action === 'approve' ? t('common.approve') : t('common.reject')}
-        cancelText={t('common.cancel')}
+        confirmLabel={state.action === 'approve' ? t('common.approve') : t('common.reject')}
+        cancelLabel={t('common.cancel')}
         onConfirm={state.action === 'approve' ? handleApprove : handleReject}
         variant={state.action === 'approve' ? 'default' : 'destructive'}
       >
@@ -233,6 +222,6 @@ export function RegistrationsList() {
           setState((prev) => ({ ...prev, registrationToViewId: null }))
         }}
       />
-    </div>
+    </>
   )
 }

@@ -1,20 +1,19 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useApproveGrade } from '../hooks/useGradeOperations'
-import { createGradeColumns } from '../components/table'
+import { createGradeColumns } from '../components/table/columns'
 import { DataTable, Button, Alert, AlertDescription } from '@/components/ui'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoadingSpinner, ConfirmDialog } from '@/components/common'
-import { AlertCircle, Info } from 'lucide-react'
+import { Info } from 'lucide-react'
 import type { Grade } from '@/types/evaluation.types'
 import { useGradesList } from './GradesList.hook'
-import { useToast } from '@/components/common'
+import { toast } from 'sonner'
 
 export function GradesList() {
   const { t } = useTranslation()
-  const { showToast } = useToast()
   const approveGrade = useApproveGrade()
-  
+
   const {
     data,
     state,
@@ -38,7 +37,7 @@ export function GradesList() {
       await approveGrade.mutateAsync({
         gradeId: state.selectedGrade.id,
       })
-      showToast(t('grades.approveSuccess'), 'success')
+      toast.success(t('grades.approveSuccess'))
       setState((prev) => ({
         ...prev,
         showDialog: false,
@@ -46,9 +45,8 @@ export function GradesList() {
         action: null,
       }))
     } catch (err) {
-      showToast(
-        err instanceof Error ? err.message : t('grades.approveError'),
-        'error'
+      toast.error(
+        err instanceof Error ? err.message : t('grades.approveError')
       )
     }
   }
@@ -65,10 +63,10 @@ export function GradesList() {
   const columns = useMemo(
     () =>
       createGradeColumns({
-        onView: (grade) => {
+        onView: (grade: Grade) => {
           setState((prev) => ({ ...prev, gradeToViewId: grade.id }))
         },
-        onApprove: (grade) => handleActionClick(grade, 'approve'),
+        onApprove: (grade: Grade) => handleActionClick(grade, 'approve'),
         t,
       }),
     [setState, t]
@@ -152,8 +150,8 @@ export function GradesList() {
         onOpenChange={(open) => setState((prev) => ({ ...prev, showDialog: open }))}
         title={t('grades.approveTitle')}
         description={t('grades.approveDescription')}
-        confirmText={t('common.approve')}
-        cancelText={t('common.cancel')}
+        confirmLabel={t('committee.grades.approveGrade')}
+        cancelLabel={t('common.cancel')}
         onConfirm={handleApprove}
         variant="default"
       >

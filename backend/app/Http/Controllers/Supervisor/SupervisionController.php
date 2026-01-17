@@ -20,10 +20,25 @@ class SupervisionController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        // Get projects assigned to this supervisor pending approval
+        // Get projects assigned to this supervisor
         $query = Project::where('supervisor_id', $request->user()->id)
-            ->where('supervisor_approval_status', 'pending')
             ->with(['supervisor', 'students']);
+
+        // Apply status filter if provided
+        $filters = $request->get('filters', []);
+        $statusFilter = $filters['supervisorApprovalStatus'] ?? null;
+
+        // Remove status filter from filters array to avoid double application in applyTableQuery
+        if (isset($filters['supervisorApprovalStatus'])) {
+            unset($filters['supervisorApprovalStatus']);
+            $request->merge(['filters' => $filters]);
+        }
+
+        // Apply status filter only if a specific status is selected (not 'all' and not null)
+        if ($statusFilter && $statusFilter !== 'all') {
+            $query->where('supervisor_approval_status', $statusFilter);
+        }
+        // If statusFilter is 'all' or null (default), show all statuses - don't apply any status filter
 
         $query = $this->applyTableQuery($query, $request);
 

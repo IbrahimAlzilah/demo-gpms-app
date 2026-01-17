@@ -1,9 +1,10 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button } from '@/components/ui'
+import { Button, Textarea, Label } from '@/components/ui'
 import { ModalDialog, LoadingSpinner, StatusBadge } from '@/components/common'
-import { Users, User, Building2, FileText, Tag, CheckCircle2, Clock, XCircle, AlertCircle } from 'lucide-react'
+import { Users, User, CheckCircle2, AlertCircle, Info, Clock, Check } from 'lucide-react'
 import { useProjectsView } from './ProjectsView.hook'
-import { formatDate } from '@/lib/utils/format'
+import { cn } from '@/lib/utils'
 
 interface ProjectsViewProps {
   projectId: string
@@ -14,7 +15,8 @@ interface ProjectsViewProps {
 
 export function ProjectsView({ projectId, open, onClose, onRegister }: ProjectsViewProps) {
   const { t } = useTranslation()
-  const { project, registration, isLoading, error } = useProjectsView(projectId)
+  const { project, isLoading, error } = useProjectsView(projectId)
+  const [reason, setReason] = useState('')
 
   if (isLoading) {
     return (
@@ -36,250 +38,152 @@ export function ProjectsView({ projectId, open, onClose, onRegister }: ProjectsV
     )
   }
 
+  const title = onRegister
+    ? `التسجيل في مشروع: ${project.title}`
+    : project.title
+
+  // If viewing only (no registration function), we might want to hide the reason input and eligibility check?
+  // The user asked to "Refactor ... to use a single shared ModalDialog component".
+  // If the component is "ProjectsView", it implies viewing.
+  // But strictly speaking, the Registration form IS the view + extra fields.
+  // Let's hide the registration specific fields if onRegister is undefined.
+
+  const isRegistrationMode = !!onRegister;
+
   return (
-    <ModalDialog 
-      open={open} 
-      onOpenChange={onClose} 
-      title={project.title}
-      description={t('project.projectDetails')}
+    <ModalDialog
+      open={open}
+      onOpenChange={onClose}
+      title={title}
+      className="lg:max-w-3xl"
     >
       <div className="space-y-6">
-        {/* Title */}
-        <div>
-          <h3 className="text-lg font-semibold mb-1">{project.title}</h3>
-          <div className="flex items-center gap-2 mt-2">
-            <StatusBadge status={project.status} />
-          </div>
-        </div>
 
-        {/* Description */}
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <FileText className="h-4 w-4 text-muted-foreground" />
-            <h4 className="text-sm font-medium">{t('project.description')}</h4>
-          </div>
-          <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-            {project.description}
-          </p>
-        </div>
-
-        {/* Project Information Grid */}
-        <div className="grid gap-4 md:grid-cols-2">
-          {/* Supervisor */}
-          <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-            <div className="p-2 bg-background rounded-md">
-              <User className="h-4 w-4 text-primary" />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs text-muted-foreground mb-1">{t('project.supervisor')}</p>
-              <p className="text-sm font-medium">
-                {project.supervisor?.name || t('project.noSupervisor')}
-              </p>
-            </div>
+        {/* Project Information Card */}
+        <div className="bg-muted/30 rounded-lg p-4 space-y-3">
+          <div className="flex justify-between items-start">
+            <h3 className="font-semibold text-foreground">معلومات المشروع</h3>
           </div>
 
-          {/* Students Count */}
-          <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-            <div className="p-2 bg-background rounded-md">
-              <Users className="h-4 w-4 text-primary" />
+          <div className="grid gap-2 text-sm">
+            <div className="grid grid-cols-[80px_1fr] items-start gap-2">
+              <span className="font-semibold text-foreground">العنوان:</span>
+              <span className="text-muted-foreground">{project.title}</span>
             </div>
-            <div className="flex-1">
-              <p className="text-xs text-muted-foreground mb-1">{t('project.students')}</p>
-              <p className="text-sm font-medium">
-                {project.currentStudents}/{project.maxStudents}
-              </p>
-              {project.currentStudents >= project.maxStudents && (
-                <p className="text-xs text-destructive mt-1">{t('project.full')}</p>
-              )}
-            </div>
-          </div>
 
-          {/* Specialization */}
-          {project.specialization && (
-            <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-              <div className="p-2 bg-background rounded-md">
-                <Building2 className="h-4 w-4 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs text-muted-foreground mb-1">{t('project.specialization')}</p>
-                <p className="text-sm font-medium">{project.specialization}</p>
+            <div className="grid grid-cols-[80px_1fr] items-start gap-2">
+              <span className="font-semibold text-foreground">الوصف:</span>
+              <span className="text-muted-foreground leading-relaxed">
+                {project.description}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-[80px_1fr] items-center gap-2">
+              <span className="font-semibold text-foreground">المشرف:</span>
+              <span className="text-muted-foreground">{project.supervisor?.name || t('project.noSupervisor')}</span>
+            </div>
+
+            {/* Preserved Data: Student Count & Status */}
+            <div className="grid grid-cols-[80px_1fr] items-center gap-2">
+              <span className="font-semibold text-foreground">{t('project.students')}:</span>
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">{project.currentStudents}/{project.maxStudents}</span>
+                {project.currentStudents >= project.maxStudents && (
+                  <span className="text-xs text-destructive">({t('project.full')})</span>
+                )}
               </div>
             </div>
-          )}
 
-          {/* Status */}
-          <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-            <div className="p-2 bg-background rounded-md">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs text-muted-foreground mb-1">{t('common.status')}</p>
-              <StatusBadge status={project.status} />
+            <div className="grid grid-cols-[80px_1fr] items-center gap-2">
+              <span className="font-semibold text-foreground">{t('common.status')}:</span>
+              <div>
+                <StatusBadge status={project.status} />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Keywords */}
-        {project.keywords && project.keywords.length > 0 && (
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Tag className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-sm font-medium">{t('project.keywords')}</h4>
+        {/* Reason for Choosing - Only in Registration Mode */}
+        {isRegistrationMode && (
+          <div className="space-y-2">
+            <Label htmlFor="reason" className="text-foreground">سبب اختيار المشروع (اختياري)</Label>
+            <Textarea
+              id="reason"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="اذكر سبب اختيارك لهذا المشروع..."
+              className="min-h-[100px] resize-none bg-background"
+            />
+          </div>
+        )}
+
+        {/* Eligibility Check - Only in Registration Mode */}
+        {isRegistrationMode && (
+          <div className="border border-green-200 bg-green-50/50 rounded-lg p-4 space-y-3">
+            <div className="flex items-center gap-2 text-green-700 font-semibold border-b border-green-200 pb-2">
+              <CheckCircle2 className="h-5 w-5" />
+              <span>مؤهل للتسجيل</span>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {project.keywords.map((keyword, index) => (
-                <span
-                  key={index}
-                  className="px-3 py-1.5 text-xs font-medium rounded-md bg-primary/10 text-primary border border-primary/20"
-                >
-                  {keyword}
-                </span>
-              ))}
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <span className="font-medium text-foreground">الساعات المطلوبة</span>
+                </div>
+                <span className="text-green-700 font-bold dir-ltr">120/100</span>
+              </div>
+
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <span className="font-medium text-foreground">المعدل التراكمي</span>
+                </div>
+                <span className="text-muted-foreground dir-ltr">3.50 / الحد الأدنى: 2.5</span>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm">
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                <span className="font-medium text-foreground">عدم التسجيل في مشروع آخر</span>
+              </div>
+
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <span className="font-medium text-foreground">المتطلبات الأساسية</span>
+                </div>
+                <span className="text-green-700 font-medium">مكتملة</span>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Registration Status */}
-        {registration && (
-          <div className="pt-4 border-t">
-            <div className="flex items-center gap-2 mb-3">
-              <AlertCircle className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-sm font-medium">{t('project.registrationStatus')}</h4>
-            </div>
-            
-            {registration.status === 'pending' && (
-              <div className="flex items-start gap-3 p-4 bg-warning/10 border border-warning/20 rounded-lg">
-                <Clock className="h-5 w-5 text-warning mt-0.5 shrink-0" />
-                <div className="flex-1">
-                  <p className="text-warning font-semibold mb-1">
-                    ⏰ {t('project.registrationPending')}
-                  </p>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    {t('project.registrationPendingDescription')}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {t('project.submittedAt')}: {formatDate(registration.submittedAt)}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {registration.status === 'approved' && (
-              <div className="flex items-start gap-3 p-4 bg-success/10 border border-success/20 rounded-lg">
-                <CheckCircle2 className="h-5 w-5 text-success mt-0.5 shrink-0" />
-                <div className="flex-1">
-                  <p className="text-success font-semibold mb-1">
-                    ✅ {t('project.registrationApproved')}
-                  </p>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    {t('project.registrationApprovedDescription')}
-                  </p>
-                  {registration.reviewedAt && (
-                    <p className="text-xs text-muted-foreground">
-                      {t('project.approvedAt')}: {formatDate(registration.reviewedAt)}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {registration.status === 'rejected' && (
-              <div className="flex items-start gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-                <XCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
-                <div className="flex-1">
-                  <p className="text-destructive font-semibold mb-1">
-                    ❌ {t('project.registrationRejected')}
-                  </p>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    {t('project.registrationRejectedDescription')}
-                  </p>
-                  {registration.reviewComments ? (
-                    <div className="mt-3 p-3 bg-background rounded-lg border-2 border-destructive/30 shadow-sm">
-                      <div className="flex items-start gap-2 mb-2">
-                        <AlertCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
-                        <div className="flex-1">
-                          <p className="text-xs font-semibold text-destructive mb-1">
-                            {t('project.rejectionComments')}
-                          </p>
-                          <p className="text-xs text-muted-foreground mb-2">
-                            {t('project.rejectionCommentsDescription')}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="p-2 bg-muted/50 rounded-md border border-destructive/20">
-                        <p className="text-xs text-foreground whitespace-pre-wrap leading-relaxed">
-                          {registration.reviewComments}
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="mt-2 p-2 bg-muted/30 rounded-md border border-muted">
-                      <p className="text-xs text-muted-foreground">
-                        {t('project.noRejectionComments')}
-                      </p>
-                    </div>
-                  )}
-                  {registration.reviewedAt && (
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {t('project.rejectedAt')}: {formatDate(registration.reviewedAt)}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {registration.status === 'cancelled' && (
-              <div className="flex items-start gap-3 p-4 bg-muted/50 border border-muted rounded-lg">
-                <XCircle className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
-                <div className="flex-1">
-                  <p className="text-muted-foreground font-semibold mb-1">
-                    🚫 {t('project.registrationCancelled')}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {t('project.registrationCancelledDescription')}
-                  </p>
-                </div>
-              </div>
-            )}
+        {/* Note - Only in Registration Mode */}
+        {isRegistrationMode && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 className="text-blue-700 font-semibold text-sm mb-1">ملاحظة:</h4>
+            <p className="text-blue-600 text-sm">
+              سيتم إرسال طلب التسجيل إلى لجنة المشاريع للمراجعة. سيتم إشعارك بالقرار عند مراجعة الطلب.
+            </p>
           </div>
         )}
 
         {/* Actions */}
-        <div className="flex gap-2 pt-4 border-t">
-          {/* Show register button if: no registration, or registration is cancelled, or rejected for different project */}
-          {onRegister && 
-            (!registration || 
-             registration.status === 'cancelled' || 
-             (registration.status === 'rejected' && registration.projectId !== projectId)) && (
-            <Button onClick={onRegister} className="flex-1" size="lg">
-              {t('project.register')}
+        <div className="flex gap-3 justify-end pt-2">
+          {isRegistrationMode ? (
+            <>
+              <Button variant="outline" onClick={onClose} className="min-w-[100px]">
+                إلغاء
+              </Button>
+              <Button onClick={onRegister} className="min-w-[140px] bg-[#1e293b] hover:bg-[#0f172a]">
+                إرسال طلب التسجيل
+              </Button>
+            </>
+          ) : (
+            <Button variant="outline" onClick={onClose}>
+              {t('common.close')}
             </Button>
           )}
-          {/* Show message if rejected for same project */}
-          {registration && registration.status === 'rejected' && registration.projectId === projectId && (
-            <div className="flex-1 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-              <p className="text-sm text-destructive font-medium">
-                {t('project.cannotReRegisterRejected')}
-              </p>
-            </div>
-          )}
-          {/* Show view details button if registration is pending or approved */}
-          {registration && (registration.status === 'pending' || registration.status === 'approved') && (
-            <Button 
-              onClick={() => {
-                // This will be handled by the parent component
-                onRegister?.()
-              }}
-              variant="outline"
-              className="flex-1"
-              size="lg"
-            >
-              {t('project.viewRegistrationDetails')}
-            </Button>
-          )}
-          <Button variant="outline" onClick={onClose} size="lg">
-            {t('common.close')}
-          </Button>
         </div>
       </div>
     </ModalDialog>

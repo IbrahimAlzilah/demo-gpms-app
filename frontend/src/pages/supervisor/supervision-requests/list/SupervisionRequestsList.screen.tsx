@@ -1,13 +1,16 @@
 import { useMemo, useCallback } from 'react'
-import { DataTable, Card, CardContent, Label, Textarea } from '@/components/ui'
-import { BlockContent, ConfirmDialog, useToast } from '@/components/common'
+import { DataTable, Card, CardContent, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
+import { BlockContent, ConfirmDialog } from '@/components/common'
+import { toast } from 'sonner'
 import { AlertCircle, CheckCircle2, AlertTriangle, User, Briefcase, MessageSquare } from 'lucide-react'
 import { createSupervisionRequestColumns } from '../components/table'
 import { useSupervisionRequestsList } from './SupervisionRequestsList.hook'
 import { useApproveSupervisionRequest, useRejectSupervisionRequest } from '../hooks/useSupervisionRequestOperations'
+import { SupervisionRequestDetailsView } from '../components/SupervisionRequestDetailsView'
+import type { Project } from '@/types/project.types'
 
 export function SupervisionRequestsList() {
-  const { showToast } = useToast()
+
   const approveRequest = useApproveSupervisionRequest()
   const rejectRequest = useRejectSupervisionRequest()
   const {
@@ -29,14 +32,28 @@ export function SupervisionRequestsList() {
 
   const handleApprove = async () => {
     if (!state.selectedRequest) return
+
+    // Validate request status
+    if (state.selectedRequest.supervisorApprovalStatus !== 'pending') {
+      toast.error(t('supervision.requestNotPending'))
+      setState((prev) => ({
+        ...prev,
+        showConfirmDialog: false,
+        selectedRequest: null,
+        action: null,
+        comments: '',
+      }))
+      return
+    }
+
     if (data.currentProjectCount >= data.maxProjectsPerSupervisor) {
-      showToast(t('supervision.maxProjectsReached'), 'error')
+      toast.error(t('supervision.maxProjectsReached'))
       return
     }
 
     try {
       await approveRequest.mutateAsync(state.selectedRequest.id)
-      showToast(t('supervision.approveSuccess'), 'success')
+      toast.success(t('supervision.approveSuccess'))
       setState((prev) => ({
         ...prev,
         comments: '',
@@ -44,19 +61,38 @@ export function SupervisionRequestsList() {
         action: null,
         showConfirmDialog: false,
       }))
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : t('supervision.approveError'), 'error')
+    } catch (err: unknown) {
+      // Extract error message from API response
+      const errorMessage =
+        (err as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message ||
+        (err as { message?: string })?.message ||
+        t('supervision.approveError')
+      toast.error(errorMessage)
     }
   }
 
   const handleReject = async () => {
     if (!state.selectedRequest) return
+
+    // Validate request status
+    if (state.selectedRequest.supervisorApprovalStatus !== 'pending') {
+      toast.error(t('supervision.requestNotPending'))
+      setState((prev) => ({
+        ...prev,
+        showConfirmDialog: false,
+        selectedRequest: null,
+        action: null,
+        comments: '',
+      }))
+      return
+    }
+
     try {
-      await rejectRequest.mutateAsync({ 
-        requestId: state.selectedRequest.id, 
-        comments: state.comments || undefined 
+      await rejectRequest.mutateAsync({
+        requestId: state.selectedRequest.id,
+        comments: state.comments || undefined
       })
-      showToast(t('supervision.rejectSuccess'), 'success')
+      toast.success(t('supervision.rejectSuccess'))
       setState((prev) => ({
         ...prev,
         comments: '',
@@ -64,14 +100,25 @@ export function SupervisionRequestsList() {
         action: null,
         showConfirmDialog: false,
       }))
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : t('supervision.rejectError'), 'error')
+    } catch (err: unknown) {
+      // Extract error message from API response
+      const errorMessage =
+        (err as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message ||
+        (err as { message?: string })?.message ||
+        t('supervision.rejectError')
+      toast.error(errorMessage)
     }
   }
 
-  const handleApproveClick = useCallback((request: any) => {
+  const handleApproveClick = useCallback((request: Project) => {
+    // Validate request status before showing dialog
+    if (request.supervisorApprovalStatus !== 'pending') {
+      toast.error(t('supervision.requestNotPending'))
+      return
+    }
+
     if (data.currentProjectCount >= data.maxProjectsPerSupervisor) {
-      showToast(t('supervision.maxProjectsReached'), 'error')
+      toast.error(t('supervision.maxProjectsReached'))
       return
     }
     setState((prev) => ({
@@ -80,33 +127,47 @@ export function SupervisionRequestsList() {
       action: 'approve',
       showConfirmDialog: true,
     }))
-  }, [data.currentProjectCount, data.maxProjectsPerSupervisor, showToast, t, setState])
+  }, [data.currentProjectCount, data.maxProjectsPerSupervisor, t, setState])
 
-  const handleRejectClick = useCallback((request: any) => {
+  const handleRejectClick = useCallback((request: Project) => {
+    // Validate request status before showing dialog
+    if (request.supervisorApprovalStatus !== 'pending') {
+      toast.error(t('supervision.requestNotPending'))
+      return
+    }
+
     setState((prev) => ({
       ...prev,
       selectedRequest: request,
       action: 'reject',
       showConfirmDialog: true,
     }))
+  }, [t, setState])
+
+  const handleViewClick = useCallback((request: Project) => {
+    setState((prev) => ({
+      ...prev,
+      viewingRequest: request,
+    }))
   }, [setState])
 
   const columns = useMemo(
     () =>
       createSupervisionRequestColumns({
+        onView: handleViewClick,
         onApprove: handleApproveClick,
         onReject: handleRejectClick,
         canAcceptMore,
         t,
       }),
-    [handleApproveClick, handleRejectClick, canAcceptMore, t]
+    [handleViewClick, handleApproveClick, handleRejectClick, canAcceptMore, t]
   )
 
   return (
     <>
       {/* Project Count Info */}
-      <Card className={canAcceptMore ? 'border-info mb-6' : 'border-warning mb-6'}>
-        <CardContent className="pt-6">
+      <Card className={canAcceptMore ? 'border-info mb-5 py-4' : 'border-warning mb-5 py-4'}>
+        <CardContent className="pt-0">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium">
@@ -132,6 +193,26 @@ export function SupervisionRequestsList() {
 
       <BlockContent title={t('nav.supervisionRequests')}>
         <DataTable
+          toolbarContent={
+            <Select
+              value={state.statusFilter}
+              onValueChange={(value) => {
+                setState((prev) => ({ ...prev, statusFilter: value as typeof prev.statusFilter }))
+                // Reset to first page when filter changes
+                setPagination((prev) => ({ ...prev, pageIndex: 0 }))
+              }}
+            >
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder={t('common.filterByStatus')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('common.all')}</SelectItem>
+                <SelectItem value="pending">{t('common.pending')}</SelectItem>
+                <SelectItem value="approved">{t('common.approved')}</SelectItem>
+                <SelectItem value="rejected">{t('common.rejected')}</SelectItem>
+              </SelectContent>
+            </Select>
+          }
           columns={columns}
           data={data.requests}
           isLoading={data.isLoading}
@@ -235,6 +316,13 @@ export function SupervisionRequestsList() {
           </div>
         )}
       </ConfirmDialog>
+
+      {/* Request Details View */}
+      <SupervisionRequestDetailsView
+        request={state.viewingRequest}
+        open={!!state.viewingRequest}
+        onClose={() => setState((prev) => ({ ...prev, viewingRequest: null }))}
+      />
     </>
   )
 }

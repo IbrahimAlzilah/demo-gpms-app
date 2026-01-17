@@ -12,10 +12,12 @@ export function useSupervisionRequestsList() {
   const { user } = useAuthStore()
   
   const [state, setState] = useState<SupervisionRequestsListState>({
+    statusFilter: 'all',
     selectedRequest: null,
     showConfirmDialog: false,
     action: null,
     comments: '',
+    viewingRequest: null,
   })
 
   const {
@@ -32,8 +34,14 @@ export function useSupervisionRequestsList() {
     pagination,
     setPagination,
   } = useDataTable({
-    queryKey: ['supervision-requests-table'],
-    queryFn: (params) => supervisionService.getTableData(params, user?.id),
+    queryKey: ['supervision-requests-table', state.statusFilter],
+    queryFn: (params) => {
+      const filters = { ...params?.filters }
+      if (state.statusFilter !== 'all') {
+        filters.supervisorApprovalStatus = state.statusFilter
+      }
+      return supervisionService.getTableData({ ...params, filters }, user?.id)
+    },
     initialPageSize: 10,
     enableServerSide: true,
   })

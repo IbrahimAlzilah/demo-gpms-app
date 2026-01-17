@@ -37,8 +37,6 @@ export const ROUTES = {
     APPROVED_PROPOSALS: "/proposals/approved",
     SUPERVISION_REQUESTS: "/supervision-requests",
     PROJECTS: "/projects",
-    PROGRESS: "/progress",
-    EVALUATION: "/evaluation",
   },
   // Discussion Committee routes
   DISCUSSION_COMMITTEE: {
@@ -154,16 +152,6 @@ export const NAV_MENU: Record<string, NavMenuItem[]> = {
       labelKey: "nav.projects",
       path: ROUTES.SUPERVISOR.PROJECTS,
       icon: "Briefcase",
-    },
-    {
-      labelKey: "nav.progress",
-      path: ROUTES.SUPERVISOR.PROGRESS,
-      icon: "TrendingUp",
-    },
-    {
-      labelKey: "nav.evaluation",
-      path: ROUTES.SUPERVISOR.EVALUATION,
-      icon: "ClipboardCheck",
     },
   ],
   discussion_committee: [

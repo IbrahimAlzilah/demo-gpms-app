@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDownloadReport } from '../hooks/useReportOperations'
-import { useToast } from '@/components/common/NotificationToast'
-import type { ReportType } from '../../api/report.service'
+import { toast } from 'sonner'
+import type { ReportType } from '../api/report.service'
 import type { ReportsListState, ReportsListData } from './ReportsList.types'
 
 export function useReportsList() {
   const { t } = useTranslation()
-  const { showToast } = useToast()
+
   const downloadReport = useDownloadReport()
 
   const [state, setState] = useState<ReportsListState>({
@@ -18,14 +18,13 @@ export function useReportsList() {
     setState((prev) => ({ ...prev, loadingReport: type }))
     try {
       await downloadReport.mutateAsync({ type, options: { format: 'pdf' } })
-      showToast(`تم توليد تقرير ${type} بنجاح`, 'success')
+      toast.success(`تم توليد تقرير ${type} بنجاح`)
     } catch (error) {
       console.error('Error generating report:', error)
-      showToast(
+      toast.error(
         `فشل في توليد التقرير: ${
           error instanceof Error ? error.message : 'خطأ غير معروف'
-        }`,
-        'error'
+        }`
       )
     } finally {
       setState((prev) => ({ ...prev, loadingReport: null }))

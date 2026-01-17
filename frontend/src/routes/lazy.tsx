@@ -22,8 +22,6 @@ export const LazySupervisorProposalsPage = lazy(() => import('../pages/superviso
 export const LazySupervisionRequestsPage = lazy(() => import('../pages/supervisor/supervision-requests/SupervisionRequestsPage').then(m => ({ default: m.SupervisionRequestsPage })))
 export const LazySupervisorProjectsPage = lazy(() => import('../pages/supervisor/projects/ProjectsPage').then(m => ({ default: m.ProjectsPage })))
 export const LazySupervisorProjectDetailsPage = lazy(() => import('../pages/supervisor/projects/view/ProjectDetails.screen').then(m => ({ default: m.ProjectDetails })))
-export const LazyProgressPage = lazy(() => import('../pages/supervisor/progress/ProgressPage').then(m => ({ default: m.ProgressPage })))
-export const LazyEvaluationPage = lazy(() => import('../pages/supervisor/evaluation/EvaluationPage').then(m => ({ default: m.EvaluationPage })))
 
 // Discussion Committee pages
 export const LazyDiscussionCommitteeDashboardPage = lazy(() => import('../pages/committee/discussion/DiscussionCommitteeDashboardPage').then(m => ({ default: m.DiscussionCommitteeDashboardPage })))

@@ -2,11 +2,12 @@ import type { ColumnDef } from "@tanstack/react-table"
 import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
 import { ActionsDropdown } from "@/components/common/ActionsDropdown"
 import type { Project } from "@/types/project.types"
-import { CheckCircle2, XCircle, Briefcase, Tag, Users } from "lucide-react"
+import { CheckCircle2, XCircle, Eye, Briefcase, Tag, Users } from "lucide-react"
 import { formatRelativeTime } from "@/lib/utils/format"
 import type { SupervisionRequestTableColumnsProps } from '../../types/SupervisionRequests.types'
 
 export function createSupervisionRequestColumns({
+  onView,
   onApprove,
   onReject,
   canAcceptMore,
@@ -78,23 +79,34 @@ export function createSupervisionRequestColumns({
       ),
       cell: ({ row }) => {
         const project = row.original
+        const isPending = project.supervisorApprovalStatus === 'pending'
+        const canApprove = isPending && canAcceptMore
+        const canReject = isPending
 
         const actions = [
+          {
+            id: 'view',
+            label: t('common.view'),
+            icon: Eye,
+            onClick: () => onView(project),
+            variant: 'default' as const,
+          },
           {
             id: 'approve',
             label: t('common.accept'),
             icon: CheckCircle2,
             onClick: () => onApprove(project),
-            disabled: !canAcceptMore,
+            disabled: !canApprove,
             variant: 'success' as const,
+            separator: true,
           },
           {
             id: 'reject',
             label: t('common.reject'),
             icon: XCircle,
             onClick: () => onReject(project),
+            disabled: !canReject,
             variant: 'destructive' as const,
-            separator: true,
           },
         ]
 

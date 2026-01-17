@@ -16,6 +16,7 @@ export interface ProjectTableColumnsProps {
   t: (key: string) => string
   onProjectSelect?: (project: Project) => void
   navigate?: (path: string) => void
+  onEvaluate?: (project: Project) => void
 }
 
 /**

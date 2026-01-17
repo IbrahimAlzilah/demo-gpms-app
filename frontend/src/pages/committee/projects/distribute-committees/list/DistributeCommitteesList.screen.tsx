@@ -1,16 +1,17 @@
 import { useTranslation } from 'react-i18next'
 import { useDistributeProjects } from '../hooks/useDistributeCommitteesOperations'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
-import { LoadingSpinner, EmptyState, useToast } from '@/components/common'
+import { LoadingSpinner, EmptyState } from '@/components/common'
+import { toast } from 'sonner'
 import { Briefcase, Users, CheckCircle2, Loader2, UserCheck } from 'lucide-react'
 import type { CommitteeAssignment } from '../api/committee.service'
 import { useDistributeCommitteesList } from './DistributeCommitteesList.hook'
 
 export function DistributeCommitteesList() {
   const { t } = useTranslation()
-  const { showToast } = useToast()
+
   const distributeProjects = useDistributeProjects()
-  
+
   const {
     data,
     state,
@@ -35,7 +36,7 @@ export function DistributeCommitteesList() {
 
   const handleDistribute = async () => {
     if (state.assignments.size === 0) {
-      showToast(t('committee.distribute.selectAtLeastOne'), 'warning')
+      toast.warning(t('committee.distribute.selectAtLeastOne'))
       return
     }
 
@@ -48,12 +49,11 @@ export function DistributeCommitteesList() {
 
     try {
       await distributeProjects.mutateAsync(assignmentArray)
-      showToast(t('committee.distribute.success'), 'success')
+      toast.success(t('committee.distribute.success'))
       setState((prev) => ({ ...prev, assignments: new Map() }))
     } catch (err) {
-      showToast(
-        err instanceof Error ? err.message : t('committee.distribute.error'),
-        'error'
+      toast.error(
+        err instanceof Error ? err.message : t('committee.distribute.error')
       )
     }
   }

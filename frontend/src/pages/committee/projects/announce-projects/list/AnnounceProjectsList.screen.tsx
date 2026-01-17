@@ -2,7 +2,8 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAnnounceProjects as useAnnounceProjectsOperation, useUnannounceProjects } from '../hooks/useAnnounceProjectsOperations'
 import { DataTable, Button, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui'
-import { BlockContent, useToast, ConfirmDialog } from '@/components/common'
+import { BlockContent, ConfirmDialog } from '@/components/common'
+import { toast } from 'sonner'
 import { createAnnounceProjectsColumns } from '../components/table'
 import { ProjectDetailsView } from '../components/ProjectDetailsView'
 import { Loader2, Megaphone, AlertCircle } from 'lucide-react'
@@ -11,7 +12,7 @@ import type { Project } from '@/types/project.types'
 
 export function AnnounceProjectsList() {
   const { t } = useTranslation()
-  const { showToast } = useToast()
+
   const announceProjectsOperation = useAnnounceProjectsOperation()
   const unannounceProjectsOperation = useUnannounceProjects()
 
@@ -35,18 +36,17 @@ export function AnnounceProjectsList() {
 
   const handleAnnounce = async () => {
     if (state.selectedProjects.size === 0) {
-      showToast(t('committee.announce.selectAtLeastOne'), 'warning')
+      toast.warning(t('committee.announce.selectAtLeastOne'))
       return
     }
 
     try {
       await announceProjectsOperation.mutateAsync(Array.from(state.selectedProjects))
-      showToast(t('committee.announce.success'), 'success')
+      toast.success(t('committee.announce.success'))
       setState((prev) => ({ ...prev, selectedProjects: new Set() }))
     } catch (err) {
-      showToast(
-        err instanceof Error ? err.message : t('committee.announce.error'),
-        'error'
+      toast.error(
+        err instanceof Error ? err.message : t('committee.announce.error')
       )
     }
   }
@@ -64,16 +64,15 @@ export function AnnounceProjectsList() {
 
     try {
       await unannounceProjectsOperation.mutateAsync([state.projectToRemove.id])
-      showToast(t('committee.announce.removeSuccess'), 'success')
+      toast.success(t('committee.announce.removeSuccess'))
       setState((prev) => ({
         ...prev,
         projectToRemove: null,
         showRemoveConfirm: false,
       }))
     } catch (err) {
-      showToast(
-        err instanceof Error ? err.message : t('committee.announce.removeError'),
-        'error'
+      toast.error(
+        err instanceof Error ? err.message : t('committee.announce.removeError')
       )
     }
   }
@@ -129,25 +128,26 @@ export function AnnounceProjectsList() {
         title={title}
         actions={headerActions}
       >
-        <div className="flex gap-4 mb-4 items-center">
-          <Select
-            value={viewStatus}
-            onValueChange={(value) => setViewStatus(value as 'draft' | 'available_for_registration')}
-          >
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder={t('common.filterByStatus')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="draft">
-                {t('committee.announce.approvedProjects')}
-              </SelectItem>
-              <SelectItem value="available_for_registration">
-                {t('committee.announce.announcedProjects')}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+
         <DataTable
+          toolbarContent={
+            <Select
+              value={viewStatus}
+              onValueChange={(value) => setViewStatus(value as 'draft' | 'available_for_registration')}
+            >
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder={t('common.filterByStatus')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="draft">
+                  {t('committee.announce.approvedProjects')}
+                </SelectItem>
+                <SelectItem value="available_for_registration">
+                  {t('committee.announce.announcedProjects')}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          }
           columns={columns}
           data={data.projects}
           isLoading={data.isLoading}

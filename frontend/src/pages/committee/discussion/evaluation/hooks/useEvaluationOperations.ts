@@ -17,7 +17,6 @@ export function useSubmitFinalGrade() {
         criteria: Record<string, unknown>
         comments?: string
       }
-      committeeMembers: string[]
     }) => committeeEvaluationService.submitFinalGrade(data),
     onSuccess: (_, variables) => {
       // Invalidate evaluation queries for the specific project

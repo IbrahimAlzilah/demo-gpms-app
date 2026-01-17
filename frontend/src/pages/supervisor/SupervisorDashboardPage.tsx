@@ -149,8 +149,8 @@ export function SupervisorDashboardPage() {
                     icon={ClipboardCheck}
                     title={t('supervisor.pendingEvaluations')}
                     description={t('supervisor.youHavePendingEvaluations', { count: stats.pendingEvaluations, defaultValue: `You have ${stats.pendingEvaluations} pending evaluations.` })}
-                    actionLabel={t('nav.evaluations')}
-                    actionLink={ROUTES.SUPERVISOR.EVALUATION}
+                    actionLabel={t('nav.projects')}
+                    actionLink={ROUTES.SUPERVISOR.PROJECTS}
                     type="error"
                     ArrowIcon={ArrowIcon}
                   />
@@ -202,16 +202,6 @@ export function SupervisorDashboardPage() {
                   icon={Briefcase}
                   label={t('nav.projects')}
                 />
-                <QuickActionButton
-                  to={ROUTES.SUPERVISOR.PROGRESS}
-                  icon={TrendingUp}
-                  label={t('nav.progress')}
-                />
-                <QuickActionButton
-                  to={ROUTES.SUPERVISOR.EVALUATION}
-                  icon={ClipboardCheck}
-                  label={t('nav.evaluations')}
-                />
               </div>
             </div>
 
@@ -256,7 +246,7 @@ export function SupervisorDashboardPage() {
                   )}
 
                   <Button variant="outline" className="w-full text-xs h-9 mt-2" size="sm" asChild>
-                    <Link to={ROUTES.SUPERVISOR.PROGRESS}>
+                    <Link to={ROUTES.SUPERVISOR.PROJECTS}>
                       {t('common.viewCalendar', { defaultValue: 'View Calendar' })}
                     </Link>
                   </Button>

@@ -4,7 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useSubmitGrade } from '../../hooks/useEvaluationOperations'
 import { useEvaluationList } from '../../list/EvaluationList.hook'
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label, Textarea } from '@/components/ui'
-import { LoadingSpinner, useToast } from '@/components/common'
+import { LoadingSpinner } from '@/components/common'
+import { toast } from 'sonner'
 import { AlertCircle, Loader2, Award } from 'lucide-react'
 import { evaluationSchema } from '../../schema'
 
@@ -16,9 +17,8 @@ interface EvaluationFormProps {
 
 export function EvaluationForm({ projectId, studentId, onSuccess }: EvaluationFormProps) {
   const { t } = useTranslation()
-  const { showToast } = useToast()
   const submitGrade = useSubmitGrade()
-  const { data: { isPeriodActive, isLoading: periodLoading } } = useEvaluationList()
+  const { data: { isPeriodActive, periodLoading } } = useEvaluationList()
 
   const {
     register,
@@ -37,7 +37,7 @@ export function EvaluationForm({ projectId, studentId, onSuccess }: EvaluationFo
   const onSubmit = async (data: any) => {
     if (!isPeriodActive) {
       const errorMsg = t('supervisor.evaluationPeriodClosed')
-      showToast(errorMsg, 'error')
+      toast.error(errorMsg)
       return
     }
 
@@ -55,12 +55,12 @@ export function EvaluationForm({ projectId, studentId, onSuccess }: EvaluationFo
           comments: data.comments || undefined,
         },
       })
-      showToast(t('supervisor.evaluationSaved'), 'success')
+      toast.success(t('supervisor.evaluationSaved'))
       reset()
       onSuccess?.()
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : t('supervisor.evaluationError')
-      showToast(errorMsg, 'error')
+      toast.error(errorMsg)
     }
   }
 

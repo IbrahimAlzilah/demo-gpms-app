@@ -6,18 +6,18 @@ import { DataTable } from '@/components/ui'
 import { BlockContent, ConfirmDialog } from '@/components/common'
 import { AlertCircle, User, MessageSquare } from 'lucide-react'
 import { Textarea, Label } from '@/components/ui'
-import { useToast } from '@/components/common'
+import { toast } from 'sonner'
 import { useRequestsList } from './RequestsList.hook'
 import { RequestDetailsView } from '../view/RequestDetailsView.screen'
 import type { Request } from '@/types/request.types'
 
 export function RequestsList() {
   const { t } = useTranslation()
-  const { showToast } = useToast()
+
   const approveRequest = useApproveRequest()
   const rejectRequest = useRejectRequest()
   const [viewingRequestId, setViewingRequestId] = useState<string | null>(null)
-  
+
   const {
     data,
     state,
@@ -37,7 +37,7 @@ export function RequestsList() {
     if (!state.selectedRequest) return
     try {
       await approveRequest.mutateAsync({ id: state.selectedRequest.id, comments: state.comments || undefined })
-      showToast(t('committee.requests.approveSuccess'), 'success')
+      toast.success(t('committee.requests.approveSuccess'))
       setState((prev) => ({
         ...prev,
         comments: '',
@@ -46,9 +46,8 @@ export function RequestsList() {
         showConfirmDialog: false,
       }))
     } catch (err) {
-      showToast(
-        err instanceof Error ? err.message : t('committee.requests.processingError'),
-        'error'
+      toast.error(
+        err instanceof Error ? err.message : t('committee.requests.processingError')
       )
     }
   }
@@ -57,7 +56,7 @@ export function RequestsList() {
     if (!state.selectedRequest) return
     try {
       await rejectRequest.mutateAsync({ id: state.selectedRequest.id, comments: state.comments || undefined })
-      showToast(t('committee.requests.rejectSuccess'), 'success')
+      toast.success(t('committee.requests.rejectSuccess'))
       setState((prev) => ({
         ...prev,
         comments: '',
@@ -66,9 +65,8 @@ export function RequestsList() {
         showConfirmDialog: false,
       }))
     } catch (err) {
-      showToast(
-        err instanceof Error ? err.message : t('committee.requests.processingError'),
-        'error'
+      toast.error(
+        err instanceof Error ? err.message : t('committee.requests.processingError')
       )
     }
   }

@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DataTable, Button } from '@/components/ui'
-import { BlockContent, ModalDialog, useToast } from '@/components/common'
+import { BlockContent, ModalDialog } from '@/components/common'
+import { toast } from 'sonner'
 import { AlertCircle, PlusCircle, RotateCcw, Loader2 } from 'lucide-react'
 import { createProposalColumns } from '../components/table'
 import { StatisticsCards } from '../components/StatisticsCards'
@@ -13,7 +14,7 @@ import { useResubmitProposal } from '../hooks/useProposalOperations'
 
 export function ProposalsList() {
   const { t } = useTranslation()
-  const { showToast } = useToast()
+
   const resubmitProposal = useResubmitProposal()
   const {
     data,
@@ -43,7 +44,7 @@ export function ProposalsList() {
           if (proposal.status === 'pending_review') {
             setState((prev) => ({ ...prev, editingProposalId: String(proposal.id) }))
           } else {
-            showToast(t('proposal.cannotEdit'), 'error')
+            toast.error(t('proposal.cannotEdit'))
           }
         },
         t,
@@ -53,12 +54,12 @@ export function ProposalsList() {
 
   const handleFormSuccess = () => {
     setState((prev) => ({ ...prev, showForm: false }))
-    showToast(t('proposal.submitSuccess'), 'success')
+    toast.success(t('proposal.submitSuccess'))
   }
 
   const handleEditSuccess = () => {
     setState((prev) => ({ ...prev, editingProposalId: null }))
-    showToast(t('proposal.updateSuccess'), 'success')
+    toast.success(t('proposal.updateSuccess'))
   }
 
   const handleResubmit = async () => {
@@ -66,7 +67,7 @@ export function ProposalsList() {
 
     try {
       await resubmitProposal.mutateAsync(state.proposalToResubmit)
-      showToast(t('proposal.resubmitSuccess'), 'success')
+      toast.success(t('proposal.resubmitSuccess'))
       setState((prev) => ({
         ...prev,
         showResubmitDialog: false,
@@ -74,10 +75,7 @@ export function ProposalsList() {
         selectedProposal: null,
       }))
     } catch (err) {
-      showToast(
-        err instanceof Error ? err.message : t('proposal.resubmitError'),
-        'error'
-      )
+      toast.error(err instanceof Error ? err.message : t('proposal.resubmitError'))
     }
   }
 
@@ -94,8 +92,8 @@ export function ProposalsList() {
   const pageTitle = isMyProposals
     ? t('nav.myProposals')
     : isApprovedProposals
-    ? t('nav.approvedProposals')
-    : t('nav.proposals')
+      ? t('nav.approvedProposals')
+      : t('nav.proposals')
 
   return (
     <>

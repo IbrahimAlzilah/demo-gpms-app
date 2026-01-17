@@ -2,7 +2,8 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCreatePeriod, useUpdatePeriod, useDeletePeriod } from '../hooks/usePeriodOperations'
 import { Button, DataTable } from '@/components/ui'
-import { BlockContent, ModalDialog, useToast } from '@/components/common'
+import { BlockContent, ModalDialog } from '@/components/common'
+import { toast } from 'sonner'
 import { AlertCircle, Loader2, PlusCircle } from 'lucide-react'
 import { createPeriodColumns } from '../components/table'
 import { PeriodForm } from '../components/PeriodForm'
@@ -11,11 +12,11 @@ import type { TimePeriodSchema } from '../schema'
 
 export function PeriodsList() {
   const { t } = useTranslation()
-  const { showToast } = useToast()
+
   const createPeriod = useCreatePeriod()
   const updatePeriod = useUpdatePeriod()
   const deletePeriod = useDeletePeriod()
-  
+
   const {
     data,
     state,
@@ -55,10 +56,10 @@ export function PeriodsList() {
           data: {
             ...data,
             // Include isActive from form data if present (edit mode)
-            isActive: 'isActive' in data ? data.isActive : undefined,
+            isActive: 'isActive' in data ? (data as any).isActive : undefined,
           },
         })
-        showToast(t('committee.periods.periodUpdated'), 'success')
+        toast.success(t('committee.periods.periodUpdated'))
         setState((prev) => ({ ...prev, selectedPeriod: null, showForm: false }))
       } else {
         await createPeriod.mutateAsync({
@@ -66,11 +67,11 @@ export function PeriodsList() {
           isActive: true,
         })
         setState((prev) => ({ ...prev, success: true, showForm: false }))
-        showToast(t('committee.periods.periodCreated'), 'success')
+        toast.success(t('committee.periods.periodCreated'))
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : (state.selectedPeriod ? t('committee.periods.updateError') : t('committee.periods.createError'))
-      showToast(errorMsg, 'error')
+      toast.error(errorMsg)
     }
   }
 
@@ -79,11 +80,11 @@ export function PeriodsList() {
 
     try {
       await deletePeriod.mutateAsync(state.selectedPeriod.id.toString())
-      showToast(t('committee.periods.periodDeleted'), 'success')
+      toast.success(t('committee.periods.periodDeleted'))
       setState((prev) => ({ ...prev, showDeleteDialog: false, selectedPeriod: null }))
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : t('committee.periods.deleteError')
-      showToast(errorMsg, 'error')
+      toast.error(errorMsg)
     }
   }
 
@@ -98,17 +99,7 @@ export function PeriodsList() {
     </Button>
   ), [t, setState])
 
-  const periodTypeOptions = [
-    { value: 'proposal_submission', label: t('committee.periods.types.proposalSubmission') },
-    { value: 'project_registration', label: t('committee.periods.types.projectRegistration') },
-    { value: 'document_submission', label: t('committee.periods.types.documentSubmission') },
-    { value: 'supervisor_evaluation', label: t('committee.periods.types.supervisorEvaluation') },
-    { value: 'committee_evaluation', label: t('committee.periods.types.committeeEvaluation') },
-    { value: 'discussion_evaluation', label: t('committee.periods.types.discussionEvaluation') },
-    { value: 'final_discussion', label: t('committee.periods.types.finalDiscussion') },
-    { value: 'grade_approval', label: t('committee.periods.types.gradeApproval') },
-    { value: 'general', label: t('committee.periods.types.general') },
-  ]
+
 
   return (
     <div className="space-y-6">

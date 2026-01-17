@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle, Button, Label, Textarea } from '@/components/ui'
-import { LoadingSpinner, StatusBadge, ModalDialog, useToast } from '@/components/common'
-import { FileText, Download, CheckCircle, XCircle, MessageSquare } from 'lucide-react'
+import { LoadingSpinner, StatusBadge, ModalDialog } from '@/components/common'
+import { toast } from 'sonner'
+import { FileText, Download, CheckCircle, XCircle } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
 import { supervisorDocumentService } from '../../api/document.service'
 import type { Document } from '@/types/request.types'
@@ -19,7 +20,6 @@ export function DocumentsSection({ documents, isLoading, projectId }: DocumentsS
   const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const actualProjectId = projectId || id || ''
-  const { showToast } = useToast()
   const queryClient = useQueryClient()
   const [reviewState, setReviewState] = useState<{
     document: Document | null
@@ -48,18 +48,10 @@ export function DocumentsSection({ documents, isLoading, projectId }: DocumentsS
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['supervisor-project', actualProjectId] })
       setReviewState({ document: null, status: null, comments: '', showDialog: false })
-      showToast({
-        title: t('common.success'),
-        description: t('supervisor.documentReviewed'),
-        variant: 'default',
-      })
+      toast.success(t('supervisor.documentReviewed'))
     },
     onError: () => {
-      showToast({
-        title: t('common.error'),
-        description: t('supervisor.failedToReviewDocument'),
-        variant: 'destructive',
-      })
+      toast.error(t('supervisor.failedToReviewDocument'))
     },
   })
 
@@ -68,11 +60,8 @@ export function DocumentsSection({ documents, isLoading, projectId }: DocumentsS
       await supervisorDocumentService.download(actualProjectId, document.id, document.fileName || document.id)
     } catch (err) {
       console.error('Failed to download document:', err)
-      showToast({
-        title: t('common.error'),
-        description: t('supervisor.failedToDownloadDocument'),
-        variant: 'destructive',
-      })
+      console.error('Failed to download document:', err)
+      toast.error(t('supervisor.failedToDownloadDocument'))
     }
   }
 

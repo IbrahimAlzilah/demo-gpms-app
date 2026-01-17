@@ -3,21 +3,26 @@ import type { Project } from '../../../../../types/project.types'
 import type { User } from '../../../../../types/user.types'
 
 export const supervisorAssignmentService = {
-  getProjectsWithoutSupervisor: async (): Promise<Project[]> => {
-    const response = await apiClient.get<Project[]>('/projects-committee/projects?supervisor_id=null')
-    return Array.isArray(response.data) ? response.data : []
+  getProjectsWithoutSupervisor: async (page = 1, pageSize = 10): Promise<{ data: Project[], meta: { total: number, page: number, totalPages: number } }> => {
+    const response = await apiClient.get(
+      `/projects-committee/projects?supervisor_id=null&page=${page}&pageSize=${pageSize}`
+    ) as any
+
+    const data = Array.isArray(response.data) ? response.data : []
+    const meta = response.pagination || { total: data.length, page, totalPages: 1 }
+
+    return { data, meta }
   },
 
   getProjectsWithoutSupervisorCount: async (): Promise<number> => {
     try {
-      const response = await apiClient.get<{ data: Project[], pagination?: { total?: number } }>(
+      const response = await apiClient.get(
         '/projects-committee/projects?supervisor_id=null&pageSize=1'
-      )
-      // Try to get count from pagination first
+      ) as any
+      
       if (response.pagination?.total !== undefined) {
         return response.pagination.total
       }
-      // Fallback to data length if pagination not available
       return Array.isArray(response.data) ? response.data.length : 0
     } catch {
       return 0

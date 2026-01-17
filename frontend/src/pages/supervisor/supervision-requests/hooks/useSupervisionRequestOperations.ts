@@ -12,8 +12,12 @@ export function useApproveSupervisionRequest() {
       return supervisionService.approveRequest(requestId, user.id)
     },
     onSuccess: () => {
+      // Invalidate all supervision-requests queries regardless of statusFilter
       queryClient.invalidateQueries({ queryKey: ['supervision-requests'] })
-      queryClient.invalidateQueries({ queryKey: ['supervision-requests-table'] })
+      queryClient.invalidateQueries({ 
+        queryKey: ['supervision-requests-table'],
+        exact: false // Match all queries that start with this key (including statusFilter variants)
+      })
       queryClient.invalidateQueries({ queryKey: ['requests'] })
     },
   })
@@ -29,8 +33,12 @@ export function useRejectSupervisionRequest() {
       return supervisionService.rejectRequest(requestId, user.id, comments)
     },
     onSuccess: () => {
+      // Invalidate all supervision-requests queries regardless of statusFilter
       queryClient.invalidateQueries({ queryKey: ['supervision-requests'] })
-      queryClient.invalidateQueries({ queryKey: ['supervision-requests-table'] })
+      queryClient.invalidateQueries({ 
+        queryKey: ['supervision-requests-table'],
+        exact: false // Match all queries that start with this key (including statusFilter variants)
+      })
       queryClient.invalidateQueries({ queryKey: ['requests'] })
     },
   })

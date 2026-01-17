@@ -178,7 +178,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Discussion Committee routes
     Route::prefix('discussion-committee')->middleware('role:discussion_committee')->group(function () {
         Route::get('projects', [App\Http\Controllers\DiscussionCommittee\ProjectController::class, 'index']);
-        Route::get('projects/{id}', [App\Http\Controllers\DiscussionCommittee\ProjectController::class, 'show']);
+        Route::get('projects/{project}', [App\Http\Controllers\DiscussionCommittee\ProjectController::class, 'show']);
         // Custom evaluation routes (before apiResource to match frontend expectations)
         Route::get('evaluations', [App\Http\Controllers\DiscussionCommittee\EvaluationController::class, 'index']);
         Route::post('evaluations', [App\Http\Controllers\DiscussionCommittee\EvaluationController::class, 'store'])

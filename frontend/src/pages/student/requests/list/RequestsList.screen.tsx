@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DataTable, Button } from '@/components/ui'
-import { BlockContent, ModalDialog, ConfirmDialog, useToast } from '@/components/common'
+import { BlockContent, ConfirmDialog } from '@/components/common'
+import { toast } from 'sonner'
 import { AlertCircle, PlusCircle } from 'lucide-react'
 import { createRequestColumns } from '../components/table'
 import { StatisticsCards } from '../components/StatisticsCards'
@@ -13,7 +14,7 @@ import { useCancelRequest, useDeleteRequest } from '../hooks/useRequestOperation
 
 export function RequestsList() {
   const { t } = useTranslation()
-  const { showToast } = useToast()
+
   const cancelRequest = useCancelRequest()
   const deleteRequest = useDeleteRequest()
   const {
@@ -35,14 +36,14 @@ export function RequestsList() {
     if (!state.requestToCancel) return
     try {
       await cancelRequest.mutateAsync(state.requestToCancel.id)
-      showToast(t('request.cancelSuccess'), 'success')
+      toast.success(t('request.cancelSuccess'))
       setState((prev) => ({
         ...prev,
         requestToCancel: null,
         showCancelDialog: false,
       }))
     } catch {
-      showToast(t('request.cancelError'), 'error')
+      toast.error(t('request.cancelError'))
     }
   }
 
@@ -50,20 +51,20 @@ export function RequestsList() {
     if (!state.requestToDelete) return
     try {
       await deleteRequest.mutateAsync(state.requestToDelete.id)
-      showToast(t('request.deleteSuccess'), 'success')
+      toast.success(t('request.deleteSuccess'))
       setState((prev) => ({
         ...prev,
         requestToDelete: null,
         showDeleteDialog: false,
       }))
     } catch {
-      showToast(t('request.deleteError'), 'error')
+      toast.error(t('request.deleteError'))
     }
   }
 
   const handleEditSuccess = () => {
     setState((prev) => ({ ...prev, requestToEdit: null, showEditForm: false }))
-    showToast(t('request.updateSuccess'), 'success')
+    toast.success(t('request.updateSuccess'))
   }
 
   const columns = useMemo(
@@ -100,7 +101,7 @@ export function RequestsList() {
 
   const handleFormSuccess = () => {
     setState((prev) => ({ ...prev, showForm: false }))
-    showToast(t('request.submitSuccess'), 'success')
+    toast.success(t('request.submitSuccess'))
   }
 
   const actions = useMemo(

@@ -5,8 +5,8 @@ import {
   BlockContent,
   ModalDialog,
   ConfirmDialog,
-  useToast,
 } from '@/components/common'
+import { toast } from 'sonner'
 import { AlertCircle, PlusCircle } from 'lucide-react'
 import { createUserColumns } from '../components/table'
 import { UserForm } from '../components/UserForm'
@@ -15,7 +15,7 @@ import { useDeleteUser } from '../hooks/useUserOperations'
 
 export function UsersList() {
   const { t } = useTranslation()
-  const { showToast } = useToast()
+
   const deleteUser = useDeleteUser()
   const {
     data,
@@ -54,14 +54,14 @@ export function UsersList() {
     if (!state.userToDelete) return
     try {
       await deleteUser.mutateAsync(state.userToDelete.id)
-      showToast(t('user.deleteSuccess'), 'success')
+      toast.success(t('user.deleteSuccess'))
       setState((prev) => ({
         ...prev,
         userToDelete: null,
         showDeleteDialog: false,
       }))
     } catch {
-      showToast(t('user.deleteError'), 'error')
+      toast.error(t('user.deleteError'))
     }
   }
 
@@ -72,9 +72,8 @@ export function UsersList() {
       showForm: false,
       selectedUser: null,
     }))
-    showToast(
-      wasEditing ? t('user.updateSuccess') : t('user.createSuccess'),
-      'success'
+    toast.success(
+      wasEditing ? t('user.updateSuccess') : t('user.createSuccess')
     )
   }
 
@@ -165,8 +164,8 @@ export function UsersList() {
         description={
           state.userToDelete
             ? t('user.confirmDeleteDescription', {
-                name: state.userToDelete.name,
-              })
+              name: state.userToDelete.name,
+            })
             : ''
         }
         confirmLabel={t('common.delete')}

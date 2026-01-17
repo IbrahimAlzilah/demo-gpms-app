@@ -40,6 +40,7 @@ class ProjectResource extends JsonResource
             }),
             'documents' => $this->whenLoaded('documents') ? DocumentResource::collection($this->documents) : [],
             'grades' => $this->whenLoaded('grades') ? GradeResource::collection($this->grades) : [],
+            'committeeMembers' => $this->whenLoaded('committeeMembers') ? UserResource::collection($this->committeeMembers) : [],
             'createdAt' => $this->created_at?->toISOString(),
             'updatedAt' => $this->updated_at?->toISOString(),
         ];

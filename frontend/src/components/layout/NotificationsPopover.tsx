@@ -231,8 +231,8 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
               onClick={handleDeleteAll}
               disabled={deleteAll.isPending}
             >
-              <span className="font-medium">حذف جميع الإشعارات</span>
               <Trash2 className="h-4 w-4" />
+              <span className="font-medium">حذف جميع الإشعارات</span>
             </Button>
           </div>
         )}

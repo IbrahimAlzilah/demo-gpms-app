@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
-import { LoadingSpinner, ConfirmDialog, useToast } from '@/components/common'
+import { LoadingSpinner, ConfirmDialog } from '@/components/common'
+import { toast } from 'sonner'
 import { CheckCircle2, Calendar, Edit, Trash2, Plus, Flag } from 'lucide-react'
 import { formatDate } from '@/lib/utils/format'
 import { milestoneService } from '../api/milestone.service'
@@ -22,7 +23,6 @@ interface MilestonesManagerProps {
 
 export function MilestonesManager({ projectId }: MilestonesManagerProps) {
   const { t } = useTranslation()
-  const { showToast } = useToast()
   const [showForm, setShowForm] = useState(false)
   const [editingMilestone, setEditingMilestone] = useState<ProjectMilestone | null>(null)
   const [deletingMilestone, setDeletingMilestone] = useState<ProjectMilestone | null>(null)
@@ -46,13 +46,10 @@ export function MilestonesManager({ projectId }: MilestonesManagerProps) {
         due_date: data.dueDate,
         type: data.type,
       })
-      showToast(t('milestone.createSuccess'), 'success')
+      toast.success(t('milestone.createSuccess'))
       setShowForm(false)
     } catch (err) {
-      showToast(
-        err instanceof Error ? err.message : t('milestone.createError'),
-        'error'
-      )
+      toast.error(err instanceof Error ? err.message : t('milestone.createError'))
     }
   }
 
@@ -68,13 +65,10 @@ export function MilestonesManager({ projectId }: MilestonesManagerProps) {
           type: data.type,
         },
       })
-      showToast(t('milestone.updateSuccess'), 'success')
+      toast.success(t('milestone.updateSuccess'))
       setEditingMilestone(null)
     } catch (err) {
-      showToast(
-        err instanceof Error ? err.message : t('milestone.updateError'),
-        'error'
-      )
+      toast.error(err instanceof Error ? err.message : t('milestone.updateError'))
     }
   }
 
@@ -82,25 +76,19 @@ export function MilestonesManager({ projectId }: MilestonesManagerProps) {
     if (!deletingMilestone) return
     try {
       await deleteMilestone.mutateAsync(deletingMilestone.id)
-      showToast(t('milestone.deleteSuccess'), 'success')
+      toast.success(t('milestone.deleteSuccess'))
       setDeletingMilestone(null)
     } catch (err) {
-      showToast(
-        err instanceof Error ? err.message : t('milestone.deleteError'),
-        'error'
-      )
+      toast.error(err instanceof Error ? err.message : t('milestone.deleteError'))
     }
   }
 
   const handleMarkCompleted = async (milestone: ProjectMilestone) => {
     try {
       await markCompleted.mutateAsync(milestone.id)
-      showToast(t('milestone.markCompletedSuccess'), 'success')
+      toast.success(t('milestone.markCompletedSuccess'))
     } catch (err) {
-      showToast(
-        err instanceof Error ? err.message : t('milestone.markCompletedError'),
-        'error'
-      )
+      toast.error(err instanceof Error ? err.message : t('milestone.markCompletedError'))
     }
   }
 
@@ -141,11 +129,10 @@ export function MilestonesManager({ projectId }: MilestonesManagerProps) {
               {milestones.map((milestone) => (
                 <div
                   key={milestone.id}
-                  className={`p-4 rounded-lg border ${
-                    milestone.completed
-                      ? 'bg-muted/50 border-muted'
-                      : 'bg-card border-border'
-                  }`}
+                  className={`p-4 rounded-lg border ${milestone.completed
+                    ? 'bg-muted/50 border-muted'
+                    : 'bg-card border-border'
+                    }`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -227,8 +214,8 @@ export function MilestonesManager({ projectId }: MilestonesManagerProps) {
         onOpenChange={(open) => !open && setDeletingMilestone(null)}
         title={t('milestone.deleteTitle')}
         description={t('milestone.deleteDescription')}
-        confirmText={t('common.delete')}
-        cancelText={t('common.cancel')}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
         onConfirm={handleDelete}
         variant="destructive"
       />

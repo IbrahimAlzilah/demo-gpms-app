@@ -1,13 +1,21 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query'
 import { supervisorAssignmentService } from '../api/supervisor.service'
 
 /**
  * Fetch projects without supervisor
  */
 export function useProjectsWithoutSupervisor() {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ['projects-without-supervisor'],
-    queryFn: () => supervisorAssignmentService.getProjectsWithoutSupervisor(),
+    queryFn: ({ pageParam = 1 }) => supervisorAssignmentService.getProjectsWithoutSupervisor(pageParam as number),
+    getNextPageParam: (lastPage) => {
+      // API returns meta.page and meta.totalPages
+      if (lastPage.meta.page < lastPage.meta.totalPages) {
+        return lastPage.meta.page + 1
+      }
+      return undefined
+    },
+    initialPageParam: 1,
   })
 }
 

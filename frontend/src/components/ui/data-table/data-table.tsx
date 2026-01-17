@@ -51,6 +51,7 @@ export function DataTable<TData, TValue>({
     enableViews = true,
     emptyMessage,
     loadingMessage,
+    toolbarContent,
 }: DataTableProps<TData, TValue>) {
     const { t } = useTranslation()
     const defaultEmptyMessage = emptyMessage ?? t('dataTable.emptyMessage')
@@ -142,19 +143,24 @@ export function DataTable<TData, TValue>({
 
     return (
         <div className="space-y-4">
-            {(enableFiltering || enableViews) && (
-                <div className="flex items-center justify-between">
-                    {enableFiltering && (
-                        <DataTableToolbar
-                            table={table}
-                            searchValue={searchValue}
-                            onSearchChange={onSearchChange}
-                            searchPlaceholder={searchPlaceholder}
-                        />
-                    )}
-                    {enableViews && (
-                        <DataTableViewOptions table={table} />
-                    )}
+            {(enableFiltering || enableViews || toolbarContent) && (
+                <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center flex-1 gap-2">
+                        {enableFiltering && (
+                            <DataTableToolbar
+                                table={table}
+                                searchValue={searchValue}
+                                onSearchChange={onSearchChange}
+                                searchPlaceholder={searchPlaceholder}
+                            />
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {toolbarContent}
+                        {enableViews && (
+                            <DataTableViewOptions table={table} />
+                        )}
+                    </div>
                 </div>
             )}
             <div className="rounded-md border overflow-hidden">

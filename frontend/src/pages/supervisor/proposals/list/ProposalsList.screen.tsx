@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DataTable, Button } from '@/components/ui'
-import { BlockContent, ModalDialog, StatusBadge, useToast } from '@/components/common'
-import { AlertCircle, PlusCircle, FileText, MessageSquare } from 'lucide-react'
+import { BlockContent, ModalDialog, StatusBadge } from '@/components/common'
+import { toast } from 'sonner'
+import { AlertCircle, PlusCircle, MessageSquare } from 'lucide-react'
 import { formatDate } from '@/lib/utils/format'
 import { createProposalColumns } from '../components/table'
 import { StatisticsCards } from '../components/StatisticsCards'
@@ -11,7 +12,6 @@ import { useProposalsList } from './ProposalsList.hook'
 
 export function ProposalsList() {
   const { t } = useTranslation()
-  const { showToast } = useToast()
   const {
     data,
     state,
@@ -42,7 +42,7 @@ export function ProposalsList() {
 
   const handleFormSuccess = () => {
     setState((prev) => ({ ...prev, showForm: false }))
-    showToast(t('proposal.submitSuccess'), 'success')
+    toast.success(t('proposal.submitSuccess'))
   }
 
   const actions = useMemo(
@@ -58,8 +58,8 @@ export function ProposalsList() {
   const pageTitle = isMyProposals
     ? t('nav.myProposals')
     : isApprovedProposals
-    ? t('nav.approvedProposals')
-    : t('nav.proposals')
+      ? t('nav.approvedProposals')
+      : t('nav.proposals')
 
   return (
     <>
@@ -99,9 +99,9 @@ export function ProposalsList() {
         </BlockContent>
       )}
 
-      <ModalDialog 
-        open={state.showForm} 
-        onOpenChange={(open) => setState((prev) => ({ ...prev, showForm: open }))} 
+      <ModalDialog
+        open={state.showForm}
+        onOpenChange={(open) => setState((prev) => ({ ...prev, showForm: open }))}
         title={t('proposal.submitNew')}
       >
         <ProposalForm onSuccess={handleFormSuccess} />
@@ -109,9 +109,9 @@ export function ProposalsList() {
 
       {/* Proposal Detail Dialog */}
       {state.selectedProposal && (
-        <ModalDialog 
-          open={!!state.selectedProposal} 
-          onOpenChange={(open) => !open && setState((prev) => ({ ...prev, selectedProposal: null }))} 
+        <ModalDialog
+          open={!!state.selectedProposal}
+          onOpenChange={(open) => !open && setState((prev) => ({ ...prev, selectedProposal: null }))}
           title={state.selectedProposal?.title}
         >
           <div className="max-w-3xl max-h-[90vh] overflow-y-auto">

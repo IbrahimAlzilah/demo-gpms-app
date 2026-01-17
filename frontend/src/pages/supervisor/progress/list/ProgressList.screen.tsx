@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle, Button, Label, Textarea } from '@/components/ui'
-import { LoadingSpinner, useToast } from '@/components/common'
+import { LoadingSpinner } from '@/components/common'
+import { toast } from 'sonner'
 import { MessageSquare, Award, Loader2 } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
 import { useProgressList } from './ProgressList.hook'
@@ -11,7 +12,7 @@ interface ProgressListProps {
 }
 
 export function ProgressList({ projectId }: ProgressListProps) {
-  const { showToast } = useToast()
+
   const {
     data,
     state,
@@ -22,14 +23,15 @@ export function ProgressList({ projectId }: ProgressListProps) {
 
   const handleSaveNote = async () => {
     if (!state.notes.trim()) {
-      showToast(t('supervisor.noteRequired'), 'warning')
+      toast.warning(t('supervisor.noteRequired'))
       return
     }
+
     try {
       await saveNote.mutateAsync(state.notes.trim())
-      showToast(t('supervisor.noteSaved'), 'success')
+      toast.success(t('supervisor.noteSaved'))
     } catch {
-      showToast(t('supervisor.noteError'), 'error')
+      toast.error(t('supervisor.noteError'))
     }
   }
 
