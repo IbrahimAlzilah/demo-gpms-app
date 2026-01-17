@@ -17,6 +17,11 @@ export interface ReportData {
     total: number
     averageGrade: number
   }
+  students: {
+    total: number
+    registered: number
+    unregistered: number
+  }
 }
 
 export const committeeReportService = {

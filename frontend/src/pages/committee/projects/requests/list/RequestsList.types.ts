@@ -1,6 +1,9 @@
-import type { Request } from '@/types/request.types'
+import type { Request, RequestStatus } from '@/types/request.types'
+
+export type RequestStatusFilter = RequestStatus | 'all'
 
 export interface RequestsListState {
+  statusFilter: RequestStatusFilter
   selectedRequest: Request | null
   action: 'approve' | 'reject' | null
   showConfirmDialog: boolean

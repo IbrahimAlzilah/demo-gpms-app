@@ -8,6 +8,7 @@ export function useRequestsList() {
   const { t } = useTranslation()
   
   const [state, setState] = useState<RequestsListState>({
+    statusFilter: 'all',
     selectedRequest: null,
     action: null,
     showConfirmDialog: false,
@@ -28,8 +29,14 @@ export function useRequestsList() {
     pagination,
     setPagination,
   } = useDataTable({
-    queryKey: ['committee-requests-table'],
-    queryFn: (params) => committeeRequestService.getTableData(params),
+    queryKey: ['committee-requests-table', state.statusFilter],
+    queryFn: (params) => {
+      const filters = { ...params?.filters }
+      if (state.statusFilter !== 'all') {
+        filters.status = state.statusFilter
+      }
+      return committeeRequestService.getTableData({ ...params, filters })
+    },
     initialPageSize: 10,
     enableServerSide: true,
   })

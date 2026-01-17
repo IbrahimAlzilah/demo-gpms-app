@@ -29,6 +29,13 @@ class ReportService
         });
         $averageGrade = $grades->count() > 0 ? $totalGrades / $grades->count() : 0;
 
+        // Get students data
+        $allStudents = \App\Models\User::where('role', 'student')->get();
+        $registeredStudents = DB::table('project_student')
+            ->distinct('student_id')
+            ->count('student_id');
+        $unregisteredStudents = $allStudents->count() - $registeredStudents;
+
         return [
             'projects' => [
                 'total' => $projects->count(),
@@ -45,6 +52,11 @@ class ReportService
             'evaluations' => [
                 'total' => $grades->count(),
                 'averageGrade' => round($averageGrade, 2),
+            ],
+            'students' => [
+                'total' => $allStudents->count(),
+                'registered' => $registeredStudents,
+                'unregistered' => $unregisteredStudents,
             ],
         ];
     }
