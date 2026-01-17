@@ -21,10 +21,43 @@ class RequestService
      */
     public function create(array $data, User $student): ProjectRequest
     {
+        // Validate change_supervisor requests: only group leaders can submit
+        // Get project_id from data or from student's group
+        $projectId = $data['project_id'] ?? null;
+        
+        if ($data['type'] === 'change_supervisor') {
+            // If project_id not provided, try to get it from student's group
+            if (!$projectId) {
+                $studentGroup = \App\Models\ProjectGroup::where('leader_id', $student->id)->first();
+                if ($studentGroup) {
+                    $projectId = $studentGroup->project_id;
+                }
+            }
+            
+            if (!$projectId) {
+                throw new \Exception('Project ID is required for change supervisor requests. You must be a group leader of a project.');
+            }
+
+            $project = \App\Models\Project::with('group')->find($projectId);
+            if (!$project) {
+                throw new \Exception('Project not found');
+            }
+
+            if (!$project->group) {
+                throw new \Exception('Project does not have a group. Change supervisor requests can only be submitted by group leaders.');
+            }
+
+            if ($project->group->leader_id !== $student->id) {
+                throw new \Exception('Only the group leader can submit change supervisor requests');
+            }
+        }
+
+        $finalProjectId = $projectId;
+
         $request = ProjectRequest::create([
             'type' => $data['type'],
             'student_id' => $student->id,
-            'project_id' => $data['project_id'] ?? null,
+            'project_id' => $finalProjectId,
             'reason' => $data['reason'],
             'status' => 'pending',
             'additional_data' => $data['additional_data'] ?? null,
@@ -67,49 +100,21 @@ class RequestService
     }
 
     /**
-     * Approve request by supervisor
+     * @deprecated Supervisor approval is no longer used. All requests must go through Projects Committee.
+     * This method is kept for backward compatibility but should not be used in new code.
      */
     public function approveBySupervisor(ProjectRequest $request, User $supervisor, ?string $comments = null): ProjectRequest
     {
-        if ($request->status !== RequestStatus::PENDING) {
-            throw new \Exception('Request is not in pending status');
-        }
-
-        return DB::transaction(function () use ($request, $supervisor, $comments) {
-            $request->update([
-                'status' => RequestStatus::SUPERVISOR_APPROVED->value,
-                'supervisor_approval' => [
-                    'approved' => true,
-                    'comments' => $comments,
-                    'approved_at' => now()->toISOString(),
-                    'approved_by' => $supervisor->id,
-                ],
-            ]);
-
-            return $request->fresh();
-        });
+        throw new \Exception('Supervisor approval is no longer supported. All requests must be processed by the Projects Committee.');
     }
 
     /**
-     * Reject request by supervisor
+     * @deprecated Supervisor rejection is no longer used. All requests must go through Projects Committee.
+     * This method is kept for backward compatibility but should not be used in new code.
      */
     public function rejectBySupervisor(ProjectRequest $request, User $supervisor, ?string $comments = null): ProjectRequest
     {
-        if ($request->status !== RequestStatus::PENDING) {
-            throw new \Exception('Request is not in pending status');
-        }
-
-        $request->update([
-            'status' => 'supervisor_rejected',
-            'supervisor_approval' => [
-                'approved' => false,
-                'comments' => $comments,
-                'approved_at' => now()->toISOString(),
-                'approved_by' => $supervisor->id,
-            ],
-        ]);
-
-        return $request->fresh();
+        throw new \Exception('Supervisor rejection is no longer supported. All requests must be processed by the Projects Committee.');
     }
 
     /**
@@ -284,9 +289,56 @@ class RequestService
      */
     private function processRequest(ProjectRequest $request): void
     {
-        // Implementation depends on request type
-        // This would handle changing supervisor, project, or group
-        // For now, it's a placeholder
+        match($request->type) {
+            'change_supervisor' => $this->processChangeSupervisorRequest($request),
+            'change_group' => $this->processChangeGroupRequest($request),
+            'change_project' => $this->processChangeProjectRequest($request),
+            default => null,
+        };
+    }
+
+    /**
+     * Process change supervisor request - remove supervisor from project
+     * The project will then be available for supervisor assignment through the Supervisor Assignment flow
+     */
+    private function processChangeSupervisorRequest(ProjectRequest $request): void
+    {
+        if (!$request->project_id) {
+            return;
+        }
+
+        $project = \App\Models\Project::find($request->project_id);
+        if (!$project) {
+            return;
+        }
+
+        // Remove supervisor from project - this makes it available for reassignment
+        $project->update([
+            'supervisor_id' => null,
+            'supervisor_approval_status' => null,
+            'supervisor_approval_comments' => null,
+            'supervisor_approval_at' => null,
+        ]);
+    }
+
+    /**
+     * Process change group request
+     */
+    private function processChangeGroupRequest(ProjectRequest $request): void
+    {
+        // Implementation for change group request
+        // This would handle moving a student to a different group
+        // TODO: Implement when group management is finalized
+    }
+
+    /**
+     * Process change project request
+     */
+    private function processChangeProjectRequest(ProjectRequest $request): void
+    {
+        // Implementation for change project request
+        // This would handle moving a student to a different project
+        // TODO: Implement when project transfer logic is finalized
     }
 }
 

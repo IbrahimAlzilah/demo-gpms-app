@@ -82,35 +82,15 @@ export const mockRequestService = {
     return mockRequests[index];
   },
 
+  /**
+   * @deprecated Supervisor approval is no longer used. All requests go directly to Projects Committee.
+   */
   approveBySupervisor: async (
     id: string,
     approvedBy: string,
     comments?: string
   ): Promise<Request> => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    const request = await mockRequestService.getById(id);
-    if (!request) throw new Error("Request not found");
-    if (request.status !== "pending") {
-      throw new Error("Request is not in pending status");
-    }
-
-    // Check if this request type requires supervisor approval
-    const requiresSupervisor = ["change_supervisor", "change_group"].includes(
-      request.type
-    );
-    if (!requiresSupervisor) {
-      throw new Error("This request type does not require supervisor approval");
-    }
-
-    return mockRequestService.update(id, {
-      status: "supervisor_approved",
-      supervisorApproval: {
-        approved: true,
-        comments,
-        approvedAt: new Date().toISOString(),
-        approvedBy,
-      },
-    });
+    throw new Error("Supervisor approval is no longer supported. All requests must be processed by the Projects Committee.");
   },
 
   approveByCommittee: async (
@@ -122,11 +102,8 @@ export const mockRequestService = {
     const request = await mockRequestService.getById(id);
     if (!request) throw new Error("Request not found");
 
-    // Can approve if pending (direct to committee) or supervisor_approved
-    if (
-      request.status !== "pending" &&
-      request.status !== "supervisor_approved"
-    ) {
+    // Can approve if pending (all requests go directly to committee now)
+    if (request.status !== "pending") {
       throw new Error(
         "Request cannot be approved by committee in current status"
       );
@@ -148,47 +125,26 @@ export const mockRequestService = {
     approvedBy: string,
     comments?: string
   ): Promise<Request> => {
-    // Legacy method - determine which approval to use
+    // All requests now go directly to committee
     const request = await mockRequestService.getById(id);
     if (!request) throw new Error("Request not found");
 
     if (request.status === "pending") {
-      const requiresSupervisor = ["change_supervisor", "change_group"].includes(
-        request.type
-      );
-      if (requiresSupervisor) {
-        return mockRequestService.approveBySupervisor(id, approvedBy, comments);
-      } else {
-        return mockRequestService.approveByCommittee(id, approvedBy, comments);
-      }
-    } else if (request.status === "supervisor_approved") {
       return mockRequestService.approveByCommittee(id, approvedBy, comments);
     }
 
     throw new Error("Request cannot be approved in current status");
   },
 
+  /**
+   * @deprecated Supervisor rejection is no longer used. All requests go directly to Projects Committee.
+   */
   rejectBySupervisor: async (
     id: string,
     rejectedBy: string,
     comments?: string
   ): Promise<Request> => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    const request = await mockRequestService.getById(id);
-    if (!request) throw new Error("Request not found");
-    if (request.status !== "pending") {
-      throw new Error("Request is not in pending status");
-    }
-
-    return mockRequestService.update(id, {
-      status: "supervisor_rejected",
-      supervisorApproval: {
-        approved: false,
-        comments,
-        approvedAt: new Date().toISOString(),
-        approvedBy: rejectedBy,
-      },
-    });
+    throw new Error("Supervisor rejection is no longer supported. All requests must be processed by the Projects Committee.");
   },
 
   rejectByCommittee: async (
@@ -200,10 +156,8 @@ export const mockRequestService = {
     const request = await mockRequestService.getById(id);
     if (!request) throw new Error("Request not found");
 
-    if (
-      request.status !== "pending" &&
-      request.status !== "supervisor_approved"
-    ) {
+    // All requests go directly to committee (supervisor approval no longer used)
+    if (request.status !== "pending") {
       throw new Error(
         "Request cannot be rejected by committee in current status"
       );
@@ -225,20 +179,11 @@ export const mockRequestService = {
     rejectedBy: string,
     comments?: string
   ): Promise<Request> => {
-    // Legacy method - determine which rejection to use
+    // All requests now go directly to committee
     const request = await mockRequestService.getById(id);
     if (!request) throw new Error("Request not found");
 
     if (request.status === "pending") {
-      const requiresSupervisor = ["change_supervisor", "change_group"].includes(
-        request.type
-      );
-      if (requiresSupervisor) {
-        return mockRequestService.rejectBySupervisor(id, rejectedBy, comments);
-      } else {
-        return mockRequestService.rejectByCommittee(id, rejectedBy, comments);
-      }
-    } else if (request.status === "supervisor_approved") {
       return mockRequestService.rejectByCommittee(id, rejectedBy, comments);
     }
 

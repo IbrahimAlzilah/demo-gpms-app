@@ -161,6 +161,9 @@ class RegistrationController extends Controller
         if (isset($filters['project_id'])) {
             $query->where('project_id', $filters['project_id']);
         }
+        if (isset($filters['student_id'])) {
+            $query->where('student_id', $filters['student_id']);
+        }
         return $query;
     }
 }

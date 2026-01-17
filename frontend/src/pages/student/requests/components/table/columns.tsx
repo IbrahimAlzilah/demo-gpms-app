@@ -83,25 +83,6 @@ export function createRequestColumns({
         const request = row.original
         return (
           <div className="flex items-center gap-2 text-xs">
-            {request.supervisorApproval ? (
-              <div className={`flex items-center gap-1 px-2 py-1 rounded ${
-                request.supervisorApproval.approved
-                  ? 'bg-success/10 text-success'
-                  : 'bg-destructive/10 text-destructive'
-              }`}>
-                {request.supervisorApproval.approved ? (
-                  <CheckCircle2 className="h-3 w-3" />
-                ) : (
-                  <XCircle className="h-3 w-3" />
-                )}
-                {t('request.supervisorDecision')}
-              </div>
-            ) : (
-              <div className="flex items-center gap-1 px-2 py-1 rounded bg-muted text-muted-foreground">
-                <Clock className="h-3 w-3" />
-                {t('request.awaitingSupervisor')}
-              </div>
-            )}
             {request.committeeApproval ? (
               <div className={`flex items-center gap-1 px-2 py-1 rounded ${
                 request.committeeApproval.approved
@@ -115,7 +96,7 @@ export function createRequestColumns({
                 )}
                 {t('request.committeeDecision')}
               </div>
-            ) : request.supervisorApproval?.approved && (
+            ) : (
               <div className="flex items-center gap-1 px-2 py-1 rounded bg-muted text-muted-foreground">
                 <Clock className="h-3 w-3" />
                 {t('request.awaitingCommittee')}

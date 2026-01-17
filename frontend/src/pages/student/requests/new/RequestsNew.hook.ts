@@ -28,7 +28,7 @@ export function useRequestsNew(onSuccess?: () => void) {
       await createRequest.mutateAsync({
         type: data.type,
         reason: data.reason.trim(),
-        projectId: data.projectId,
+        projectId: data.projectId, // Backend will auto-fetch from group if not provided for change_supervisor
       })
       setSuccess(true)
       form.reset()

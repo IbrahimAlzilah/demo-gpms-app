@@ -35,12 +35,29 @@ export function createRequestColumns({
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('committee.requests.student')} />
       ),
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <User className="h-4 w-4 text-muted-foreground" />
-          <span className="font-medium">{row.original.student?.name || '-'}</span>
-        </div>
-      ),
+      cell: ({ row }) => {
+        const student = row.original.student
+        if (!student) return <span className="text-muted-foreground">-</span>
+        
+        return (
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-muted-foreground" />
+              <span className="font-medium">{student.name}</span>
+            </div>
+            {student.studentId && (
+              <span className="text-xs text-muted-foreground ml-6">
+                ID: {student.studentId}
+              </span>
+            )}
+            {student.email && (
+              <span className="text-xs text-muted-foreground ml-6 truncate max-w-[200px]">
+                {student.email}
+              </span>
+            )}
+          </div>
+        )
+      },
     },
     {
       accessorKey: "type",

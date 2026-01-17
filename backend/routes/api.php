@@ -158,6 +158,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('periods', App\Http\Controllers\ProjectsCommittee\PeriodController::class);
         Route::get('supervisors', [App\Http\Controllers\ProjectsCommittee\SupervisorController::class, 'index']);
         Route::post('supervisors/assign', [App\Http\Controllers\ProjectsCommittee\SupervisorController::class, 'assign']);
+        // Custom request routes (must be before apiResource to match correctly)
+        Route::post('requests/{projectRequest}/approve', [App\Http\Controllers\ProjectsCommittee\RequestController::class, 'approve']);
+        Route::post('requests/{projectRequest}/reject', [App\Http\Controllers\ProjectsCommittee\RequestController::class, 'reject']);
         Route::apiResource('requests', App\Http\Controllers\ProjectsCommittee\RequestController::class);
         Route::get('registrations', [App\Http\Controllers\ProjectsCommittee\RegistrationController::class, 'index']);
         Route::get('registrations/{registration}', [App\Http\Controllers\ProjectsCommittee\RegistrationController::class, 'show']);

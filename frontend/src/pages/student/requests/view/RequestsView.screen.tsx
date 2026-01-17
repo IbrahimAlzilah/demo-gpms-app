@@ -60,47 +60,6 @@ export function RequestsView({ requestId, open, onClose }: RequestsViewProps) {
             </div>
           </div>
 
-          {/* Supervisor Decision */}
-          {request.supervisorApproval ? (
-            <div className={`flex items-start gap-3 p-3 rounded-lg ${
-              request.supervisorApproval.approved
-                ? 'bg-success/10'
-                : 'bg-destructive/10'
-            }`}>
-              {request.supervisorApproval.approved ? (
-                <CheckCircle2 className="h-5 w-5 text-success mt-0.5" />
-              ) : (
-                <XCircle className="h-5 w-5 text-destructive mt-0.5" />
-              )}
-              <div className="flex-1">
-                <p className="text-sm font-medium">
-                  {t('request.supervisorDecision')}: {' '}
-                  {request.supervisorApproval.approved
-                    ? (t('request.approved'))
-                    : (t('request.rejected'))
-                  }
-                </p>
-                {request.supervisorApproval.comments && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {request.supervisorApproval.comments}
-                  </p>
-                )}
-                {request.supervisorApproval.approvedAt && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {formatDate(request.supervisorApproval.approvedAt)}
-                  </p>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-start gap-3 p-3 bg-muted rounded-lg">
-              <Clock className="h-5 w-5 text-warning mt-0.5" />
-              <div className="flex-1">
-                <p className="text-sm font-medium">{t('request.awaitingSupervisor')}</p>
-              </div>
-            </div>
-          )}
-
           {/* Committee Decision */}
           {request.committeeApproval ? (
             <div className={`flex items-start gap-3 p-3 rounded-lg ${
@@ -133,7 +92,7 @@ export function RequestsView({ requestId, open, onClose }: RequestsViewProps) {
                 )}
               </div>
             </div>
-          ) : request.supervisorApproval?.approved && (
+          ) : (
             <div className="flex items-start gap-3 p-3 bg-muted rounded-lg">
               <Clock className="h-5 w-5 text-warning mt-0.5" />
               <div className="flex-1">

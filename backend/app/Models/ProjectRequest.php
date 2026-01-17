@@ -72,11 +72,11 @@ class ProjectRequest extends Model
     }
 
     /**
-     * Check if waiting for supervisor approval
+     * @deprecated Supervisor approval is no longer used. All requests go directly to committee.
      */
     public function needsSupervisorApproval(): bool
     {
-        return $this->status === RequestStatus::PENDING;
+        return false;
     }
 
     /**

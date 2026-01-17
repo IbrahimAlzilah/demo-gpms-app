@@ -1,10 +1,13 @@
 import { useTranslation } from 'react-i18next'
 import { ModalDialog, StatusBadge, LoadingSpinner } from '@/components/common'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { CheckCircle2, XCircle, Clock, User, FileText, Calendar, MessageSquare, Briefcase } from 'lucide-react'
+import { CheckCircle2, XCircle, Clock, User, FileText, Calendar, MessageSquare, Briefcase, Mail, Phone, Building2, IdCard, ClipboardList } from 'lucide-react'
 import { formatDate, formatRelativeTime } from '@/lib/utils/format'
 import { useRequest } from '../hooks/useRequests'
+import { useQuery } from '@tanstack/react-query'
+import { registrationService } from '../../registrations/api/registration.service'
 import type { Request } from '@/types/request.types'
+import type { ProjectRegistration } from '@/types/project.types'
 
 interface RequestDetailsViewProps {
     requestId: string
@@ -15,6 +18,18 @@ interface RequestDetailsViewProps {
 export function RequestDetailsView({ requestId, open, onClose }: RequestDetailsViewProps) {
     const { t } = useTranslation()
     const { data: request, isLoading, error } = useRequest(requestId)
+
+    // Fetch student registrations if student is available
+    const { data: registrationsData } = useQuery<ProjectRegistration[]>({
+        queryKey: ['student-registrations', request?.studentId],
+        queryFn: () => {
+            if (!request?.studentId) return []
+            return registrationService.getByStudentId(request.studentId)
+        },
+        enabled: !!request?.studentId && !!request,
+    })
+
+    const registrations = registrationsData || []
 
     if (isLoading) {
         return (
@@ -67,25 +82,59 @@ export function RequestDetailsView({ requestId, open, onClose }: RequestDetailsV
                                 <User className="h-5 w-5 text-primary" />
                                 {t('committee.requests.student')}
                             </CardTitle>
+                            <CardDescription>
+                                {t('committee.requests.studentInformation')}
+                            </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="space-y-2">
+                            <div className="grid gap-4 md:grid-cols-2">
                                 <div>
-                                    <p className="text-xs text-muted-foreground">{t('common.name')}</p>
+                                    <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                                        <User className="h-3 w-3" />
+                                        {t('common.name')}
+                                    </p>
                                     <p className="text-sm font-medium">{request.student.name}</p>
                                 </div>
-                                {request.student.email && (
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">{t('common.email')}</p>
-                                        <p className="text-sm">{request.student.email}</p>
-                                    </div>
-                                )}
                                 {request.student.studentId && (
                                     <div>
-                                        <p className="text-xs text-muted-foreground">{t('common.studentId')}</p>
-                                        <p className="text-sm">{request.student.studentId}</p>
+                                        <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                                            <IdCard className="h-3 w-3" />
+                                            {t('common.studentId')}
+                                        </p>
+                                        <p className="text-sm font-medium">{request.student.studentId}</p>
                                     </div>
                                 )}
+                                {request.student.email && (
+                                    <div>
+                                        <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                                            <Mail className="h-3 w-3" />
+                                            {t('common.email')}
+                                        </p>
+                                        <p className="text-sm break-all">{request.student.email}</p>
+                                    </div>
+                                )}
+                                {request.student.phone && (
+                                    <div>
+                                        <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                                            <Phone className="h-3 w-3" />
+                                            {t('common.phone')}
+                                        </p>
+                                        <p className="text-sm">{request.student.phone}</p>
+                                    </div>
+                                )}
+                                {request.student.department && (
+                                    <div className="md:col-span-2">
+                                        <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                                            <Building2 className="h-3 w-3" />
+                                            {t('common.department')}
+                                        </p>
+                                        <p className="text-sm">{request.student.department}</p>
+                                    </div>
+                                )}
+                                <div>
+                                    <p className="text-xs text-muted-foreground mb-1">{t('common.status')}</p>
+                                    <StatusBadge status={request.student.status} />
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
@@ -205,6 +254,82 @@ export function RequestDetailsView({ requestId, open, onClose }: RequestDetailsV
                                     {t('committee.requests.awaitingCommitteeReview')}
                                 </p>
                             </div>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* Project Registrations */}
+                {request.studentId && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <ClipboardList className="h-5 w-5 text-primary" />
+                                {t('committee.requests.projectRegistrations')}
+                            </CardTitle>
+                            <CardDescription>
+                                {t('committee.requests.allStudentRegistrations')}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {registrations.length === 0 ? (
+                                <div className="text-center py-4 text-muted-foreground">
+                                    <p className="text-sm">{t('committee.requests.noRegistrations')}</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {registrations.map((registration) => (
+                                        <div
+                                            key={registration.id}
+                                            className="p-3 border rounded-lg bg-muted/30"
+                                        >
+                                            <div className="flex items-start justify-between mb-2">
+                                                <div className="flex-1">
+                                                    {registration.project ? (
+                                                        <>
+                                                            <p className="text-sm font-medium flex items-center gap-2">
+                                                                <Briefcase className="h-4 w-4 text-muted-foreground" />
+                                                                {registration.project.title}
+                                                            </p>
+                                                            {registration.project.description && (
+                                                                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                                                    {registration.project.description}
+                                                                </p>
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        <p className="text-sm font-medium">
+                                                            {t('committee.requests.projectId')}: {registration.projectId}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <StatusBadge status={registration.status} />
+                                            </div>
+                                            <div className="grid gap-2 md:grid-cols-2 text-xs text-muted-foreground mt-2 pt-2 border-t">
+                                                <div className="flex items-center gap-1">
+                                                    <Calendar className="h-3 w-3" />
+                                                    <span>{t('committee.requests.submittedAt')}: {formatDate(registration.submittedAt)}</span>
+                                                </div>
+                                                {registration.reviewedAt && (
+                                                    <div className="flex items-center gap-1">
+                                                        <CheckCircle2 className="h-3 w-3" />
+                                                        <span>{t('committee.requests.reviewedAt')}: {formatDate(registration.reviewedAt)}</span>
+                                                    </div>
+                                                )}
+                                                {registration.reviewComments && (
+                                                    <div className="md:col-span-2 mt-1">
+                                                        <p className="font-medium text-muted-foreground mb-0.5">
+                                                            {t('committee.requests.reviewComments')}:
+                                                        </p>
+                                                        <p className="text-xs bg-muted p-2 rounded border">
+                                                            {registration.reviewComments}
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 )}

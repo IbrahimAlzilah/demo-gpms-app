@@ -21,20 +21,22 @@ export function getNextApprovalStep(
   requestType: RequestType,
   currentStatus: string
 ): "supervisor" | "committee" | "complete" | null {
-  // All requests go directly to committee
+  // All requests go directly to committee (supervisor approval no longer used)
   if (currentStatus === "pending") {
     return "committee";
   }
 
-  if (
-    currentStatus === "supervisor_rejected" ||
-    currentStatus === "committee_rejected"
-  ) {
+  if (currentStatus === "committee_rejected") {
     return "complete"; // Request is rejected, no further steps
   }
 
   if (currentStatus === "committee_approved") {
     return "complete"; // Request is approved, complete
+  }
+
+  // Legacy supervisor statuses are treated as rejected/complete
+  if (currentStatus === "supervisor_rejected") {
+    return "complete";
   }
 
   return null;

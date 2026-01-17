@@ -3,6 +3,8 @@ import { ModalDialog } from '@/components/common'
 import { Button, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { AlertCircle, FileCheck, Loader2, User, Users, Briefcase, MoreHorizontal } from 'lucide-react'
 import { useRequestsNew } from './RequestsNew.hook'
+import { useMyGroup } from '@/pages/student/groups/hooks/useGroups'
+import { useAuthStore } from '@/pages/auth/login'
 
 interface RequestsNewProps {
   open: boolean
@@ -12,16 +14,22 @@ interface RequestsNewProps {
 
 export function RequestsNew({ open, onClose, onSuccess }: RequestsNewProps) {
   const { t } = useTranslation()
+  const { user } = useAuthStore()
   const { form, error, success, isLoading, handleSubmit } = useRequestsNew(onSuccess)
   const { register, watch, setValue, formState: { errors } } = form
   const selectedType = watch('type')
   const reason = watch('reason')
 
-  const requestTypes: { value: string; label: string; icon: React.ReactNode }[] = [
+  // Check if student is a group leader
+  const { data: myGroup } = useMyGroup()
+  const isGroupLeader = myGroup?.leaderId === user?.id
+
+  const requestTypes: { value: string; label: string; icon: React.ReactNode; disabled?: boolean }[] = [
     {
       value: 'change_supervisor',
       label: t('requests.change_supervisor'),
       icon: <User className="h-4 w-4" />,
+      disabled: !isGroupLeader,
     },
     {
       value: 'change_group',
@@ -75,10 +83,19 @@ export function RequestsNew({ open, onClose, onSuccess }: RequestsNewProps) {
             </SelectTrigger>
             <SelectContent>
               {requestTypes.map((type) => (
-                <SelectItem key={type.value} value={type.value}>
+                <SelectItem 
+                  key={type.value} 
+                  value={type.value}
+                  disabled={type.disabled}
+                >
                   <div className="flex items-center gap-2">
                     {type.icon}
                     {type.label}
+                    {type.disabled && (
+                      <span className="text-xs text-muted-foreground ml-auto">
+                        ({t('requests.groupLeaderOnly')})
+                      </span>
+                    )}
                   </div>
                 </SelectItem>
               ))}

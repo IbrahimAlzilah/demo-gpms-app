@@ -176,15 +176,38 @@ export function RequestsList() {
       >
         {state.selectedRequest && (
           <div className="space-y-4">
-            <div className="text-sm space-y-2">
-              {state.selectedRequest.student && (
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span>
-                    <span className="font-medium">{t('committee.requests.student')}:</span> {state.selectedRequest.student.name}
-                  </span>
+            {state.selectedRequest.student && (
+              <div className="p-3 bg-muted rounded-lg space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">{t('committee.requests.student')}</p>
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">{state.selectedRequest.student.name}</span>
+                  </div>
+                  {state.selectedRequest.student.studentId && (
+                    <div className="text-xs text-muted-foreground ml-6">
+                      {t('common.studentId')}: {state.selectedRequest.student.studentId}
+                    </div>
+                  )}
+                  {state.selectedRequest.student.email && (
+                    <div className="text-xs text-muted-foreground ml-6">
+                      {t('common.email')}: {state.selectedRequest.student.email}
+                    </div>
+                  )}
+                  {state.selectedRequest.student.phone && (
+                    <div className="text-xs text-muted-foreground ml-6">
+                      {t('common.phone')}: {state.selectedRequest.student.phone}
+                    </div>
+                  )}
+                  {state.selectedRequest.student.department && (
+                    <div className="text-xs text-muted-foreground ml-6">
+                      {t('common.department')}: {state.selectedRequest.student.department}
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
+            )}
+            <div className="text-sm space-y-2">
               {state.selectedRequest.status === 'pending' && (
                 <div className="flex items-start gap-2 p-2 bg-info/10 rounded border border-info/20">
                   <AlertCircle className="h-4 w-4 text-info mt-0.5 shrink-0" />

@@ -70,17 +70,12 @@ class ProjectRequestPolicy
     }
 
     /**
-     * Determine if the user can approve as supervisor.
+     * @deprecated Supervisor approval is no longer used. All requests must go through Projects Committee.
      */
     public function supervisorApprove(User $user, ProjectRequest $request): bool
     {
-        // Supervisor of the related project can approve
-        if (!$user->isSupervisor() || !$request->project) {
-            return false;
-        }
-
-        return $request->project->supervisor_id === $user->id
-            && $request->status === 'pending';
+        // Supervisors can no longer approve requests directly
+        return false;
     }
 
     /**

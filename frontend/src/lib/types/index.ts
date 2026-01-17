@@ -24,9 +24,16 @@ export enum ProjectStatus {
   ARCHIVED = 'archived',
 }
 
+/**
+ * Request status enum
+ * @deprecated SUPERVISOR_APPROVED and SUPERVISOR_REJECTED are no longer used.
+ * All requests now go directly to Projects Committee. These values are kept for backward compatibility.
+ */
 export enum RequestStatus {
   PENDING = 'pending',
+  /** @deprecated Supervisor approval is no longer used */
   SUPERVISOR_APPROVED = 'supervisor_approved',
+  /** @deprecated Supervisor rejection is no longer used */
   SUPERVISOR_REJECTED = 'supervisor_rejected',
   COMMITTEE_APPROVED = 'committee_approved',
   COMMITTEE_REJECTED = 'committee_rejected',

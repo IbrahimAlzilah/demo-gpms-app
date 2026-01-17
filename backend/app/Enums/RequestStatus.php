@@ -25,7 +25,8 @@ enum RequestStatus: string
 
     public function isPending(): bool
     {
-        return in_array($this, [self::PENDING, self::SUPERVISOR_APPROVED]);
+        // Only PENDING status is considered pending - supervisor approval is no longer used
+        return $this === self::PENDING;
     }
 
     public function isFinal(): bool

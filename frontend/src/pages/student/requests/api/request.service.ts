@@ -49,12 +49,21 @@ export const requestService = {
   create: async (
     data: Omit<Request, 'id' | 'createdAt' | 'updatedAt' | 'status'>
   ): Promise<Request> => {
-    const response = await apiClient.post<Request>('/student/requests', {
+    const payload: Record<string, any> = {
       type: data.type,
-      project_id: data.projectId,
       reason: data.reason,
-      additional_data: data.additionalData,
-    })
+    }
+    
+    // Only include project_id if it's provided (backend will auto-fetch from group for change_supervisor)
+    if (data.projectId) {
+      payload.project_id = data.projectId
+    }
+    
+    if (data.additionalData) {
+      payload.additional_data = data.additionalData
+    }
+
+    const response = await apiClient.post<Request>('/student/requests', payload)
     return response.data
   },
 

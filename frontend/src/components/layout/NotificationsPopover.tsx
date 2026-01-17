@@ -8,6 +8,7 @@ import { useNotifications, useUnreadCount, useMarkAllAsRead, useDeleteAllNotific
 import { getNotificationTarget, getNotificationIconType, formatRelativeTime } from '@/utils/notification-navigation'
 import type { NotificationDto } from '@/types/notification.types'
 import { useAuthStore } from '@/pages/auth/login'
+import { useDirection } from '@/hooks/use-direction'
 
 interface NotificationsPopoverProps {
   className?: string
@@ -39,6 +40,7 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
   const [hoveredNotificationId, setHoveredNotificationId] = useState<string | null>(null)
   const navigate = useNavigate()
   const { user } = useAuthStore()
+  const isRtl = useDirection()
   const { data: notificationsData, isLoading } = useNotifications(1, 10)
   const { data: unreadCount = 0 } = useUnreadCount()
   const markAllAsRead = useMarkAllAsRead()
@@ -63,7 +65,7 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
   }
 
   const handleDeleteAll = async () => {
-    if (confirm('هل أنت متأكد من حذف جميع الإشعارات؟')) {
+    if (window.confirm('هل أنت متأكد من حذف جميع الإشعارات؟')) {
       try {
         await deleteAll.mutateAsync()
       } catch (error) {
@@ -103,8 +105,9 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        align="end"
-        className="w-96 max-h-[600px] p-0 flex flex-col rtl:text-right"
+        align={isRtl ? "end" : "end"}
+        className="w-[400px] max-h-[600px] p-0 flex flex-col"
+        dir={isRtl ? 'rtl' : 'ltr'}
         sideOffset={8}
       >
         {/* Header */}
@@ -112,14 +115,14 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
           <h3 className="font-bold text-lg">الإشعارات</h3>
           {notifications.length > 0 && (
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
-              className="h-auto p-2 gap-2 text-sm flex-row-reverse"
+              className="h-8 rounded-full border-border hover:bg-muted text-foreground gap-2 text-xs font-medium"
               onClick={handleMarkAllAsRead}
               disabled={markAllAsRead.isPending}
             >
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
-              تمييز الكل
+              <span>تمييز الكل</span>
+              <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
             </Button>
           )}
         </div>
@@ -150,19 +153,19 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
                     onMouseEnter={() => setHoveredNotificationId(notification.id)}
                     onMouseLeave={() => setHoveredNotificationId(null)}
                   >
-                    <div className="flex items-start gap-3 flex-row-reverse">
+                    <div className="flex items-start gap-4">
                       {/* Icon */}
-                      <div className={cn('flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center', bgColor)}>
-                        <Icon className={cn('h-4 w-4', iconColor)} />
+                      <div className={cn('flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center', bgColor)}>
+                        <Icon className={cn('h-5 w-5', iconColor)} />
                       </div>
 
                       {/* Content */}
-                      <div className="flex-1 min-w-0 text-right">
-                        <div className="flex items-start justify-between gap-2 mb-1 flex-row-reverse">
-                          <p className="font-medium text-sm text-foreground line-clamp-1">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-3 mb-1">
+                          <p className="font-bold text-sm text-foreground line-clamp-1 leading-tight mt-0.5">
                             {getNotificationTitle(notification)}
                           </p>
-                          <div className="flex items-center gap-1 flex-row-reverse">
+                          <div className="flex items-center gap-2 flex-shrink-0">
                             {/* Action buttons - appear on hover */}
                             <div
                               className={cn(
@@ -173,26 +176,26 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
                               {!notification.isRead && (
                                 <button
                                   onClick={(e) => handleMarkAsRead(e, notification.id)}
-                                  className="flex h-6 w-6 items-center justify-center rounded border border-border bg-background hover:bg-muted transition-colors"
+                                  className="flex h-6 w-6 items-center justify-center rounded-md border border-input bg-background hover:bg-accent text-muted-foreground hover:text-green-600 transition-colors"
                                   title="تمييز كمقروء"
                                 >
-                                  <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+                                  <CheckCircle2 className="h-3.5 w-3.5" />
                                 </button>
                               )}
                               <button
                                 onClick={(e) => handleDelete(e, notification.id)}
-                                className="flex h-6 w-6 items-center justify-center rounded border border-border bg-background hover:bg-muted transition-colors"
+                                className="flex h-6 w-6 items-center justify-center rounded-md border border-input bg-background hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
                                 title="حذف"
                               >
-                                <X className="h-3.5 w-3.5 text-destructive" />
+                                <X className="h-3.5 w-3.5" />
                               </button>
                             </div>
-                            <span className="flex-shrink-0 text-xs text-muted-foreground">
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
                               {formatRelativeTime(notification.createdAt)}
                             </span>
                           </div>
                         </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                        <p className="text-sm text-muted-foreground line-clamp-2 mb-2 leading-relaxed">
                           {notification.message}
                         </p>
                         {target.label && (
@@ -201,7 +204,7 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
                               e.stopPropagation()
                               handleNotificationClick(notification)
                             }}
-                            className="text-sm text-primary hover:underline"
+                            className="text-sm font-medium text-blue-600 hover:underline inline-flex items-center gap-1"
                           >
                             {target.label}
                           </button>
@@ -221,12 +224,12 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="w-full justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10 flex-row-reverse"
+              className="w-full justify-end gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
               onClick={handleDeleteAll}
               disabled={deleteAll.isPending}
             >
+              <span className="font-medium">حذف جميع الإشعارات</span>
               <Trash2 className="h-4 w-4" />
-              حذف جميع الإشعارات
             </Button>
           </div>
         )}
@@ -262,6 +265,9 @@ function getNotificationTitle(notification: NotificationDto): string {
   }
   if (type === 'grade_approved') {
     return 'تم اعتماد الدرجة'
+  }
+  if (type === 'announcement_created') {
+    return 'تم إعلان مشاريع جديدة متاحة'
   }
 
   // Fallback: extract first sentence from message

@@ -41,7 +41,7 @@ export function useProjectsCommitteeDashboard() {
     },
   })
 
-  // Fetch pending requests count (pending + supervisor_approved)
+  // Fetch pending requests count (only pending - supervisor approval no longer used)
   const { data: pendingRequestsData, isLoading: pendingRequestsLoading, error: pendingRequestsError, refetch: refetchPendingRequests } = useQuery({
     queryKey: ['committee-dashboard', 'requests-count', 'pending'],
     queryFn: async () => {
@@ -49,18 +49,6 @@ export function useProjectsCommitteeDashboard() {
         page: 1,
         pageSize: 1,
         filters: { status: 'pending' },
-      })
-      return result.totalCount
-    },
-  })
-
-  const { data: supervisorApprovedRequestsData, isLoading: supervisorApprovedRequestsLoading, error: supervisorApprovedRequestsError, refetch: refetchSupervisorApprovedRequests } = useQuery({
-    queryKey: ['committee-dashboard', 'requests-count', 'supervisor_approved'],
-    queryFn: async () => {
-      const result = await committeeRequestService.getTableData({
-        page: 1,
-        pageSize: 1,
-        filters: { status: 'supervisor_approved' },
       })
       return result.totalCount
     },
@@ -91,16 +79,16 @@ export function useProjectsCommitteeDashboard() {
   })
 
   // Compute aggregated states
-  const isLoading = proposalsLoading || pendingRequestsLoading || supervisorApprovedRequestsLoading || 
+  const isLoading = proposalsLoading || pendingRequestsLoading || 
                     projectsLoading || supervisorsLoading || periodsLoading
   
-  const error = proposalsError || pendingRequestsError || supervisorApprovedRequestsError || 
+  const error = proposalsError || pendingRequestsError || 
                 projectsError || supervisorsError || periodsError
 
   // Compute stats
   const stats: DashboardStats = {
     pendingProposals: proposalsData ?? 0,
-    pendingRequests: (pendingRequestsData ?? 0) + (supervisorApprovedRequestsData ?? 0),
+    pendingRequests: pendingRequestsData ?? 0,
     projectsToAnnounce: projectsToAnnounceData ?? 0,
     supervisorsToAssign: supervisorsToAssignData ?? 0,
   }
@@ -202,7 +190,6 @@ export function useProjectsCommitteeDashboard() {
   const refetch = () => {
     refetchProposals()
     refetchPendingRequests()
-    refetchSupervisorApprovedRequests()
     refetchProjects()
     refetchSupervisors()
     refetchPeriods()

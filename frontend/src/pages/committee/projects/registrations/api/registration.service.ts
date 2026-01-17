@@ -104,4 +104,16 @@ export const registrationService = {
     )
     return response.data
   },
+
+  getByStudentId: async (studentId: string): Promise<ProjectRegistration[]> => {
+    const queryParams = new URLSearchParams()
+    queryParams.append('page', '1')
+    queryParams.append('pageSize', '100') // Get all registrations for the student
+    queryParams.append('filters[student_id]', studentId)
+
+    const response = await apiClient.get<{ data: ProjectRegistration[], pagination: any }>(
+      `/projects-committee/registrations?${queryParams.toString()}`
+    )
+    return response.data || []
+  },
 }
