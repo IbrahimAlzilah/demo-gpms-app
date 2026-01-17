@@ -65,7 +65,7 @@ class Project extends Model
      */
     public function committeeMembers(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'committee_assignments')
+        return $this->belongsToMany(User::class, 'committee_assignments', 'project_id', 'committee_member_id')
             ->withTimestamps();
     }
 

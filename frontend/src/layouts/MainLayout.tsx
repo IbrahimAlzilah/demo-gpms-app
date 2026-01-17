@@ -20,7 +20,7 @@ export function MainLayout({ children }: MainLayoutProps) {
           <Header />
           {/* main content */}
           <div className={cn(
-            'mx-auto w-full max-w-full space-y-4', // padding handled by responsivePadding
+            'mx-auto w-full max-w-full space-y-4 flex-1', // padding handled by responsivePadding
             responsivePadding.container,
             responsiveSpacing.content
           )}>
@@ -30,6 +30,6 @@ export function MainLayout({ children }: MainLayoutProps) {
           <Footer />
         </div>
       </SidebarInset>
-    </SidebarProvider>
+    </SidebarProvider >
   )
 }
