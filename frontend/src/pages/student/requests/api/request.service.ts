@@ -24,12 +24,14 @@ export const requestService = {
       })
     }
 
-    const response = await apiClient.get<{ data: Request[], pagination: any }>(
+    const response = await apiClient.get<Request[]>(
       `/student/requests?${queryParams.toString()}`
     )
     
+    // Axios interceptor extracts data and pagination from { success: true, data: [...], pagination: {...} }
+    // So response.data is the array and response.pagination is the pagination object
     return {
-      data: response.data || [],
+      data: Array.isArray(response.data) ? response.data : [],
       totalCount: response.pagination?.total || 0,
       page: response.pagination?.page || 1,
       pageSize: response.pagination?.pageSize || 10,

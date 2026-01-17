@@ -173,6 +173,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('grades/{grade}/approve', [App\Http\Controllers\ProjectsCommittee\GradeController::class, 'approve'])
             ->middleware('window:grade_approval');
         Route::get('reports', [App\Http\Controllers\ProjectsCommittee\ReportController::class, 'index']);
+        Route::get('reports/overview', [App\Http\Controllers\ProjectsCommittee\ReportController::class, 'overview']);
+        Route::get('reports/projects', [App\Http\Controllers\ProjectsCommittee\ReportController::class, 'projects']);
+        Route::get('reports/supervisors', [App\Http\Controllers\ProjectsCommittee\ReportController::class, 'supervisors']);
+        Route::get('reports/students', [App\Http\Controllers\ProjectsCommittee\ReportController::class, 'students']);
+        Route::get('reports/requests', [App\Http\Controllers\ProjectsCommittee\ReportController::class, 'requests']);
+        Route::get('reports/deadlines', [App\Http\Controllers\ProjectsCommittee\ReportController::class, 'deadlines']);
+        Route::get('reports/history', [App\Http\Controllers\ProjectsCommittee\ReportController::class, 'history']);
+        Route::get('reports/export/pdf', [App\Http\Controllers\ProjectsCommittee\ReportExportController::class, 'pdf']);
+        Route::get('reports/export/excel', [App\Http\Controllers\ProjectsCommittee\ReportExportController::class, 'excel']);
     });
 
     // Discussion Committee routes

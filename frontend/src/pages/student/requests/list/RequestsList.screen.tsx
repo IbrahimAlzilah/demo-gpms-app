@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { DataTable, Button } from '@/components/ui'
+import { DataTable, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { BlockContent, ConfirmDialog } from '@/components/common'
 import { toast } from 'sonner'
 import { AlertCircle, PlusCircle } from 'lucide-react'
@@ -121,6 +121,27 @@ export function RequestsList() {
 
       <BlockContent title={t('nav.requests')} actions={actions}>
         <DataTable
+          toolbarContent={
+            <Select
+              value={state.statusFilter}
+              onValueChange={(value) => {
+                setState((prev) => ({ ...prev, statusFilter: value as typeof prev.statusFilter }))
+                // Reset to first page when filter changes
+                setPagination((prev) => ({ ...prev, pageIndex: 0 }))
+              }}
+            >
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder={t('common.filterByStatus')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('common.all')}</SelectItem>
+                <SelectItem value="pending">{t('common.pending')}</SelectItem>
+                <SelectItem value="committee_approved">{t('common.approved')}</SelectItem>
+                <SelectItem value="committee_rejected">{t('common.rejected')}</SelectItem>
+                <SelectItem value="cancelled">{t('common.cancelled')}</SelectItem>
+              </SelectContent>
+            </Select>
+          }
           columns={columns}
           data={data.requests}
           isLoading={data.isLoading}

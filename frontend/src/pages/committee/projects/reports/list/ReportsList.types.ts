@@ -9,3 +9,5 @@ export interface ReportsListData {
   isLoading: boolean
   error: Error | null
 }
+
+export type ReportType = 'projects' | 'students' | 'assessments' | 'general' | 'overview' | 'supervisors' | 'requests' | 'deadlines' | 'history'

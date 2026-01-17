@@ -12,6 +12,7 @@ export function useRequestsList() {
   const { user } = useAuthStore()
 
   const [state, setState] = useState<RequestsListState>({
+    statusFilter: 'all',
     selectedRequest: null,
     showForm: false,
     requestToCancel: null,
@@ -36,8 +37,14 @@ export function useRequestsList() {
     pagination,
     setPagination,
   } = useDataTable({
-    queryKey: ['student-requests-table'],
-    queryFn: (params) => requestService.getTableData(params, user?.id),
+    queryKey: ['student-requests-table', state.statusFilter],
+    queryFn: (params) => {
+      const filters = { ...params?.filters }
+      if (state.statusFilter !== 'all') {
+        filters.status = state.statusFilter
+      }
+      return requestService.getTableData({ ...params, filters }, user?.id)
+    },
     initialPageSize: 10,
     enableServerSide: true,
   })

@@ -68,7 +68,13 @@
     "assigning": "Assigning...",
     "supervisor": "Supervisor",
     "maxStudents": "Max Students",
-    "lastUpdated": "Last Updated"
+    "lastUpdated": "Last Updated",
+    "errorLoadingData": "Error loading data",
+    "hideFilters": "Hide Filters",
+    "showFilters": "Show Filters",
+    "completed": "Completed",
+    "overdue": "Overdue",
+    "days": "days"
   },
   "app": {
     "name": "Graduation Project Management System",
@@ -1037,7 +1043,54 @@
       "tagStats": "Statistics",
       "tagSummary": "Summary",
       "registered": "Registered",
-      "unregistered": "Unregistered"
+      "unregistered": "Unregistered",
+      "exportExcel": "Export Excel",
+      "exportPdf": "Export PDF",
+      "tabs": {
+        "overview": "Overview",
+        "projects": "Projects",
+        "supervisors": "Supervisors",
+        "students": "Students",
+        "requests": "Requests",
+        "deadlines": "Deadlines",
+        "history": "History"
+      },
+      "filters": {
+        "title": "Filters",
+        "period": "Academic Period",
+        "status": "Status",
+        "supervisor": "Supervisor",
+        "department": "Department",
+        "selectPeriod": "Select Period",
+        "selectStatus": "Select Status",
+        "selectSupervisor": "Select Supervisor",
+        "departmentPlaceholder": "Enter department",
+        "dateFrom": "Date From",
+        "dateTo": "Date To",
+        "dateRange": "Date Range"
+      },
+      "kpis": {
+        "projects": "Projects",
+        "students": "Students",
+        "evaluations": "Evaluations",
+        "requests": "Requests",
+        "milestones": "Milestones",
+        "proposals": "Proposals"
+      },
+      "projectsByStatus": "Projects by Status",
+      "requestsByStatus": "Requests by Status",
+      "projectsOverTime": "Projects Over Time",
+      "projectsCount": "Projects Count",
+      "studentsCount": "Students Count",
+      "totalSupervisors": "Total Supervisors",
+      "totalProjects": "Total Projects",
+      "totalStudents": "Total Students",
+      "inGroup": "In Group",
+      "inGroups": "In Groups",
+      "approvalRate": "Approval Rate",
+      "onTime": "On Time",
+      "avgDelay": "Average Delay",
+      "days": "days"
     },
     "grades": {
       "management": "Final Grades Management",

@@ -72,7 +72,13 @@
     "download": "تحميل",
     "lastUpdated": "آخر تحديث",
     "pending": "قيد المراجعة",
-    "cancelled": "ملغي"
+    "cancelled": "ملغي",
+    "errorLoadingData": "خطأ في تحميل البيانات",
+    "hideFilters": "إخفاء المرشحات",
+    "showFilters": "إظهار المرشحات",
+    "completed": "مكتمل",
+    "overdue": "متأخر",
+    "days": "أيام"
   },
   "app": {
     "name": "نظام إدارة تقييم مشاريع التخرج",
@@ -1106,7 +1112,54 @@
       "tagStats": "إحصاءات",
       "tagSummary": "ملخص",
       "registered": "مسجل",
-      "unregistered": "غير مسجل"
+      "unregistered": "غير مسجل",
+      "exportExcel": "تصدير Excel",
+      "exportPdf": "تصدير PDF",
+      "tabs": {
+        "overview": "نظرة عامة",
+        "projects": "المشاريع",
+        "supervisors": "المشرفون",
+        "students": "الطلاب",
+        "requests": "الطلبات",
+        "deadlines": "المواعيد النهائية",
+        "history": "التاريخ"
+      },
+      "filters": {
+        "title": "المرشحات",
+        "period": "الفترة الأكاديمية",
+        "status": "الحالة",
+        "supervisor": "المشرف",
+        "department": "القسم",
+        "selectPeriod": "اختر الفترة",
+        "selectStatus": "اختر الحالة",
+        "selectSupervisor": "اختر المشرف",
+        "departmentPlaceholder": "أدخل القسم",
+        "dateFrom": "من تاريخ",
+        "dateTo": "إلى تاريخ",
+        "dateRange": "نطاق التاريخ"
+      },
+      "kpis": {
+        "projects": "المشاريع",
+        "students": "الطلاب",
+        "evaluations": "التقييمات",
+        "requests": "الطلبات",
+        "milestones": "المراحل",
+        "proposals": "المقترحات"
+      },
+      "projectsByStatus": "المشاريع حسب الحالة",
+      "requestsByStatus": "الطلبات حسب الحالة",
+      "projectsOverTime": "المشاريع عبر الزمن",
+      "projectsCount": "عدد المشاريع",
+      "studentsCount": "عدد الطلاب",
+      "totalSupervisors": "إجمالي المشرفين",
+      "totalProjects": "إجمالي المشاريع",
+      "totalStudents": "إجمالي الطلاب",
+      "inGroup": "في مجموعة",
+      "inGroups": "في مجموعات",
+      "approvalRate": "معدل الموافقة",
+      "onTime": "في الوقت المحدد",
+      "avgDelay": "متوسط التأخير",
+      "days": "أيام"
     },
     "grades": {
       "management": "إدارة الدرجات النهائية",

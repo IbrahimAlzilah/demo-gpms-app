@@ -20,8 +20,27 @@ class RequestController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = ProjectRequest::where('status', 'pending')
+        $query = ProjectRequest::query()
             ->with(['student', 'project']);
+
+        // Apply status filter if provided
+        $filters = $request->get('filters', []);
+        $statusFilter = $filters['status'] ?? null;
+
+        // Remove status filter from filters array to avoid double application in applyTableQuery
+        if (isset($filters['status'])) {
+            unset($filters['status']);
+            $request->merge(['filters' => $filters]);
+        }
+
+        // Apply status filter only if a specific status is selected (not 'all' and not null)
+        if ($statusFilter && $statusFilter !== 'all') {
+            $query->where('status', $statusFilter);
+        } elseif (!$statusFilter) {
+            // Default to pending if no filter is specified
+            $query->where('status', 'pending');
+        }
+        // If statusFilter is 'all', don't apply any status filter
 
         $query = $this->applyTableQuery($query, $request);
 

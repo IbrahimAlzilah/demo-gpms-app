@@ -1,7 +1,10 @@
-import type { Request } from '@/types/request.types'
+import type { Request, RequestStatus } from '@/types/request.types'
 import type { RequestStatistics } from '../types/Requests.types'
 
+export type RequestStatusFilter = RequestStatus | 'all'
+
 export interface RequestsListState {
+  statusFilter: RequestStatusFilter
   selectedRequest: Request | null
   showForm: boolean
   requestToCancel: Request | null
