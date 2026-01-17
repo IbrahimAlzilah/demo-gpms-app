@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Card, CardContent, DataTable } from '@/components/ui'
+import { Card, CardContent, CardHeader, CardTitle, DataTable } from '@/components/ui'
 import { LoadingSpinner } from '@/components/common'
-import { useSupervisorsReport, type ReportFilters } from '../../hooks/useReports'
+import { useSupervisorsReport } from '../../hooks/useReports'
+import type { ReportFilters } from '../../api/report.service'
+import { Users, Briefcase, GraduationCap } from 'lucide-react'
 
 interface SupervisorsTabProps {
   filters: ReportFilters
@@ -36,18 +38,41 @@ export function SupervisorsTab({ filters }: SupervisorsTabProps) {
     )
   }
 
+  const maxProjects = Math.max(...(data.supervisors || []).map(s => s.projects_count), 5)
+
   const columns = [
     {
       accessorKey: 'name',
       header: t('common.name'),
+      cell: ({ row }: any) => (
+        <div className="font-medium">{row.original.name}</div>
+      )
     },
     {
       accessorKey: 'department',
       header: t('user.department'),
+      cell: ({ row }: any) => row.original.department || '-',
     },
     {
       accessorKey: 'projects_count',
       header: t('committee.reports.projectsCount'),
+      cell: ({ row }: any) => {
+        const count = row.original.projects_count
+        const percentage = (count / maxProjects) * 100
+        return (
+          <div className="w-full max-w-[120px]">
+            <div className="flex justify-between text-xs mb-1">
+              <span>{count}</span>
+            </div>
+            <div className="h-2 bg-secondary/30 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-blue-600 rounded-full"
+                style={{ width: `${percentage}%` }}
+              />
+            </div>
+          </div>
+        )
+      },
     },
     {
       accessorKey: 'students_count',
@@ -56,32 +81,49 @@ export function SupervisorsTab({ filters }: SupervisorsTabProps) {
     {
       accessorKey: 'average_grade',
       header: t('committee.reports.averageGrade'),
+      cell: ({ row }: any) => row.original.average_grade ? Number(row.original.average_grade).toFixed(1) : '-',
     },
     {
       accessorKey: 'pending_evaluations',
       header: t('committee.reports.pendingEvaluations'),
+      cell: ({ row }: any) => (
+        <span className={row.original.pending_evaluations > 0 ? "text-amber-600 font-medium" : "text-muted-foreground"}>
+          {row.original.pending_evaluations}
+        </span>
+      ),
     },
   ]
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {data.summary && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
-            <CardContent className="p-4">
-              <div className="text-sm text-muted-foreground">{t('committee.reports.totalSupervisors')}</div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t('committee.reports.totalSupervisors')}</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
               <div className="text-2xl font-bold">{data.summary.total}</div>
             </CardContent>
           </Card>
+
           <Card>
-            <CardContent className="p-4">
-              <div className="text-sm text-muted-foreground">{t('committee.reports.totalProjects')}</div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t('committee.reports.totalProjects')}</CardTitle>
+              <Briefcase className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
               <div className="text-2xl font-bold">{data.summary.total_projects}</div>
             </CardContent>
           </Card>
+
           <Card>
-            <CardContent className="p-4">
-              <div className="text-sm text-muted-foreground">{t('committee.reports.totalStudents')}</div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t('committee.reports.totalStudents')}</CardTitle>
+              <GraduationCap className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
               <div className="text-2xl font-bold">{data.summary.total_students}</div>
             </CardContent>
           </Card>

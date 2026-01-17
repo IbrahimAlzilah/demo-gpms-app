@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Badge, Tabs, TabsList, TabsTrigger, TabsContent, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Input, Popover, PopoverTrigger, PopoverContent, Label, Separator } from '@/components/ui'
 import { BlockContent } from '@/components/common'
-import { Filter, Download, X } from 'lucide-react'
+import { Filter, Download, X, Printer } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ReportFilters } from '../api/report.service'
 import { periodService } from '../../periods/api/period.service'
@@ -23,6 +23,33 @@ export function ReportsList() {
   const [activeTab, setActiveTab] = useState<string>('overview')
   const [filters, setFilters] = useState<ReportFilters>({})
   const [filterOpen, setFilterOpen] = useState(false)
+
+  // Print styles
+  const printStyles = `
+    @media print {
+      @page { size: landscape; margin: 10mm; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      body { background-color: white !important; }
+      aside, header, nav, .bg-sidebar, .border-r { display: none !important; }
+      main { margin: 0 !important; padding: 0 !important; width: 100% !important; max-width: none !important; }
+      .no-print { display: none !important; }
+      button { display: none !important; }
+      
+      /* Ensure Tabs Content is visible and proper overflow */
+      [role="tabpanel"] { display: block !important; }
+      [role="tablist"] { display: none !important; }
+      
+      .card, .border, .shadow-sm {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+        break-inside: avoid;
+      }
+      
+      /* Table optimizations */
+      .overflow-auto, .overflow-x-auto, .overflow-y-auto { overflow: visible !important; }
+      th, td { white-space: normal !important; }
+    }
+  `
 
   // Fetch periods for filter
   const { data: periods = [] } = useQuery({
@@ -76,7 +103,7 @@ export function ReportsList() {
   }
 
   const actions = (
-    <div className="relative flex justify-between items-center mb-6">
+    <div className="relative flex justify-between items-center">
       {/* Filter Button and Popover */}
       <Popover open={filterOpen} onOpenChange={setFilterOpen}>
         <PopoverTrigger asChild>
@@ -228,6 +255,7 @@ export function ReportsList() {
 
   return (
     <div className="space-y-6">
+      <style>{printStyles}</style>
       <BlockContent title={t('committee.reports.title')} actions={actions}>
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -243,6 +271,14 @@ export function ReportsList() {
             </TabsList>
 
             <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.print()}
+              >
+                <Printer className="h-4 w-4 mr-2" />
+                {t('common.print')}
+              </Button>
               <Button
                 variant="outline"
                 size="sm"

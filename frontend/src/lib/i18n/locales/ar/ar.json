@@ -78,7 +78,8 @@
     "showFilters": "إظهار المرشحات",
     "completed": "مكتمل",
     "overdue": "متأخر",
-    "days": "أيام"
+    "days": "أيام",
+    "print": "طباعة"
   },
   "app": {
     "name": "نظام إدارة تقييم مشاريع التخرج",
@@ -159,7 +160,11 @@
     "reports": "التقارير",
     "users": "إدارة المستخدمين",
     "notifications": "الإشعارات",
-    "announce": "إعلان المشاريع"
+    "announce": "إعلان المشاريع",
+    "follow-up": "متابعة المشروع",
+    "supervisors": "تعيين المشرفين",
+    "registrations": "إدارة طلبات التسجيل",
+    "distribute": "توزيع اللجان"
   },
   "dashboard": {
     "student": {
