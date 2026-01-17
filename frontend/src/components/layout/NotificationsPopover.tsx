@@ -51,6 +51,9 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
   const notifications = notificationsData?.data || []
 
   const handleNotificationClick = (notification: NotificationDto) => {
+    if (!notification.isRead) {
+      markAsRead.mutate(notification.id)
+    }
     const target = getNotificationTarget(notification, user?.role || '')
     navigate(target.path)
     setOpen(false)
@@ -224,7 +227,7 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="w-full justify-end gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+              className="w-full justify-center gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
               onClick={handleDeleteAll}
               disabled={deleteAll.isPending}
             >

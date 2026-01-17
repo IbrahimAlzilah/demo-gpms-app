@@ -92,11 +92,14 @@
     "passwordPlaceholder": "••••••••",
     "showPassword": "إظهار كلمة المرور",
     "hidePassword": "إخفاء كلمة المرور",
+    "loginIdLabel": "معرف الدخول",
+    "loginIdPlaceholder": "الرقم الأكاديمي / رقم الموظف / admin",
     "validation": {
       "emailRequired": "البريد الإلكتروني مطلوب",
       "emailInvalid": "البريد الإلكتروني غير صحيح",
       "passwordRequired": "كلمة المرور مطلوبة",
-      "passwordMinLength": "كلمة المرور يجب أن تكون 6 أحرف على الأقل"
+      "passwordMinLength": "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
+      "loginIdRequired": "معرف الدخول مطلوب"
     },
     "forgetPassword": {
       "title": "استعادة كلمة المرور",

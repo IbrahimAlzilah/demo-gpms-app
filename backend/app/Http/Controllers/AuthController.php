@@ -21,7 +21,7 @@ class AuthController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'email' => 'required|email',
+                'identifier' => 'required|string',
                 'password' => 'required|string',
             ]);
 
@@ -33,7 +33,25 @@ class AuthController extends Controller
                 ], 422);
             }
 
-            $user = User::where('email', $request->email)->first();
+            $identifier = trim($request->identifier);
+            $user = null;
+
+            // Check if identifier is 'admin' (case-insensitive)
+            if (strtolower($identifier) === 'admin') {
+                $user = User::where('role', 'admin')->first();
+            } else {
+                // Try to find student by student_id
+                $user = User::where('role', 'student')
+                    ->where('student_id', $identifier)
+                    ->first();
+
+                // If not found, try to find staff by emp_id
+                if (!$user) {
+                    $user = User::whereIn('role', ['supervisor', 'discussion_committee', 'projects_committee'])
+                        ->where('emp_id', $identifier)
+                        ->first();
+                }
+            }
 
             if (!$user || !Hash::check($request->password, $user->password)) {
                 return response()->json([

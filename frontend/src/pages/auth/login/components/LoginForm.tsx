@@ -31,7 +31,7 @@ export function LoginForm() {
   } = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema(t)),
     defaultValues: {
-      email: '',
+      identifier: '',
       password: '',
     },
   })
@@ -86,21 +86,21 @@ export function LoginForm() {
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="email">{t('common.email')}</Label>
+          <Label htmlFor="identifier">{t('auth.loginIdLabel')}</Label>
           <Input
-            id="email"
-            type="email"
-            {...register('email')}
+            id="identifier"
+            type="text"
+            {...register('identifier')}
             disabled={isLoading || isSubmitting}
-            placeholder={t('auth.emailPlaceholder')}
-            className={errors.email ? 'border-destructive focus-visible:ring-destructive' : ''}
-            aria-invalid={!!errors.email}
-            aria-describedby={errors.email ? 'email-error' : undefined}
+            placeholder={t('auth.loginIdPlaceholder')}
+            className={errors.identifier ? 'border-destructive focus-visible:ring-destructive' : ''}
+            aria-invalid={!!errors.identifier}
+            aria-describedby={errors.identifier ? 'identifier-error' : undefined}
           />
-          {errors.email && (
-            <p id="email-error" className="text-sm text-destructive flex items-center gap-1">
+          {errors.identifier && (
+            <p id="identifier-error" className="text-sm text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
-              {errors.email.message}
+              {errors.identifier.message}
             </p>
           )}
         </div>

@@ -38,6 +38,7 @@
     "react-hook-form": "^7.68.0",
     "react-i18next": "^16.5.0",
     "react-router-dom": "^7.10.1",
+    "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18",
     "uuid": "^13.0.0",

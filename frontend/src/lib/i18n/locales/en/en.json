@@ -90,11 +90,14 @@
     "passwordPlaceholder": "••••••••",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
+    "loginIdLabel": "Login ID",
+    "loginIdPlaceholder": "Academic Number / Employee ID / admin",
     "validation": {
       "emailRequired": "Email is required",
       "emailInvalid": "Invalid email address",
       "passwordRequired": "Password is required",
-      "passwordMinLength": "Password must be at least 6 characters"
+      "passwordMinLength": "Password must be at least 6 characters",
+      "loginIdRequired": "Login ID is required"
     },
     "forgetPassword": {
       "title": "Password Recovery",

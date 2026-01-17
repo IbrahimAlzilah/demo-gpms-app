@@ -17,76 +17,79 @@ export function getNotificationTarget(
 
   // Handle deadline notifications
   if (type?.startsWith('deadline_')) {
-    // For deadline reminders, navigate to relevant section based on period type
     if (type.includes('proposal_submission')) {
       return {
-        path: ROUTES.STUDENT.PROPOSALS,
+        path: getProposalsRoute(userRole),
         label: 'عرض المقترحات',
       }
     }
     if (type.includes('project_registration')) {
       return {
-        path: ROUTES.STUDENT.PROJECTS,
+        path: getProjectsRoute(userRole),
         label: 'عرض المشاريع',
       }
     }
     if (type.includes('document_submission')) {
-      return {
-        path: ROUTES.STUDENT.DOCUMENTS,
-        label: 'عرض الوثائق',
-      }
+      if (userRole === 'student') return { path: ROUTES.STUDENT.DOCUMENTS, label: 'عرض الوثائق' }
+      // Add other roles if they have document review pages, otherwise dashboard
+      return { path: getDashboardRoute(userRole), label: 'عرض التفاصيل' }
     }
   }
 
   // Handle proposal-related notifications
-  if (type === 'proposal_approved' || type === 'proposal_rejected' || type === 'proposal_modification_required') {
-    if (relatedEntityType === 'proposal' && relatedEntityId) {
-      // Navigate to proposal detail if route exists, otherwise list
-      return {
-        path: ROUTES.STUDENT.MY_PROPOSALS,
-        label: 'عرض المقترح',
-      }
-    }
+  if (type === 'proposal_approved' || type === 'proposal_rejected' || type === 'proposal_modification_required' || type === 'proposal_submitted') {
+    const baseRoute = getProposalsRoute(userRole)
+    // If we had a specific route for details, we could append relatedEntityId
+    // But currently routes are list-based mostly or handled by internal routing
     return {
-      path: ROUTES.STUDENT.MY_PROPOSALS,
-      label: 'عرض المقترحات',
+      path: baseRoute,
+      label: relatedEntityId ? 'عرض المقترح' : 'عرض المقترحات',
     }
   }
 
   // Handle request-related notifications
   if (type === 'request_approved' || type === 'request_rejected' || type === 'request_submitted') {
-    if (relatedEntityType === 'request' && relatedEntityId) {
-      return {
-        path: ROUTES.STUDENT.REQUESTS,
-        label: 'عرض الطلب',
-      }
-    }
+    const requestRoute = getRequestsRoute(userRole)
     return {
-      path: ROUTES.STUDENT.REQUESTS,
-      label: 'عرض الطلبات',
+      path: requestRoute,
+      label: relatedEntityId ? 'عرض الطلب' : 'عرض الطلبات',
     }
   }
 
   // Handle project/registration notifications
   if (type === 'registration_approved' || type === 'registration_rejected' || type === 'registration_submitted') {
+    if (userRole === 'projects_committee') {
+      return {
+        path: ROUTES.PROJECTS_COMMITTEE.REGISTRATIONS,
+        label: 'إدارة التسجيلات',
+      }
+    }
     return {
-      path: ROUTES.STUDENT.PROJECTS,
+      path: getProjectsRoute(userRole),
       label: 'عرض المشروع',
     }
   }
 
-  if (type === 'projects_announced' || type === 'projects_unannounced') {
+  if (type === 'projects_announced' || type === 'projects_unannounced' || type === 'announcement_created') {
     return {
-      path: ROUTES.STUDENT.PROJECTS,
+      path: getProjectsRoute(userRole),
       label: 'عرض المشاريع',
     }
   }
 
   // Handle grade notifications
   if (type === 'grade_approved') {
-    return {
-      path: ROUTES.STUDENT.GRADES,
-      label: 'عرض الدرجات',
+    if (userRole === 'student') {
+      return {
+        path: ROUTES.STUDENT.GRADES,
+        label: 'عرض الدرجات',
+      }
+    }
+    if (userRole === 'projects_committee') {
+       return {
+         path: ROUTES.PROJECTS_COMMITTEE.GRADES,
+         label: 'عرض الدرجات',
+       }
     }
   }
 
@@ -112,6 +115,48 @@ function getDashboardRoute(role: string): string {
       return ROUTES.ADMIN.DASHBOARD
     default:
       return ROUTES.LOGIN
+  }
+}
+
+function getRequestsRoute(role: string): string {
+  switch (role) {
+    case 'student':
+      return ROUTES.STUDENT.REQUESTS
+    case 'supervisor':
+      return ROUTES.SUPERVISOR.SUPERVISION_REQUESTS
+    case 'projects_committee':
+      return ROUTES.PROJECTS_COMMITTEE.REQUESTS
+    default:
+      return getDashboardRoute(role)
+  }
+}
+
+function getProposalsRoute(role: string): string {
+  switch (role) {
+    case 'student':
+      return ROUTES.STUDENT.MY_PROPOSALS
+    case 'supervisor':
+      return ROUTES.SUPERVISOR.PROPOSALS
+    case 'projects_committee':
+      return ROUTES.PROJECTS_COMMITTEE.PROPOSALS
+    default:
+      return getDashboardRoute(role)
+  }
+}
+
+function getProjectsRoute(role: string): string {
+  switch (role) {
+    case 'student':
+      return ROUTES.STUDENT.PROJECTS
+    case 'supervisor':
+      return ROUTES.SUPERVISOR.PROJECTS
+    case 'discussion_committee':
+      return ROUTES.DISCUSSION_COMMITTEE.PROJECTS
+    case 'projects_committee':
+      // They manage projects via announce or other means, usually they don't browse "available projects" like students
+      return ROUTES.PROJECTS_COMMITTEE.ANNOUNCE_PROJECTS
+    default:
+      return getDashboardRoute(role)
   }
 }
 
