@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { useProjects } from '@/pages/student/projects/hooks/useProjects'
 import { useAuthStore } from '@/pages/auth/login'
-import type { Project } from '@/types/project.types'
 
 /**
  * Hook to fetch the current user's project

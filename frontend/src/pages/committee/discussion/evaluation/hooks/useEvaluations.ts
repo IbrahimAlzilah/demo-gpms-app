@@ -1,7 +1,6 @@
 import { useQuery, useQueries } from '@tanstack/react-query'
 import { discussionCommitteeProjectService } from '../../projects/api/project.service'
 import { committeeEvaluationService } from '../api/evaluation.service'
-import type { Grade } from '@/types/evaluation.types'
 import type { Project } from '@/types/project.types'
 
 /**

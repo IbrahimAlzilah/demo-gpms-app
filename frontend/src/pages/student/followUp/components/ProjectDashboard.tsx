@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useProject } from '../../projects/hooks/useProjects'
 import { useDocuments, DocumentUpload } from '@/pages/student/documents'
 import { projectService } from '../../projects/api/project.service'
-import { Card, CardContent, Button, Textarea, Label, Badge } from '@/components/ui'
+import { Button, Textarea, Label, Badge } from '@/components/ui'
 import { LoadingSpinner, StatusBadge, ModalDialog, BlockContent } from '@/components/common'
 import {
   Calendar, FileText, MessageSquare, CheckCircle2, Clock, Loader2, Send, X, AlertCircle, Upload

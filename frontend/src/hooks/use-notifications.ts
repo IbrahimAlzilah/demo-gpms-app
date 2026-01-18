@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { notificationsService } from '@/services/notifications.service'
-import type { NotificationDto } from '@/types/notification.types'
 
 export function useNotifications(page = 1, perPage = 15) {
   return useQuery({

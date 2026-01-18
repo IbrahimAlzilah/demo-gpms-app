@@ -24,12 +24,12 @@ export const periodService = {
       })
     }
 
-    const response = await apiClient.get<{ data: TimePeriod[], pagination: any }>(
+    const response = await apiClient.get<TimePeriod[]>(
       `/projects-committee/periods?${queryParams.toString()}`
     )
     
     return {
-      data: response.data || [],
+      data: Array.isArray(response.data) ? response.data : [],
       totalCount: response.pagination?.total || 0,
       page: response.pagination?.page || 1,
       pageSize: response.pagination?.pageSize || 10,

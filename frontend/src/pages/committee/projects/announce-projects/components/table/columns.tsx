@@ -131,13 +131,19 @@ export function createAnnounceProjectsColumns({
       cell: ({ row }) => {
         const project = row.original
 
-        const actions = [
+        const actions: Array<{
+          id: string
+          label: string
+          icon: typeof Eye
+          onClick: () => void
+          variant?: 'default' | 'destructive'
+        }> = [
           {
             id: 'view',
             label: t('committee.announce.viewDetails'),
             icon: Eye,
             onClick: () => onView(project),
-            variant: 'default' as const,
+            variant: 'default',
           },
         ]
 
@@ -148,7 +154,7 @@ export function createAnnounceProjectsColumns({
             label: t('committee.announce.remove'),
             icon: X,
             onClick: () => onRemove(project),
-            variant: 'destructive' as const,
+            variant: 'destructive',
           })
         }
 

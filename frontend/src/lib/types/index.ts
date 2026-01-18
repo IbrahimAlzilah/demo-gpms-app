@@ -1,51 +1,61 @@
 // Common types shared across the application
 
-export enum UserRole {
-  STUDENT = 'student',
-  SUPERVISOR = 'supervisor',
-  PROJECTS_COMMITTEE = 'projects_committee',
-  DISCUSSION_COMMITTEE = 'discussion_committee',
-  ADMIN = 'admin',
-}
+export const UserRole = {
+  STUDENT: 'student',
+  SUPERVISOR: 'supervisor',
+  PROJECTS_COMMITTEE: 'projects_committee',
+  DISCUSSION_COMMITTEE: 'discussion_committee',
+  ADMIN: 'admin',
+} as const
 
-export enum ProposalStatus {
-  PENDING_REVIEW = 'pending_review',
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
-  REQUIRES_MODIFICATION = 'requires_modification',
-}
+export type UserRole = typeof UserRole[keyof typeof UserRole]
 
-export enum ProjectStatus {
-  DRAFT = 'draft',
-  ANNOUNCED = 'announced',
-  AVAILABLE_FOR_REGISTRATION = 'available_for_registration',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-  ARCHIVED = 'archived',
-}
+export const ProposalStatus = {
+  PENDING_REVIEW: 'pending_review',
+  APPROVED: 'approved',
+  REJECTED: 'rejected',
+  REQUIRES_MODIFICATION: 'requires_modification',
+} as const
+
+export type ProposalStatus = typeof ProposalStatus[keyof typeof ProposalStatus]
+
+export const ProjectStatus = {
+  DRAFT: 'draft',
+  ANNOUNCED: 'announced',
+  AVAILABLE_FOR_REGISTRATION: 'available_for_registration',
+  IN_PROGRESS: 'in_progress',
+  COMPLETED: 'completed',
+  ARCHIVED: 'archived',
+} as const
+
+export type ProjectStatus = typeof ProjectStatus[keyof typeof ProjectStatus]
 
 /**
- * Request status enum
+ * Request status
  * @deprecated SUPERVISOR_APPROVED and SUPERVISOR_REJECTED are no longer used.
  * All requests now go directly to Projects Committee. These values are kept for backward compatibility.
  */
-export enum RequestStatus {
-  PENDING = 'pending',
+export const RequestStatus = {
+  PENDING: 'pending',
   /** @deprecated Supervisor approval is no longer used */
-  SUPERVISOR_APPROVED = 'supervisor_approved',
+  SUPERVISOR_APPROVED: 'supervisor_approved',
   /** @deprecated Supervisor rejection is no longer used */
-  SUPERVISOR_REJECTED = 'supervisor_rejected',
-  COMMITTEE_APPROVED = 'committee_approved',
-  COMMITTEE_REJECTED = 'committee_rejected',
-  CANCELLED = 'cancelled',
-}
+  SUPERVISOR_REJECTED: 'supervisor_rejected',
+  COMMITTEE_APPROVED: 'committee_approved',
+  COMMITTEE_REJECTED: 'committee_rejected',
+  CANCELLED: 'cancelled',
+} as const
 
-export enum RequestType {
-  CHANGE_SUPERVISOR = 'change_supervisor',
-  CHANGE_GROUP = 'change_group',
-  CHANGE_PROJECT = 'change_project',
-  OTHER = 'other',
-}
+export type RequestStatus = typeof RequestStatus[keyof typeof RequestStatus]
+
+export const RequestType = {
+  CHANGE_SUPERVISOR: 'change_supervisor',
+  CHANGE_GROUP: 'change_group',
+  CHANGE_PROJECT: 'change_project',
+  OTHER: 'other',
+} as const
+
+export type RequestType = typeof RequestType[keyof typeof RequestType]
 
 export interface User {
   id: number;

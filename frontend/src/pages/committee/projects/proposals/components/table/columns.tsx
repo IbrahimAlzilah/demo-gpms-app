@@ -5,8 +5,6 @@ import { ActionsDropdown } from "@/components/common/ActionsDropdown"
 import type { Proposal } from "@/types/project.types"
 import { Check, X, FileEdit, Edit, Trash2, Eye } from "lucide-react"
 import { formatDate } from "@/lib/utils/format"
-import type { TFunction } from "react-i18next"
-
 export interface ProposalTableColumnsProps {
   onView: (proposal: Proposal) => void
   onApprove: (proposal: Proposal) => void
@@ -14,7 +12,7 @@ export interface ProposalTableColumnsProps {
   onRequestModification: (proposal: Proposal) => void
   onEdit: (proposal: Proposal) => void
   onDelete: (proposal: Proposal) => void
-  t: TFunction
+  t: (key: string) => string
 }
 
 export function createProposalColumns({

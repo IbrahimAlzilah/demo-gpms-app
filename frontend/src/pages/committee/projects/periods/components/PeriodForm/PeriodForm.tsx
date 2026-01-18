@@ -53,7 +53,7 @@ export function PeriodForm({
     },
   })
 
-  const { register, handleSubmit, formState: { errors }, reset, setValue, watch, control } = form
+  const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = form
 
   // Reset form when modal opens or period changes
   useEffect(() => {
@@ -66,8 +66,8 @@ export function PeriodForm({
           endDate: formatDateForInput(period.endDate),
           academicYear: period.academicYear || '',
           semester: period.semester || '',
-          isActive: period.isActive,
-        })
+          ...(isEditMode && { isActive: period.isActive ?? false }),
+        } as TimePeriodSchema)
       } else {
         reset({
           name: '',
@@ -198,8 +198,8 @@ export function PeriodForm({
             </div>
             <Switch
               id="isActive"
-              checked={watch('isActive') ?? false}
-              onCheckedChange={(checked) => setValue('isActive', checked, { shouldValidate: true })}
+              checked={(watch('isActive' as keyof TimePeriodSchema) as boolean | undefined) ?? false}
+              onCheckedChange={(checked) => setValue('isActive' as keyof TimePeriodSchema, checked as never, { shouldValidate: true })}
             />
           </div>
         )}

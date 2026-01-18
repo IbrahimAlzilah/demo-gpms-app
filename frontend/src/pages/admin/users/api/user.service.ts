@@ -1,5 +1,5 @@
 import { apiClient } from '../../../../lib/axios'
-import type { User, UserRole } from '../../../../types/user.types'
+import type { User } from '../../../../types/user.types'
 import type { TableQueryParams, TableResponse } from '../../../../types/table.types'
 
 export const userService = {
@@ -29,12 +29,12 @@ export const userService = {
       })
     }
 
-    const response = await apiClient.get<{ data: User[], pagination: any }>(
+    const response = await apiClient.get<User[]>(
       `/admin/users?${queryParams.toString()}`
     )
     
     // Map backend field names to frontend format
-    const users = (response.data || []).map((user: any) => ({
+    const users = (Array.isArray(response.data) ? response.data : []).map((user: any) => ({
       ...user,
       studentId: user.student_id,
       empId: user.emp_id,

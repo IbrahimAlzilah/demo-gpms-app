@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { projectService } from "../api/project.service";
 import { useAuthStore } from "@/pages/auth/login";
-import type { ProjectRegistration } from "@/types/project.types";
 
 /**
  * Hook for fetching student registrations

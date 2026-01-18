@@ -52,8 +52,10 @@ export function useResubmitProposal() {
       updateProposal.mutateAsync({
         id: proposal.id,
         data: {
-          ...proposal,
-          status: "pending_review" as const,
+          title: proposal.title,
+          description: proposal.description,
+          proposedSupervisorId: proposal.proposedSupervisorId,
+          teamMembers: proposal.teamMembers,
         },
       }),
     onSuccess: (_, proposal) => {

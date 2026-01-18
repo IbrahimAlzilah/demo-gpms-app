@@ -3,7 +3,6 @@ import { useProjects } from '../projects/hooks/useProjects'
 import { useSupervisionRequests } from '../supervision-requests/hooks/useSupervisionRequests'
 import { meetingService } from '../progress/api/meeting.service'
 import { evaluationService } from '../evaluation/api/evaluation.service'
-import { useAuthStore } from '@/pages/auth/login'
 import { useMemo } from 'react'
 import type { ProjectMeeting } from '@/types/project.types'
 import type { Grade } from '@/types/evaluation.types'
@@ -32,7 +31,6 @@ export interface DashboardData {
  * Hook to fetch all dashboard data for Supervisor Dashboard
  */
 export function useSupervisorDashboard() {
-  const { user } = useAuthStore()
 
   // Fetch projects
   const { data: projects, isLoading: projectsLoading, error: projectsError, refetch: refetchProjects } = useProjects()

@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Button, Input, Textarea, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { LoadingSpinner, FileUpload } from '@/components/common'
-import { AlertCircle, Loader2, Calendar, FileIcon, Users, Upload, Plus, X, Save } from 'lucide-react'
+import { AlertCircle, Loader2, Calendar, Plus, X, Save } from 'lucide-react'
 import type { UseProposalFormReturn } from '../../hooks/useProposalForm'
 import { useSupervisors } from '../../hooks/useSupervisors'
 import { useFieldArray } from 'react-hook-form'

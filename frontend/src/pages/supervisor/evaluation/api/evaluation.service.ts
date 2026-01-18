@@ -11,7 +11,7 @@ export const evaluationService = {
       criteria: Record<string, number>
       comments?: string
     },
-    evaluatedBy: string
+    _evaluatedBy: string
   ): Promise<Grade> => {
     const response = await apiClient.post<Grade>('/supervisor/evaluations', {
       project_id: projectId,

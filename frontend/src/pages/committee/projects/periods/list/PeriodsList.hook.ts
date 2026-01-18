@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDataTable } from '@/hooks/useDataTable'
 import { periodService } from '../api/period.service'
-import type { TimePeriod } from '@/types/period.types'
 import type { PeriodsListState, PeriodsListData } from './PeriodsList.types'
 
 export function usePeriodsList() {

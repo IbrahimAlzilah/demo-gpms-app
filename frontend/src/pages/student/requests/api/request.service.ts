@@ -3,12 +3,12 @@ import type { Request } from '../../../../types/request.types'
 import type { TableQueryParams, TableResponse } from '../../../../types/table.types'
 
 export const requestService = {
-  getAll: async (studentId?: string): Promise<Request[]> => {
+  getAll: async (_studentId?: string): Promise<Request[]> => {
     const response = await apiClient.get<Request[]>('/student/requests')
     return Array.isArray(response.data) ? response.data : []
   },
 
-  getTableData: async (params?: TableQueryParams, studentId?: string): Promise<TableResponse<Request>> => {
+  getTableData: async (params?: TableQueryParams, _studentId?: string): Promise<TableResponse<Request>> => {
     const queryParams = new URLSearchParams()
     
     if (params?.page) queryParams.append('page', params.page.toString())

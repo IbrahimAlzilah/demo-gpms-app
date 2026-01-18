@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDataTable } from '@/hooks/useDataTable'
 import { registrationService } from '../api/registration.service'
-import type { RegistrationsListState, RegistrationsListData, RegistrationStatusFilter } from './RegistrationsList.types'
+import type { RegistrationsListState, RegistrationsListData } from './RegistrationsList.types'
 
 export function useRegistrationsList() {
   const { t } = useTranslation()

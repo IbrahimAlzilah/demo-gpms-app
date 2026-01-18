@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { groupService } from '../api/group.service'
 import { useAuthStore } from '@/pages/auth/login'
 import type { User } from '@/types/user.types'
-import type { GroupInvitation } from '@/types/project.types'
 
 export function useGroupByProject(projectId: string) {
   return useQuery({

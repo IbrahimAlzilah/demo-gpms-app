@@ -6,10 +6,10 @@ export const supervisorDocumentService = {
     try {
       // Documents are included in project details, but we can also fetch them separately
       // For now, we'll use the project endpoint which includes documents
-      const response = await apiClient.get<{ data: { documents?: Document[] } }>(
+      const response = await apiClient.get<{ documents?: Document[] }>(
         `/supervisor/projects/${projectId}`
       )
-      return response.data?.documents || []
+      return (response.data as { documents?: Document[] })?.documents || []
     } catch {
       return []
     }
@@ -38,7 +38,7 @@ export const supervisorDocumentService = {
     status: 'approved' | 'rejected',
     comments?: string
   ): Promise<Document> => {
-    const response = await apiClient.post<{ data: Document }>(
+    const response = await apiClient.post<Document>(
       `/supervisor/projects/${projectId}/documents/${documentId}/review`,
       {
         status,

@@ -60,12 +60,12 @@ export const committeeGradeService = {
       })
     }
 
-    const response = await apiClient.get<{ data: Grade[], pagination: any }>(
+    const response = await apiClient.get<Grade[]>(
       `/projects-committee/grades?${queryParams.toString()}`
     )
     
     return {
-      data: response.data || [],
+      data: Array.isArray(response.data) ? response.data : [],
       totalCount: response.pagination?.total || 0,
       page: response.pagination?.page || 1,
       pageSize: response.pagination?.pageSize || 10,

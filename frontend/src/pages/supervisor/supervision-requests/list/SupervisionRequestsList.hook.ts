@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useAuthStore } from '@/pages/auth/login'
 import { useDataTable } from '@/hooks/useDataTable'
 import { supervisionService } from '../api/supervision.service'
 import type { SupervisionRequestsListState, SupervisionRequestsListData } from './SupervisionRequestsList.types'
@@ -9,7 +8,6 @@ const MAX_PROJECTS_PER_SUPERVISOR = 5 // This should come from config
 
 export function useSupervisionRequestsList() {
   const { t } = useTranslation()
-  const { user } = useAuthStore()
   
   const [state, setState] = useState<SupervisionRequestsListState>({
     statusFilter: 'all',
@@ -40,7 +38,7 @@ export function useSupervisionRequestsList() {
       if (state.statusFilter !== 'all') {
         filters.supervisorApprovalStatus = state.statusFilter
       }
-      return supervisionService.getTableData({ ...params, filters }, user?.id)
+      return supervisionService.getTableData({ ...params, filters })
     },
     initialPageSize: 10,
     enableServerSide: true,

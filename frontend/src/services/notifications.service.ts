@@ -10,13 +10,14 @@ export const notificationsService = {
       `/notifications?page=${page}&per_page=${perPage}`
     )
     // Axios interceptor extracts data and pagination to response.data and response.pagination
+    const pagination = response.pagination
     return {
       data: response.data || [],
-      pagination: response.pagination || {
-        page: 1,
-        per_page: perPage,
-        total: 0,
-        total_pages: 0,
+      pagination: {
+        page: pagination?.page || pagination?.current_page || 1,
+        per_page: pagination?.per_page || pagination?.pageSize || perPage,
+        total: pagination?.total || 0,
+        total_pages: pagination?.totalPages || pagination?.last_page || Math.ceil((pagination?.total || 0) / (pagination?.per_page || pagination?.pageSize || perPage)),
       },
     }
   },

@@ -1,8 +1,7 @@
-import { useTranslation } from 'react-i18next'
 import { BlockContent } from '@/components/common'
 import { ReportCard } from '../components/ReportCard'
 import { useReportsList } from './ReportsList.hook'
-import type { ReportType } from '../../api/report.service'
+import type { ReportType } from '../api/report.service'
 
 const REPORT_TYPES: Array<{
   type: ReportType
@@ -27,7 +26,6 @@ const REPORT_TYPES: Array<{
 ]
 
 export function ReportsList() {
-  const { t } = useTranslation()
   const { state, handleGenerateReport } = useReportsList()
 
   return (

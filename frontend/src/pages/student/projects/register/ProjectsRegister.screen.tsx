@@ -12,24 +12,11 @@ interface ProjectsRegisterProps {
 
 export function ProjectsRegister({
   project,
-  open,
   onClose,
   onSuccess,
   onCancel,
 }: ProjectsRegisterProps) {
-  const {
-    registration,
-    registrationLoading,
-    periodLoading,
-    isPeriodActive,
-    error,
-    success,
-    registerProject,
-    cancelRegistration,
-    handleSubmit,
-    handleCancelRegistration,
-    setError,
-  } = useProjectsRegister(project)
+  useProjectsRegister(project)
 
   const handleSuccess = () => {
     onSuccess?.()

@@ -7,19 +7,19 @@ import type {
 
 export const authService = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    const response = await apiClient.post<{ data: AuthResponse }>('/auth/login', credentials)
+    const response = await apiClient.post<AuthResponse>('/auth/login', credentials)
     // Backend returns { success: true, data: { token, user, permissions } }
     // Interceptor extracts data, so response.data is { token, user, permissions }
-    return response.data as AuthResponse
+    return response.data
   },
 
   register: async (data: RegisterData): Promise<AuthResponse> => {
-    const response = await apiClient.post<{ data: AuthResponse }>('/auth/register', data)
-    return response.data as AuthResponse
+    const response = await apiClient.post<AuthResponse>('/auth/register', data)
+    return response.data
   },
 
   me: async (): Promise<AuthResponse['user']> => {
-    const response = await apiClient.get<{ data: AuthResponse['user'] }>('/auth/me')
+    const response = await apiClient.get<AuthResponse['user']>('/auth/me')
     return response.data
   },
 

@@ -2,7 +2,7 @@ import { apiClient } from '../../../../lib/axios'
 import type { Grade } from '../../../../types/evaluation.types'
 
 export const gradeService = {
-  getGrades: async (studentId: string, isApproved?: boolean): Promise<Grade[]> => {
+  getGrades: async (_studentId: string, isApproved?: boolean): Promise<Grade[]> => {
     const params = new URLSearchParams()
     if (isApproved !== undefined) {
       params.append('is_approved', String(isApproved))

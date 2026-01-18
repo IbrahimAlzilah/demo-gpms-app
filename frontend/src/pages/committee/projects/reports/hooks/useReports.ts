@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { committeeReportService, type ReportFilters, type OverviewReport, type ProjectsReport, type SupervisorsReport, type StudentsReport, type RequestsReport, type DeadlinesReport, type HistoryReport } from '../api/report.service'
+import { committeeReportService, type ReportFilters } from '../api/report.service'
 
 export function useProjectsReport() {
   return useQuery({

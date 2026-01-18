@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useDataTable } from '@/hooks/useDataTable'
 import { usePeriodCheck } from '@/hooks/usePeriodCheck'
 import { committeeGradeService } from '../api/grade.service'
-import type { GradesListState, GradesListData, GradeApprovalFilter } from './GradesList.types'
+import type { GradesListState, GradesListData } from './GradesList.types'
 
 export function useGradesList() {
   const { t } = useTranslation()

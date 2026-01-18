@@ -24,12 +24,12 @@ export const proposalService = {
       })
     }
 
-    const response = await apiClient.get<{ data: Proposal[], pagination: any }>(
+    const response = await apiClient.get<Proposal[]>(
       `/supervisor/proposals?${queryParams.toString()}`
     )
     
     return {
-      data: response.data || [],
+      data: Array.isArray(response.data) ? response.data : [],
       totalCount: response.pagination?.total || 0,
       page: response.pagination?.page || 1,
       pageSize: response.pagination?.pageSize || 10,

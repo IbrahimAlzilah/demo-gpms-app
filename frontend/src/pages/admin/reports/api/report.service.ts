@@ -22,7 +22,7 @@ export const reportService = {
   },
 
   downloadReport: async (type: ReportType, options?: ReportOptions): Promise<void> => {
-    const blob = await this.generateReport(type, options)
+    const blob = await reportService.generateReport(type, options)
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url

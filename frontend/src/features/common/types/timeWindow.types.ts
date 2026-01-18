@@ -1,13 +1,15 @@
-export enum TimePeriodType {
-  PROPOSAL_SUBMISSION = 'proposal_submission',
-  PROPOSAL_REVIEW = 'proposal_review',
-  PROJECT_REGISTRATION = 'project_registration',
-  PROJECT_EXECUTION = 'project_execution',
-  DELIVERABLE_SUBMISSION = 'deliverable_submission',
-  SUPERVISOR_EVALUATION = 'supervisor_evaluation',
-  DISCUSSION_EVALUATION = 'discussion_evaluation',
-  GRADE_APPROVAL = 'grade_approval',
-}
+export const TimePeriodType = {
+  PROPOSAL_SUBMISSION: 'proposal_submission',
+  PROPOSAL_REVIEW: 'proposal_review',
+  PROJECT_REGISTRATION: 'project_registration',
+  PROJECT_EXECUTION: 'project_execution',
+  DELIVERABLE_SUBMISSION: 'deliverable_submission',
+  SUPERVISOR_EVALUATION: 'supervisor_evaluation',
+  DISCUSSION_EVALUATION: 'discussion_evaluation',
+  GRADE_APPROVAL: 'grade_approval',
+} as const;
+
+export type TimePeriodType = typeof TimePeriodType[keyof typeof TimePeriodType];
 
 export interface TimePeriod {
   id: number;

@@ -30,12 +30,12 @@ export const projectService = {
       })
     }
 
-    const response = await apiClient.get<{ data: Project[], pagination: any }>(
+    const response = await apiClient.get<Project[]>(
       `/student/projects?${queryParams.toString()}`
     )
     
     return {
-      data: response.data || [],
+      data: Array.isArray(response.data) ? response.data : [],
       totalCount: response.pagination?.total || 0,
       page: response.pagination?.page || 1,
       pageSize: response.pagination?.pageSize || 10,
@@ -58,7 +58,7 @@ export const projectService = {
     return Array.isArray(response.data) ? response.data : []
   },
 
-  getStudentRegistrations: async (studentId: string): Promise<ProjectRegistration[]> => {
+  getStudentRegistrations: async (_studentId: string): Promise<ProjectRegistration[]> => {
     const response = await apiClient.get<ProjectRegistration[]>('/student/projects/registrations')
     // The axios interceptor already extracts response.data.data, so response.data is the array
     return Array.isArray(response.data) ? response.data : []
@@ -66,17 +66,19 @@ export const projectService = {
 
   getRegistrationByProject: async (
     projectId: string,
-    studentId: string
+    studentId?: string
   ): Promise<ProjectRegistration | null> => {
     try {
-      const registrations = await this.getStudentRegistrations(studentId)
-      return registrations.find(r => r.projectId === projectId) || null
+      if (!studentId) return null
+      const response = await apiClient.get<ProjectRegistration[]>('/student/projects/registrations')
+      const registrations = Array.isArray(response.data) ? response.data : []
+      return registrations.find((r: ProjectRegistration) => r.projectId === projectId) || null
     } catch {
       return null
     }
   },
 
-  register: async (projectId: string, studentId: string): Promise<ProjectRegistration> => {
+  register: async (projectId: string, _studentId: string): Promise<ProjectRegistration> => {
     const response = await apiClient.post<ProjectRegistration>(
       `/student/projects/${projectId}/register`
     )
@@ -84,7 +86,7 @@ export const projectService = {
     return response.data
   },
 
-  cancelRegistration: async (registrationId: string, studentId: string): Promise<void> => {
+  cancelRegistration: async (registrationId: string, _studentId: string): Promise<void> => {
     await apiClient.delete(`/student/projects/registrations/${registrationId}`)
   },
 

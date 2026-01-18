@@ -1,9 +1,8 @@
-import { useQuery, useQueries } from '@tanstack/react-query'
+import { useQueries } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { useAuthStore } from '@/pages/auth/login'
 import { useProjects } from '../projects/hooks/useProjects'
 import { committeeEvaluationService } from '../evaluation/api/evaluation.service'
-import type { Project } from '@/types/project.types'
 import type { Grade } from '@/types/evaluation.types'
 
 export interface DashboardStats {

@@ -1,5 +1,4 @@
 import { z } from "zod"
-import type { PeriodType } from "@/types/period.types"
 
 // Time Period Form Schema
 export const timePeriodSchema = (t: (key: string) => string, isEditMode = false) => {
@@ -18,7 +17,7 @@ export const timePeriodSchema = (t: (key: string) => string, isEditMode = false)
         "general",
       ],
       {
-        required_error: t("committee.periods.typeRequired"),
+        message: t("committee.periods.typeRequired"),
       }
     ),
     startDate: z.string().min(1, t("committee.periods.startDateRequired")),

@@ -6,7 +6,6 @@ import { formatDate, formatRelativeTime } from '@/lib/utils/format'
 import { useRequest } from '../hooks/useRequests'
 import { useQuery } from '@tanstack/react-query'
 import { registrationService } from '../../registrations/api/registration.service'
-import type { Request } from '@/types/request.types'
 import type { ProjectRegistration } from '@/types/project.types'
 
 interface RequestDetailsViewProps {

@@ -24,12 +24,12 @@ export const committeeRequestService = {
       })
     }
 
-    const response = await apiClient.get<{ data: Request[], pagination: any }>(
+    const response = await apiClient.get<Request[]>(
       `/projects-committee/requests?${queryParams.toString()}`
     )
     
     return {
-      data: response.data || [],
+      data: Array.isArray(response.data) ? response.data : [],
       totalCount: response.pagination?.total || 0,
       page: response.pagination?.page || 1,
       pageSize: response.pagination?.pageSize || 10,
@@ -48,7 +48,7 @@ export const committeeRequestService = {
 
   approve: async (
     id: string,
-    approvedBy: string,
+    _approvedBy: string,
     comments?: string
   ): Promise<Request> => {
     const response = await apiClient.post<Request>(
@@ -60,7 +60,7 @@ export const committeeRequestService = {
 
   reject: async (
     id: string,
-    rejectedBy: string,
+    _rejectedBy: string,
     comments?: string
   ): Promise<Request> => {
     const response = await apiClient.post<Request>(

@@ -231,7 +231,6 @@ export function useApproveJoinRequest() {
 
 export function useRejectJoinRequest() {
   const queryClient = useQueryClient()
-  const { user } = useAuthStore()
 
   return useMutation({
     mutationFn: ({ requestId, comments }: { requestId: string; comments?: string }) => {

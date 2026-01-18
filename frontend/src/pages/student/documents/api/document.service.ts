@@ -28,12 +28,12 @@ export const documentService = {
       })
     }
 
-    const response = await apiClient.get<{ data: Document[], pagination: any }>(
+    const response = await apiClient.get<Document[]>(
       `/student/documents?${queryParams.toString()}`
     )
     
     return {
-      data: response.data || [],
+      data: Array.isArray(response.data) ? response.data : [],
       totalCount: response.pagination?.total || 0,
       page: response.pagination?.page || 1,
       pageSize: response.pagination?.pageSize || 10,
@@ -54,7 +54,7 @@ export const documentService = {
     projectId: string,
     file: File,
     type: DocumentType,
-    submittedBy: string
+    _submittedBy: string
   ): Promise<Document> => {
     // Sanitize filename to prevent issues with Arabic characters and special characters
     const sanitizeFileName = (fileName: string): string => {

@@ -11,7 +11,6 @@ export {
 
 // Types
 export type {
-  GradeFilters,
   GradesListScreenProps,
 } from './types/Grades.types'
 

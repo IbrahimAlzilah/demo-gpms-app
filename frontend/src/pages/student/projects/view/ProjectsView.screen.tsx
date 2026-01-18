@@ -2,9 +2,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Textarea, Label } from '@/components/ui'
 import { ModalDialog, LoadingSpinner, StatusBadge } from '@/components/common'
-import { Users, User, CheckCircle2, AlertCircle, Info, Clock, Check } from 'lucide-react'
+import { CheckCircle2 } from 'lucide-react'
 import { useProjectsView } from './ProjectsView.hook'
-import { cn } from '@/lib/utils'
 
 interface ProjectsViewProps {
   projectId: string

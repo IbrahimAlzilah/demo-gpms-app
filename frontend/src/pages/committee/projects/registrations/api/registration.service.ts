@@ -63,12 +63,12 @@ export const registrationService = {
       })
     }
 
-    const response = await apiClient.get<{ data: ProjectRegistration[], pagination: any }>(
+    const response = await apiClient.get<ProjectRegistration[]>(
       `/projects-committee/registrations?${queryParams.toString()}`
     )
     
     return {
-      data: response.data || [],
+      data: Array.isArray(response.data) ? response.data : [],
       totalCount: response.pagination?.total || 0,
       page: response.pagination?.current_page || 1,
       pageSize: response.pagination?.per_page || 10,
@@ -111,9 +111,9 @@ export const registrationService = {
     queryParams.append('pageSize', '100') // Get all registrations for the student
     queryParams.append('filters[student_id]', studentId)
 
-    const response = await apiClient.get<{ data: ProjectRegistration[], pagination: any }>(
+    const response = await apiClient.get<ProjectRegistration[]>(
       `/projects-committee/registrations?${queryParams.toString()}`
     )
-    return response.data || []
+    return Array.isArray(response.data) ? response.data : []
   },
 }

@@ -30,12 +30,12 @@ export const committeeProposalService = {
       })
     }
 
-    const response = await apiClient.get<{ data: Proposal[], pagination: any }>(
+    const response = await apiClient.get<Proposal[]>(
       `/projects-committee/proposals?${queryParams.toString()}`
     )
     
     return {
-      data: response.data || [],
+      data: Array.isArray(response.data) ? response.data : [],
       totalCount: response.pagination?.total || 0,
       page: response.pagination?.page || 1,
       pageSize: response.pagination?.pageSize || 10,
@@ -52,7 +52,7 @@ export const committeeProposalService = {
     }
   },
 
-  approve: async (id: string, reviewedBy: string, projectId?: string): Promise<Proposal> => {
+  approve: async (id: string, _reviewedBy: string, projectId?: string): Promise<Proposal> => {
     const response = await apiClient.post<Proposal>(
       `/projects-committee/proposals/${id}/approve`,
       { project_id: projectId }
@@ -60,7 +60,7 @@ export const committeeProposalService = {
     return response.data
   },
 
-  reject: async (id: string, reviewedBy: string, reviewNotes?: string): Promise<Proposal> => {
+  reject: async (id: string, _reviewedBy: string, reviewNotes?: string): Promise<Proposal> => {
     const response = await apiClient.post<Proposal>(
       `/projects-committee/proposals/${id}/reject`,
       { review_notes: reviewNotes }
@@ -70,7 +70,7 @@ export const committeeProposalService = {
 
   requestModification: async (
     id: string,
-    reviewedBy: string,
+    _reviewedBy: string,
     reviewNotes: string
   ): Promise<Proposal> => {
     const response = await apiClient.post<Proposal>(

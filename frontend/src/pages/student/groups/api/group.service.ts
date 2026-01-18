@@ -30,7 +30,7 @@ export const groupService = {
     }
   },
 
-  getByStudentId: async (studentId: string): Promise<ProjectGroup | null> => {
+  getByStudentId: async (_studentId: string): Promise<ProjectGroup | null> => {
     try {
       const response = await apiClient.get<ProjectGroup>('/student/groups')
       // Backend returns null when no group exists - this is a valid response
@@ -42,7 +42,7 @@ export const groupService = {
 
   create: async (
     projectId: string,
-    leaderId: string,
+    _leaderId: string,
     members: User[]
   ): Promise<ProjectGroup> => {
     try {
@@ -100,7 +100,7 @@ export const groupService = {
   // Group invitation methods
   inviteMember: async (
     groupId: string,
-    inviterId: string,
+    _inviterId: string,
     inviteeId: string,
     message?: string
   ): Promise<GroupInvitation> => {
@@ -116,7 +116,7 @@ export const groupService = {
     }
   },
 
-  getInvitations: async (studentId: string): Promise<GroupInvitation[]> => {
+  getInvitations: async (_studentId: string): Promise<GroupInvitation[]> => {
     try {
       const response = await apiClient.get<GroupInvitation[]>('/student/groups/invitations')
       return Array.isArray(response.data) ? response.data : []
@@ -127,7 +127,7 @@ export const groupService = {
 
   acceptInvitation: async (
     invitationId: string,
-    studentId: string
+    _studentId: string
   ): Promise<ProjectGroup> => {
     try {
       const response = await apiClient.post<ProjectGroup>(
@@ -141,7 +141,7 @@ export const groupService = {
 
   rejectInvitation: async (
     invitationId: string,
-    studentId: string
+    _studentId: string
   ): Promise<void> => {
     try {
       await apiClient.post(`/student/groups/invitations/${invitationId}/reject`)

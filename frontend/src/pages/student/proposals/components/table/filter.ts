@@ -1,4 +1,3 @@
-import type { Proposal } from '@/types/project.types'
 import type { ProposalFilters } from '../../types/Proposals.types'
 
 /**

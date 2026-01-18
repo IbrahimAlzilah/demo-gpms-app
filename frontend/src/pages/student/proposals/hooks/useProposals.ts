@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
 import { proposalService } from '../api/proposal.service'
-import type { Proposal } from '@/types/project.types'
 
 /**
  * Fetch all proposals

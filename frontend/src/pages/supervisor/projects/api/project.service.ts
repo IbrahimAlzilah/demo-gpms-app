@@ -3,12 +3,12 @@ import type { Project } from '../../../../types/project.types'
 import type { TableQueryParams, TableResponse } from '../../../../types/table.types'
 
 export const projectService = {
-  getAssignedProjects: async (supervisorId: string): Promise<Project[]> => {
+  getAssignedProjects: async (_supervisorId: string): Promise<Project[]> => {
     const response = await apiClient.get<Project[]>('/supervisor/projects')
     return Array.isArray(response.data) ? response.data : []
   },
 
-  getTableData: async (params?: TableQueryParams, supervisorId?: string): Promise<TableResponse<Project>> => {
+  getTableData: async (params?: TableQueryParams, _supervisorId?: string): Promise<TableResponse<Project>> => {
     const queryParams = new URLSearchParams()
     
     if (params?.page) queryParams.append('page', params.page.toString())
@@ -24,12 +24,12 @@ export const projectService = {
       })
     }
 
-    const response = await apiClient.get<{ data: Project[], pagination: any }>(
+    const response = await apiClient.get<Project[]>(
       `/supervisor/projects?${queryParams.toString()}`
     )
     
     return {
-      data: response.data || [],
+      data: Array.isArray(response.data) ? response.data : [],
       totalCount: response.pagination?.total || 0,
       page: response.pagination?.page || 1,
       pageSize: response.pagination?.pageSize || 10,

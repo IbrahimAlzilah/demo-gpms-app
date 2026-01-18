@@ -21,7 +21,6 @@ export {
   useInviteGroupMember,
   useAcceptInvitation,
   useRejectInvitation,
-  useJoinGroup,
 } from './hooks/useGroups'
 export {
   useCreateGroup as useCreateGroupOp,

@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/pages/auth/login'
 import { useDataTable } from '@/hooks/useDataTable'
 import { requestService } from '../api/request.service'
-import type { Request } from '@/types/request.types'
 import type { RequestStatistics } from '../types/Requests.types'
 import type { RequestsListState, RequestsListData } from './RequestsList.types'
 

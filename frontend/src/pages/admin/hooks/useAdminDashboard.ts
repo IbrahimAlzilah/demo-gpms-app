@@ -4,7 +4,6 @@ import { userService } from '../users/api/user.service'
 import { apiClient } from '@/lib/axios'
 import type { Project } from '@/types/project.types'
 import type { Proposal } from '@/types/project.types'
-import type { TableResponse } from '@/types/table.types'
 
 export interface DashboardStats {
   totalUsers: number

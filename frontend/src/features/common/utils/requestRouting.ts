@@ -6,7 +6,7 @@ import type { RequestType } from "../../../types/request.types";
  * @returns Always false - all requests now go directly to Projects Committee
  * @deprecated All requests now go directly to Projects Committee. This function is kept for backward compatibility.
  */
-export function requiresSupervisorApproval(requestType: RequestType): boolean {
+export function requiresSupervisorApproval(_requestType: RequestType): boolean {
   // All requests now go directly to Projects Committee
   return false;
 }
@@ -18,7 +18,7 @@ export function requiresSupervisorApproval(requestType: RequestType): boolean {
  * @returns The next step or null if complete
  */
 export function getNextApprovalStep(
-  requestType: RequestType,
+  _requestType: RequestType,
   currentStatus: string
 ): "supervisor" | "committee" | "complete" | null {
   // All requests go directly to committee (supervisor approval no longer used)

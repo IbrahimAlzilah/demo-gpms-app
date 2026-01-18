@@ -9,11 +9,15 @@ export const authService = {
   recoverPassword: async (
     data: PasswordRecoveryRequest
   ): Promise<PasswordRecoveryResponse> => {
-    const response = await apiClient.post<{ data: PasswordRecoveryResponse }>(
+    const response = await apiClient.post<PasswordRecoveryResponse>(
       '/auth/recover-password',
       data
     )
-    return response.data
+    // Ensure message property exists
+    return {
+      ...response.data,
+      message: response.data.message || response.message || 'Password recovery email sent',
+    }
   },
 
   resetPassword: async (data: ResetPasswordRequest): Promise<void> => {

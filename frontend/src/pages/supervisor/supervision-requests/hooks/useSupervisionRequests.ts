@@ -8,7 +8,7 @@ export function useSupervisionRequests() {
     queryKey: ['supervision-requests', user?.id],
     queryFn: () => {
       if (!user) throw new Error('User not authenticated')
-      return supervisionService.getRequests(user.id)
+      return supervisionService.getRequests()
     },
     enabled: !!user,
   })

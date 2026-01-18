@@ -1,9 +1,8 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDataTable } from '@/hooks/useDataTable'
 import { committeeProposalService } from '../api/proposal.service'
-import type { Proposal } from '@/types/project.types'
-import type { ProposalsListState, ProposalsListData, ProposalStatusFilter } from './ProposalsList.types'
+import type { ProposalsListState, ProposalsListData } from './ProposalsList.types'
 
 export function useProposalsList() {
   const { t } = useTranslation()

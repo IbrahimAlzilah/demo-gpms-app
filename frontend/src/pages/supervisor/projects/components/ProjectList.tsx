@@ -8,6 +8,7 @@ import { projectService } from '../api/project.service'
 import { DataTable } from '@/components/ui'
 import { BlockContent } from '@/components/common'
 import { AlertCircle } from 'lucide-react'
+import type { Project } from '@/types/project.types'
 
 export function ProjectList() {
   const { t } = useTranslation()
@@ -28,7 +29,7 @@ export function ProjectList() {
     pagination,
     setPagination,
   } = useDataTable({
-    queryKey: ['supervisor-projects-table', user?.id],
+    queryKey: ['supervisor-projects-table', user?.id || ''],
     queryFn: (params) => projectService.getTableData(params, user?.id),
     initialPageSize: 10,
     enableServerSide: true,
@@ -56,7 +57,7 @@ export function ProjectList() {
 
   return (
     <BlockContent title={t('nav.projects')}>
-      <DataTable
+      <DataTable<Project, unknown>
         columns={columns}
         data={projects || []}
         isLoading={isLoading}

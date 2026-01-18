@@ -9,7 +9,7 @@ export type { PeriodTableColumnsProps } from "./components/table"
 export { PeriodForm } from "./components/PeriodForm"
 
 // Hooks
-export { usePeriods } from "./hooks/usePeriods"
+export { usePeriodsList } from "./list/PeriodsList.hook"
 export { usePeriodForm } from "./hooks/usePeriodForm"
 export {
   useCreatePeriod,

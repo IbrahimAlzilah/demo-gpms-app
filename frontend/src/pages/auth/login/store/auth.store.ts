@@ -105,7 +105,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       try {
         // Verify token and get user data from backend
         const { authService } = await import("../api/auth.service");
-        const user = await authService.me();
+        await authService.me();
         const userStr = localStorage.getItem("user");
         if (userStr) {
           const storedUser = JSON.parse(userStr) as User;

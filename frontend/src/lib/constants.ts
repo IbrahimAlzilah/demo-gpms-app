@@ -37,6 +37,8 @@ export const ROUTES = {
     APPROVED_PROPOSALS: "/proposals/approved",
     SUPERVISION_REQUESTS: "/supervision-requests",
     PROJECTS: "/projects",
+    EVALUATION: "/evaluation",
+    PROGRESS: "/progress",
   },
   // Discussion Committee routes
   DISCUSSION_COMMITTEE: {

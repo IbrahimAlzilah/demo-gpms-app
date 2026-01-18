@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSupervisorProposals, useSupervisorProposal } from '../hooks/useProposals'
-import { useUpdateSupervisorProposal } from '../hooks/useProposals'
+import { useSupervisorProposals } from '../hooks/useProposals'
 import { ProposalForm } from './ProposalForm'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
 import { LoadingSpinner, StatusBadge } from '@/components/common'
@@ -80,10 +79,7 @@ export function ProposalManagement() {
               <CardContent>
                 {editingId === proposal.id ? (
                   <ProposalForm
-                    proposalId={proposal.id}
-                    initialData={proposal}
                     onSuccess={() => setEditingId(null)}
-                    onCancel={() => setEditingId(null)}
                   />
                 ) : (
                   <div className="space-y-2">

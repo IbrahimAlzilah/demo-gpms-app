@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useEvaluationForm } from '../hooks/useEvaluationForm'
-import { useEvaluationOperations } from '../hooks/useEvaluationOperations'
+import { useSubmitFinalGrade } from '../hooks/useEvaluationOperations'
 import { useAuthStore } from '@/pages/auth/login'
 import type { FinalEvaluationSchema } from '../schema'
 
@@ -11,7 +11,6 @@ export function useEvaluationNew(projectId: string, studentId: string, onSuccess
   
   const {
     form,
-    error,
     isPeriodActive,
     periodLoading,
     handleSubmit: handleFormSubmit,
@@ -34,7 +33,6 @@ export function useEvaluationNew(projectId: string, studentId: string, onSuccess
           criteria: {},
           comments: data.comments || undefined,
         },
-        committeeMembers: [user.id],
       })
 
       resetForm()
@@ -44,7 +42,6 @@ export function useEvaluationNew(projectId: string, studentId: string, onSuccess
 
   return {
     form,
-    error,
     isPeriodActive,
     periodLoading,
     handleSubmit: handleFormSubmit,

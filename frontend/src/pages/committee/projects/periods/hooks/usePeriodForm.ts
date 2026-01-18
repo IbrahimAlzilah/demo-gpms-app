@@ -3,7 +3,6 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
 import { timePeriodSchema, type TimePeriodSchema } from '../schema'
-import type { TimePeriod } from '@/types/period.types'
 
 export interface UsePeriodFormOptions {
   defaultValues?: Partial<TimePeriodSchema>

@@ -41,7 +41,7 @@ export const supervisionService = {
 
   approveRequest: async (
     requestId: string,
-    supervisorId: string,
+    _supervisorId: string,
     comments?: string
   ): Promise<Project> => {
     const response = await apiClient.post<Project>(
@@ -53,7 +53,7 @@ export const supervisionService = {
 
   rejectRequest: async (
     requestId: string,
-    supervisorId: string,
+    _supervisorId: string,
     comments?: string
   ): Promise<Project> => {
     const response = await apiClient.post<Project>(

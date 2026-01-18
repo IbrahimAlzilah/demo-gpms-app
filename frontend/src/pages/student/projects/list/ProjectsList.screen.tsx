@@ -1,7 +1,6 @@
-import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, Button } from '@/components/ui'
-import { BlockContent, LoadingSpinner, ModalDialog } from '@/components/common'
+import { BlockContent, LoadingSpinner } from '@/components/common'
 import { Calendar, ArrowRight } from 'lucide-react'
 import { ProjectBrowser } from '../components/ProjectBrowser'
 import { ProjectsView } from '../view/ProjectsView.screen'
@@ -18,15 +17,6 @@ export function ProjectsList() {
     isPeriodActive,
     periodLoading,
     registrations,
-    pageCount,
-    sorting,
-    setSorting,
-    columnFilters,
-    setColumnFilters,
-    globalFilter,
-    setGlobalFilter,
-    pagination,
-    setPagination,
   } = useProjectsList()
 
   const handleSelectProject = (project: any) => {
@@ -38,7 +28,7 @@ export function ProjectsList() {
     }))
   }
 
-  const handleViewRejection = (project: any, registration: any) => {
+  const handleViewRejection = (_project: any, registration: any) => {
     setState((prev) => ({
       ...prev,
       rejectionRegistration: registration,
@@ -49,7 +39,7 @@ export function ProjectsList() {
   const handleRegisterClick = () => {
     if (state.selectedProject) {
       // Check if project was rejected - prevent registration
-      const registration = registrations?.find((r) => r.projectId === state.selectedProject.id)
+      const registration = registrations?.find((r) => r.projectId === state.selectedProject?.id)
       if (registration?.status === 'rejected') {
         // Don't allow registration for rejected project
         return

@@ -86,9 +86,9 @@ export const mockRequestService = {
    * @deprecated Supervisor approval is no longer used. All requests go directly to Projects Committee.
    */
   approveBySupervisor: async (
-    id: string,
-    approvedBy: string,
-    comments?: string
+    _id: string,
+    _approvedBy: string,
+    _comments?: string
   ): Promise<Request> => {
     throw new Error("Supervisor approval is no longer supported. All requests must be processed by the Projects Committee.");
   },
@@ -140,9 +140,9 @@ export const mockRequestService = {
    * @deprecated Supervisor rejection is no longer used. All requests go directly to Projects Committee.
    */
   rejectBySupervisor: async (
-    id: string,
-    rejectedBy: string,
-    comments?: string
+    _id: string,
+    _rejectedBy: string,
+    _comments?: string
   ): Promise<Request> => {
     throw new Error("Supervisor rejection is no longer supported. All requests must be processed by the Projects Committee.");
   },

@@ -50,7 +50,7 @@ export function MeetingForm({
     },
   })
 
-  const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = form
+  const { register, handleSubmit, formState: { errors }, reset, setValue } = form
   const [selectedAttendees, setSelectedAttendees] = useState<string[]>(
     meeting?.attendees || []
   )

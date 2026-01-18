@@ -1,5 +1,3 @@
-import type { FinalEvaluationSchema } from '../schema'
-
 export interface EvaluationNewState {
   isSubmitting: boolean
 }

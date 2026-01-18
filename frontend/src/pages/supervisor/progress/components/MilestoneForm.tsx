@@ -13,7 +13,7 @@ const milestoneFormSchema = (t: (key: string) => string) => z.object({
   description: z.string().optional(),
   dueDate: z.string().min(1, t('milestone.dueDateRequired')),
   type: z.enum(['document_submission', 'meeting', 'discussion', 'other'], {
-    required_error: t('milestone.typeRequired'),
+    message: t('milestone.typeRequired'),
   }),
 })
 
