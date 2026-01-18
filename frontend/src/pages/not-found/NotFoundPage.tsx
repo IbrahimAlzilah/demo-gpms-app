@@ -27,7 +27,7 @@ export function NotFoundPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-muted/50 via-background to-muted/30 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-muted/50 via-background to-muted/30 p-4">
       <Card className="w-full max-w-2xl border-none shadow-none">
         <CardContent className="p-8 md:p-12">
           <div className="flex flex-col items-center text-center space-y-6">

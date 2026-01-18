@@ -158,7 +158,7 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
                   >
                     <div className="flex items-start gap-4">
                       {/* Icon */}
-                      <div className={cn('flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center', bgColor)}>
+                      <div className={cn('shrink-0 w-10 h-10 rounded-full flex items-center justify-center', bgColor)}>
                         <Icon className={cn('h-5 w-5', iconColor)} />
                       </div>
 
@@ -168,7 +168,7 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
                           <p className="font-bold text-sm text-foreground line-clamp-1 leading-tight mt-0.5">
                             {getNotificationTitle(notification)}
                           </p>
-                          <div className="flex items-center gap-2 flex-shrink-0">
+                          <div className="flex items-center gap-2 shrink-0">
                             {/* Action buttons - appear on hover */}
                             <div
                               className={cn(
