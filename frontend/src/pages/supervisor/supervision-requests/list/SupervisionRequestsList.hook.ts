@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/pages/auth/login'
 import { useDataTable } from '@/hooks/useDataTable'

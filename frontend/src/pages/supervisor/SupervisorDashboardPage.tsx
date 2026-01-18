@@ -13,7 +13,6 @@ import {
   Calendar,
   ArrowLeft,
   ArrowRight,
-  TrendingUp,
   CheckCircle2,
   AlertCircle,
   RefreshCw,

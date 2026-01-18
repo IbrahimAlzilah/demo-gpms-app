@@ -1,5 +1,5 @@
-import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
 import { usePeriodCheck } from '@/hooks/usePeriodCheck'
@@ -16,7 +16,6 @@ export interface UseEvaluationFormOptions {
 export function useEvaluationForm(options: UseEvaluationFormOptions = {}) {
   const { t } = useTranslation()
   const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('discussion_evaluation')
-  const [error, setError] = useState('')
 
   const form = useForm<FinalEvaluationSchema>({
     resolver: zodResolver(finalEvaluationSchema(t)),
@@ -30,28 +29,23 @@ export function useEvaluationForm(options: UseEvaluationFormOptions = {}) {
 
   const handleSubmit = async (data: FinalEvaluationSchema) => {
     if (!isPeriodActive) {
-      setError(t('discussion.evaluationPeriodClosed'))
+      toast.error(t('discussion.evaluationPeriodClosed'))
       return
     }
-
-    setError('')
 
     try {
       await options.onSubmit?.(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('discussion.evaluationError'))
+      toast.error(err instanceof Error ? err.message : t('discussion.evaluationError'))
     }
   }
 
   const resetForm = () => {
     form.reset()
-    setError('')
   }
 
   return {
     form,
-    error,
-    setError,
     isPeriodActive,
     periodLoading,
     handleSubmit: form.handleSubmit(handleSubmit),

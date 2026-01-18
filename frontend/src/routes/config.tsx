@@ -5,7 +5,6 @@ import {
   LazyLoginPage,
   LazyPasswordRecoveryPage,
   LazyUnauthorizedPage,
-  LazyNotFoundPage,
   // Student
   LazyStudentDashboardPage,
   LazyStudentProposalsPage,

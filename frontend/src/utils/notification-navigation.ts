@@ -13,7 +13,7 @@ export function getNotificationTarget(
   notification: NotificationDto,
   userRole: string
 ): NotificationNavigationResult {
-  const { type, relatedEntityType, relatedEntityId } = notification
+  const { type, relatedEntityId } = notification
 
   // Handle deadline notifications
   if (type?.startsWith('deadline_')) {

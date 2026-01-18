@@ -3,12 +3,12 @@ import type { Project } from '../../../../types/project.types'
 import type { TableQueryParams, TableResponse } from '../../../../types/table.types'
 
 export const supervisionService = {
-  getRequests: async (supervisorId: string): Promise<Project[]> => {
+  getRequests: async (): Promise<Project[]> => {
     const response = await apiClient.get<Project[]>('/supervisor/supervision-requests')
     return Array.isArray(response.data) ? response.data : []
   },
 
-  getTableData: async (params?: TableQueryParams, supervisorId?: string): Promise<TableResponse<Project>> => {
+  getTableData: async (params?: TableQueryParams): Promise<TableResponse<Project>> => {
     const queryParams = new URLSearchParams()
     
     if (params?.page) queryParams.append('page', params.page.toString())

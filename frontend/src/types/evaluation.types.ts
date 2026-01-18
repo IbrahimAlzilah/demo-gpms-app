@@ -1,5 +1,6 @@
 import type { BaseEntity } from './common.types'
-import type { User, Project } from './project.types'
+import type { Project } from './project.types'
+import type { User } from './user.types'
 
 export interface EvaluationCriteria {
   id: string
