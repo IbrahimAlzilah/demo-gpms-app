@@ -20,16 +20,28 @@ class DocumentController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = Document::where('submitted_by', $request->user()->id)
+        // Get all documents for projects where the student is registered
+        $studentProjects = \App\Models\Project::whereHas('students', function ($q) use ($request) {
+            $q->where('users.id', $request->user()->id);
+        })->pluck('id');
+
+        $query = Document::whereIn('project_id', $studentProjects)
             ->with(['project', 'submitter', 'reviewer']);
 
         if ($request->has('project_id')) {
+            // Verify student is registered in the requested project
+            if (!$studentProjects->contains($request->project_id)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized - You are not registered in this project',
+                ], 403);
+            }
             $query->where('project_id', $request->project_id);
         }
 
         $query = $this->applyTableQuery($query, $request);
 
-        return response()->json($this->getPaginatedResponse($query, $request));
+        return response()->json($this->getPaginatedResponse($query, $request, DocumentResource::class));
     }
 
     public function store(Request $request): JsonResponse
@@ -42,11 +54,22 @@ class DocumentController extends Controller
 
         try {
             $project = \App\Models\Project::findOrFail($validated['project_id']);
+            $user = $request->user();
+            
+            // UC-ST-06: Verify student is registered in the project
+            $isRegistered = $project->students()->where('users.id', $user->id)->exists();
+            if (!$isRegistered) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You must be registered in this project to upload documents',
+                ], 403);
+            }
+            
             $document = $this->documentService->upload(
                 $project,
                 $request->file('file'),
                 $validated['type'],
-                $request->user()
+                $user
             );
 
             return response()->json([
@@ -60,6 +83,30 @@ class DocumentController extends Controller
                 'message' => $e->getMessage(),
             ], 400);
         }
+    }
+
+    public function show(Document $document): JsonResponse
+    {
+        $this->authorize('view', $document);
+
+        return response()->json([
+            'success' => true,
+            'data' => new DocumentResource($document->load(['project', 'submitter', 'reviewer'])),
+        ]);
+    }
+
+    public function download(Document $document)
+    {
+        $this->authorize('view', $document);
+
+        $filePath = $document->file_path;
+        $disk = \Storage::disk('documents');
+
+        if (!$disk->exists($filePath)) {
+            abort(404, 'File not found');
+        }
+
+        return $disk->download($filePath, $document->file_name);
     }
 
     public function destroy(Document $document): JsonResponse

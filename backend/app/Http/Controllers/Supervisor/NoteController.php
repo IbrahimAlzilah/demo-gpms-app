@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Supervisor;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\NoteReplyResource;
+use App\Http\Resources\SupervisorNoteResource;
 use App\Models\SupervisorNote;
 use App\Models\Project;
 use Illuminate\Http\JsonResponse;
@@ -26,7 +28,7 @@ class NoteController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $notes,
+            'data' => SupervisorNoteResource::collection($notes),
         ]);
     }
 
@@ -51,7 +53,7 @@ class NoteController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $note->load(['supervisor', 'replies']),
+            'data' => new SupervisorNoteResource($note->load(['supervisor', 'replies'])),
             'message' => 'Note added successfully',
         ], 201);
     }
@@ -70,7 +72,7 @@ class NoteController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $reply->load(['author']),
+            'data' => new NoteReplyResource($reply->load(['author'])),
             'message' => 'Reply added successfully',
         ], 201);
     }

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { FileQuestion, Home, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { useAuthStore } from '@/features/auth/store/auth.store'
+import { useAuthStore } from '@/pages/auth/login'
 import { ROUTES } from '@/lib/constants'
 import { roleRouteMap } from '@/routes/config'
 
@@ -27,7 +27,7 @@ export function NotFoundPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-muted/50 via-background to-muted/30 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-muted/50 via-background to-muted/30 p-4">
       <Card className="w-full max-w-2xl border-none shadow-none">
         <CardContent className="p-8 md:p-12">
           <div className="flex flex-col items-center text-center space-y-6">

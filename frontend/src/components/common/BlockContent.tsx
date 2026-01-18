@@ -8,7 +8,6 @@ interface BlockContentProps {
   subtitle?: string;
   children: ReactNode;
   actions?: ReactNode;
-  shadow?: "sm" | "xs";
   className?: string;
   isWithSuspense?: boolean;
   suspenseFallback?: ReactNode;
@@ -21,7 +20,6 @@ export const BlockContent = ({
   subtitle,
   children,
   actions,
-  shadow = "sm",
   className = "",
   isWithSuspense = false,
   suspenseFallback,
@@ -34,8 +32,7 @@ export const BlockContent = ({
     const containerClassName = `container mx-auto ${className}`.trim();
     content = <div className={containerClassName}>{children}</div>;
   } else {
-    const shadowClass = shadow === "xs" ? "shadow-xs" : "shadow-sm";
-    const cardClassName = `${shadowClass} border-none gap-0 !p-0 print:shadow-none print:border-0 ${className}`.trim();
+    const cardClassName = `shadow-none border border-border gap-0 !p-0 print:shadow-none print:border-0 ${className}`.trim();
 
     content = (
       <Card className={cn(printShadow ? "print:shadow-none print:border-0" : "", cardClassName)}>

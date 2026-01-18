@@ -1,0 +1,20 @@
+// Public API Facade - Barrel exports only (no components for Fast Refresh)
+
+// Screens
+export { ReportsList } from './list/ReportsList.screen'
+
+// Components
+export { ReportCard } from './components/ReportCard'
+
+// Hooks
+export { useGenerateReport, useDownloadReport } from './hooks/useReportOperations'
+
+// Types
+export type {
+  ReportsListScreenProps,
+  ReportCardProps,
+} from './types/Reports.types'
+
+// API Services (for internal use, but exported for flexibility)
+export { reportService } from './api/report.service'
+export type { ReportOptions, ReportType } from './api/report.service'

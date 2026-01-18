@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -20,7 +21,7 @@ class AuthController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'email' => 'required|email',
+                'identifier' => 'required|string',
                 'password' => 'required|string',
             ]);
 
@@ -32,7 +33,25 @@ class AuthController extends Controller
                 ], 422);
             }
 
-            $user = User::where('email', $request->email)->first();
+            $identifier = trim($request->identifier);
+            $user = null;
+
+            // Check if identifier is 'admin' (case-insensitive)
+            if (strtolower($identifier) === 'admin') {
+                $user = User::where('role', 'admin')->first();
+            } else {
+                // Try to find student by student_id
+                $user = User::where('role', 'student')
+                    ->where('student_id', $identifier)
+                    ->first();
+
+                // If not found, try to find staff by emp_id
+                if (!$user) {
+                    $user = User::whereIn('role', ['supervisor', 'discussion_committee', 'projects_committee'])
+                        ->where('emp_id', $identifier)
+                        ->first();
+                }
+            }
 
             if (!$user || !Hash::check($request->password, $user->password)) {
                 return response()->json([
@@ -54,15 +73,7 @@ class AuthController extends Controller
                 'success' => true,
                 'data' => [
                     'token' => $token,
-                    'user' => [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'email' => $user->email,
-                        'role' => $user->role,
-                        'status' => $user->status,
-                        'student_id' => $user->student_id,
-                        'department' => $user->department,
-                    ],
+                    'user' => new UserResource($user),
                     'permissions' => $this->getPermissions($user->role),
                 ],
             ]);
@@ -123,13 +134,7 @@ class AuthController extends Controller
                 'success' => true,
                 'data' => [
                     'token' => $token,
-                    'user' => [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'email' => $user->email,
-                        'role' => $user->role,
-                        'status' => $user->status,
-                    ],
+                    'user' => new UserResource($user),
                     'permissions' => $this->getPermissions($user->role),
                 ],
             ], 201);
@@ -157,15 +162,7 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role,
-                'status' => $user->status,
-                'student_id' => $user->student_id,
-                'emp_id' => $user->emp_id,
-                'department' => $user->department,
-                'phone' => $user->phone,
+                'user' => new UserResource($user),
                 'permissions' => $this->getPermissions($user->role),
             ],
         ]);

@@ -15,12 +15,20 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register custom middleware aliases
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'window' => \App\Http\Middleware\CheckTimeWindow::class,
         ]);
 
         // Enable API middleware group (includes throttle, CORS, etc.)
         $middleware->api(prepend: [
             \Illuminate\Http\Middleware\HandleCors::class,
         ]);
+    })
+    ->withSchedule(function ($schedule): void {
+        // Schedule deadline reminders to run daily at 9:00 AM
+        $schedule->command('notifications:send-deadline-reminders')
+            ->dailyAt('09:00')
+            ->timezone('Asia/Riyadh')
+            ->withoutOverlapping();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

@@ -1,8 +1,10 @@
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
-import { ChevronLeft, Home } from 'lucide-react'
+import { ChevronLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { isRTL } from '@/lib/utils/rtl'
+import { useAuthStore } from '@/pages/auth/login'
+import { roleRouteMap } from '@/routes/config'
 
 interface BreadcrumbItem {
   label: string
@@ -18,12 +20,19 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
   const { t } = useTranslation()
   const location = useLocation()
   const rtl = isRTL()
+  const { user } = useAuthStore()
 
   // Auto-generate breadcrumbs from path if not provided
   const breadcrumbItems: BreadcrumbItem[] = items || (() => {
     const paths = location.pathname.split('/').filter(Boolean)
+
+    // Determine home path based on user role
+    const homePath = user && user.role && roleRouteMap[user.role]
+      ? roleRouteMap[user.role].defaultPath
+      : '/'
+
     const generated: BreadcrumbItem[] = [
-      { label: t('nav.home'), href: '/' }
+      { label: t('nav.home'), href: homePath }
     ]
 
     let currentPath = ''
@@ -52,7 +61,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
       <ol className="flex items-center gap-2" itemScope itemType="https://schema.org/BreadcrumbList">
         {breadcrumbItems.map((item, index) => {
           const isLast = index === breadcrumbItems.length - 1
-          
+
           return (
             <li
               key={index}
@@ -70,7 +79,8 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
                   )}
                   itemProp="item"
                 >
-                  <Home className="h-4 w-4" />
+                  {/* <Home className="h-4 w-4" /> */}
+                  <span className="text-sm font-medium">{item.label}</span>
                 </Link>
               ) : (
                 <>

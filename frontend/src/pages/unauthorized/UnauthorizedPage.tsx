@@ -16,7 +16,7 @@ export function UnauthorizedPage() {
           {t('error.unauthorized.message')}
         </p>
         <Link
-          to={ROUTES.HOME}
+          to={ROUTES.LOGIN}
           className="inline-block px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
         >
           {t('error.unauthorized.backHome')}

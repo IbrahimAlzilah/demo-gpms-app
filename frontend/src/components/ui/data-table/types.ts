@@ -33,6 +33,8 @@ export interface DataTableProps<TData, TValue> {
   emptyMessage?: string
   // Loading state
   loadingMessage?: string
+  // Custom Toolbar Content
+  toolbarContent?: React.ReactNode
 }
 
 export interface TableView {

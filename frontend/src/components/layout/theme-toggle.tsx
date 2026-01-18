@@ -12,9 +12,9 @@ export function ModeToggle() {
   return (
     <>
       <Button
-        variant='secondary'
+        variant='ghost'
         size='icon'
-        className='size-9 relative border border-input hover:bg-accent hover:text-accent-foreground'
+        className='relative border border-input'
         onClick={toggleTheme}
       >
         <Sun className='h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0' />

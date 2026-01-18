@@ -1,0 +1,86 @@
+import { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useAuthStore } from '@/pages/auth/login'
+import { useDataTable } from '@/hooks/useDataTable'
+import { requestService } from '../api/request.service'
+import type { RequestStatistics } from '../types/Requests.types'
+import type { RequestsListState, RequestsListData } from './RequestsList.types'
+
+export function useRequestsList() {
+  const { t } = useTranslation()
+  const { user } = useAuthStore()
+
+  const [state, setState] = useState<RequestsListState>({
+    statusFilter: 'all',
+    selectedRequest: null,
+    showForm: false,
+    requestToCancel: null,
+    showCancelDialog: false,
+    requestToEdit: null,
+    showEditForm: false,
+    requestToDelete: null,
+    showDeleteDialog: false,
+  })
+
+  const {
+    data: requests,
+    pageCount,
+    isLoading,
+    error,
+    sorting,
+    setSorting,
+    columnFilters,
+    setColumnFilters,
+    globalFilter,
+    setGlobalFilter,
+    pagination,
+    setPagination,
+  } = useDataTable({
+    queryKey: ['student-requests-table', state.statusFilter],
+    queryFn: (params) => {
+      const filters = { ...params?.filters }
+      if (state.statusFilter !== 'all') {
+        filters.status = state.statusFilter
+      }
+      return requestService.getTableData({ ...params, filters }, user?.id)
+    },
+    initialPageSize: 10,
+    enableServerSide: true,
+  })
+
+  // Calculate statistics
+  const statistics = useMemo<RequestStatistics>(() => {
+    if (!requests) return { total: 0, pending: 0, approved: 0, rejected: 0 }
+
+    return {
+      total: requests.length,
+      pending: requests.filter((r) => r.status === 'pending').length,
+      approved: requests.filter((r) => r.status === 'committee_approved').length,
+      rejected: requests.filter((r) => r.status === 'committee_rejected' || r.status === 'supervisor_rejected').length,
+    }
+  }, [requests])
+
+  const data: RequestsListData = {
+    requests: requests || [],
+    statistics,
+    isLoading,
+    error: error as Error | null,
+  }
+
+  return {
+    data,
+    state,
+    setState,
+    // Table controls
+    pageCount,
+    sorting,
+    setSorting,
+    columnFilters,
+    setColumnFilters,
+    globalFilter,
+    setGlobalFilter,
+    pagination,
+    setPagination,
+    t,
+  }
+}

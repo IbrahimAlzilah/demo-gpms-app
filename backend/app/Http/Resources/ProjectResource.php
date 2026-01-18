@@ -25,13 +25,22 @@ class ProjectResource extends JsonResource
             'keywords' => $this->keywords,
             'supervisorId' => $this->supervisor_id ? (string) $this->supervisor_id : null,
             'committeeId' => $this->committee_id,
-            'supervisor' => new UserResource($this->whenLoaded('supervisor')),
-            'students' => UserResource::collection($this->whenLoaded('students')),
-            'groupId' => $this->whenLoaded('group') ? (string) $this->group->id : null,
-            'group' => new GroupResource($this->whenLoaded('group')),
-            'documents' => $this->whenLoaded('documents') ? array_map(function($doc) {
-                return $doc['file_path'] ?? $doc['fileUrl'] ?? '';
-            }, $this->documents->toArray()) : [],
+            'supervisorApprovalStatus' => $this->supervisor_approval_status,
+            'supervisorApprovalComments' => $this->supervisor_approval_comments,
+            'supervisorApprovalAt' => $this->supervisor_approval_at?->toISOString(),
+            'supervisor' => $this->when($this->relationLoaded('supervisor') && $this->supervisor !== null, function () {
+                return new UserResource($this->supervisor);
+            }),
+            'students' => UserResource::collection($this->whenLoaded('students') ?? []),
+            'groupId' => $this->when($this->relationLoaded('group') && $this->group !== null, function () {
+                return (string) $this->group->id;
+            }),
+            'group' => $this->when($this->relationLoaded('group') && $this->group !== null, function () {
+                return new GroupResource($this->group);
+            }),
+            'documents' => $this->whenLoaded('documents') ? DocumentResource::collection($this->documents) : [],
+            'grades' => $this->whenLoaded('grades') ? GradeResource::collection($this->grades) : [],
+            'committeeMembers' => $this->whenLoaded('committeeMembers') ? UserResource::collection($this->committeeMembers) : [],
             'createdAt' => $this->created_at?->toISOString(),
             'updatedAt' => $this->updated_at?->toISOString(),
         ];

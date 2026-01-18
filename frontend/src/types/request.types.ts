@@ -10,8 +10,8 @@ export type RequestType =
 
 export type RequestStatus =
   | 'pending'
-  | 'supervisor_approved'
-  | 'supervisor_rejected'
+  | 'supervisor_approved' // @deprecated Supervisor approval is no longer used. All requests go directly to committee.
+  | 'supervisor_rejected' // @deprecated Supervisor rejection is no longer used. All requests go directly to committee.
   | 'committee_approved'
   | 'committee_rejected'
   | 'cancelled'
@@ -24,6 +24,7 @@ export interface Request extends BaseEntity {
   project?: Project
   reason: string
   status: RequestStatus
+  /** @deprecated Supervisor approval is no longer used. Kept for backward compatibility with existing data. */
   supervisorApproval?: {
     approved: boolean
     comments?: string

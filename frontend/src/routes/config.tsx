@@ -5,7 +5,6 @@ import {
   LazyLoginPage,
   LazyPasswordRecoveryPage,
   LazyUnauthorizedPage,
-  LazyNotFoundPage,
   // Student
   LazyStudentDashboardPage,
   LazyStudentProposalsPage,
@@ -17,10 +16,10 @@ import {
   LazyGradesPage,
   // Supervisor
   LazySupervisorDashboardPage,
+  LazySupervisorProposalsPage,
   LazySupervisionRequestsPage,
   LazySupervisorProjectsPage,
-  LazyProgressPage,
-  LazyEvaluationPage,
+  LazySupervisorProjectDetailsPage,
   // Discussion Committee
   LazyDiscussionCommitteeDashboardPage,
   LazyDiscussionProjectsPage,
@@ -32,6 +31,8 @@ import {
   LazyAnnounceProjectsPage,
   LazySupervisorsPage,
   LazyCommitteeRequestsPage,
+  LazyRegistrationsPage,
+  LazyCommitteeGradesPage,
   LazyDistributeCommitteesPage,
   LazyCommitteeReportsPage,
   // Admin
@@ -61,6 +62,14 @@ export const studentRoutes: RouteConfig[] = [
   {
     path: 'dashboard',
     element: LazyStudentDashboardPage,
+  },
+  {
+    path: 'proposals/my',
+    element: LazyStudentProposalsPage,
+  },
+  {
+    path: 'proposals/approved',
+    element: LazyStudentProposalsPage,
   },
   {
     path: 'proposals',
@@ -99,20 +108,28 @@ export const supervisorRoutes: RouteConfig[] = [
     element: LazySupervisorDashboardPage,
   },
   {
+    path: 'proposals/my',
+    element: LazySupervisorProposalsPage,
+  },
+  {
+    path: 'proposals/approved',
+    element: LazySupervisorProposalsPage,
+  },
+  {
+    path: 'proposals',
+    element: LazySupervisorProposalsPage,
+  },
+  {
     path: 'supervision-requests',
     element: LazySupervisionRequestsPage,
   },
   {
+    path: 'projects/:id',
+    element: LazySupervisorProjectDetailsPage,
+  },
+  {
     path: 'projects',
     element: LazySupervisorProjectsPage,
-  },
-  {
-    path: 'progress',
-    element: LazyProgressPage,
-  },
-  {
-    path: 'evaluation',
-    element: LazyEvaluationPage,
   },
 ]
 
@@ -157,6 +174,14 @@ export const projectsCommitteeRoutes: RouteConfig[] = [
   {
     path: 'requests',
     element: LazyCommitteeRequestsPage,
+  },
+  {
+    path: 'registrations',
+    element: LazyRegistrationsPage,
+  },
+  {
+    path: 'grades',
+    element: LazyCommitteeGradesPage,
   },
   {
     path: 'distribute',

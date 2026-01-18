@@ -45,73 +45,71 @@
 }
 
 :root {
-  /* Design System - Based on GPMS Logo Colors */
-  /* Primary: Dark Blue (#1e3a5f) from logo */
-  /* Accent: Green (#10b981) from logo */
-  --radius: 0.625rem;
+  /* Design System - Premium Modern Look */
+  --radius: 0.75rem; /* Slightly friendlier rounded corners */
 
   /* Font Family */
   --font-expo-arabic: 'ExpoArabic', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 
-  /* Base Colors - Light Theme */
-  --background: oklch(0.99 0 0);
-  --foreground: oklch(0.15 0 0);
+  /* Base Colors - Light Theme (Clean, Crisp, Professional) */
+  --background: oklch(0.985 0.002 240); /* Very subtle cool tint */
+  --foreground: oklch(0.14 0.01 240); /* Deep cool gray */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.15 0 0);
+  --card-foreground: oklch(0.14 0.01 240);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0 0);
+  --popover-foreground: oklch(0.14 0.01 240);
 
-  /* Primary - Dark Blue from logo */
-  --primary: oklch(0.35 0.08 250);
+  /* Primary - Deep Indigo/Blue (Trust, Professionalism) */
+  --primary: oklch(0.45 0.14 260);
   --primary-foreground: oklch(0.98 0 0);
 
-  /* Secondary - Muted version of green */
-  --secondary: oklch(0.95 0.01 165);
-  --secondary-foreground: oklch(0.25 0.05 250);
+  /* Secondary - Soft Lavender/Gray */
+  --secondary: oklch(0.96 0.01 260);
+  --secondary-foreground: oklch(0.45 0.14 260);
 
-  /* Accent - Green from logo */
-  --accent: oklch(0.65 0.15 165);
-  --accent-foreground: oklch(0.98 0 0);
+  /* Accent - Vibrant Emerald/Teal (Action, Success) */
+  --accent: oklch(0.96 0.01 260); /* Used for hovers often, keep subtle */
+  --accent-foreground: oklch(0.45 0.14 260);
 
   /* Muted colors */
-  --muted: oklch(0.96 0 0);
-  --muted-foreground: oklch(0.55 0 0);
+  --muted: oklch(0.96 0.01 240);
+  --muted-foreground: oklch(0.55 0.02 240);
 
   /* Semantic colors */
-  --success: oklch(0.65 0.15 165);
+  --success: oklch(0.62 0.16 150); /* Fresh Green */
   --success-foreground: oklch(0.98 0 0);
-  --warning: oklch(0.75 0.15 70);
-  --warning-foreground: oklch(0.15 0 0);
-  --error: oklch(0.60 0.22 25);
+  --warning: oklch(0.82 0.12 80); /* Warm Orange */
+  --warning-foreground: oklch(0.14 0.01 240);
+  --error: oklch(0.6 0.2 25); /* Soft Red */
   --error-foreground: oklch(0.98 0 0);
-  --info: oklch(0.55 0.12 240);
+  --info: oklch(0.55 0.15 240); /* Info Blue */
   --info-foreground: oklch(0.98 0 0);
 
-  /* Destructive (red for errors) */
-  --destructive: oklch(0.60 0.22 25);
+  /* Destructive */
+  --destructive: oklch(0.6 0.2 25);
   --destructive-foreground: oklch(0.98 0 0);
 
   /* Borders and inputs */
-  --border: oklch(0.90 0 0);
-  --input: oklch(0.90 0 0);
-  --ring: oklch(0.35 0.08 250);
+  --border: oklch(0.92 0.01 240);
+  --input: oklch(0.92 0.01 240);
+  --ring: oklch(0.45 0.14 260); /* Matches Primary */
 
   /* Charts */
-  --chart-1: oklch(0.65 0.15 165);
-  --chart-2: oklch(0.55 0.12 240);
-  --chart-3: oklch(0.75 0.15 70);
-  --chart-4: oklch(0.60 0.22 25);
-  --chart-5: oklch(0.35 0.08 250);
+  --chart-1: oklch(0.45 0.14 260);
+  --chart-2: oklch(0.62 0.16 150);
+  --chart-3: oklch(0.82 0.12 80);
+  --chart-4: oklch(0.6 0.2 25);
+  --chart-5: oklch(0.55 0.15 240);
 
-  /* Sidebar */
-  --sidebar: oklch(0.98 0 0);
-  --sidebar-foreground: oklch(0.15 0 0);
-  --sidebar-primary: oklch(0.35 0.08 250);
+  /* Sidebar - Clean Light */
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.25 0.02 240);
+  --sidebar-primary: oklch(0.45 0.14 260);
   --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.95 0.01 165);
-  --sidebar-accent-foreground: oklch(0.25 0.05 250);
-  --sidebar-border: oklch(0.90 0 0);
-  --sidebar-ring: oklch(0.35 0.08 250);
+  --sidebar-accent: oklch(0.97 0.01 260);
+  --sidebar-accent-foreground: oklch(0.45 0.14 260);
+  --sidebar-border: oklch(0.93 0.01 240);
+  --sidebar-ring: oklch(0.45 0.14 260);
 }
 
 body {
@@ -170,65 +168,65 @@ body {
 }
 
 .dark {
-  /* Base Colors - Dark Theme */
-  --background: oklch(0.12 0 0);
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.18 0 0);
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.18 0 0);
-  --popover-foreground: oklch(0.98 0 0);
+  /* Base Colors - Dark Theme (Deep Blue-Gray, modern software feel) */
+  --background: oklch(0.12 0.02 260); /* Deep midnight blue */
+  --foreground: oklch(0.98 0.005 240);
+  --card: oklch(0.16 0.02 260);
+  --card-foreground: oklch(0.98 0.005 240);
+  --popover: oklch(0.16 0.02 260);
+  --popover-foreground: oklch(0.98 0.005 240);
 
-  /* Primary - Lighter blue for dark mode */
-  --primary: oklch(0.65 0.12 250);
-  --primary-foreground: oklch(0.12 0 0);
+  /* Primary - Vivid Blue for Dark Mode */
+  --primary: oklch(0.6 0.16 260);
+  --primary-foreground: oklch(0.98 0 0);
 
   /* Secondary */
-  --secondary: oklch(0.25 0.02 165);
+  --secondary: oklch(0.2 0.03 260);
   --secondary-foreground: oklch(0.98 0 0);
 
-  /* Accent - Brighter green for dark mode */
-  --accent: oklch(0.70 0.18 165);
-  --accent-foreground: oklch(0.12 0 0);
+  /* Accent */
+  --accent: oklch(0.2 0.03 260);
+  --accent-foreground: oklch(0.98 0 0);
 
   /* Muted colors */
-  --muted: oklch(0.22 0 0);
-  --muted-foreground: oklch(0.70 0 0);
+  --muted: oklch(0.2 0.03 260);
+  --muted-foreground: oklch(0.65 0.05 260);
 
-  /* Semantic colors - Adjusted for dark mode */
-  --success: oklch(0.70 0.18 165);
-  --success-foreground: oklch(0.12 0 0);
-  --warning: oklch(0.80 0.18 70);
-  --warning-foreground: oklch(0.12 0 0);
-  --error: oklch(0.65 0.25 25);
+  /* Semantic colors - Adjusted for dark mode brightness */
+  --success: oklch(0.65 0.16 150);
+  --success-foreground: oklch(0.1 0 0);
+  --warning: oklch(0.85 0.14 80);
+  --warning-foreground: oklch(0.1 0 0);
+  --error: oklch(0.65 0.22 25);
   --error-foreground: oklch(0.98 0 0);
-  --info: oklch(0.60 0.15 240);
+  --info: oklch(0.6 0.16 240);
   --info-foreground: oklch(0.98 0 0);
 
   /* Destructive */
-  --destructive: oklch(0.65 0.25 25);
+  --destructive: oklch(0.6 0.22 25);
   --destructive-foreground: oklch(0.98 0 0);
 
   /* Borders and inputs */
-  --border: oklch(0.25 0 0);
-  --input: oklch(0.25 0 0);
-  --ring: oklch(0.65 0.12 250);
+  --border: oklch(0.22 0.02 260);
+  --input: oklch(0.22 0.02 260);
+  --ring: oklch(0.6 0.16 260);
 
-  /* Charts - Adjusted for dark mode */
-  --chart-1: oklch(0.70 0.18 165);
-  --chart-2: oklch(0.60 0.15 240);
-  --chart-3: oklch(0.80 0.18 70);
-  --chart-4: oklch(0.65 0.25 25);
-  --chart-5: oklch(0.65 0.12 250);
+  /* Charts */
+  --chart-1: oklch(0.6 0.16 260);
+  --chart-2: oklch(0.65 0.16 150);
+  --chart-3: oklch(0.85 0.14 80);
+  --chart-4: oklch(0.65 0.22 25);
+  --chart-5: oklch(0.6 0.16 240);
 
-  /* Sidebar */
-  --sidebar: oklch(0.18 0 0);
+  /* Sidebar - Dark Mode */
+  --sidebar: oklch(0.14 0.02 260);
   --sidebar-foreground: oklch(0.98 0 0);
-  --sidebar-primary: oklch(0.65 0.12 250);
+  --sidebar-primary: oklch(0.6 0.16 260);
   --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.25 0.02 165);
+  --sidebar-accent: oklch(0.2 0.03 260);
   --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(0.25 0 0);
-  --sidebar-ring: oklch(0.65 0.12 250);
+  --sidebar-border: oklch(0.2 0.02 260);
+  --sidebar-ring: oklch(0.6 0.16 260);
 }
 
 @layer base {
@@ -239,12 +237,12 @@ body {
   body {
     @apply bg-background text-foreground;
     font-family: 'ExpoArabic', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   /* Smooth transitions for theme changes */
   html {
-    transition: color-scheme 0.2s ease;
+    transition: color-scheme 0.3s ease;
   }
 
   /* Better focus styles */
@@ -252,21 +250,21 @@ body {
     @apply outline-2 outline-offset-2 outline-ring;
   }
 
-  /* Improved scrollbar styling */
+  /* Modern Scrollbar */
   /* ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
+    width: 6px;
+    height: 6px;
+  } */
 
   ::-webkit-scrollbar-track {
-    @apply bg-muted;
+    @apply bg-transparent;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-muted-foreground/30 rounded-full;
+    @apply bg-muted-foreground/30 rounded-full transition-colors;
   }
 
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-muted-foreground/50;
-  } */
+  }
 }

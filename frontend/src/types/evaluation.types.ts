@@ -1,5 +1,6 @@
 import type { BaseEntity } from './common.types'
-import type { User, Project } from './project.types'
+import type { Project } from './project.types'
+import type { User } from './user.types'
 
 export interface EvaluationCriteria {
   id: string
@@ -44,6 +45,7 @@ export type EvaluationPeriodType =
   | 'document_submission'
   | 'supervisor_evaluation'
   | 'committee_evaluation'
+  | 'discussion_evaluation'
   | 'final_discussion'
 
 export interface EvaluationPeriod extends BaseEntity {

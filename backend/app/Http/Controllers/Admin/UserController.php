@@ -20,7 +20,7 @@ class UserController extends Controller
 
         $query = $this->applyTableQuery($query, $request);
 
-        return response()->json($this->getPaginatedResponse($query, $request));
+        return response()->json($this->getPaginatedResponse($query, $request, UserResource::class));
     }
 
     public function store(Request $request): JsonResponse

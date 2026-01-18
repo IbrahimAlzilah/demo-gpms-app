@@ -34,7 +34,7 @@ trait HasTableQuery
     /**
      * Get paginated response
      */
-    protected function getPaginatedResponse(Builder $query, Request $request, int $defaultPageSize = 10): array
+    protected function getPaginatedResponse(Builder $query, Request $request, ?string $resourceClass = null, int $defaultPageSize = 10): array
     {
         $page = (int) $request->get('page', 1);
         $pageSize = (int) $request->get('pageSize', $defaultPageSize);
@@ -45,6 +45,11 @@ trait HasTableQuery
         $data = $query->skip(($page - 1) * $pageSize)
             ->take($pageSize)
             ->get();
+
+        // Apply Resource transformation if Resource class is provided
+        if ($resourceClass && class_exists($resourceClass) && is_subclass_of($resourceClass, \Illuminate\Http\Resources\Json\JsonResource::class)) {
+            $data = $resourceClass::collection($data);
+        }
 
         return [
             'success' => true,

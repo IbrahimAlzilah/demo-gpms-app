@@ -32,6 +32,11 @@ apiClient.interceptors.request.use(
 // Response interceptor
 apiClient.interceptors.response.use(
   (response) => {
+    // Skip processing for blob responses (file downloads)
+    if (response.config.responseType === 'blob') {
+      return response;
+    }
+
     // Backend returns { success: true, data: {...}, message?: string }
     // Extract the data property for easier access in services
     if (
@@ -40,9 +45,11 @@ apiClient.interceptors.response.use(
       "success" in response.data
     ) {
       // Return the full response but with data extracted
+      // Use 'data' in response.data to properly handle null values
+      const extractedData = "data" in response.data ? response.data.data : response.data;
       return {
         ...response,
-        data: response.data.data || response.data,
+        data: extractedData,
         // Keep pagination if present
         pagination: response.data.pagination,
         message: response.data.message,

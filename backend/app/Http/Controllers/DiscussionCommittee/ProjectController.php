@@ -4,25 +4,26 @@ namespace App\Http\Controllers\DiscussionCommittee;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProjectResource;
+use App\Http\Traits\HasTableQuery;
 use App\Models\Project;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ProjectController extends Controller
 {
+    use HasTableQuery;
+
     public function index(Request $request): JsonResponse
     {
-        $projects = Project::whereHas('committeeMembers', function ($q) use ($request) {
+        $query = Project::whereHas('committeeMembers', function ($q) use ($request) {
             $q->where('users.id', $request->user()->id);
         })
         ->where('status', 'in_progress')
-        ->with(['supervisor', 'students', 'group'])
-        ->get();
+        ->with(['supervisor', 'students', 'group']);
 
-        return response()->json([
-            'success' => true,
-            'data' => ProjectResource::collection($projects),
-        ]);
+        $query = $this->applyTableQuery($query, $request);
+
+        return response()->json($this->getPaginatedResponse($query, $request, ProjectResource::class));
     }
 
     public function show(Project $project): JsonResponse
@@ -38,8 +39,34 @@ class ProjectController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => new ProjectResource($project->load(['supervisor', 'students', 'group', 'grades'])),
+            'data' => new ProjectResource($project->load(['supervisor', 'students', 'group', 'grades', 'committeeMembers'])),
         ]);
+    }
+
+    /**
+     * Apply search to query
+     */
+    protected function applySearch($query, string $search)
+    {
+        return $query->where(function ($q) use ($search) {
+            $q->where('title', 'like', "%{$search}%")
+                ->orWhere('description', 'like', "%{$search}%")
+                ->orWhere('specialization', 'like', "%{$search}%");
+        });
+    }
+
+    /**
+     * Apply filters to query
+     */
+    protected function applyFilters($query, array $filters)
+    {
+        if (isset($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+        if (isset($filters['specialization'])) {
+            $query->where('specialization', $filters['specialization']);
+        }
+        return $query;
     }
 }
 

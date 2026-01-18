@@ -28,7 +28,7 @@ class ProposalController extends Controller
 
         $query = $this->applyTableQuery($query, $request);
 
-        return response()->json($this->getPaginatedResponse($query, $request));
+        return response()->json($this->getPaginatedResponse($query, $request, ProposalResource::class));
     }
 
     public function show(Proposal $proposal): JsonResponse
@@ -108,6 +108,58 @@ class ProposalController extends Controller
                 'success' => true,
                 'data' => new ProposalResource($updated->load(['submitter', 'reviewer'])),
                 'message' => 'Modification requested',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    public function update(Request $request, Proposal $proposal): JsonResponse
+    {
+        $this->authorize('update', $proposal);
+
+        $validated = $request->validate([
+            'title' => 'sometimes|string|max:255',
+            'description' => 'sometimes|string',
+            'proposed_supervisor_id' => 'nullable|exists:users,id',
+            'team_members' => 'nullable|array',
+            'team_members.*.name' => 'required_with:team_members|string|max:255',
+            'team_members.*.role' => 'required_with:team_members|string|max:255',
+        ]);
+
+        try {
+            $updated = $this->proposalService->update(
+                $proposal,
+                $validated,
+                $request->user()
+            );
+
+            return response()->json([
+                'success' => true,
+                'data' => new ProposalResource($updated->load(['submitter', 'reviewer', 'project'])),
+                'message' => 'Proposal updated successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    public function destroy(Request $request, Proposal $proposal): JsonResponse
+    {
+        $this->authorize('delete', $proposal);
+
+        try {
+            $this->proposalService->delete($proposal);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Proposal deleted successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([

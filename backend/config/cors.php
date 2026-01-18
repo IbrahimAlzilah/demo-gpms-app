@@ -23,9 +23,12 @@ return [
         env('FRONTEND_URL', 'http://localhost:5173'),
         'http://localhost:3000',
         'http://localhost:5173',
+        'http://localhost:5174',
     ],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => [
+        '#^http://localhost:\d+$#', // Allow any localhost port for development
+    ],
 
     'allowed_headers' => ['*'],
 

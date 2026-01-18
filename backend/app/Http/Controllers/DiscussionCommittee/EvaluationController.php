@@ -50,20 +50,41 @@ class EvaluationController extends Controller
 
     /**
      * Submit a grade/evaluation
-     * POST /discussion-committee/evaluations (with project_id in body)
+     * POST /discussion-committee/evaluations
+     * 
+     * Accepts both payload formats:
+     * - Backend format: project_id, student_id, score, max_score, criteria, comments
+     * - Frontend format: projectId, studentId, grade.score, grade.maxScore, grade.criteria, grade.comments
      */
     public function store(Request $request): JsonResponse
     {
-        $validated = $request->validate([
+        // Normalize payload - handle both frontend (camelCase + nested grade) and backend (snake_case) formats
+        $projectId = $request->input('project_id') ?? $request->input('projectId');
+        $studentId = $request->input('student_id') ?? $request->input('studentId');
+        
+        // Handle nested grade object from frontend or flat structure
+        $gradeData = $request->input('grade');
+        $score = $gradeData['score'] ?? $request->input('score');
+        $maxScore = $gradeData['maxScore'] ?? $request->input('max_score');
+        $criteria = $gradeData['criteria'] ?? $request->input('criteria');
+        $comments = $gradeData['comments'] ?? $request->input('comments');
+
+        // Validate normalized data
+        $validated = validator([
+            'project_id' => $projectId,
+            'student_id' => $studentId,
+            'score' => $score,
+            'max_score' => $maxScore,
+            'criteria' => $criteria,
+            'comments' => $comments,
+        ], [
             'project_id' => 'required|exists:projects,id',
             'student_id' => 'required|exists:users,id',
             'score' => 'required|numeric|min:0',
             'max_score' => 'required|numeric|min:0',
             'criteria' => 'required|array',
             'comments' => 'nullable|string',
-            'committee_members' => 'required|array|min:2|max:3',
-            'committee_members.*' => 'exists:users,id',
-        ]);
+        ])->validate();
 
         $project = Project::findOrFail($validated['project_id']);
 
@@ -73,12 +94,47 @@ class EvaluationController extends Controller
         if (!$isAssigned) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized',
+                'message' => 'Unauthorized - You are not assigned to this project\'s discussion committee',
             ], 403);
+        }
+
+        // Derive committee members from database assignments (don't trust client)
+        $committeeMembers = $project->committeeMembers()
+            ->pluck('users.id')
+            ->map(fn($id) => (string) $id)
+            ->toArray();
+
+        // Ensure requesting user is in the committee (already verified above, but double-check)
+        if (!in_array($request->user()->id, $committeeMembers)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized - You are not a member of this project\'s discussion committee',
+            ], 403);
+        }
+
+        // Validate committee has 2-3 members as per requirements
+        if (count($committeeMembers) < 2 || count($committeeMembers) > 3) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid committee composition. Committee must have 2-3 members.',
+            ], 400);
         }
 
         try {
             $student = \App\Models\User::findOrFail($validated['student_id']);
+            
+            // Check if grade is already approved (prevent updates after approval)
+            $existingGrade = Grade::where('project_id', $project->id)
+                ->where('student_id', $student->id)
+                ->first();
+            
+            if ($existingGrade && $existingGrade->is_approved) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot update grade that has already been approved',
+                ], 400);
+            }
+
             $grade = $this->evaluationService->submitCommitteeGrade(
                 $project,
                 $student,
@@ -89,7 +145,7 @@ class EvaluationController extends Controller
                     'comments' => $validated['comments'] ?? null,
                 ],
                 $request->user(),
-                $validated['committee_members']
+                $committeeMembers // Use derived committee members, not client-provided
             );
 
             return response()->json([

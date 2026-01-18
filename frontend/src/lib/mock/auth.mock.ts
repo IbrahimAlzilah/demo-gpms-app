@@ -6,7 +6,7 @@ import type {
   PasswordRecoveryRequest,
   PasswordRecoveryResponse,
 } from "../../types/user.types";
-import type { LoginCredentials } from "../../features/auth/types/auth.types";
+import type { LoginCredentials } from "../../pages/auth/login";
 
 // Mock users database
 export const mockUsers: User[] = [
@@ -112,8 +112,8 @@ export const mockAuthService = {
     // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 500));
 
-    const user = mockUsers.find((u) => u.email === credentials.email);
-    const password = mockPasswords[credentials.email];
+    const user = mockUsers.find((u) => u.email === credentials.identifier);
+    const password = mockPasswords[credentials.identifier];
 
     if (!user || password !== credentials.password) {
       throw new Error("Invalid email or password");
