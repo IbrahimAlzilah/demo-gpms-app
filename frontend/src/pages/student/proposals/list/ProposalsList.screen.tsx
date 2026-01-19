@@ -22,6 +22,7 @@ export function ProposalsList() {
     setState,
     isMyProposals,
     isApprovedProposals,
+    totalCount,
     pageCount,
     sorting,
     setSorting,
@@ -107,6 +108,7 @@ export function ProposalsList() {
           isLoading={data.isLoading}
           error={data.error}
           pageCount={pageCount}
+          totalCount={totalCount}
           pageIndex={pagination.pageIndex}
           pageSize={pagination.pageSize}
           onPaginationChange={(pageIndex, pageSize) => {

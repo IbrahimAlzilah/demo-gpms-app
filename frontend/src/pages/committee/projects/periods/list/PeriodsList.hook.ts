@@ -16,6 +16,7 @@ export function usePeriodsList() {
 
   const {
     data: periods,
+    totalCount,
     pageCount,
     isLoading,
     error,
@@ -46,6 +47,7 @@ export function usePeriodsList() {
     state,
     setState,
     // Table controls
+    totalCount,
     pageCount,
     sorting,
     setSorting,

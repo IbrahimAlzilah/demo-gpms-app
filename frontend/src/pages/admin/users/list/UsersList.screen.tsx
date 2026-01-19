@@ -21,6 +21,7 @@ export function UsersList() {
     data,
     state,
     setState,
+    totalCount,
     pageCount,
     sorting,
     setSorting,
@@ -108,6 +109,7 @@ export function UsersList() {
           isLoading={data.isLoading}
           error={data.error}
           pageCount={pageCount}
+          totalCount={totalCount}
           pageIndex={pagination.pageIndex}
           pageSize={pagination.pageSize}
           onPaginationChange={(pageIndex, pageSize) => {

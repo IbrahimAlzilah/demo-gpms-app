@@ -18,6 +18,7 @@ class GroupResource extends JsonResource
             'id' => (string) $this->id,
             'projectId' => (string) $this->project_id,
             'leaderId' => (string) $this->leader_id,
+            'groupName' => $this->group_name,
             'maxMembers' => $this->max_members,
             'project' => new ProjectResource($this->whenLoaded('project')),
             'leader' => new UserResource($this->whenLoaded('leader')),

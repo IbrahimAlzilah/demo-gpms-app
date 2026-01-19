@@ -14,15 +14,19 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        // Load profile relationships if not already loaded
+        $this->loadMissing(['studentProfile', 'supervisorProfile']);
+        
         return [
             'id' => (string) $this->id,
             'name' => $this->name,
             'email' => $this->email,
+            'username' => $this->username,
             'role' => $this->role,
             'status' => $this->status,
-            'studentId' => $this->student_id,
-            'empId' => $this->emp_id,
-            'department' => $this->department,
+            'studentId' => $this->studentProfile?->student_id,
+            'empId' => $this->supervisorProfile?->emp_id,
+            'department' => $this->studentProfile?->major ?? $this->supervisorProfile?->department,
             'phone' => $this->phone,
             'createdAt' => $this->created_at?->toISOString(),
             'updatedAt' => $this->updated_at?->toISOString(),

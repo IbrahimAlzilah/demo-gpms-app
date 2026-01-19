@@ -24,6 +24,8 @@ class Project extends Model
         'specialization',
         'keywords',
         'committee_id',
+        'project_committee_id',
+        'discussion_committee_id',
         'supervisor_approval_status',
         'supervisor_approval_comments',
         'supervisor_approval_at',
@@ -67,6 +69,22 @@ class Project extends Model
     {
         return $this->belongsToMany(User::class, 'committee_assignments', 'project_id', 'committee_member_id')
             ->withTimestamps();
+    }
+
+    /**
+     * Get the project committee associated with this project.
+     */
+    public function projectCommittee(): BelongsTo
+    {
+        return $this->belongsTo(ProjectCommittee::class, 'project_committee_id');
+    }
+
+    /**
+     * Get the discussion committee associated with this project.
+     */
+    public function discussionCommittee(): BelongsTo
+    {
+        return $this->belongsTo(DiscussionCommittee::class, 'discussion_committee_id');
     }
 
     /**
@@ -131,6 +149,15 @@ class Project extends Model
     public function requests(): HasMany
     {
         return $this->hasMany(ProjectRequest::class);
+    }
+
+    /**
+     * Time periods this project spans.
+     */
+    public function timePeriods(): BelongsToMany
+    {
+        return $this->belongsToMany(TimePeriod::class, 'project_time_period')
+            ->withTimestamps();
     }
 
     /**

@@ -22,6 +22,7 @@ export function RequestsList() {
     data,
     state,
     setState,
+    totalCount,
     pageCount,
     sorting,
     setSorting,
@@ -134,6 +135,7 @@ export function RequestsList() {
           isLoading={data.isLoading}
           error={data.error}
           pageCount={pageCount}
+          totalCount={totalCount}
           pageIndex={pagination.pageIndex}
           pageSize={pagination.pageSize}
           onPaginationChange={(pageIndex, pageSize) => {

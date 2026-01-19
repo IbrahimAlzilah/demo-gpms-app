@@ -95,8 +95,11 @@ export function LoginForm() {
             placeholder={t('auth.loginIdPlaceholder')}
             className={errors.identifier ? 'border-destructive focus-visible:ring-destructive' : ''}
             aria-invalid={!!errors.identifier}
-            aria-describedby={errors.identifier ? 'identifier-error' : undefined}
+            aria-describedby={errors.identifier ? 'identifier-error' : 'identifier-help'}
           />
+          <p id="identifier-help" className="text-xs text-muted-foreground">
+            {t('auth.loginIdHelp')}
+          </p>
           {errors.identifier && (
             <p id="identifier-error" className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />

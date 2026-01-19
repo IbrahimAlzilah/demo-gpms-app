@@ -18,6 +18,7 @@ export function useRegistrationsList() {
 
   const {
     data: registrations,
+    totalCount,
     pageCount,
     isLoading,
     error,
@@ -54,6 +55,7 @@ export function useRegistrationsList() {
     state,
     setState,
     // Table controls
+    totalCount,
     pageCount,
     sorting,
     setSorting,

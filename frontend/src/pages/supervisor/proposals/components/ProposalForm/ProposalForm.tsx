@@ -36,6 +36,7 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
     defaultValues: {
       title: '',
       description: '',
+      requirements: '',
       proposedSupervisorId: '',
       teamMembers: [],
     },
@@ -69,6 +70,7 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
       await createProposal.mutateAsync({
         title: data.title.trim(),
         description: data.description.trim(),
+        requirements: data.requirements?.trim() || undefined,
         proposedSupervisorId: data.proposedSupervisorId || undefined,
         teamMembers: data.teamMembers?.filter(m => m.name.trim() && m.role.trim()) || [],
         submitterId: user.id,
@@ -163,6 +165,26 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
             <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.description.message}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="requirements">
+            {t('proposal.requirements') || 'Requirements'}
+          </Label>
+          <Textarea
+            id="requirements"
+            {...register('requirements')}
+            placeholder={t('proposal.requirementsPlaceholder') || 'Enter project requirements...'}
+            rows={4}
+            className={errors.requirements ? 'border-destructive' : ''}
+            aria-invalid={!!errors.requirements}
+          />
+          {errors.requirements && (
+            <p className="text-xs text-destructive flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" />
+              {errors.requirements.message}
             </p>
           )}
         </div>

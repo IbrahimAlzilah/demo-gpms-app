@@ -19,6 +19,7 @@ export function useGradesList() {
 
   const {
     data: grades,
+    totalCount,
     pageCount,
     isLoading,
     error,
@@ -53,6 +54,7 @@ export function useGradesList() {
     state,
     setState,
     // Table controls
+    totalCount,
     pageCount,
     sorting,
     setSorting,

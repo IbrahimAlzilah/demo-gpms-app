@@ -23,11 +23,9 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'username',
         'password',
         'role',
-        'student_id',
-        'emp_id',
-        'department',
         'phone',
         'status',
     ];
@@ -211,5 +209,83 @@ class User extends Authenticatable
     public function createdPeriods(): HasMany
     {
         return $this->hasMany(TimePeriod::class, 'created_by');
+    }
+
+    /**
+     * Profile for student-specific attributes.
+     */
+    public function studentProfile()
+    {
+        return $this->hasOne(Student::class);
+    }
+
+    /**
+     * Profile for supervisor-specific attributes.
+     */
+    public function supervisorProfile()
+    {
+        return $this->hasOne(Supervisor::class);
+    }
+
+    /**
+     * Get student ID from profile (for backward compatibility).
+     */
+    public function getStudentIdAttribute()
+    {
+        if (!$this->relationLoaded('studentProfile')) {
+            $this->load('studentProfile');
+        }
+        return $this->studentProfile?->student_id;
+    }
+
+    /**
+     * Get employee ID from profile (for backward compatibility).
+     */
+    public function getEmpIdAttribute()
+    {
+        if (!$this->relationLoaded('supervisorProfile')) {
+            $this->load('supervisorProfile');
+        }
+        return $this->supervisorProfile?->emp_id;
+    }
+
+    /**
+     * Get department from profile (for backward compatibility).
+     */
+    public function getDepartmentAttribute()
+    {
+        if ($this->role === 'student') {
+            if (!$this->relationLoaded('studentProfile')) {
+                $this->load('studentProfile');
+            }
+            return $this->studentProfile?->major;
+        }
+        
+        if (in_array($this->role, ['supervisor', 'discussion_committee', 'projects_committee'])) {
+            if (!$this->relationLoaded('supervisorProfile')) {
+                $this->load('supervisorProfile');
+            }
+            return $this->supervisorProfile?->department;
+        }
+        
+        return null;
+    }
+
+    /**
+     * Project committees this user belongs to.
+     */
+    public function projectCommittees(): BelongsToMany
+    {
+        return $this->belongsToMany(ProjectCommittee::class, 'project_committee_user')
+            ->withTimestamps();
+    }
+
+    /**
+     * Discussion committees this user belongs to.
+     */
+    public function discussionCommittees(): BelongsToMany
+    {
+        return $this->belongsToMany(DiscussionCommittee::class, 'discussion_committee_user')
+            ->withTimestamps();
     }
 }

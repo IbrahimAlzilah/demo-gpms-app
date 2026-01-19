@@ -19,6 +19,7 @@ export interface Project extends BaseEntity {
   supervisor?: User;
   students: User[];
   groupId?: string;
+  groupName?: string;
   committeeId?: string;
   documents: (string | Document)[];
   maxStudents: number;
@@ -33,6 +34,7 @@ export interface Project extends BaseEntity {
 export interface Proposal extends BaseEntity {
   title: string;
   description: string;
+  requirements?: string;
   proposedSupervisorId?: string;
   proposedSupervisor?: User;
   teamMembers?: Array<{
@@ -57,6 +59,7 @@ export interface ProjectGroup extends BaseEntity {
   leaderId: string;
   leader?: User;
   maxMembers: number;
+  groupName?: string;
 }
 
 export type ProjectRegistrationStatus =

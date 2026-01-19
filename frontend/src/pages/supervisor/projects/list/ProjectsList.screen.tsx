@@ -20,6 +20,7 @@ export function ProjectsList({ onProjectSelect }: ProjectsListProps = {}) {
     openEvaluationModal,
     closeEvaluationModal,
     selectStudentForEvaluation,
+    totalCount,
     pageCount,
     sorting,
     setSorting,
@@ -53,6 +54,7 @@ export function ProjectsList({ onProjectSelect }: ProjectsListProps = {}) {
           isLoading={data.isLoading}
           error={data.error}
           pageCount={pageCount}
+          totalCount={totalCount}
           pageIndex={pagination.pageIndex}
           pageSize={pagination.pageSize}
           onPaginationChange={(pageIndex, pageSize) => {

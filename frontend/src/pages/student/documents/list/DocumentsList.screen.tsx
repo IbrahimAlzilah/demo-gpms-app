@@ -18,6 +18,7 @@ export function DocumentsList() {
     userProject,
     isPeriodActive,
     periodLoading,
+    totalCount,
     pageCount,
     sorting,
     setSorting,
@@ -109,6 +110,7 @@ export function DocumentsList() {
           isLoading={data.isLoading}
           error={data.error}
           pageCount={pageCount}
+          totalCount={totalCount}
           pageIndex={pagination.pageIndex}
           pageSize={pagination.pageSize}
           onPaginationChange={(pageIndex, pageSize) => {

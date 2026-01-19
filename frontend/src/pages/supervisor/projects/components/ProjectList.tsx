@@ -17,6 +17,7 @@ export function ProjectList() {
 
   const {
     data: projects,
+    totalCount,
     pageCount,
     isLoading,
     error,
@@ -63,6 +64,7 @@ export function ProjectList() {
         isLoading={isLoading}
         error={error}
         pageCount={pageCount}
+        totalCount={totalCount}
         pageIndex={pagination.pageIndex}
         pageSize={pagination.pageSize}
         onPaginationChange={(pageIndex, pageSize) => {

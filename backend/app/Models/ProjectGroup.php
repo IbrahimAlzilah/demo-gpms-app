@@ -16,6 +16,7 @@ class ProjectGroup extends Model
         'project_id',
         'leader_id',
         'max_members',
+        'group_name',
     ];
 
     /**

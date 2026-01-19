@@ -17,6 +17,7 @@ export function useAnnounceProjectsList() {
 
   const {
     data: projects,
+    totalCount,
     pageCount,
     isLoading,
     error,
@@ -66,6 +67,7 @@ export function useAnnounceProjectsList() {
     viewStatus: state.viewStatus,
     setViewStatus,
     // Table controls
+    totalCount,
     pageCount,
     sorting,
     setSorting,

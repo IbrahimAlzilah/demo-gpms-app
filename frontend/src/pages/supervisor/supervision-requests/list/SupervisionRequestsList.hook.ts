@@ -20,6 +20,7 @@ export function useSupervisionRequestsList() {
 
   const {
     data: requests,
+    totalCount,
     pageCount,
     isLoading,
     error,
@@ -62,6 +63,7 @@ export function useSupervisionRequestsList() {
     setState,
     canAcceptMore,
     // Table controls
+    totalCount,
     pageCount,
     sorting,
     setSorting,

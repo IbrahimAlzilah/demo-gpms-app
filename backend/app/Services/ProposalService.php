@@ -23,6 +23,7 @@ class ProposalService
         $proposal = Proposal::create([
             'title' => $data['title'],
             'description' => $data['description'],
+            'requirements' => $data['requirements'] ?? null,
             'proposed_supervisor_id' => $data['proposed_supervisor_id'] ?? null,
             'team_members' => $data['team_members'] ?? null,
             'submitter_id' => $submitter->id,
@@ -185,6 +186,7 @@ class ProposalService
         $proposal->update(array_merge([
             'title' => $data['title'] ?? $proposal->title,
             'description' => $data['description'] ?? $proposal->description,
+            'requirements' => $data['requirements'] ?? $proposal->requirements,
             'proposed_supervisor_id' => $data['proposed_supervisor_id'] ?? $proposal->proposed_supervisor_id,
             'team_members' => $data['team_members'] ?? $proposal->team_members,
         ], $statusUpdate));

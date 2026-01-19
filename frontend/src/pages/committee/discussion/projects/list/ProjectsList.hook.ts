@@ -10,6 +10,7 @@ export function useProjectsList() {
 
   const {
     data: projects,
+    totalCount,
     pageCount,
     isLoading,
     error,
@@ -38,6 +39,7 @@ export function useProjectsList() {
   return {
     data,
     // Table controls
+    totalCount,
     pageCount,
     sorting,
     setSorting,

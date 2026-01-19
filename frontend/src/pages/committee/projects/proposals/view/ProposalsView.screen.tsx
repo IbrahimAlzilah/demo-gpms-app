@@ -29,7 +29,7 @@ export function ProposalsView({
       title={proposal.title || ''}
       size="xl"
     >
-      <div className="max-w-4xl max-h-[90vh] overflow-y-auto space-y-4">
+      <div className="space-y-4">
         {/* Status and Dates */}
         <div className="flex items-center gap-4 text-sm pb-4 border-b">
           <StatusBadge status={proposal.status} />
@@ -55,6 +55,19 @@ export function ProposalsView({
             </div>
             <p className="text-sm text-muted-foreground whitespace-pre-wrap">
               {proposal.description}
+            </p>
+          </div>
+        )}
+
+        {/* Proposal Requirements */}
+        {proposal.requirements && (
+          <div className="p-4 rounded-lg border border-border">
+            <div className="flex items-center gap-2 mb-3">
+              <FileText className="h-4 w-4 text-muted-foreground" />
+              <h4 className="text-sm font-semibold">{t('proposal.requirements') || 'Requirements'}</h4>
+            </div>
+            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+              {proposal.requirements}
             </p>
           </div>
         )}

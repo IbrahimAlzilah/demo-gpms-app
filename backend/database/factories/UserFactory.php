@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use Database\Seeders\helpers\YemeniDataHelper;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -23,12 +24,20 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $name = YemeniDataHelper::yemeniName();
+        $emailDomain = YemeniDataHelper::yemeniEmailDomain();
+        $emailUsername = Str::slug(explode(' ', $name)[0]) . '.' . fake()->unique()->numberBetween(100, 9999);
+        
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
+            'name' => $name,
+            'email' => $emailUsername . '@' . $emailDomain,
+            'username' => 'temp_' . Str::random(10) . '_' . time(), // Temporary username, will be replaced by seeder
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'role' => 'student',
+            'status' => 'active',
+            'phone' => YemeniDataHelper::yemeniPhoneNumber(),
         ];
     }
 
@@ -39,6 +48,57 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    /**
+     * Create a student user.
+     */
+    public function student(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'student',
+        ]);
+    }
+
+    /**
+     * Create a supervisor user.
+     */
+    public function supervisor(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'supervisor',
+        ]);
+    }
+
+    /**
+     * Create a discussion committee member.
+     */
+    public function discussionCommittee(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'discussion_committee',
+        ]);
+    }
+
+    /**
+     * Create a projects committee member.
+     */
+    public function projectsCommittee(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'projects_committee',
+        ]);
+    }
+
+    /**
+     * Create an admin user.
+     */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'admin',
+            'username' => 'admin' . fake()->unique()->numberBetween(1, 9999), // Will be set to 'admin' for first admin in seeder
         ]);
     }
 }

@@ -101,14 +101,15 @@
     "passwordPlaceholder": "••••••••",
     "showPassword": "إظهار كلمة المرور",
     "hidePassword": "إخفاء كلمة المرور",
-    "loginIdLabel": "معرف الدخول",
-    "loginIdPlaceholder": "الرقم الأكاديمي / رقم الموظف / admin",
+    "loginIdLabel": "اسم المستخدم",
+    "loginIdPlaceholder": "أدخل اسم المستخدم",
+    "loginIdHelp": "الطلاب: الرقم الأكاديمي / رقم الطالب | الموظفون: رقم الموظف | المدير: admin",
     "validation": {
       "emailRequired": "البريد الإلكتروني مطلوب",
       "emailInvalid": "البريد الإلكتروني غير صحيح",
       "passwordRequired": "كلمة المرور مطلوبة",
       "passwordMinLength": "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
-      "loginIdRequired": "معرف الدخول مطلوب"
+      "loginIdRequired": "اسم المستخدم مطلوب"
     },
     "forgetPassword": {
       "title": "استعادة كلمة المرور",

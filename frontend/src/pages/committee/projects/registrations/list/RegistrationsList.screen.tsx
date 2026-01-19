@@ -21,6 +21,7 @@ export function RegistrationsList() {
     data,
     state,
     setState,
+    totalCount,
     pageCount,
     sorting,
     setSorting,
@@ -138,6 +139,7 @@ export function RegistrationsList() {
           isLoading={data.isLoading}
           error={data.error}
           pageCount={pageCount}
+          totalCount={totalCount}
           pageIndex={pagination.pageIndex}
           pageSize={pagination.pageSize}
           onPaginationChange={(pageIndex, pageSize) => {

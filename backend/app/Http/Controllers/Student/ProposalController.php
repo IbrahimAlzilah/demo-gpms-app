@@ -48,6 +48,7 @@ class ProposalController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
+            'requirements' => 'nullable|string',
             'proposed_supervisor_id' => 'nullable|exists:users,id',
             'team_members' => 'nullable|array',
             'team_members.*.name' => 'required_with:team_members|string|max:255',
@@ -91,6 +92,7 @@ class ProposalController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
+            'requirements' => 'nullable|string',
             'proposed_supervisor_id' => 'nullable|exists:users,id',
             'team_members' => 'nullable|array',
             'team_members.*.name' => 'required_with:team_members|string|max:255',

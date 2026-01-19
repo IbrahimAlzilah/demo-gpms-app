@@ -6,10 +6,11 @@ export const userService = {
   getAll: async (): Promise<User[]> => {
     const response = await apiClient.get<any[]>('/admin/users')
     // Map backend field names to frontend format
-    return (Array.isArray(response.data) ? response.data : []).map(user => ({
+    return (Array.isArray(response.data) ? response.data : []).map((user: any) => ({
       ...user,
       studentId: user.student_id,
       empId: user.emp_id,
+      username: user.username,
     })) as User[]
   },
 
@@ -38,6 +39,7 @@ export const userService = {
       ...user,
       studentId: user.student_id,
       empId: user.emp_id,
+      username: user.username,
     })) as User[]
 
     return {
@@ -57,6 +59,7 @@ export const userService = {
         ...user,
         studentId: user.student_id,
         empId: user.emp_id,
+        username: user.username,
       } as User
     } catch {
       return null
@@ -66,17 +69,27 @@ export const userService = {
   create: async (
     data: Omit<User, 'id' | 'createdAt' | 'updatedAt'> & { password?: string }
   ): Promise<User> => {
-    const response = await apiClient.post<User>('/admin/users', {
+    const payload: any = {
       name: data.name,
-      email: data.email,
       password: data.password || 'password',
       role: data.role,
-      student_id: data.studentId,
-      emp_id: (data as any).empId,
       department: data.department,
       phone: data.phone,
       status: data.status,
-    })
+    }
+    // Include student_id or emp_id based on role
+    if (data.studentId) {
+      payload.student_id = data.studentId
+    }
+    if ((data as any).empId) {
+      payload.emp_id = (data as any).empId
+    }
+    // Only include email if provided
+    if (data.email) {
+      payload.email = data.email
+    }
+    
+    const response = await apiClient.post<User>('/admin/users', payload)
     // Map backend response to frontend format
     const user = response.data as any
     return {
@@ -89,11 +102,18 @@ export const userService = {
   update: async (id: string, data: Partial<User> & { password?: string }): Promise<User> => {
     const updateData: any = {}
     if (data.name !== undefined) updateData.name = data.name
-    if (data.email !== undefined) updateData.email = data.email
+    // Only include email if provided (can be empty string to clear it)
+    if (data.email !== undefined) {
+      updateData.email = data.email || null
+    }
     if (data.password !== undefined) updateData.password = data.password
     if (data.role !== undefined) updateData.role = data.role
-    if (data.studentId !== undefined) updateData.student_id = data.studentId
-    if ((data as any).empId !== undefined) updateData.emp_id = (data as any).empId
+    if (data.studentId !== undefined) {
+      updateData.student_id = data.studentId || null
+    }
+    if ((data as any).empId !== undefined) {
+      updateData.emp_id = (data as any).empId || null
+    }
     if (data.department !== undefined) updateData.department = data.department
     if (data.phone !== undefined) updateData.phone = data.phone
     if (data.status !== undefined) updateData.status = data.status

@@ -17,6 +17,16 @@ export function ProjectsList() {
     isPeriodActive,
     periodLoading,
     registrations,
+    totalCount,
+    pageCount,
+    sorting,
+    setSorting,
+    columnFilters,
+    setColumnFilters,
+    globalFilter,
+    setGlobalFilter,
+    pagination,
+    setPagination,
   } = useProjectsList()
 
   const handleSelectProject = (project: any) => {

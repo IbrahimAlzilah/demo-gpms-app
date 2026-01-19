@@ -34,6 +34,7 @@ export function useDocumentsList() {
 
   const {
     data: documents,
+    totalCount,
     pageCount,
     isLoading,
     error,
@@ -79,6 +80,7 @@ export function useDocumentsList() {
     isPeriodActive,
     periodLoading,
     // Table controls
+    totalCount,
     pageCount,
     sorting,
     setSorting,

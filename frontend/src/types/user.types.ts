@@ -10,7 +10,8 @@ export type UserRole =
 export type UserStatus = "active" | "inactive" | "suspended";
 
 export interface User extends BaseEntity {
-  email: string;
+  email?: string;
+  username: string;
   name: string;
   role: UserRole;
   status: UserStatus;

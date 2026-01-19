@@ -20,6 +20,7 @@ export function useProjectsList() {
 
   const {
     data: projects,
+    totalCount,
     pageCount,
     isLoading,
     error,
@@ -84,6 +85,7 @@ export function useProjectsList() {
     closeEvaluationModal,
     selectStudentForEvaluation,
     // Table controls
+    totalCount,
     pageCount,
     sorting,
     setSorting,

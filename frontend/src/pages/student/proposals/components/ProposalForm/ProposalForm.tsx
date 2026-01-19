@@ -120,6 +120,26 @@ export function ProposalForm({
           )}
         </div>
 
+        <div className="space-y-2">
+          <Label htmlFor="requirements">
+            {t('proposal.requirements') || 'Requirements'}
+          </Label>
+          <Textarea
+            id="requirements"
+            {...register('requirements')}
+            placeholder={t('proposal.requirementsPlaceholder') || 'Enter project requirements...'}
+            rows={4}
+            className={errors.requirements ? 'border-destructive' : ''}
+            aria-invalid={!!errors.requirements}
+          />
+          {errors.requirements && (
+            <p className="text-xs text-destructive flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" />
+              {errors.requirements.message}
+            </p>
+          )}
+        </div>
+
         {/* Proposed Supervisor Section */}
         <div className="space-y-2">
           <Label htmlFor="proposedSupervisorId">

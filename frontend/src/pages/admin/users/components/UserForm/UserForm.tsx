@@ -30,6 +30,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
         role: user.role,
         status: user.status,
         studentId: user.studentId,
+        empId: user.empId,
         department: user.department,
         phone: user.phone,
       }
@@ -110,7 +111,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
 
         <div className="space-y-2">
           <Label htmlFor="email">
-            {t('common.email')} <span className="text-destructive">*</span>
+            {t('common.email')} <span className="text-muted-foreground text-xs">({t('common.optional')})</span>
           </Label>
           <Input
             id="email"
@@ -118,7 +119,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             {...register('email')}
             className={errors.email ? 'border-destructive' : ''}
             aria-invalid={!!errors.email}
-            disabled={isEditing}
+            placeholder={t('user.emailPlaceholder') || 'Email (optional, for password recovery)'}
           />
           {errors.email && (
             <p className="text-xs text-destructive flex items-center gap-1">
@@ -126,11 +127,9 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
               {errors.email.message}
             </p>
           )}
-          {isEditing && (
-            <p className="text-xs text-muted-foreground">
-              {t('user.emailCannotBeChanged')}
-            </p>
-          )}
+          <p className="text-xs text-muted-foreground">
+            {t('user.emailOptionalHelp') || 'Email is optional and only used for password recovery'}
+          </p>
         </div>
       </div>
 
@@ -197,14 +196,31 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="studentId">{t('user.studentId')}</Label>
-          <Input
-            id="studentId"
-            {...register('studentId')}
-            placeholder={t('user.studentIdPlaceholder')}
-          />
-        </div>
+        {selectedRole === 'student' ? (
+          <div className="space-y-2">
+            <Label htmlFor="studentId">{t('user.studentId')}</Label>
+            <Input
+              id="studentId"
+              {...register('studentId')}
+              placeholder={t('user.studentIdPlaceholder')}
+            />
+            <p className="text-xs text-muted-foreground">
+              {t('user.studentIdHelp') || 'Student ID will be used as username for login'}
+            </p>
+          </div>
+        ) : selectedRole && ['supervisor', 'discussion_committee', 'projects_committee'].includes(selectedRole) ? (
+          <div className="space-y-2">
+            <Label htmlFor="empId">{t('user.empId') || 'Employee ID'}</Label>
+            <Input
+              id="empId"
+              {...register('empId')}
+              placeholder={t('user.empIdPlaceholder') || 'Employee ID (e.g., EMP001)'}
+            />
+            <p className="text-xs text-muted-foreground">
+              {t('user.empIdHelp') || 'Employee ID will be used as username for login'}
+            </p>
+          </div>
+        ) : null}
 
         <div className="space-y-2">
           <Label htmlFor="department">{t('user.department')}</Label>

@@ -5,7 +5,7 @@ import type { User } from '@/types/user.types'
  */
 export interface UserFormData {
   name: string
-  email: string
+  email?: string
   role: User['role']
   status: User['status']
   studentId?: string

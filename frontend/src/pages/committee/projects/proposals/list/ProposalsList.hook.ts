@@ -18,6 +18,7 @@ export function useProposalsList() {
 
   const {
     data: proposals,
+    totalCount,
     pageCount,
     isLoading,
     error,
@@ -51,6 +52,7 @@ export function useProposalsList() {
     state,
     setState,
     // Table controls
+    totalCount,
     pageCount,
     sorting,
     setSorting,

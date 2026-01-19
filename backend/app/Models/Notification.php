@@ -35,6 +35,14 @@ class Notification extends Model
     }
 
     /**
+     * Get the related entity (polymorphic relationship)
+     */
+    public function relatedEntity(): MorphTo
+    {
+        return $this->morphTo('related_entity');
+    }
+
+    /**
      * Mark notification as read
      */
     public function markAsRead(): void

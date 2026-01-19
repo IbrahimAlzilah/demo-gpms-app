@@ -23,6 +23,7 @@ export function AnnounceProjectsList() {
     toggleProject,
     viewStatus,
     setViewStatus,
+    totalCount,
     pageCount,
     sorting,
     setSorting,
@@ -153,6 +154,7 @@ export function AnnounceProjectsList() {
           isLoading={data.isLoading}
           error={data.error}
           pageCount={pageCount}
+          totalCount={totalCount}
           pageIndex={pagination.pageIndex}
           pageSize={pagination.pageSize}
           onPaginationChange={(pageIndex, pageSize) => {

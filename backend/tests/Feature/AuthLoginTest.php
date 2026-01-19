@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\User;
+use App\Models\Student;
+use App\Models\Supervisor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 
@@ -21,45 +23,71 @@ class AuthLoginTest extends TestCase
     {
         parent::setUp();
 
+        // Create student with profile
         $this->student = User::create([
             'name' => 'Test Student',
             'email' => 'student@test.local',
+            'username' => 'STU001',
             'password' => Hash::make('password'),
             'role' => 'student',
-            'student_id' => 'STU001',
             'status' => 'active',
         ]);
+        Student::create([
+            'user_id' => $this->student->id,
+            'student_id' => 'STU001',
+            'major' => 'Computer Science',
+        ]);
 
+        // Create supervisor with profile
         $this->supervisor = User::create([
             'name' => 'Test Supervisor',
             'email' => 'supervisor@test.local',
+            'username' => 'EMP001',
             'password' => Hash::make('password'),
             'role' => 'supervisor',
-            'emp_id' => 'EMP001',
             'status' => 'active',
         ]);
+        Supervisor::create([
+            'user_id' => $this->supervisor->id,
+            'emp_id' => 'EMP001',
+            'department' => 'Computer Science',
+        ]);
 
+        // Create discussion committee member with profile
         $this->discussionCommittee = User::create([
             'name' => 'Test Discussion Committee',
             'email' => 'discussion@test.local',
+            'username' => 'EMP002',
             'password' => Hash::make('password'),
             'role' => 'discussion_committee',
-            'emp_id' => 'EMP002',
             'status' => 'active',
         ]);
+        Supervisor::create([
+            'user_id' => $this->discussionCommittee->id,
+            'emp_id' => 'EMP002',
+            'department' => 'Computer Science',
+        ]);
 
+        // Create projects committee member with profile
         $this->projectsCommittee = User::create([
             'name' => 'Test Projects Committee',
             'email' => 'projects@test.local',
+            'username' => 'EMP003',
             'password' => Hash::make('password'),
             'role' => 'projects_committee',
-            'emp_id' => 'EMP003',
             'status' => 'active',
         ]);
+        Supervisor::create([
+            'user_id' => $this->projectsCommittee->id,
+            'emp_id' => 'EMP003',
+            'department' => 'Computer Science',
+        ]);
 
+        // Create admin
         $this->admin = User::create([
             'name' => 'Admin User',
             'email' => 'admin@test.local',
+            'username' => 'admin',
             'password' => Hash::make('password'),
             'role' => 'admin',
             'status' => 'active',
@@ -83,6 +111,7 @@ class AuthLoginTest extends TestCase
                     'id',
                     'name',
                     'email',
+                    'username',
                     'role',
                     'studentId',
                 ],
@@ -96,6 +125,7 @@ class AuthLoginTest extends TestCase
                 'user' => [
                     'id' => (string) $this->student->id,
                     'role' => 'student',
+                    'username' => 'STU001',
                     'studentId' => 'STU001',
                 ],
             ],
@@ -117,6 +147,7 @@ class AuthLoginTest extends TestCase
                 'user' => [
                     'id' => (string) $this->supervisor->id,
                     'role' => 'supervisor',
+                    'username' => 'EMP001',
                     'empId' => 'EMP001',
                 ],
             ],
@@ -138,6 +169,7 @@ class AuthLoginTest extends TestCase
                 'user' => [
                     'id' => (string) $this->discussionCommittee->id,
                     'role' => 'discussion_committee',
+                    'username' => 'EMP002',
                     'empId' => 'EMP002',
                 ],
             ],
@@ -159,6 +191,7 @@ class AuthLoginTest extends TestCase
                 'user' => [
                     'id' => (string) $this->projectsCommittee->id,
                     'role' => 'projects_committee',
+                    'username' => 'EMP003',
                     'empId' => 'EMP003',
                 ],
             ],
@@ -180,28 +213,25 @@ class AuthLoginTest extends TestCase
                 'user' => [
                     'id' => (string) $this->admin->id,
                     'role' => 'admin',
+                    'username' => 'admin',
                 ],
             ],
         ]);
     }
 
     /** @test */
-    public function admin_can_login_with_admin_identifier_case_insensitive()
+    public function admin_cannot_login_with_case_insensitive_identifier()
     {
+        // Username is case-sensitive, so 'ADMIN' should fail
         $response = $this->postJson('/api/auth/login', [
             'identifier' => 'ADMIN',
             'password' => 'password',
         ]);
 
-        $response->assertOk();
+        $response->assertStatus(401);
         $response->assertJson([
-            'success' => true,
-            'data' => [
-                'user' => [
-                    'id' => (string) $this->admin->id,
-                    'role' => 'admin',
-                ],
-            ],
+            'success' => false,
+            'message' => 'Invalid credentials',
         ]);
     }
 
@@ -318,10 +348,15 @@ class AuthLoginTest extends TestCase
         $inactiveStudent = User::create([
             'name' => 'Inactive Student',
             'email' => 'inactive@test.local',
+            'username' => 'STU999',
             'password' => Hash::make('password'),
             'role' => 'student',
-            'student_id' => 'STU999',
             'status' => 'inactive',
+        ]);
+        Student::create([
+            'user_id' => $inactiveStudent->id,
+            'student_id' => 'STU999',
+            'major' => 'Computer Science',
         ]);
 
         $response = $this->postJson('/api/auth/login', [

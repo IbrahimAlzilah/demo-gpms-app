@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\UserResource;
+use App\Models\Student;
+use App\Models\Supervisor;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -34,24 +36,9 @@ class AuthController extends Controller
             }
 
             $identifier = trim($request->identifier);
-            $user = null;
-
-            // Check if identifier is 'admin' (case-insensitive)
-            if (strtolower($identifier) === 'admin') {
-                $user = User::where('role', 'admin')->first();
-            } else {
-                // Try to find student by student_id
-                $user = User::where('role', 'student')
-                    ->where('student_id', $identifier)
-                    ->first();
-
-                // If not found, try to find staff by emp_id
-                if (!$user) {
-                    $user = User::whereIn('role', ['supervisor', 'discussion_committee', 'projects_committee'])
-                        ->where('emp_id', $identifier)
-                        ->first();
-                }
-            }
+            
+            // Find user by username
+            $user = User::where('username', $identifier)->first();
 
             if (!$user || !Hash::check($request->password, $user->password)) {
                 return response()->json([
@@ -99,12 +86,15 @@ class AuthController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users',
+                'email' => 'nullable|string|email|max:255|unique:users',
+                'username' => 'nullable|string|max:255|unique:users',
                 'password' => 'required|string|min:8|confirmed',
                 'role' => 'required|in:student,supervisor,discussion_committee,projects_committee,admin',
-                'student_id' => 'nullable|string|unique:users',
-                'emp_id' => 'nullable|string|unique:users',
+                'student_id' => 'nullable|string|unique:students,student_id',
+                'emp_id' => 'nullable|string|unique:supervisors,emp_id',
                 'department' => 'nullable|string',
+                'major' => 'nullable|string', // For students
+                'academic_level' => 'nullable|string', // For students
                 'phone' => 'nullable|string',
             ]);
 
@@ -116,17 +106,48 @@ class AuthController extends Controller
                 ], 422);
             }
 
+            // Derive username from profile identifiers if not explicitly provided
+            $username = $request->username;
+            if (!$username) {
+                if ($request->role === 'student' && $request->student_id) {
+                    $username = $request->student_id;
+                } elseif (in_array($request->role, ['supervisor', 'discussion_committee', 'projects_committee']) && $request->emp_id) {
+                    $username = $request->emp_id;
+                } elseif ($request->role === 'admin') {
+                    // For admin, check if username already exists, use 'admin', 'admin2', etc.
+                    $adminCount = User::where('role', 'admin')->count();
+                    $username = $adminCount === 0 ? 'admin' : 'admin' . ($adminCount + 1);
+                } else {
+                    // Fallback: generate unique username
+                    $username = 'user_' . time() . '_' . rand(1000, 9999);
+                }
+            }
+
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
+                'username' => $username,
                 'password' => Hash::make($request->password),
                 'role' => $request->role,
-                'student_id' => $request->student_id,
-                'emp_id' => $request->emp_id,
-                'department' => $request->department,
                 'phone' => $request->phone,
                 'status' => 'active',
             ]);
+
+            // Create profile based on role
+            if ($request->role === 'student' && $request->student_id) {
+                Student::create([
+                    'user_id' => $user->id,
+                    'student_id' => $request->student_id,
+                    'major' => $request->department ?? $request->major,
+                    'academic_level' => $request->academic_level,
+                ]);
+            } elseif (in_array($request->role, ['supervisor', 'discussion_committee', 'projects_committee']) && $request->emp_id) {
+                Supervisor::create([
+                    'user_id' => $user->id,
+                    'emp_id' => $request->emp_id,
+                    'department' => $request->department,
+                ]);
+            }
 
             $token = $user->createToken('auth-token')->plainTextToken;
 
@@ -134,7 +155,7 @@ class AuthController extends Controller
                 'success' => true,
                 'data' => [
                     'token' => $token,
-                    'user' => new UserResource($user),
+                    'user' => new UserResource($user->load(['studentProfile', 'supervisorProfile'])),
                     'permissions' => $this->getPermissions($user->role),
                 ],
             ], 201);

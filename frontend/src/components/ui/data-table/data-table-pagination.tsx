@@ -17,19 +17,25 @@ import {
 
 interface DataTablePaginationProps<TData> {
     table: ReturnType<typeof useReactTable<TData>>
+    totalCount?: number
 }
 
 export function DataTablePagination<TData>({
     table,
+    totalCount,
 }: DataTablePaginationProps<TData>) {
     const { t } = useTranslation()
     const pageIndex = table.getState().pagination.pageIndex
     const pageSize = table.getState().pagination.pageSize
     const pageCount = table.getPageCount()
-    const totalRows = table.getFilteredRowModel().rows.length
+    
+    // Use server-side totalCount if provided (for manual pagination), otherwise use client-side filtered rows
+    const totalRows = totalCount !== undefined 
+        ? totalCount 
+        : table.getFilteredRowModel().rows.length
 
-    const start = pageIndex * pageSize + 1
-    const end = Math.min((pageIndex + 1) * pageSize, totalRows)
+    const start = totalRows > 0 ? pageIndex * pageSize + 1 : 0
+    const end = totalRows > 0 ? Math.min((pageIndex + 1) * pageSize, totalRows) : 0
 
     return (
         <div className="flex items-center justify-between px-2">

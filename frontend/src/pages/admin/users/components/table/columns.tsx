@@ -45,7 +45,22 @@ export function createUserColumns({
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <span className="text-sm">{row.original.email}</span>
+          {row.original.email ? (
+            <span className="text-sm">{row.original.email}</span>
+          ) : (
+            <span className="text-sm text-muted-foreground">-</span>
+          )}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'username',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('user.username') || 'Username'} />
+      ),
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-mono">{row.original.username}</span>
         </div>
       ),
     },

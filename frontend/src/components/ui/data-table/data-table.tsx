@@ -36,6 +36,7 @@ export function DataTable<TData, TValue>({
     pageCount,
     pageIndex = 0,
     pageSize = 10,
+    totalCount,
     onPaginationChange,
     sorting,
     onSortingChange,
@@ -94,6 +95,20 @@ export function DataTable<TData, TValue>({
         }
     }
 
+    const handlePaginationChange = React.useCallback((updater: any) => {
+        if (!onPaginationChange) return
+
+        const currentPagination = { pageIndex, pageSize }
+        const newPagination = typeof updater === "function"
+            ? updater(currentPagination)
+            : updater
+
+        // Only call onPaginationChange if values actually changed
+        if (newPagination.pageIndex !== pageIndex || newPagination.pageSize !== pageSize) {
+            onPaginationChange(newPagination.pageIndex, newPagination.pageSize)
+        }
+    }, [onPaginationChange, pageIndex, pageSize])
+
     const table = useReactTable({
         data,
         columns,
@@ -104,6 +119,7 @@ export function DataTable<TData, TValue>({
         onSortingChange: handleSortingChange,
         onColumnFiltersChange: handleColumnFiltersChange,
         onColumnVisibilityChange: handleColumnVisibilityChange,
+        onPaginationChange: onPaginationChange ? handlePaginationChange : undefined,
         manualPagination: !!onPaginationChange,
         manualSorting: !!onSortingChange,
         manualFiltering: !!onColumnFiltersChange,
@@ -119,17 +135,6 @@ export function DataTable<TData, TValue>({
         },
         enableSorting,
     })
-
-    // Handle pagination changes
-    const paginationState = table.getState().pagination
-    const currentPageIndex = paginationState.pageIndex
-    const currentPageSize = paginationState.pageSize
-
-    React.useEffect(() => {
-        if (onPaginationChange && (currentPageIndex !== pageIndex || currentPageSize !== pageSize)) {
-            onPaginationChange(currentPageIndex, currentPageSize)
-        }
-    }, [currentPageIndex, currentPageSize, onPaginationChange, pageIndex, pageSize])
 
     if (error) {
         return (
@@ -238,7 +243,7 @@ export function DataTable<TData, TValue>({
                     </Table>
                 </div>
             </div>
-            <DataTablePagination table={table} />
+            <DataTablePagination table={table} totalCount={totalCount} />
         </div>
     )
 }

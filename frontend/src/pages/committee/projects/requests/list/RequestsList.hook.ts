@@ -17,6 +17,7 @@ export function useRequestsList() {
 
   const {
     data: requests,
+    totalCount,
     pageCount,
     isLoading,
     error,
@@ -53,6 +54,7 @@ export function useRequestsList() {
     state,
     setState,
     // Table controls
+    totalCount,
     pageCount,
     sorting,
     setSorting,

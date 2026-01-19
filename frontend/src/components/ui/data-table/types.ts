@@ -9,6 +9,7 @@ export interface DataTableProps<TData, TValue> {
   pageCount?: number
   pageIndex?: number
   pageSize?: number
+  totalCount?: number
   onPaginationChange?: (pageIndex: number, pageSize: number) => void
   // Sorting
   sorting?: SortingState

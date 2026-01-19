@@ -25,6 +25,8 @@ class ProjectResource extends JsonResource
             'keywords' => $this->keywords,
             'supervisorId' => $this->supervisor_id ? (string) $this->supervisor_id : null,
             'committeeId' => $this->committee_id,
+            'projectCommitteeId' => $this->project_committee_id ? (string) $this->project_committee_id : null,
+            'discussionCommitteeId' => $this->discussion_committee_id ? (string) $this->discussion_committee_id : null,
             'supervisorApprovalStatus' => $this->supervisor_approval_status,
             'supervisorApprovalComments' => $this->supervisor_approval_comments,
             'supervisorApprovalAt' => $this->supervisor_approval_at?->toISOString(),
@@ -37,6 +39,9 @@ class ProjectResource extends JsonResource
             }),
             'group' => $this->when($this->relationLoaded('group') && $this->group !== null, function () {
                 return new GroupResource($this->group);
+            }),
+            'groupName' => $this->when($this->relationLoaded('group') && $this->group !== null, function () {
+                return $this->group->group_name;
             }),
             'documents' => $this->whenLoaded('documents') ? DocumentResource::collection($this->documents) : [],
             'grades' => $this->whenLoaded('grades') ? GradeResource::collection($this->grades) : [],

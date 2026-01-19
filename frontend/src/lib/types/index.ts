@@ -60,7 +60,8 @@ export type RequestType = typeof RequestType[keyof typeof RequestType]
 export interface User {
   id: number;
   name: string;
-  email: string;
+  email?: string;
+  username: string;
   role: UserRole;
   student_id?: string;
   emp_id?: string;

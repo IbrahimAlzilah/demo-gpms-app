@@ -181,7 +181,9 @@ class ReportService
         // Students KPIs
         $allStudentsQuery = User::where('role', 'student');
         if (isset($filters['department'])) {
-            $allStudentsQuery->where('department', $filters['department']);
+            $allStudentsQuery->whereHas('studentProfile', function ($q) use ($filters) {
+                $q->where('major', $filters['department']);
+            });
         }
         $studentsTotal = $allStudentsQuery->count();
 
@@ -192,7 +194,8 @@ class ReportService
         }
         if (isset($filters['department'])) {
             $registeredQuery->join('users', 'project_student.student_id', '=', 'users.id')
-                ->where('users.department', $filters['department']);
+                ->join('students', 'users.id', '=', 'students.user_id')
+                ->where('students.major', $filters['department']);
         }
         $registeredCount = $registeredQuery->distinct('project_student.student_id')->count('project_student.student_id');
         $unregisteredCount = max(0, $studentsTotal - $registeredCount);
@@ -424,10 +427,13 @@ class ReportService
     {
         $dateRange = $this->getPeriodDateRange($filters['period_id'] ?? null);
 
-        $query = User::where('role', 'student');
+        $query = User::where('role', 'student')
+            ->with('studentProfile');
 
         if (isset($filters['department'])) {
-            $query->where('department', $filters['department']);
+            $query->whereHas('studentProfile', function ($q) use ($filters) {
+                $q->where('major', $filters['department']);
+            });
         }
 
         $students = $query->get()->map(function ($student) use ($dateRange) {

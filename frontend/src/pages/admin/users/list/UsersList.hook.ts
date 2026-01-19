@@ -17,6 +17,7 @@ export function useUsersList() {
 
   const {
     data: users,
+    totalCount,
     pageCount,
     isLoading,
     error,
@@ -46,6 +47,7 @@ export function useUsersList() {
     state,
     setState,
     // Table controls
+    totalCount,
     pageCount,
     sorting,
     setSorting,

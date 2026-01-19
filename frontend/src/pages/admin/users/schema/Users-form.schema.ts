@@ -11,8 +11,9 @@ export const userFormSchema = (t: (key: string) => string) => {
       .min(2, t('user.validation.nameMinLength')),
     email: z
       .string()
-      .min(1, t('user.validation.emailRequired'))
-      .email(t('user.validation.emailInvalid')),
+      .email(t('user.validation.emailInvalid'))
+      .optional()
+      .or(z.literal('')),
     role: z.enum(
       [
         'student',
@@ -29,6 +30,7 @@ export const userFormSchema = (t: (key: string) => string) => {
       message: t('user.validation.statusRequired'),
     }),
     studentId: z.string().optional(),
+    empId: z.string().optional(),
     department: z.string().optional(),
     phone: z
       .string()

@@ -18,6 +18,7 @@ export function ProjectBrowser({ onSelectProject, onViewRejection }: ProjectBrow
 
   const {
     data: projects,
+    totalCount,
     pageCount,
     isLoading,
     error,
@@ -68,6 +69,7 @@ export function ProjectBrowser({ onSelectProject, onViewRejection }: ProjectBrow
       isLoading={isLoading}
       error={error}
       pageCount={pageCount}
+      totalCount={totalCount}
       pageIndex={pagination.pageIndex}
       pageSize={pagination.pageSize}
       onPaginationChange={(pageIndex, pageSize) => {
