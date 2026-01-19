@@ -46,14 +46,17 @@
 
 :root {
   /* Design System - Premium Modern Look */
-  --radius: 0.75rem; /* Slightly friendlier rounded corners */
+  --radius: 0.75rem;
+  /* Slightly friendlier rounded corners */
 
   /* Font Family */
   --font-expo-arabic: 'ExpoArabic', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 
   /* Base Colors - Light Theme (Clean, Crisp, Professional) */
-  --background: oklch(0.985 0.002 240); /* Very subtle cool tint */
-  --foreground: oklch(0.14 0.01 240); /* Deep cool gray */
+  --background: oklch(0.985 0.002 240);
+  /* Very subtle cool tint */
+  --foreground: oklch(0.14 0.01 240);
+  /* Deep cool gray */
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.14 0.01 240);
   --popover: oklch(1 0 0);
@@ -68,7 +71,8 @@
   --secondary-foreground: oklch(0.45 0.14 260);
 
   /* Accent - Vibrant Emerald/Teal (Action, Success) */
-  --accent: oklch(0.96 0.01 260); /* Used for hovers often, keep subtle */
+  --accent: oklch(0.96 0.01 260);
+  /* Used for hovers often, keep subtle */
   --accent-foreground: oklch(0.45 0.14 260);
 
   /* Muted colors */
@@ -76,13 +80,17 @@
   --muted-foreground: oklch(0.55 0.02 240);
 
   /* Semantic colors */
-  --success: oklch(0.62 0.16 150); /* Fresh Green */
+  --success: oklch(0.62 0.16 150);
+  /* Fresh Green */
   --success-foreground: oklch(0.98 0 0);
-  --warning: oklch(0.82 0.12 80); /* Warm Orange */
+  --warning: oklch(0.82 0.12 80);
+  /* Warm Orange */
   --warning-foreground: oklch(0.14 0.01 240);
-  --error: oklch(0.6 0.2 25); /* Soft Red */
+  --error: oklch(0.6 0.2 25);
+  /* Soft Red */
   --error-foreground: oklch(0.98 0 0);
-  --info: oklch(0.55 0.15 240); /* Info Blue */
+  --info: oklch(0.55 0.15 240);
+  /* Info Blue */
   --info-foreground: oklch(0.98 0 0);
 
   /* Destructive */
@@ -92,7 +100,8 @@
   /* Borders and inputs */
   --border: oklch(0.92 0.01 240);
   --input: oklch(0.92 0.01 240);
-  --ring: oklch(0.45 0.14 260); /* Matches Primary */
+  --ring: oklch(0.45 0.14 260);
+  /* Matches Primary */
 
   /* Charts */
   --chart-1: oklch(0.45 0.14 260);
@@ -169,7 +178,8 @@ body {
 
 .dark {
   /* Base Colors - Dark Theme (Deep Blue-Gray, modern software feel) */
-  --background: oklch(0.12 0.02 260); /* Deep midnight blue */
+  --background: oklch(0.12 0.02 260);
+  /* Deep midnight blue */
   --foreground: oklch(0.98 0.005 240);
   --card: oklch(0.16 0.02 260);
   --card-foreground: oklch(0.98 0.005 240);
@@ -266,5 +276,104 @@ body {
 
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-muted-foreground/50;
+  }
+}
+
+/* Custom CSS For Print */
+@media print {
+
+  *,
+  ::after,
+  ::before {
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+
+  @page {
+    size: auto;
+    margin: 2mm;
+  }
+
+  body {
+    width: 100%;
+    min-width: 100%;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    background-color: #ffffff;
+    color: #000000;
+    font-size: 11pt;
+    line-height: 1.4;
+  }
+
+  /* Hide non-printable elements globally */
+  header,
+  footer,
+  nav,
+  aside,
+  button,
+  input,
+  select,
+  textarea {
+    display: none !important;
+  }
+
+  /* Hide sidebar elements */
+  /* [data-slot="sidebar-container"] {
+    display: none !important;
+  }
+
+  [data-slot="sidebar-inset"] {
+    margin: 0 !important;
+    border: none !important;
+  } */
+
+  /* Remove all shadows */
+  .shadow,
+  [class^="shadow-"],
+  [class*=" shadow-"] {
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    -moz-box-shadow: none !important;
+  }
+
+  /* Hide scrollbars in print */
+  .custom-scroll {
+    overflow: hidden;
+  }
+
+  .custom-scroll ::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Table print styles */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: inherit;
+    table-layout: auto;
+    page-break-inside: auto;
+  }
+
+  table thead {
+    display: table-header-group;
+    background-color: #f3f3f3;
+  }
+
+  table tfoot {
+    display: table-row-group;
+  }
+
+  table th,
+  table td {
+    padding: 0.25rem !important;
+    font-size: 10pt !important;
+    vertical-align: middle;
+    border: 1px solid #e5e7eb;
+  }
+
+  /* Hide buttons in table cells */
+  table :where(th, td):has(button) {
+    display: none !important;
   }
 }
