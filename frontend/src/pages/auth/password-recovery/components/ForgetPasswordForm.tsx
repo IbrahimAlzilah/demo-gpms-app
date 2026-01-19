@@ -150,7 +150,7 @@ export function ForgetPasswordForm() {
             aria-describedby={errors.email ? 'email-error' : undefined}
           />
           {errors.email && (
-            <p id="email-error" className="text-sm text-destructive flex items-center gap-1">
+            <p id="email-error" className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.email.message}
             </p>

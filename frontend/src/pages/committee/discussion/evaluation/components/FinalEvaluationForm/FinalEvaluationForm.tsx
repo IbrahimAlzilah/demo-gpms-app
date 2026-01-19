@@ -122,7 +122,7 @@ export function FinalEvaluationForm({
                 aria-invalid={!!errors.score}
               />
               {errors.score && (
-                <p className="text-sm text-destructive flex items-center gap-1">
+                <p className="text-xs text-destructive flex items-center gap-1">
                   <AlertCircle className="h-3 w-3" />
                   {errors.score.message}
                 </p>
@@ -141,7 +141,7 @@ export function FinalEvaluationForm({
                 aria-invalid={!!errors.maxScore}
               />
               {errors.maxScore && (
-                <p className="text-sm text-destructive flex items-center gap-1">
+                <p className="text-xs text-destructive flex items-center gap-1">
                   <AlertCircle className="h-3 w-3" />
                   {errors.maxScore.message}
                 </p>

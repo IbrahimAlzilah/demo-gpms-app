@@ -59,7 +59,7 @@ export function LoginForm() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : t('auth.loginError')
       setError(errorMessage)
-      toast.error(errorMessage)
+      toast.error(errorMessage) 
     } finally {
       setIsLoading(false)
     }
@@ -98,7 +98,7 @@ export function LoginForm() {
             aria-describedby={errors.identifier ? 'identifier-error' : undefined}
           />
           {errors.identifier && (
-            <p id="identifier-error" className="text-sm text-destructive flex items-center gap-1">
+            <p id="identifier-error" className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.identifier.message}
             </p>
@@ -129,7 +129,7 @@ export function LoginForm() {
             </button>
           </div>
           {errors.password && (
-            <p id="password-error" className="text-sm text-destructive flex items-center gap-1">
+            <p id="password-error" className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.password.message}
             </p>

@@ -136,7 +136,7 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
           </SelectContent>
         </Select>
         {errors.documentType && (
-          <p className="text-sm text-destructive flex items-center gap-1">
+          <p className="text-xs text-destructive flex items-center gap-1">
             <AlertCircle className="h-3 w-3" />
             {errors.documentType.message}
           </p>

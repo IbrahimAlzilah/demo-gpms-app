@@ -90,7 +90,7 @@ export function RequestsEdit({ open, onClose, onSuccess, request }: RequestsEdit
             </SelectContent>
           </Select>
           {errors.type && (
-            <p className="text-sm text-destructive flex items-center gap-1">
+            <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.type.message}
             </p>
@@ -110,7 +110,7 @@ export function RequestsEdit({ open, onClose, onSuccess, request }: RequestsEdit
             aria-invalid={!!errors.reason}
           />
           {errors.reason && (
-            <p className="text-sm text-destructive flex items-center gap-1">
+            <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.reason.message}
             </p>

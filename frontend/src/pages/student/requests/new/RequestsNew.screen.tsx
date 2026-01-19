@@ -83,8 +83,8 @@ export function RequestsNew({ open, onClose, onSuccess }: RequestsNewProps) {
             </SelectTrigger>
             <SelectContent>
               {requestTypes.map((type) => (
-                <SelectItem 
-                  key={type.value} 
+                <SelectItem
+                  key={type.value}
                   value={type.value}
                   disabled={type.disabled}
                 >
@@ -102,7 +102,7 @@ export function RequestsNew({ open, onClose, onSuccess }: RequestsNewProps) {
             </SelectContent>
           </Select>
           {errors.type && (
-            <p className="text-sm text-destructive flex items-center gap-1">
+            <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.type.message}
             </p>
@@ -122,7 +122,7 @@ export function RequestsNew({ open, onClose, onSuccess }: RequestsNewProps) {
             aria-invalid={!!errors.reason}
           />
           {errors.reason && (
-            <p className="text-sm text-destructive flex items-center gap-1">
+            <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.reason.message}
             </p>

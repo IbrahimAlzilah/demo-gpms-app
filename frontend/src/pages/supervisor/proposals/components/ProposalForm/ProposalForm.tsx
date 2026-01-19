@@ -140,7 +140,7 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
             aria-invalid={!!errors.title}
           />
           {errors.title && (
-            <p className="text-sm text-destructive flex items-center gap-1">
+            <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.title.message}
             </p>
@@ -160,7 +160,7 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
             aria-invalid={!!errors.description}
           />
           {errors.description && (
-            <p className="text-sm text-destructive flex items-center gap-1">
+            <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.description.message}
             </p>
@@ -178,7 +178,7 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
               <span>{t('common.loading')}</span>
             </div>
           ) : supervisorsError ? (
-            <div className="text-sm text-destructive flex items-center gap-1">
+            <div className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-4 w-4" />
               <span>{t('proposal.supervisorsLoadError') || 'Failed to load supervisors'}</span>
             </div>
@@ -206,7 +206,7 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
             </Select>
           )}
           {errors.proposedSupervisorId && (
-            <p className="text-sm text-destructive flex items-center gap-1">
+            <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.proposedSupervisorId.message}
             </p>
@@ -245,7 +245,7 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
                   className={errors.teamMembers?.[index]?.name ? 'border-destructive' : ''}
                 />
                 {errors.teamMembers?.[index]?.name && (
-                  <p className="text-sm text-destructive flex items-center gap-1">
+                  <p className="text-xs text-destructive flex items-center gap-1">
                     <AlertCircle className="h-3 w-3" />
                     {errors.teamMembers[index]?.name?.message}
                   </p>
@@ -262,7 +262,7 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
                   className={errors.teamMembers?.[index]?.role ? 'border-destructive' : ''}
                 />
                 {errors.teamMembers?.[index]?.role && (
-                  <p className="text-sm text-destructive flex items-center gap-1">
+                  <p className="text-xs text-destructive flex items-center gap-1">
                     <AlertCircle className="h-3 w-3" />
                     {errors.teamMembers[index]?.role?.message}
                   </p>

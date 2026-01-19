@@ -129,7 +129,7 @@ export function DatePicker({
         </PopoverContent>
       </Popover>
       {error && (
-        <p className="text-sm text-destructive flex items-center gap-1">
+        <p className="text-xs text-destructive flex items-center gap-1">
           <AlertCircle className="h-3 w-3" />
           {error}
         </p>

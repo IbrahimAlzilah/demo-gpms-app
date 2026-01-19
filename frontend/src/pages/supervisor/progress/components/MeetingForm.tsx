@@ -102,7 +102,7 @@ export function MeetingForm({
             min={new Date().toISOString().slice(0, 16)}
           />
           {errors.scheduledDate && (
-            <p className="text-sm text-destructive flex items-center gap-1">
+            <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.scheduledDate.message}
             </p>
@@ -122,7 +122,7 @@ export function MeetingForm({
               className={errors.duration ? 'border-destructive' : ''}
             />
             {errors.duration && (
-              <p className="text-sm text-destructive flex items-center gap-1">
+              <p className="text-xs text-destructive flex items-center gap-1">
                 <AlertCircle className="h-3 w-3" />
                 {errors.duration.message}
               </p>
@@ -150,7 +150,7 @@ export function MeetingForm({
             className={errors.agenda ? 'border-destructive' : ''}
           />
           {errors.agenda && (
-            <p className="text-sm text-destructive flex items-center gap-1">
+            <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.agenda.message}
             </p>

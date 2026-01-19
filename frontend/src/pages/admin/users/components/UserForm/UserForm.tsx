@@ -25,17 +25,17 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
     resolver: zodResolver(userFormSchema(t)),
     defaultValues: user
       ? {
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          status: user.status,
-          studentId: user.studentId,
-          department: user.department,
-          phone: user.phone,
-        }
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        status: user.status,
+        studentId: user.studentId,
+        department: user.department,
+        phone: user.phone,
+      }
       : {
-          status: 'active',
-        },
+        status: 'active',
+      },
   })
   const createUser = useCreateUser()
   const updateUser = useUpdateUser()
@@ -101,7 +101,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             aria-invalid={!!errors.name}
           />
           {errors.name && (
-            <p className="text-sm text-destructive flex items-center gap-1">
+            <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.name.message}
             </p>
@@ -121,7 +121,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             disabled={isEditing}
           />
           {errors.email && (
-            <p className="text-sm text-destructive flex items-center gap-1">
+            <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.email.message}
             </p>
@@ -158,7 +158,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             </SelectContent>
           </Select>
           {errors.role && (
-            <p className="text-sm text-destructive flex items-center gap-1">
+            <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.role.message}
             </p>
@@ -188,7 +188,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             </SelectContent>
           </Select>
           {errors.status && (
-            <p className="text-sm text-destructive flex items-center gap-1">
+            <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.status.message}
             </p>
@@ -226,7 +226,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
           className={errors.phone ? 'border-destructive' : ''}
         />
         {errors.phone && (
-          <p className="text-sm text-destructive flex items-center gap-1">
+          <p className="text-xs text-destructive flex items-center gap-1">
             <AlertCircle className="h-3 w-3" />
             {errors.phone.message}
           </p>

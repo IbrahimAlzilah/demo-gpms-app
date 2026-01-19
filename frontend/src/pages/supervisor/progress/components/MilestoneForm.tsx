@@ -82,7 +82,7 @@ export function MilestoneForm({
             className={errors.title ? 'border-destructive' : ''}
           />
           {errors.title && (
-            <p className="text-sm text-destructive flex items-center gap-1">
+            <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.title.message}
             </p>
@@ -107,7 +107,7 @@ export function MilestoneForm({
             </SelectContent>
           </Select>
           {errors.type && (
-            <p className="text-sm text-destructive flex items-center gap-1">
+            <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.type.message}
             </p>
@@ -124,7 +124,7 @@ export function MilestoneForm({
             min={new Date().toISOString().split('T')[0]}
           />
           {errors.dueDate && (
-            <p className="text-sm text-destructive flex items-center gap-1">
+            <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.dueDate.message}
             </p>
@@ -141,7 +141,7 @@ export function MilestoneForm({
             className={errors.description ? 'border-destructive' : ''}
           />
           {errors.description && (
-            <p className="text-sm text-destructive flex items-center gap-1">
+            <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.description.message}
             </p>

@@ -94,7 +94,7 @@ export function ProposalEditDialog({
             aria-invalid={!!errors.title}
           />
           {errors.title && (
-            <p className="text-sm text-destructive flex items-center gap-1">
+            <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.title.message}
             </p>
@@ -114,7 +114,7 @@ export function ProposalEditDialog({
             aria-invalid={!!errors.description}
           />
           {errors.description && (
-            <p className="text-sm text-destructive flex items-center gap-1">
+            <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.description.message}
             </p>
