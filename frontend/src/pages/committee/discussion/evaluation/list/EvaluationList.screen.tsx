@@ -13,6 +13,16 @@ export function EvaluationList() {
     data,
     state,
     setState,
+    totalCount,
+    pageCount,
+    sorting,
+    setSorting,
+    columnFilters,
+    setColumnFilters,
+    globalFilter,
+    setGlobalFilter,
+    pagination,
+    setPagination,
   } = useEvaluationList()
 
   const columns = useMemo(
@@ -48,18 +58,22 @@ export function EvaluationList() {
           data={data.items}
           isLoading={data.isLoading}
           error={data.error}
-          pageCount={data.pageCount}
-          pageIndex={0}
-          pageSize={10}
-          onPaginationChange={() => {}}
-          sorting={[]}
-          onSortingChange={() => {}}
-          columnFilters={[]}
-          onColumnFiltersChange={() => {}}
-          searchValue=""
-          onSearchChange={() => {}}
-          enableFiltering={false}
-          enableViews={false}
+          pageCount={pageCount}
+          totalCount={totalCount}
+          pageIndex={pagination.pageIndex}
+          pageSize={pagination.pageSize}
+          onPaginationChange={(pageIndex, pageSize) => {
+            setPagination({ pageIndex, pageSize })
+          }}
+          sorting={sorting}
+          onSortingChange={setSorting}
+          columnFilters={columnFilters}
+          onColumnFiltersChange={setColumnFilters}
+          searchValue={globalFilter}
+          onSearchChange={setGlobalFilter}
+          searchPlaceholder={t('discussion.searchPlaceholder') || 'Search evaluations...'}
+          enableFiltering={true}
+          enableViews={true}
           emptyMessage={t('evaluation.noEvaluations') || 'No evaluations found'}
         />
       </BlockContent>

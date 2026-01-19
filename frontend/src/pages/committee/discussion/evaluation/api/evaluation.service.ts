@@ -1,5 +1,7 @@
 import { apiClient } from '../../../../../lib/axios'
 import type { Grade } from '@/types/evaluation.types'
+import type { TableQueryParams, TableResponse } from '../../../../../types/table.types'
+import type { EvaluationListItem } from '../list/EvaluationList.types'
 
 export const committeeEvaluationService = {
   submitFinalGrade: async (data: {
@@ -29,5 +31,34 @@ export const committeeEvaluationService = {
       `/discussion-committee/evaluations?project_id=${projectId}`
     )
     return Array.isArray(response.data) ? response.data : []
+  },
+
+  getTableData: async (params?: TableQueryParams): Promise<TableResponse<EvaluationListItem>> => {
+    const queryParams = new URLSearchParams()
+    
+    if (params?.page) queryParams.append('page', params.page.toString())
+    if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString())
+    if (params?.sortBy) queryParams.append('sortBy', params.sortBy)
+    if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder)
+    if (params?.search) queryParams.append('search', params.search)
+    if (params?.filters) {
+      Object.entries(params.filters).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== '') {
+          queryParams.append(`filters[${key}]`, String(value))
+        }
+      })
+    }
+
+    const response = await apiClient.get<EvaluationListItem[]>(
+      `/discussion-committee/evaluations?${queryParams.toString()}`
+    )
+    
+    return {
+      data: Array.isArray(response.data) ? response.data : [],
+      totalCount: response.pagination?.total || 0,
+      page: response.pagination?.page || 1,
+      pageSize: response.pagination?.pageSize || 10,
+      totalPages: response.pagination?.totalPages || 0,
+    }
   },
 }

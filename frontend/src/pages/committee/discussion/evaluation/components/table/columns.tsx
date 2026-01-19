@@ -29,16 +29,20 @@ export function createEvaluationColumns({
     {
       accessorKey: "student.name",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('student.name') || 'Student'} />
+        <DataTableColumnHeader column={column} title={t('student.name')} />
       ),
-      cell: ({ row }) => (
-        <div className="font-medium">{row.original.student.name}</div>
-      ),
+      cell: ({ row }) => {
+        const student = row.original.student
+        const name = student.name
+        return (
+          <div className="font-medium">{name || '-'}</div>
+        )
+      },
     },
     {
       accessorKey: "student.studentId",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('student.id') || 'Student ID'} />
+        <DataTableColumnHeader column={column} title={t('student.id')} />
       ),
       cell: ({ row }) => (
         <div className="text-sm text-muted-foreground">
@@ -49,7 +53,7 @@ export function createEvaluationColumns({
     {
       accessorKey: "hasEvaluation",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('evaluation.status') || 'Status'} />
+        <DataTableColumnHeader column={column} title={t('common.status') || 'Status'} />
       ),
       cell: ({ row }) => {
         const hasEvaluation = row.original.hasEvaluation
@@ -57,11 +61,12 @@ export function createEvaluationColumns({
           <Badge variant={hasEvaluation ? "default" : "secondary"}>
             {hasEvaluation ? (
               <>
-                <CheckCircle2 className="mr-1 h-3 w-3" />
-                {t('evaluation.completed') || 'Completed'}
+                {t('common.completed')}
               </>
             ) : (
-              t('evaluation.pending') || 'Pending'
+              <>
+                {t('common.pending')}
+              </>
             )}
           </Badge>
         )
@@ -79,10 +84,8 @@ export function createEvaluationColumns({
               size="sm"
               onClick={() => onEvaluate(item)}
             >
-              <ClipboardCheck className="mr-2 h-4 w-4" />
               {item.hasEvaluation
-                ? t('evaluation.update') || 'Update Evaluation'
-                : t('evaluation.evaluate') || 'Evaluate'}
+                ? t('common.edit') : t('common.evaluate')}
             </Button>
           </div>
         )

@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils'
 import { LoadingSpinner, BlockContent } from '@/components/common'
 import { useDiscussionCommitteeDashboard } from './hooks/useDiscussionCommitteeDashboard'
 import { formatRelativeTime } from '@/lib/utils/format'
+import { StatsCard as StatsCardComponent } from '@/components/common'
 
 export function DiscussionCommitteeDashboardPage() {
   const { t, i18n } = useTranslation()
@@ -91,37 +92,30 @@ export function DiscussionCommitteeDashboardPage() {
   return (
     <MainLayout>
       <div className="space-y-8 animate-in fade-in duration-500 pb-10">
-
-        {/* Page Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('dashboard.welcome', { defaultValue: 'Discussion Committee' })}</h1>
-          <p className="text-sm text-muted-foreground">{new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-        </div>
-
         {/* Stats Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <StatsCard
+          <StatsCardComponent
             title={t('dashboard.discussion.assignedProjects')}
             value={stats.assignedProjects}
             icon={Briefcase}
             subValue={t('dashboard.discussion.assignedToCommittee')}
             color="blue"
           />
-          <StatsCard
+          <StatsCardComponent
             title={t('dashboard.discussion.pendingEvaluations')}
             value={stats.pendingEvaluations}
             icon={ClipboardCheck}
             subValue={t('dashboard.discussion.awaitingReview')}
-            color="orange"
+            color="yellow"
           />
-          <StatsCard
+          <StatsCardComponent
             title={t('dashboard.discussion.upcomingDefenses', { defaultValue: 'Upcoming Defenses' })}
             value={stats.upcomingDefenses}
             icon={Calendar}
             subValue={t('dashboard.discussion.scheduledThisWeek', { defaultValue: 'Scheduled this week' })}
             color="purple"
           />
-          <StatsCard
+          <StatsCardComponent
             title={t('dashboard.discussion.completed', { defaultValue: 'Completed' })}
             value={stats.completedEvaluations}
             icon={CheckCircle2}
@@ -198,9 +192,9 @@ export function DiscussionCommitteeDashboardPage() {
             </div>
 
             {/* Defense Schedule Widget */}
-            <Card className="border-border bg-card shadow-none">
-              <CardHeader className="border-b border-border/50 bg-muted/20 pb-4">
-                <CardTitle className="text-base font-medium flex items-center gap-2">
+            <Card className="border-border bg-card shadow-none gap-0">
+              <CardHeader className="border-b border-border/50 bg-muted/20 !pb-3 gap-0">
+                <CardTitle className="text-base font-medium flex items-center gap-2 ">
                   <Calendar className="h-4 w-4 text-primary" />
                   {t('dashboard.discussion.defenseSchedule', { defaultValue: 'Defense Schedule' })}
                 </CardTitle>
@@ -255,34 +249,6 @@ export function DiscussionCommitteeDashboardPage() {
 }
 
 // Sub-components
-
-function StatsCard({ title, value, icon: Icon, subValue, color }: any) {
-  const colorStyles = {
-    blue: "text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400",
-    green: "text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400",
-    orange: "text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-400",
-    purple: "text-purple-600 bg-purple-50 dark:bg-purple-900/20 dark:text-purple-400",
-  }
-
-  // @ts-ignore
-  const iconColor = colorStyles[color] || colorStyles.blue
-
-  return (
-    <div className="rounded-xl border border-border bg-card p-6 flex flex-col justify-between h-full transition-colors hover:border-primary/20">
-      <div className="flex items-start justify-between mb-4">
-        <div className={cn("p-2.5 rounded-lg", iconColor)}>
-          <Icon className="h-5 w-5" />
-        </div>
-        <span className="text-3xl font-bold tracking-tight text-foreground">{value}</span>
-      </div>
-      <div>
-        <h3 className="font-medium text-sm text-foreground mb-1">{title}</h3>
-        <p className="text-xs text-muted-foreground">{subValue}</p>
-      </div>
-    </div>
-  )
-}
-
 function QuickActionButton({ to, icon: Icon, label }: any) {
   return (
     <Button asChild variant="outline" className="w-full justify-start h-11 px-4 bg-card hover:bg-accent hover:text-accent-foreground border-border shadow-none transition-all duration-200">
