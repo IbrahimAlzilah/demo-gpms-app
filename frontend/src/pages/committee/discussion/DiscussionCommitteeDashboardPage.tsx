@@ -101,12 +101,6 @@ export function DiscussionCommitteeDashboardPage() {
   return (
     <MainLayout>
       <div className="space-y-8 animate-in fade-in duration-500 pb-10">
-
-        <DashboardHeader
-          title={t('dashboard.welcomeBack', { name: user?.name, defaultValue: `Welcome back, ${user?.name || 'Committee Member'}` })}
-          subtitle={t('dashboard.discussion.subtitle', { defaultValue: 'Manage student evaluations and defense sessions.' })}
-        />
-
         {/* Stats Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <StatsCardComponent

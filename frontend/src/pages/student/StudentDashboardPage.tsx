@@ -91,20 +91,6 @@ export function StudentDashboardPage() {
   return (
     <MainLayout>
       <div className="space-y-8 animate-in fade-in duration-500 pb-10">
-        <DashboardHeader
-          title={t('dashboard.welcomeBack', { name: user?.name, defaultValue: `Welcome back, ${user?.name || 'Student'}` })}
-          subtitle={t('dashboard.student.subtitle', { defaultValue: 'Track your graduation project progress and manage your submissions.' })}
-        >
-          <div className="flex gap-2">
-            <Button asChild size="sm" variant="default" className="shadow-lg shadow-primary/20">
-              <Link to={ROUTES.STUDENT.PROPOSALS}>
-                <Plus className="h-4 w-4 me-2" />
-                {t('dashboard.student.newProposal')}
-              </Link>
-            </Button>
-          </div>
-        </DashboardHeader>
-
         {/* Stats Grid */}
         <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
           <StatsCardComponent
@@ -341,41 +327,6 @@ export function StudentDashboardPage() {
                 />
               </div>
             </Card>
-
-            {/* Notifications Card */}
-            {stats.unreadNotifications > 0 && (
-              <Card className="border-primary/20 bg-primary/5">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/20">
-                      <Bell className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-sm">{stats.unreadNotifications}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {t('dashboard.student.unreadNotifications', { defaultValue: 'unread notifications' })}
-                      </p>
-                    </div>
-                    <Button asChild variant="outline" size="sm">
-                      <Link to="/notifications">
-                        {t('common.view', { defaultValue: 'View' })}
-                      </Link>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Tips Card */}
-            <div className="rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 p-6 text-white shadow-lg">
-              <h4 className="font-bold text-lg mb-2">{t('dashboard.tips.title', { defaultValue: 'Pro Tip' })}</h4>
-              <p className="text-indigo-100 text-sm leading-relaxed mb-4">
-                {t('dashboard.tips.content', { defaultValue: 'Regularly check your notifications and milestones to ensure you stay on track for graduation!' })}
-              </p>
-              <Button size="sm" variant="secondary" className="w-full bg-white/20 hover:bg-white/30 text-white border-0">
-                {t('common.learnMore', { defaultValue: 'Learn More' })}
-              </Button>
-            </div>
           </div>
         </div>
       </div>

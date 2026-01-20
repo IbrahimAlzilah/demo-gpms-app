@@ -87,51 +87,31 @@ export function AdminDashboardPage() {
   return (
     <MainLayout>
       <div className="space-y-8 animate-in fade-in duration-500 pb-10">
-
-        <DashboardHeader
-          title={t('dashboard.welcomeBack', { name: user?.name, defaultValue: `Welcome back, ${user?.name || 'Admin'}` })}
-          subtitle={t('dashboard.admin.subtitle', { defaultValue: 'Monitor system performance and manage users.' })}
-        >
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" asChild>
-              <Link to={ROUTES.ADMIN.USERS}>
-                <Users className="h-4 w-4 me-2" />
-                {t('dashboard.admin.users')}
-              </Link>
-            </Button>
-            <Button size="sm" asChild>
-              <Link to={ROUTES.ADMIN.REPORTS}>
-                <FileBarChart className="h-4 w-4 me-2" />
-                {t('dashboard.admin.reports')}
-              </Link>
-            </Button>
-          </div>
-        </DashboardHeader>
-
         {/* Stats Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <StatsCardComponent
             title={t('dashboard.admin.totalUsers')}
-            value={stats.totalUsers}
+            value={stats.usersTotal}
             icon={Users}
-            subValue={t('dashboard.admin.activeUsers', { count: stats.activeUsers })}
+            subValue={t('dashboard.admin.activeUsers', { count: stats.usersActive })}
             color="blue"
-            trend={{ value: 5, label: "new this week", positive: true }}
+            trend={{ value: stats.usersActive, label: "new this week", positive: true }}
           />
           <StatsCardComponent
             title={t('dashboard.admin.projects')}
-            value={stats.totalProjects}
+            value={stats.projectsTotal}
             icon={Briefcase}
             subValue={t('dashboard.admin.registeredProjects')}
             color="green"
-            trend={{ value: 8, label: "vs last month", positive: true }}
+            trend={{ value: stats.projectsTotal, label: "vs last month", positive: true }}
           />
           <StatsCardComponent
             title={t('dashboard.admin.proposals')}
-            value={stats.totalProposals}
+            value={stats.proposalsTotal}
             icon={FileText}
             subValue={t('dashboard.admin.submittedProposals')}
             color="purple"
+            trend={{ value: stats.proposalsTotal, label: "vs last month", positive: true }}
           />
           <StatsCardComponent
             title={t('dashboard.admin.systemStatus')}
@@ -139,7 +119,7 @@ export function AdminDashboardPage() {
             icon={Activity}
             subValue={systemHealth.databaseConnected ? t('dashboard.admin.allSystemsOperational') : t('dashboard.admin.databaseDisconnected', { defaultValue: 'Database disconnected' })}
             color={systemHealth.status === 'operational' ? 'green' : 'yellow'}
-            trend={systemHealth.status === 'operational' ? { value: 99.9, label: "uptime", positive: true } : undefined}
+            trend={systemHealth.status === 'operational' ? { value: systemHealth.databaseConnected ? 100 : 0, label: "uptime", positive: true } : undefined}
           />
         </div>
 

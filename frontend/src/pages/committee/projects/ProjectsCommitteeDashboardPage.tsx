@@ -114,19 +114,6 @@ export function ProjectsCommitteeDashboardPage() {
   return (
     <MainLayout>
       <div className="space-y-8 animate-in fade-in duration-500 pb-10">
-
-        <DashboardHeader
-          title={t('dashboard.welcomeBack', { name: user?.name, defaultValue: `Welcome back, ${user?.name || 'Committee Member'}` })}
-          subtitle={t('dashboard.committee.subtitle', { defaultValue: 'Oversee project lifecycle and manage committee tasks.' })}
-        >
-          <Button asChild size="sm" className="shadow-lg shadow-primary/20">
-            <Link to={ROUTES.PROJECTS_COMMITTEE.PERIODS}>
-              <Calendar className="me-2 h-4 w-4" />
-              {t('dashboard.committee.managePeriods', { defaultValue: 'Manage Periods' })}
-            </Link>
-          </Button>
-        </DashboardHeader>
-
         {/* Stats Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <StatsCardComponent

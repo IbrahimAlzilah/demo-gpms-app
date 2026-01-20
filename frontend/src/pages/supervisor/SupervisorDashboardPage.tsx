@@ -97,12 +97,10 @@ export function SupervisorDashboardPage() {
   return (
     <MainLayout>
       <div className="space-y-8 animate-in fade-in duration-500 pb-10">
-
-        <DashboardHeader
+        {/* <DashboardHeader
           title={t('dashboard.welcomeBack', { name: user?.name, defaultValue: `Welcome back, ${user?.name || 'Supervisor'}` })}
           subtitle={t('dashboard.supervisor.subtitle', { defaultValue: 'Manage your research projects and student progress.' })}
-        />
-
+        /> */}
         {/* Stats Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <StatsCardComponent
