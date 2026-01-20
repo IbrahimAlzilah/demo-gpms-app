@@ -95,11 +95,16 @@ export function PeriodForm({
 
   const periodTypeOptions = [
     { value: 'proposal_submission', label: t('committee.periods.types.proposalSubmission') },
+    { value: 'proposal_review', label: t('committee.periods.types.proposalReview') },
     { value: 'project_registration', label: t('committee.periods.types.projectRegistration') },
+    { value: 'project_execution', label: t('committee.periods.types.projectExecution') },
     { value: 'document_submission', label: t('committee.periods.types.documentSubmission') },
+    { value: 'deliverable_submission', label: t('committee.periods.types.deliverableSubmission') },
     { value: 'supervisor_evaluation', label: t('committee.periods.types.supervisorEvaluation') },
     { value: 'committee_evaluation', label: t('committee.periods.types.committeeEvaluation') },
     { value: 'discussion_evaluation', label: t('committee.periods.types.discussionEvaluation') },
+    { value: 'discussion_evaluation_1', label: t('committee.periods.types.discussionEvaluation1') },
+    { value: 'discussion_evaluation_2', label: t('committee.periods.types.discussionEvaluation2') },
     { value: 'final_discussion', label: t('committee.periods.types.finalDiscussion') },
     { value: 'grade_approval', label: t('committee.periods.types.gradeApproval') },
     { value: 'general', label: t('committee.periods.types.general') },

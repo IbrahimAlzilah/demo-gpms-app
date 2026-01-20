@@ -13,3 +13,4 @@ export * from './ProtectedRoute'
 export * from './StatsCard'
 
 export * from './ActionsDropdown'
+export * from './DashboardHeader'

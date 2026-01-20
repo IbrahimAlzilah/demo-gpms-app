@@ -32,6 +32,13 @@ class ProjectPolicy
             if ($project->students()->where('users.id', $user->id)->exists()) {
                 return true;
             }
+            // Or if student's group is assigned to this project
+            if ($project->assigned_group_id) {
+                $studentGroup = \App\Models\StudentGroup::find($project->assigned_group_id);
+                if ($studentGroup && ($studentGroup->leader_id === $user->id || $studentGroup->hasMember($user->id))) {
+                    return true;
+                }
+            }
             return false;
         }
 
@@ -102,6 +109,21 @@ class ProjectPolicy
         // Project must be available for registration
         if (!$project->isAvailableForRegistration()) {
             return false;
+        }
+
+        // If project is already assigned to a group, deny registration (unless it's the same group)
+        if ($project->assigned_group_id) {
+            // Allow if user's group is the assigned group (edge case during approval)
+            $userGroup = \App\Models\StudentGroup::where(function ($query) use ($user) {
+                $query->where('leader_id', $user->id)
+                    ->orWhereHas('members', function ($q) use ($user) {
+                        $q->where('users.id', $user->id);
+                    });
+            })->where('status', 'active')->first();
+
+            if (!$userGroup || $userGroup->id !== $project->assigned_group_id) {
+                return false;
+            }
         }
 
         // Student should not be already registered in this project

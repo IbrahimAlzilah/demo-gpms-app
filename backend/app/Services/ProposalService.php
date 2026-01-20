@@ -27,6 +27,8 @@ class ProposalService
             'proposed_supervisor_id' => $data['proposed_supervisor_id'] ?? null,
             'team_members' => $data['team_members'] ?? null,
             'submitter_id' => $submitter->id,
+            'student_group_id' => $data['student_group_id'] ?? null,
+            'target_project_id' => $data['target_project_id'] ?? null,
             'status' => 'pending_review',
         ]);
 
@@ -37,7 +39,7 @@ class ProposalService
             ->toArray();
 
         if (!empty($committeeMembers)) {
-            $submitterName = $submitter->name;
+            $submitterName = $proposal->studentGroup ? $proposal->studentGroup->name : $submitter->name;
             $this->notificationService->createForUsers(
                 $committeeMembers,
                 "تم تقديم مقترح جديد: {$proposal->title} من قبل {$submitterName}",
@@ -56,8 +58,11 @@ class ProposalService
     public function approve(Proposal $proposal, User $reviewer, ?int $projectId = null): Proposal
     {
         return DB::transaction(function () use ($proposal, $reviewer, $projectId) {
-            // If no project ID provided, create a new project from the proposal
-            if (!$projectId) {
+            // Determine target project: use provided ID, target_project_id, or create new
+            $targetProjectId = $projectId ?? $proposal->target_project_id;
+            
+            if (!$targetProjectId) {
+                // Create a new project from the proposal
                 $project = $this->projectService->createFromProposal([
                     'title' => $proposal->title,
                     'description' => $proposal->description,
@@ -67,17 +72,78 @@ class ProposalService
                     'keywords' => [],
                 ], $proposal->id);
 
-                $projectId = $project->id;
+                $targetProjectId = $project->id;
             }
 
             $proposal->update([
                 'status' => 'approved',
                 'reviewed_by' => $reviewer->id,
                 'reviewed_at' => now(),
-                'project_id' => $projectId,
+                'project_id' => $targetProjectId,
             ]);
 
             $proposal = $proposal->fresh();
+            $project = Project::findOrFail($targetProjectId);
+
+            // If proposal has a proposed supervisor, assign them pending approval
+            if ($proposal->proposed_supervisor_id && !$project->supervisor_id) {
+                $supervisor = User::find($proposal->proposed_supervisor_id);
+                if ($supervisor && $supervisor->isSupervisor()) {
+                    $this->projectService->assignSupervisor($project, $supervisor);
+                }
+            }
+
+            // If proposal has a student_group_id, auto-register the group
+            if ($proposal->student_group_id) {
+                $studentGroup = \App\Models\StudentGroup::find($proposal->student_group_id);
+                
+                if ($studentGroup && $studentGroup->status === 'active') {
+                    // Validate group meets registration requirements before auto-registering
+                    if (!$studentGroup->meetsRegistrationRequirements()) {
+                        $minMembers = app(\App\Services\SettingsService::class)->getGroupMinMembers();
+                        $maxMembers = app(\App\Services\SettingsService::class)->getGroupMaxMembers();
+                        $totalMembers = $studentGroup->getTotalMemberCount();
+                        
+                        if ($totalMembers < $minMembers) {
+                            throw new \Exception("Group must have at least {$minMembers} members to be registered via proposal approval");
+                        }
+                        
+                        if ($totalMembers > $maxMembers) {
+                            throw new \Exception("Group cannot have more than {$maxMembers} members");
+                        }
+                    }
+                    // Get all group members (including leader)
+                    $groupMembers = $studentGroup->members()->pluck('users.id')->push($studentGroup->leader_id)->unique();
+                    
+                    // Attach all group members to project
+                    foreach ($groupMembers as $memberId) {
+                        if (!$project->students()->where('users.id', $memberId)->exists()) {
+                            $project->students()->attach($memberId);
+                            $project->increment('current_students');
+                            
+                            // Create approved registration records for all members
+                            \App\Models\ProjectRegistration::updateOrCreate(
+                                [
+                                    'project_id' => $project->id,
+                                    'student_id' => $memberId,
+                                ],
+                                [
+                                    'status' => 'approved',
+                                    'submitted_at' => now(),
+                                    'reviewed_at' => now(),
+                                    'reviewed_by' => $reviewer->id,
+                                ]
+                            );
+                        }
+                    }
+
+                    // Mark project as assigned to this group
+                    $project->update([
+                        'assigned_group_id' => $studentGroup->id,
+                        'reserved_at' => now(),
+                    ]);
+                }
+            }
 
             // Notify submitter about approval
             if ($proposal->submitter) {

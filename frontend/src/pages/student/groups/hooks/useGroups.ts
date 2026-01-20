@@ -41,25 +41,21 @@ export function useCreateGroup() {
 
   return useMutation({
     mutationFn: ({
-      projectId,
+      name,
       members,
     }: {
-      projectId: string
+      name?: string | null
       members: User[]
     }) => {
       if (!user) throw new Error('User not authenticated')
-      return groupService.create(projectId, user.id, members)
+      return groupService.create(name || null, members)
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       // Invalidate all group queries
       queryClient.invalidateQueries({ queryKey: ['groups'] })
       // Invalidate specific student group query
       if (user) {
         queryClient.invalidateQueries({ queryKey: ['groups', 'student', user.id] })
-      }
-      // Invalidate project-specific group query
-      if (data?.projectId) {
-        queryClient.invalidateQueries({ queryKey: ['groups', 'project', data.projectId] })
       }
     },
   })

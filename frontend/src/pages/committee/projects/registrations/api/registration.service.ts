@@ -116,4 +116,24 @@ export const registrationService = {
     )
     return Array.isArray(response.data) ? response.data : []
   },
+
+  /**
+   * Manually register a student group to a project
+   * Project Committee can register students/groups without time window restrictions
+   */
+  create: async (data: {
+    projectId: string
+    studentGroupId: string
+    autoApprove?: boolean
+  }): Promise<ProjectRegistration> => {
+    const response = await apiClient.post<ProjectRegistration>(
+      '/projects-committee/registrations',
+      {
+        project_id: data.projectId,
+        student_group_id: data.studentGroupId,
+        auto_approve: data.autoApprove ?? true,
+      }
+    )
+    return response.data
+  },
 }

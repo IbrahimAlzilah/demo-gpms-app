@@ -40,9 +40,9 @@ export function useRegisterProject() {
   const { user } = useAuthStore();
 
   return useMutation({
-    mutationFn: (projectId: string) => {
+    mutationFn: ({ projectId, studentGroupId }: { projectId: string; studentGroupId: string }) => {
       if (!user) throw new Error("User not authenticated");
-      return projectService.register(projectId, user.id);
+      return projectService.register(projectId, user.id, studentGroupId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });

@@ -78,9 +78,10 @@ export const projectService = {
     }
   },
 
-  register: async (projectId: string, _studentId: string): Promise<ProjectRegistration> => {
+  register: async (projectId: string, _studentId: string, studentGroupId: string): Promise<ProjectRegistration> => {
     const response = await apiClient.post<ProjectRegistration>(
-      `/student/projects/${projectId}/register`
+      `/student/projects/${projectId}/register`,
+      { student_group_id: studentGroupId }
     )
     // The axios interceptor already extracts response.data.data, so response.data is the registration
     return response.data

@@ -4,8 +4,9 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
-import { LoadingSpinner, BlockContent } from '@/components/common'
+import { LoadingSpinner, BlockContent, DashboardHeader } from '@/components/common'
 import { useSupervisorDashboard } from './hooks/useSupervisorDashboard'
+import { useAuthStore } from '../../pages/auth/login'
 import {
   Briefcase,
   UserCheck,
@@ -16,6 +17,9 @@ import {
   CheckCircle2,
   AlertCircle,
   RefreshCw,
+  Clock,
+  Users,
+  Target
 } from 'lucide-react'
 import { StatsCard as StatsCardComponent } from '@/components/common'
 
@@ -23,6 +27,7 @@ export function SupervisorDashboardPage() {
   const { t, i18n } = useTranslation()
   const isRTL = i18n.dir() === 'rtl'
   const { data, isLoading, error, refetch } = useSupervisorDashboard()
+  const { user } = useAuthStore()
 
   const ArrowIcon = isRTL ? ArrowLeft : ArrowRight
 
@@ -31,10 +36,10 @@ export function SupervisorDashboardPage() {
     const date = new Date(dateString)
     const day = date.getDate()
     const month = date.toLocaleDateString(isRTL ? 'ar-SA' : 'en-US', { month: 'short' }).toUpperCase()
-    const time = date.toLocaleTimeString(isRTL ? 'ar-SA' : 'en-US', { 
-      hour: '2-digit', 
+    const time = date.toLocaleTimeString(isRTL ? 'ar-SA' : 'en-US', {
+      hour: '2-digit',
       minute: '2-digit',
-      hour12: true 
+      hour12: true
     })
     return { day, month, time }
   }
@@ -77,38 +82,47 @@ export function SupervisorDashboardPage() {
     )
   }
 
-  const stats = data.stats
-  const upcomingMeetings = data.upcomingMeetings
+  const stats = data?.stats || {
+    supervisedProjectsCount: 0,
+    pendingSupervisionRequests: 0,
+    upcomingMeetingsCount: 0,
+    pendingEvaluations: 0,
+    overdueMilestonesCount: 0,
+  }
+  const upcomingMeetings = data?.upcomingMeetings || []
+  const overdueMilestones = data?.overdueMilestones || []
+  const projectsNeedingAttention = data?.projectsNeedingAttention || []
+  const soonMilestones: Array<{ id: string; title: string; projectTitle: string; dueDate: string; daysUntil: number }> = [] // Not provided by backend yet
 
   return (
     <MainLayout>
       <div className="space-y-8 animate-in fade-in duration-500 pb-10">
 
-        {/* Page Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('nav.dashboard', { defaultValue: 'Dashboard' })}</h1>
-          <p className="text-sm text-muted-foreground">{new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-        </div>
+        <DashboardHeader
+          title={t('dashboard.welcomeBack', { name: user?.name, defaultValue: `Welcome back, ${user?.name || 'Supervisor'}` })}
+          subtitle={t('dashboard.supervisor.subtitle', { defaultValue: 'Manage your research projects and student progress.' })}
+        />
 
         {/* Stats Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <StatsCardComponent
             title={t('nav.projects')}
-            value={stats.projects}
+            value={stats.supervisedProjectsCount}
             icon={Briefcase}
             subValue={t('supervisor.projectsUnderSupervision')}
             color="blue"
           />
           <StatsCardComponent
             title={t('nav.supervisionRequests')}
-            value={stats.pendingRequests}
+            value={stats.pendingSupervisionRequests}
             icon={UserCheck}
             subValue={t('supervisor.pendingRequests')}
             color="yellow"
+            trend={stats.pendingSupervisionRequests > 0 ? { value: stats.pendingSupervisionRequests, label: "pending actions", positive: false } : undefined}
           />
           <StatsCardComponent
             title={t('nav.meetings')}
-            value={stats.upcomingMeetings}
+            value={stats.upcomingMeetingsCount}
             icon={Calendar}
             subValue={t('supervisor.upcomingMeetings')}
             color="green"
@@ -119,6 +133,7 @@ export function SupervisorDashboardPage() {
             icon={ClipboardCheck}
             subValue={t('supervisor.pendingEvaluations')}
             color="purple"
+            trend={stats.pendingEvaluations > 0 ? { value: stats.pendingEvaluations, label: "needs grading", positive: false } : undefined}
           />
         </div>
 
@@ -130,12 +145,12 @@ export function SupervisorDashboardPage() {
             <div className="space-y-4">
               <h2 className="text-lg font-semibold tracking-tight">{t('supervisor.urgentTasks')}</h2>
 
-              <div className="grid gap-3">
-                {stats.pendingRequests > 0 && (
+              <div className="grid gap-4">
+                {stats.pendingSupervisionRequests > 0 && (
                   <TaskRow
                     icon={UserCheck}
                     title={t('supervisor.pendingRequests')}
-                    description={t('supervisor.youHavePendingRequests', { count: stats.pendingRequests, defaultValue: `You have ${stats.pendingRequests} pending supervision requests.` })}
+                    description={t('supervisor.youHavePendingRequests', { count: stats.pendingSupervisionRequests, defaultValue: `You have ${stats.pendingSupervisionRequests} pending supervision requests.` })}
                     actionLabel={t('supervisor.review')}
                     actionLink={ROUTES.SUPERVISOR.SUPERVISION_REQUESTS}
                     type="warning"
@@ -155,29 +170,103 @@ export function SupervisorDashboardPage() {
                   />
                 )}
 
-                {/* Example of empty state if no urgent tasks */}
-                {stats.pendingRequests === 0 && stats.pendingEvaluations === 0 && (
-                  <div className="flex flex-col items-center justify-center p-8 text-center rounded-xl border border-dashed border-muted-foreground/25 bg-muted/5">
-                    <div className="bg-green-100 dark:bg-green-900/20 p-3 rounded-full mb-4">
-                      <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
+                {stats.overdueMilestonesCount > 0 && (
+                  <TaskRow
+                    icon={AlertCircle}
+                    title={t('supervisor.overdueMilestones', { defaultValue: 'Overdue Milestones' })}
+                    description={t('supervisor.youHaveOverdueMilestones', { count: stats.overdueMilestonesCount, defaultValue: `You have ${stats.overdueMilestonesCount} overdue milestones.` })}
+                    actionLabel={t('nav.projects')}
+                    actionLink={ROUTES.SUPERVISOR.PROJECTS}
+                    type="error"
+                    ArrowIcon={ArrowIcon}
+                  />
+                )}
+
+                {/* Empty state if no urgent tasks */}
+                {stats.pendingSupervisionRequests === 0 && stats.pendingEvaluations === 0 && stats.overdueMilestonesCount === 0 && (
+                  <div className="flex flex-col items-center justify-center p-8 text-center rounded-xl border border-dashed border-primary/20 bg-primary/5">
+                    <div className="bg-green-100 dark:bg-green-900/20 p-4 rounded-full mb-4 ring-4 ring-white dark:ring-background shadow-sm">
+                      <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
                     </div>
-                    <h3 className="font-semibold">{t('supervisor.allCaughtUp', { defaultValue: 'All caught up!' })}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {t('supervisor.noUrgentTasks', { defaultValue: 'You have no urgent tasks requiring attention.' })}
+                    <h3 className="font-semibold text-lg">{t('supervisor.allCaughtUp', { defaultValue: 'All caught up!' })}</h3>
+                    <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
+                      {t('supervisor.noUrgentTasks', { defaultValue: 'You have no pending requests or evaluations. Great job!' })}
                     </p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Recent Activity Placeholder */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold tracking-tight">{t('dashboard.recentActivity', { defaultValue: 'Recent Activity' })}</h2>
+            {/* Milestones Section */}
+            {(overdueMilestones.length > 0 || soonMilestones.length > 0) && (
+              <div className="space-y-4">
+                <h2 className="text-lg font-semibold tracking-tight flex items-center gap-2">
+                  <Target className="h-5 w-5 text-muted-foreground" />
+                  {t('supervisor.milestones', { defaultValue: 'Milestones' })}
+                </h2>
+                <div className="space-y-3">
+                  {overdueMilestones.map((milestone) => (
+                    <div
+                      key={milestone.id}
+                      className="flex items-start gap-4 p-4 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50/50 dark:bg-red-900/10"
+                    >
+                      <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 shrink-0">
+                        <AlertCircle className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-sm">{milestone.title}</h3>
+                        <p className="text-xs text-muted-foreground mt-1">{milestone.projectTitle}</p>
+                        <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                          {t('supervisor.daysOverdue', { count: milestone.daysOverdue, defaultValue: `${milestone.daysOverdue} days overdue` })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  {soonMilestones.map((milestone) => (
+                    <div
+                      key={milestone.id}
+                      className="flex items-start gap-4 p-4 rounded-xl border border-border bg-card hover:shadow-md transition-all"
+                    >
+                      <div className="p-2 rounded-lg bg-yellow-50 text-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-400 shrink-0">
+                        <Target className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-sm">{milestone.title}</h3>
+                        <p className="text-xs text-muted-foreground mt-1">{milestone.projectTitle}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t('supervisor.dueIn', { count: milestone.daysUntil, defaultValue: `Due in ${milestone.daysUntil} days` })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="opacity-50 pointer-events-none filter blur-[1px] select-none">
-                <div className="rounded-xl border border-border bg-card p-6 text-center text-muted-foreground">
-                  {t('dashboard.activityComingSoon', { defaultValue: 'Recent activity feed coming soon...' })}
+            )}
+
+            {/* Quick Actions Grid for Supervisor */}
+            <div>
+              <h2 className="text-lg font-semibold tracking-tight mb-4">{t('supervisor.management', { defaultValue: 'Management' })}</h2>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="group rounded-xl border border-border bg-card p-6 transition-all hover:shadow-md hover:border-primary/20 cursor-pointer">
+                  <div className="mb-4 inline-flex p-3 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 group-hover:scale-110 transition-transform">
+                    <Users className="h-6 w-6" />
+                  </div>
+                  <h3 className="font-semibold text-base mb-1 group-hover:text-primary transition-colors">{t('nav.projects')}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">Monitor student progress and view project details.</p>
+                  <Button variant="outline" size="sm" asChild className="w-full">
+                    <Link to={ROUTES.SUPERVISOR.PROJECTS}>{t('common.viewAll')}</Link>
+                  </Button>
+                </div>
+
+                <div className="group rounded-xl border border-border bg-card p-6 transition-all hover:shadow-md hover:border-primary/20 cursor-pointer">
+                  <div className="mb-4 inline-flex p-3 rounded-lg bg-yellow-50 text-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-400 group-hover:scale-110 transition-transform">
+                    <UserCheck className="h-6 w-6" />
+                  </div>
+                  <h3 className="font-semibold text-base mb-1 group-hover:text-primary transition-colors">{t('nav.supervisionRequests')}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">Review and approve new supervision requests.</p>
+                  <Button variant="outline" size="sm" asChild className="w-full">
+                    <Link to={ROUTES.SUPERVISOR.SUPERVISION_REQUESTS}>{t('supervisor.review')}</Link>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -187,53 +276,38 @@ export function SupervisorDashboardPage() {
           {/* Sidebar Area (1/3) */}
           <div className="space-y-8">
 
-            {/* Quick Actions */}
-            <div className="space-y-4">
-              <h3 className="text-base font-semibold tracking-tight">{t('supervisor.quickActions')}</h3>
-              <div className="grid grid-cols-1 gap-2">
-                <QuickActionButton
-                  to={ROUTES.SUPERVISOR.SUPERVISION_REQUESTS}
-                  icon={UserCheck}
-                  label={t('nav.supervisionRequests')}
-                />
-                <QuickActionButton
-                  to={ROUTES.SUPERVISOR.PROJECTS}
-                  icon={Briefcase}
-                  label={t('nav.projects')}
-                />
-              </div>
-            </div>
-
             {/* Upcoming Meetings Preview */}
-            <Card className="overflow-hidden border-border bg-card shadow-none">
-              <CardHeader className="border-b border-border/50 bg-muted/20 pb-4">
-                <CardTitle className="text-base font-medium flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-primary" />
-                  {t('supervisor.upcomingMeetings')}
+            <Card className="overflow-hidden border-border bg-card shadow-sm h-full">
+              <CardHeader className="border-b border-border/40 bg-muted/10 pb-4">
+                <CardTitle className="text-base font-medium flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-primary" />
+                    {t('supervisor.upcomingMeetings')}
+                  </div>
+                  {upcomingMeetings.length > 0 && <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-primary/10 text-primary">{upcomingMeetings.length}</span>}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-6">
-                <div className="space-y-4">
+              <CardContent className="pt-0">
+                <div className="space-y-0 divide-y divide-border/50">
                   {upcomingMeetings.length > 0 ? (
                     <>
                       {upcomingMeetings.slice(0, 5).map((meeting) => {
                         const { day, month, time } = formatMeetingDate(meeting.scheduledDate)
                         return (
-                          <div key={meeting.id} className="flex items-start gap-4">
-                            <div className="bg-background border px-2 py-1.5 rounded-lg text-center min-w-[52px]">
-                              <div className="font-bold text-primary text-lg">{day}</div>
-                              <div className="text-[10px] uppercase text-muted-foreground font-semibold">{month}</div>
+                          <div key={meeting.id} className="flex items-start gap-4 py-4 hover:bg-muted/5 transition-colors px-1">
+                            <div className="bg-background border shadow-sm px-2 py-1.5 rounded-lg text-center min-w-[52px] shrink-0">
+                              <div className="font-bold text-primary text-xl">{day}</div>
+                              <div className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">{month}</div>
                             </div>
-                            <div className="space-y-0.5 flex-1">
-                              <p className="font-medium text-sm">{meeting.projectTitle}</p>
-                              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                <Calendar className="h-3 w-3" /> {time}
-                                {meeting.location && ` - ${meeting.location}`}
-                              </p>
-                              {meeting.agenda && (
-                                <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
-                                  {meeting.agenda}
-                                </p>
+                            <div className="space-y-1 flex-1 min-w-0">
+                              <p className="font-medium text-sm truncate pr-2">{meeting.projectTitle}</p>
+                              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                <span className="flex items-center gap-1">
+                                  <Clock className="h-3 w-3" /> {time}
+                                </span>
+                              </div>
+                              {meeting.location && (
+                                <p className="text-xs text-muted-foreground truncate">{meeting.location}</p>
                               )}
                             </div>
                           </div>
@@ -241,14 +315,19 @@ export function SupervisorDashboardPage() {
                       })}
                     </>
                   ) : (
-                    <p className="text-sm text-muted-foreground">{t('supervisor.noMeetings', { defaultValue: 'No upcoming meetings scheduled.' })}</p>
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <Calendar className="h-10 w-10 text-muted-foreground/30 mb-3" />
+                      <p className="text-sm text-muted-foreground">{t('supervisor.noMeetings', { defaultValue: 'No upcoming meetings scheduled.' })}</p>
+                    </div>
                   )}
 
-                  <Button variant="outline" className="w-full text-xs h-9 mt-2" size="sm" asChild>
-                    <Link to={ROUTES.SUPERVISOR.PROJECTS}>
-                      {t('common.viewCalendar', { defaultValue: 'View Calendar' })}
-                    </Link>
-                  </Button>
+                  <div className="pt-4 pb-2">
+                    <Button variant="outline" className="w-full text-xs h-9" size="sm" asChild>
+                      <Link to={ROUTES.SUPERVISOR.PROJECTS}>
+                        {t('common.viewCalendar', { defaultValue: 'View Full Calendar' })}
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -265,16 +344,16 @@ export function SupervisorDashboardPage() {
 
 function TaskRow({ icon: Icon, title, description, actionLabel, actionLink, type, ArrowIcon }: any) {
   const typeStyles = type === 'error'
-    ? { icon: "text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400", border: 'hover:border-red-200' }
-    : { icon: "text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-400", border: 'hover:border-orange-200' };
+    ? { icon: "text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400", border: 'group-hover:border-red-200 dark:group-hover:border-red-900/50' }
+    : { icon: "text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400", border: 'group-hover:border-amber-200 dark:group-hover:border-amber-900/50' };
 
   // @ts-ignore
   const { icon: iconClass, border: borderClass } = typeStyles;
 
   return (
-    <div className={cn("group flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:bg-accent/5", borderClass)}>
+    <div className={cn("group flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:shadow-md hover:translate-x-1 duration-300", borderClass)}>
       <div className="flex items-start gap-4 w-full sm:w-auto">
-        <div className={cn("p-2 rounded-lg shrink-0", iconClass)}>
+        <div className={cn("p-2.5 rounded-lg shrink-0", iconClass)}>
           <Icon className="h-5 w-5" />
         </div>
         <div className="space-y-1">
@@ -282,24 +361,12 @@ function TaskRow({ icon: Icon, title, description, actionLabel, actionLink, type
           <p className="text-xs text-muted-foreground line-clamp-2 md:line-clamp-1">{description}</p>
         </div>
       </div>
-      <Button asChild variant="ghost" size="sm" className="shrink-0 w-full sm:w-auto">
+      <Button asChild size="sm" className="shrink-0 w-full sm:w-auto shadow-sm">
         <Link to={actionLink}>
           {actionLabel}
           <ArrowIcon className="ms-2 h-4 w-4" />
         </Link>
       </Button>
     </div>
-  )
-}
-
-
-function QuickActionButton({ to, icon: Icon, label }: any) {
-  return (
-    <Button asChild variant="outline" className="w-full justify-start h-11 px-4 bg-card hover:bg-accent hover:text-accent-foreground border-border shadow-none transition-all duration-200">
-      <Link to={to} className="flex items-center">
-        <Icon className="h-4 w-4 mr-3 text-muted-foreground group-hover:text-primary transition-colors" />
-        <span className="font-medium">{label}</span>
-      </Link>
-    </Button>
   )
 }

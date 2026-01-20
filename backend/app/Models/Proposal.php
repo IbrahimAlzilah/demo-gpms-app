@@ -23,6 +23,8 @@ class Proposal extends Model
         'reviewed_by',
         'reviewed_at',
         'project_id',
+        'student_group_id',
+        'target_project_id',
     ];
 
     protected $casts = [
@@ -61,6 +63,22 @@ class Proposal extends Model
     public function proposedSupervisor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'proposed_supervisor_id');
+    }
+
+    /**
+     * Get the student group that submitted this proposal
+     */
+    public function studentGroup(): BelongsTo
+    {
+        return $this->belongsTo(StudentGroup::class, 'student_group_id');
+    }
+
+    /**
+     * Get the target project for this proposal (during registration window)
+     */
+    public function targetProject(): BelongsTo
+    {
+        return $this->belongsTo(Project::class, 'target_project_id');
     }
 
     /**

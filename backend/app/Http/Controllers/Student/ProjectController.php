@@ -73,6 +73,50 @@ class ProjectController extends Controller
             ], 403);
         }
 
+        // Require student_group_id
+        $validated = $request->validate([
+            'student_group_id' => 'required|exists:student_groups,id',
+        ]);
+
+        $studentGroup = \App\Models\StudentGroup::findOrFail($validated['student_group_id']);
+
+        // Validate student is a member of the group
+        if (!$studentGroup->hasMember($user->id) && $studentGroup->leader_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You must be a member of the selected group to register',
+            ], 403);
+        }
+
+        // Validate group meets registration requirements (min 2, max 5 members)
+        if (!$studentGroup->meetsRegistrationRequirements()) {
+            $minMembers = app(\App\Services\SettingsService::class)->getGroupMinMembers();
+            $maxMembers = app(\App\Services\SettingsService::class)->getGroupMaxMembers();
+            $totalMembers = $studentGroup->getTotalMemberCount();
+            
+            if ($totalMembers < $minMembers) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Group must have at least {$minMembers} members to register for a project",
+                ], 403);
+            }
+            
+            if ($totalMembers > $maxMembers) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Group cannot have more than {$maxMembers} members to register for a project",
+                ], 403);
+            }
+        }
+
+        // Check if project is already assigned to another group
+        if ($project->assigned_group_id && $project->assigned_group_id !== $studentGroup->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Project is already assigned to another group',
+            ], 403);
+        }
+
         if (!$project->isAvailableForRegistration()) {
             return response()->json([
                 'success' => false,
@@ -80,65 +124,44 @@ class ProjectController extends Controller
             ], 403);
         }
 
-        if ($project->students()->where('users.id', $user->id)->exists()) {
+        // Check if any group member is already registered in this project
+        $groupMembers = $studentGroup->members()->pluck('users.id')->push($studentGroup->leader_id)->unique();
+        $alreadyRegistered = $project->students()->whereIn('users.id', $groupMembers)->exists();
+        
+        if ($alreadyRegistered) {
             return response()->json([
                 'success' => false,
-                'message' => 'You are already registered in this project',
+                'message' => 'One or more group members are already registered in this project',
             ], 403);
         }
 
-        // Check if student already has a pending registration for this project
-        $existingRegistration = ProjectRegistration::where('student_id', $user->id)
-            ->where('project_id', $project->id)
+        // Check if group already has a pending registration for this project
+        $existingRegistration = ProjectRegistration::where('project_id', $project->id)
+            ->whereIn('student_id', $groupMembers)
             ->where('status', 'pending')
             ->exists();
 
         if ($existingRegistration) {
             return response()->json([
                 'success' => false,
-                'message' => 'You already have a pending registration for this project',
+                'message' => 'Group already has a pending registration for this project',
             ], 403);
         }
 
-        // Check if student has a rejected registration for this same project - prevent re-registration
-        $rejectedRegistration = ProjectRegistration::where('student_id', $user->id)
-            ->where('project_id', $project->id)
-            ->where('status', 'rejected')
-            ->exists();
-
-        if ($rejectedRegistration) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Your registration request for this project has been rejected. You cannot re-register for the same project.',
-            ], 403);
-        }
-
-        // Check if student already has a pending registration for any project
-        $hasPendingRegistration = ProjectRegistration::where('student_id', $user->id)
-            ->where('status', 'pending')
-            ->exists();
-
-        if ($hasPendingRegistration) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You already have a pending registration for another project',
-            ], 403);
-        }
-
-        // Check if student already has an approved project
-        $hasProject = Project::whereHas('students', function ($query) use ($user) {
-            $query->where('users.id', $user->id);
+        // Check if any group member already has an approved project registration
+        $hasProject = Project::whereHas('students', function ($query) use ($groupMembers) {
+            $query->whereIn('users.id', $groupMembers);
         })->exists();
 
         if ($hasProject) {
             return response()->json([
                 'success' => false,
-                'message' => 'You are already registered in another project',
+                'message' => 'One or more group members are already registered in another project',
             ], 403);
         }
 
         try {
-            $registration = $this->projectService->registerStudent($project, $user);
+            $registration = $this->projectService->registerStudentGroup($project, $studentGroup, $user);
 
             return response()->json([
                 'success' => true,

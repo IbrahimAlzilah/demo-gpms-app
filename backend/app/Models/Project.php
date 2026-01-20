@@ -29,12 +29,15 @@ class Project extends Model
         'supervisor_approval_status',
         'supervisor_approval_comments',
         'supervisor_approval_at',
+        'assigned_group_id',
+        'reserved_at',
     ];
 
     protected $casts = [
         'keywords' => 'array',
         'status' => ProjectStatus::class,
         'supervisor_approval_at' => 'datetime',
+        'reserved_at' => 'datetime',
     ];
 
     /**
@@ -55,11 +58,19 @@ class Project extends Model
     }
 
     /**
-     * Get the group working on this project
+     * Get the group working on this project (legacy - project-bound groups)
      */
     public function group(): HasOne
     {
         return $this->hasOne(ProjectGroup::class);
+    }
+
+    /**
+     * Get the student group assigned to this project
+     */
+    public function assignedGroup(): BelongsTo
+    {
+        return $this->belongsTo(StudentGroup::class, 'assigned_group_id');
     }
 
     /**
@@ -165,6 +176,11 @@ class Project extends Model
      */
     public function isAvailableForRegistration(): bool
     {
+        // Project is not available if already assigned to a group
+        if ($this->assigned_group_id) {
+            return false;
+        }
+        
         return $this->status === ProjectStatus::AVAILABLE_FOR_REGISTRATION
             && $this->current_students < $this->max_students;
     }

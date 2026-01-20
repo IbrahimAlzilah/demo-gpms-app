@@ -50,6 +50,10 @@ export interface Proposal extends BaseEntity {
   reviewedAt?: string;
   projectId?: string;
   project?: Project;
+  studentGroupId?: string;
+  studentGroup?: StudentGroup;
+  targetProjectId?: string;
+  targetProject?: Project;
 }
 
 export interface ProjectGroup extends BaseEntity {
@@ -60,6 +64,17 @@ export interface ProjectGroup extends BaseEntity {
   leader?: User;
   maxMembers: number;
   groupName?: string;
+}
+
+export interface StudentGroup extends BaseEntity {
+  name?: string;
+  leaderId: string;
+  leader?: User;
+  members: User[];
+  status: "active" | "archived";
+  memberCount: number;
+  maxMembers: number;
+  minMembers: number;
 }
 
 export type ProjectRegistrationStatus =

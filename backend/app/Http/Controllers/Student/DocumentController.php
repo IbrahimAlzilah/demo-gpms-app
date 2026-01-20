@@ -64,6 +64,15 @@ class DocumentController extends Controller
                     'message' => 'You must be registered in this project to upload documents',
                 ], 403);
             }
+
+            // Check if deliverable submission window is active (students restricted by this window)
+            $timeWindowService = app(\App\Services\TimeWindowService::class);
+            if (!$timeWindowService->isWindowActive(\App\Enums\TimePeriodType::DELIVERABLE_SUBMISSION)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Document submission is only allowed during the deliverable submission window',
+                ], 403);
+            }
             
             $document = $this->documentService->upload(
                 $project,

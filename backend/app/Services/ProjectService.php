@@ -124,6 +124,59 @@ class ProjectService
     }
 
     /**
+     * Register a student group to a project
+     */
+    public function registerStudentGroup(Project $project, \App\Models\StudentGroup $group, User $submitter): ProjectRegistration
+    {
+        if (!$project->isAvailableForRegistration()) {
+            throw new \Exception('Project is not available for registration');
+        }
+
+        // Check if project is already assigned to another group
+        if ($project->assigned_group_id && $project->assigned_group_id !== $group->id) {
+            throw new \Exception('Project is already assigned to another group');
+        }
+
+        // Get all group members (including leader)
+        $groupMembers = $group->members()->pluck('users.id')->push($group->leader_id)->unique();
+
+        // Check if any member is already registered
+        $alreadyRegistered = $project->students()->whereIn('users.id', $groupMembers)->exists();
+        if ($alreadyRegistered) {
+            throw new \Exception('One or more group members are already registered in this project');
+        }
+
+        // Create registration for the submitter (representing the group)
+        return DB::transaction(function () use ($project, $group, $submitter, $groupMembers) {
+            // Create registration record for the submitter
+            $registration = ProjectRegistration::create([
+                'project_id' => $project->id,
+                'student_id' => $submitter->id,
+                'status' => 'pending',
+                'submitted_at' => now(),
+            ]);
+
+            // Notify projects committee about new group registration
+            $committeeMembers = User::where('role', 'projects_committee')
+                ->where('status', 'active')
+                ->pluck('id')
+                ->toArray();
+
+            if (!empty($committeeMembers) && $this->notificationService) {
+                $this->notificationService->createForUsers(
+                    $committeeMembers,
+                    "طلب تسجيل جديد من المجموعة {$group->name} في المشروع: {$project->title}",
+                    'registration_submitted',
+                    'project',
+                    $project->id
+                );
+            }
+
+            return $registration;
+        });
+    }
+
+    /**
      * Approve a project registration
      */
     public function approveRegistration(ProjectRegistration $registration, User $reviewer): ProjectRegistration
@@ -141,10 +194,50 @@ class ProjectService
 
             $project = $registration->project;
             
-            // Only attach if not already attached
-            if (!$project->students()->where('users.id', $registration->student_id)->exists()) {
-                $project->students()->attach($registration->student_id);
-                $project->increment('current_students');
+            // Check if this registration is from a group by finding the student's active group
+            $studentGroup = \App\Models\StudentGroup::where(function ($query) use ($registration) {
+                $query->where('leader_id', $registration->student_id)
+                    ->orWhereHas('members', function ($q) use ($registration) {
+                        $q->where('users.id', $registration->student_id);
+                    });
+            })->where('status', 'active')->first();
+
+            if ($studentGroup) {
+                // This is a group registration - attach all group members
+                $groupMembers = $studentGroup->members()->pluck('users.id')->push($studentGroup->leader_id)->unique();
+                
+                foreach ($groupMembers as $memberId) {
+                    if (!$project->students()->where('users.id', $memberId)->exists()) {
+                        $project->students()->attach($memberId);
+                        $project->increment('current_students');
+                        
+                        // Create approved registration records for all members
+                        ProjectRegistration::updateOrCreate(
+                            [
+                                'project_id' => $project->id,
+                                'student_id' => $memberId,
+                            ],
+                            [
+                                'status' => 'approved',
+                                'submitted_at' => now(),
+                                'reviewed_at' => now(),
+                                'reviewed_by' => $reviewer->id,
+                            ]
+                        );
+                    }
+                }
+
+                // Mark project as assigned to this group
+                $project->update([
+                    'assigned_group_id' => $studentGroup->id,
+                    'reserved_at' => now(),
+                ]);
+            } else {
+                // Individual registration (backward compatibility)
+                if (!$project->students()->where('users.id', $registration->student_id)->exists()) {
+                    $project->students()->attach($registration->student_id);
+                    $project->increment('current_students');
+                }
             }
 
             return $registration->fresh();

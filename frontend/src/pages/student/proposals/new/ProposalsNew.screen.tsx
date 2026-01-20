@@ -25,6 +25,7 @@ export function ProposalsNew({ open, onClose, onSuccess }: ProposalsNewProps) {
         error={form.error}
         isPeriodActive={form.isPeriodActive}
         periodLoading={form.periodLoading}
+        isRegistrationWindow={form.isRegistrationWindow}
         handleSubmit={form.handleSubmit}
         handleFileChange={form.handleFileChange}
         watch={form.watch}

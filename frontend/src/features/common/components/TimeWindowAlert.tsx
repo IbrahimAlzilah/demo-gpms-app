@@ -2,6 +2,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Calendar, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useWindowCheck } from '../hooks/useTimeWindows';
 import { useTranslation } from 'react-i18next';
+import { useAuthStore } from '@/pages/auth/login';
 
 interface TimeWindowAlertProps {
   windowType: string;
@@ -15,7 +16,14 @@ export const TimeWindowAlert = ({
   showWhenOpen = true,
 }: TimeWindowAlertProps) => {
   const { t } = useTranslation();
+  const { user } = useAuthStore();
   const { data: windowCheck, isLoading } = useWindowCheck(windowType);
+
+  // Project Committee members are not restricted by time windows
+  // Don't show time window alerts to them
+  if (user?.role === 'projects_committee') {
+    return null;
+  }
 
   if (isLoading || !windowCheck) {
     return null;

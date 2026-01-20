@@ -16,16 +16,21 @@ import {
   Clock,
   AlertCircle,
   RefreshCw,
+  CheckCircle2,
+  ChevronRight,
+  Hourglass
 } from 'lucide-react'
-import { StatsCard as StatsCardComponent, LoadingSpinner, BlockContent } from '@/components/common'
+import { StatsCard as StatsCardComponent, LoadingSpinner, BlockContent, DashboardHeader } from '@/components/common'
 import { cn } from '@/lib/utils'
 import { useProjectsCommitteeDashboard } from './hooks/useProjectsCommitteeDashboard'
 import type { PeriodType } from '@/types/period.types'
+import { useAuthStore } from '../../../pages/auth/login'
 
 export function ProjectsCommitteeDashboardPage() {
   const { t, i18n } = useTranslation()
   const isRTL = i18n.dir() === 'rtl'
   const { data, isLoading, error, refetch } = useProjectsCommitteeDashboard()
+  const { user } = useAuthStore()
 
   const ArrowIcon = isRTL ? ArrowLeft : ArrowRight
 
@@ -91,12 +96,37 @@ export function ProjectsCommitteeDashboardPage() {
     )
   }
 
-  const stats = data.stats
-  const currentPhase = data.currentPhase
+  const stats = data?.stats || {
+    pendingProposals: 0,
+    pendingRequests: 0,
+    draftProjectsToAnnounce: 0,
+    projectsWithoutSupervisor: 0,
+    pendingRegistrations: 0,
+    gradesPendingApproval: 0,
+  }
+  const currentPhase = data?.currentPhase || {
+    period: null,
+    progressPercent: 0,
+    endsInDays: null,
+    nextPeriod: null,
+  }
 
   return (
     <MainLayout>
       <div className="space-y-8 animate-in fade-in duration-500 pb-10">
+
+        <DashboardHeader
+          title={t('dashboard.welcomeBack', { name: user?.name, defaultValue: `Welcome back, ${user?.name || 'Committee Member'}` })}
+          subtitle={t('dashboard.committee.subtitle', { defaultValue: 'Oversee project lifecycle and manage committee tasks.' })}
+        >
+          <Button asChild size="sm" className="shadow-lg shadow-primary/20">
+            <Link to={ROUTES.PROJECTS_COMMITTEE.PERIODS}>
+              <Calendar className="me-2 h-4 w-4" />
+              {t('dashboard.committee.managePeriods', { defaultValue: 'Manage Periods' })}
+            </Link>
+          </Button>
+        </DashboardHeader>
+
         {/* Stats Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <StatsCardComponent
@@ -105,6 +135,7 @@ export function ProjectsCommitteeDashboardPage() {
             icon={FileText}
             subValue={t('dashboard.committee.pendingReview')}
             color="blue"
+            trend={stats.pendingProposals > 10 ? { value: stats.pendingProposals, label: "high load", positive: false } : undefined}
           />
           <StatsCardComponent
             title={t('dashboard.committee.requests')}
@@ -115,17 +146,18 @@ export function ProjectsCommitteeDashboardPage() {
           />
           <StatsCardComponent
             title={t('dashboard.committee.projects')}
-            value={stats.projectsToAnnounce}
+            value={stats.draftProjectsToAnnounce}
             icon={Megaphone}
             subValue={t('dashboard.committee.projectsToAnnounce')}
-            color="green"
+            color="purple"
           />
           <StatsCardComponent
             title={t('dashboard.committee.supervisors')}
-            value={stats.supervisorsToAssign}
+            value={stats.projectsWithoutSupervisor}
             icon={UserPlus}
             subValue={t('dashboard.committee.projectsNeedSupervisors')}
             color="green"
+            trend={stats.projectsWithoutSupervisor > 0 ? { value: stats.projectsWithoutSupervisor, label: "unassigned", positive: false } : { value: 100, label: "assigned", positive: true }}
           />
         </div>
 
@@ -133,9 +165,97 @@ export function ProjectsCommitteeDashboardPage() {
           {/* Main Content Area (2/3) */}
           <div className="lg:col-span-2 space-y-8">
 
+            {/* Current Phase Card - Hero Element */}
+            <Card className="overflow-hidden border-border bg-gradient-to-br from-card to-card/50 shadow-sm relative">
+              <div className="absolute top-0 right-0 p-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+              <CardHeader className="border-b border-border/40 bg-muted/10">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg font-medium flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-primary" />
+                    {t('dashboard.committee.currentPhase', { defaultValue: 'Current Phase' })}
+                  </CardTitle>
+                  {currentPhase.period && (
+                    <div className={cn(
+                      "px-2.5 py-0.5 rounded-full text-xs font-medium border",
+                      currentPhase.period.isActive ? "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800" : "bg-muted text-muted-foreground"
+                    )}>
+                      {currentPhase.period.isActive ? "Active Now" : "Scheduled"}
+                    </div>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="pt-8 pb-8 relative z-10">
+                {currentPhase.period ? (
+                  <div className="space-y-8">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div>
+                        <h3 className="text-2xl font-bold tracking-tight mb-1">
+                          {currentPhase.period.name || getPeriodTypeLabel(currentPhase.period.type)}
+                        </h3>
+                        <p className="text-muted-foreground">
+                          {new Date(currentPhase.period.startDate).toLocaleDateString()} - {new Date(currentPhase.period.endDate).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-3xl font-bold text-primary">
+                          {currentPhase.endsInDays !== null ? currentPhase.endsInDays : '-'} <span className="text-sm font-normal text-muted-foreground">days left</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm font-medium">
+                        <span>Progress</span>
+                        <span>{currentPhase.progressPercent}%</span>
+                      </div>
+                      <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary transition-all duration-1000 ease-out relative group"
+                          style={{ width: `${Math.min(100, Math.max(0, currentPhase.progressPercent))}%` }}
+                        >
+                          <div className="absolute inset-0 bg-white/20 group-hover:bg-white/30 transition-colors"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {currentPhase.nextPeriod && (
+                      <div className="flex items-center gap-3 p-4 rounded-xl bg-muted/50 border border-border/50">
+                        <div className="p-2 rounded-full bg-background border shadow-sm">
+                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase font-semibold tracking-wider">{t('common.next', { defaultValue: 'Up Next' })}</p>
+                          <p className="font-medium text-sm">{currentPhase.nextPeriod.name || getPeriodTypeLabel(currentPhase.nextPeriod.type)}</p>
+                        </div>
+                        <div className="ml-auto text-xs text-muted-foreground bg-background px-2 py-1 rounded border">
+                          Starts {new Date(currentPhase.nextPeriod.startDate).toLocaleDateString()}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-6 text-center">
+                    <div className="p-4 rounded-full bg-muted mb-4 animate-pulse">
+                      <Clock className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <h3 className="font-semibold text-lg mb-1">{t('dashboard.committee.noActivePhase', { defaultValue: 'No active phase' })}</h3>
+                    <p className="text-sm text-muted-foreground max-w-sm">
+                      There is no active phase currently. Check the schedule to manage upcoming periods.
+                    </p>
+                    <Button className="mt-4" variant="outline" asChild>
+                      <Link to={ROUTES.PROJECTS_COMMITTEE.PERIODS}>{t('dashboard.committee.managePeriods')}</Link>
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Urgent Tasks Section */}
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold tracking-tight">{t('dashboard.committee.urgentTasks')}</h2>
+              <div className="flex items-center gap-2">
+                <Hourglass className="h-5 w-5 text-muted-foreground" />
+                <h2 className="text-lg font-semibold tracking-tight">{t('dashboard.committee.urgentTasks')}</h2>
+              </div>
 
               <div className="grid gap-3">
                 {stats.pendingProposals > 0 && (
@@ -162,75 +282,32 @@ export function ProjectsCommitteeDashboardPage() {
                   />
                 )}
 
+                {stats.draftProjectsToAnnounce > 0 && (
+                  <TaskRow
+                    icon={Megaphone}
+                    title={t('dashboard.committee.projectsToAnnounceCount', { count: stats.draftProjectsToAnnounce, defaultValue: `${stats.draftProjectsToAnnounce} Projects to Announce` })}
+                    description={t('dashboard.committee.announceProjectsDesc', { defaultValue: 'Draft projects ready for announcement.' })}
+                    actionLabel={t('dashboard.committee.announce')}
+                    actionLink={ROUTES.PROJECTS_COMMITTEE.ANNOUNCE_PROJECTS}
+                    type="success"
+                    ArrowIcon={ArrowIcon}
+                  />
+                )}
+
                 {/* Empty state if no urgent tasks */}
-                {stats.pendingProposals === 0 && stats.pendingRequests === 0 && (
-                  <div className="flex flex-col items-center justify-center p-8 text-center rounded-xl border border-dashed border-muted-foreground/25 bg-muted/5">
-                    <div className="bg-green-100 dark:bg-green-900/20 p-3 rounded-full mb-4">
-                      <FileCheck className="h-6 w-6 text-green-600 dark:text-green-400" />
+                {stats.pendingProposals === 0 && stats.pendingRequests === 0 && stats.draftProjectsToAnnounce === 0 && (
+                  <div className="flex flex-col items-center justify-center p-8 text-center rounded-xl border border-dashed border-primary/20 bg-primary/5">
+                    <div className="bg-green-100 dark:bg-green-900/20 p-3 rounded-full mb-4 ring-4 ring-white dark:ring-background shadow-sm">
+                      <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
                     </div>
                     <h3 className="font-semibold">{t('dashboard.committee.allCaughtUp', { defaultValue: 'All caught up!' })}</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      No pending items requiring immediate attention.
+                    </p>
                   </div>
                 )}
               </div>
             </div>
-
-            {/* Current Phase Card */}
-            <Card className="overflow-hidden border-border bg-card shadow-none">
-              <CardHeader className="border-b border-border/50 bg-muted/20">
-                <CardTitle className="text-base font-medium">{t('dashboard.committee.currentPhase', { defaultValue: 'Current Phase' })}</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                {currentPhase.period ? (
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-primary/10 rounded-md text-primary">
-                          <Clock className="w-4 h-4" />
-                        </div>
-                        <span className="font-medium text-foreground">
-                          {currentPhase.period.name || getPeriodTypeLabel(currentPhase.period.type)}
-                        </span>
-                      </div>
-                      {currentPhase.endsInDays !== null && (
-                        <span className="text-muted-foreground bg-secondary px-2 py-0.5 rounded text-xs">
-                          {formatEndsIn(currentPhase.endsInDays)}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="relative pt-2">
-                      <div className="flex mb-2 items-center justify-between text-xs text-muted-foreground">
-                        <span>0%</span>
-                        <span>{currentPhase.progressPercent}% {t('common.complete', { defaultValue: 'Complete' })}</span>
-                        <span>100%</span>
-                      </div>
-                      <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-primary transition-all duration-300" 
-                          style={{ width: `${Math.min(100, Math.max(0, currentPhase.progressPercent))}%` }} 
-                        />
-                      </div>
-                    </div>
-
-                    {currentPhase.nextPeriod && (
-                      <p className="text-xs text-muted-foreground border-t border-border/50 pt-4 mt-2">
-                        <span className="font-semibold">{t('common.next', { defaultValue: 'Next' })}:</span>{' '}
-                        {currentPhase.nextPeriod.name || getPeriodTypeLabel(currentPhase.nextPeriod.type)}
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center p-6 text-center">
-                    <div className="p-3 rounded-full bg-muted mb-3">
-                      <Clock className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {t('dashboard.committee.noActivePhase', { defaultValue: 'No active phase at the moment.' })}
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
 
           </div>
 
@@ -241,11 +318,6 @@ export function ProjectsCommitteeDashboardPage() {
             <div className="space-y-4">
               <h3 className="text-base font-semibold tracking-tight">{t('dashboard.committee.quickActions')}</h3>
               <div className="grid grid-cols-1 gap-2">
-                <QuickActionButton
-                  to={ROUTES.PROJECTS_COMMITTEE.PERIODS}
-                  icon={Calendar}
-                  label={t('dashboard.committee.announcePeriods')}
-                />
                 <QuickActionButton
                   to={ROUTES.PROJECTS_COMMITTEE.PROPOSALS}
                   icon={FileText}
@@ -291,16 +363,18 @@ export function ProjectsCommitteeDashboardPage() {
 
 function TaskRow({ icon: Icon, title, description, actionLabel, actionLink, type, ArrowIcon }: any) {
   const typeStyles = type === 'warning'
-    ? { icon: "text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-400", border: 'hover:border-orange-200' }
-    : { icon: "text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400", border: 'hover:border-blue-200' };
+    ? { icon: "text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400", border: 'group-hover:border-amber-200' }
+    : type === 'info'
+      ? { icon: "text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400", border: 'group-hover:border-blue-200' }
+      : { icon: "text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400", border: 'group-hover:border-green-200' };
 
   // @ts-ignore
   const { icon: iconClass, border: borderClass } = typeStyles;
 
   return (
-    <div className={cn("group flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:bg-accent/5", borderClass)}>
+    <div className={cn("group flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:shadow-md hover:translate-x-1 duration-300", borderClass)}>
       <div className="flex items-start gap-4 w-full sm:w-auto">
-        <div className={cn("p-2 rounded-lg shrink-0", iconClass)}>
+        <div className={cn("p-2.5 rounded-lg shrink-0", iconClass)}>
           <Icon className="h-5 w-5" />
         </div>
         <div className="space-y-1">
@@ -308,7 +382,7 @@ function TaskRow({ icon: Icon, title, description, actionLabel, actionLink, type
           <p className="text-xs text-muted-foreground line-clamp-2 md:line-clamp-1">{description}</p>
         </div>
       </div>
-      <Button asChild variant="ghost" size="sm" className="shrink-0 w-full sm:w-auto">
+      <Button asChild variant="ghost" size="sm" className="shrink-0 w-full sm:w-auto border border-border/50 bg-background/50 hover:bg-background">
         <Link to={actionLink}>
           {actionLabel}
           <ArrowIcon className="ms-2 h-4 w-4" />

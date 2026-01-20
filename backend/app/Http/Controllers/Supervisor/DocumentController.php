@@ -37,6 +37,15 @@ class DocumentController extends Controller
             ], 400);
         }
 
+        // Check if deliverable submission window is active (supervisors restricted by this window)
+        $timeWindowService = app(\App\Services\TimeWindowService::class);
+        if (!$timeWindowService->isWindowActive(\App\Enums\TimePeriodType::DELIVERABLE_SUBMISSION)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Document review is only allowed during the deliverable submission window',
+            ], 403);
+        }
+
         $validated = $request->validate([
             'status' => 'required|in:approved,rejected',
             'comments' => 'nullable|string|max:5000',

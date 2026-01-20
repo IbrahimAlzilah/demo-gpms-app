@@ -5,6 +5,7 @@ import { AlertCircle, Users, Mail, Crown, Loader2, CheckCircle2, XCircle, Plus, 
 import { formatRelativeTime } from '@/lib/utils/format'
 import { useAuthStore } from '@/pages/auth/login'
 import { useAcceptInvitation, useRejectInvitation, useCreateGroup } from '../hooks/useGroupOperations'
+import type { User } from '@/types/user.types'
 import { GroupInviteForm } from '../components/GroupInviteForm'
 import { GroupJoinForm } from '../components/GroupJoinForm'
 import { GroupMembersList } from '../components/GroupMembersList'
@@ -25,23 +26,20 @@ export function GroupsList() {
   const rejectInvitation = useRejectInvitation()
   const createGroup = useCreateGroup()
 
-  const handleCreateGroup = async () => {
-    const approvedRegistration = registrations?.find(r => r.status === 'approved')
-
-    if (!approvedRegistration) {
-      setState((prev) => ({
-        ...prev,
-        error: t('groups.needProjectFirst'),
-        showCreateGroupModal: false,
-      }))
-      return
-    }
-
+  const handleCreateGroup = async (name?: string, members: User[] = []) => {
     setState((prev) => ({ ...prev, error: '', success: '' }))
     try {
+      // Ensure we only pass user IDs, not full User objects with React elements
+      const memberIds = Array.isArray(members) && members.length > 0
+        ? members.map(m => (typeof m === 'object' && m !== null && 'id' in m ? m.id : m)).filter(Boolean)
+        : []
+      
+      // Map to User objects with just id property if needed
+      const cleanMembers: User[] = memberIds.map(id => ({ id: String(id) } as User))
+      
       await createGroup.mutateAsync({
-        projectId: approvedRegistration.projectId,
-        members: [],
+        name: name || null,
+        members: cleanMembers,
       })
       setState((prev) => ({
         ...prev,
@@ -228,56 +226,33 @@ export function GroupsList() {
           description={t('groups.createGroupDescription')}
         >
           <div className="space-y-4">
-            {!registrations || registrations.length === 0 ? (
-              <div className="flex items-start gap-3 p-4 bg-warning/10 border border-warning/20 rounded-lg">
-                <AlertCircle className="h-5 w-5 text-warning mt-0.5" />
-                <div className="flex-1">
-                  <p className="font-medium mb-1 text-warning">
-                    {t('groups.needProjectFirst')}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {t('groups.needProjectFirstDescription')}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">{t('groups.project')}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {registrations?.find(r => r.status === 'approved')?.project?.title ||
-                      t('groups.noApprovedProject')}
-                  </p>
-                </div>
-                <div className="flex gap-3 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setState((prev) => ({ ...prev, showCreateGroupModal: false }))}
-                    className="flex-1"
-                  >
-                    {t('common.cancel')}
-                  </Button>
-                  <Button
-                    onClick={handleCreateGroup}
-                    disabled={createGroup.isPending || !registrations?.some(r => r.status === 'approved')}
-                    className="flex-1 bg-primary text-white hover:bg-primary/90"
-                  >
-                    {createGroup.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {t('groups.creating')}
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="mr-2 h-4 w-4" />
-                        {t('groups.create')}
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </>
-            )}
+            <div className="flex gap-3 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setState((prev) => ({ ...prev, showCreateGroupModal: false }))}
+                className="flex-1"
+              >
+                {t('common.cancel')}
+              </Button>
+              <Button
+                onClick={() => handleCreateGroup()}
+                disabled={createGroup.isPending}
+                className="flex-1 bg-primary text-white hover:bg-primary/90"
+              >
+                {createGroup.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {t('groups.creating')}
+                  </>
+                ) : (
+                  <>
+                    <Plus className="mr-2 h-4 w-4" />
+                    {t('groups.create')}
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </ModalDialog>
       </>

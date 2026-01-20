@@ -56,6 +56,86 @@ class RegistrationController extends Controller
     }
 
     /**
+     * Manually register a student or student group to a project
+     * Project Committee can register students/groups without time window restrictions
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'project_id' => 'required|exists:projects,id',
+            'student_group_id' => 'required|exists:student_groups,id',
+            'auto_approve' => 'nullable|boolean',
+        ]);
+
+        $project = \App\Models\Project::findOrFail($validated['project_id']);
+        $studentGroup = \App\Models\StudentGroup::findOrFail($validated['student_group_id']);
+
+        // Validate group meets registration requirements
+        if (!$studentGroup->meetsRegistrationRequirements()) {
+            $minMembers = app(\App\Services\SettingsService::class)->getGroupMinMembers();
+            $maxMembers = app(\App\Services\SettingsService::class)->getGroupMaxMembers();
+            $totalMembers = $studentGroup->getTotalMemberCount();
+            
+            return response()->json([
+                'success' => false,
+                'message' => "Group must have between {$minMembers} and {$maxMembers} members (current: {$totalMembers})",
+            ], 422);
+        }
+
+        // Check if project is already assigned to another group
+        if ($project->assigned_group_id && $project->assigned_group_id !== $studentGroup->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Project is already assigned to another group',
+            ], 422);
+        }
+
+        try {
+            // Get all group members
+            $groupMembers = $studentGroup->members()->pluck('users.id')->push($studentGroup->leader_id)->unique();
+            
+            // Check if any member is already registered in this or another project
+            $hasProject = \App\Models\Project::whereHas('students', function ($query) use ($groupMembers) {
+                $query->whereIn('users.id', $groupMembers);
+            })->exists();
+
+            if ($hasProject) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'One or more group members are already registered in another project',
+                ], 422);
+            }
+
+            // Create registration for the group
+            $registration = $this->projectService->registerStudentGroup(
+                $project,
+                $studentGroup,
+                $studentGroup->leader // Leader as representative
+            );
+
+            // Auto-approve if requested (default behavior for manual registration)
+            $autoApprove = $validated['auto_approve'] ?? true;
+            if ($autoApprove && $registration->status === 'pending') {
+                $registration = $this->projectService->approveRegistration(
+                    $registration,
+                    $request->user()
+                );
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => new ProjectRegistrationResource($registration->load(['project', 'student', 'reviewer'])),
+                'message' => 'Group registered successfully',
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
      * Approve a project registration
      */
     public function approve(Request $request, ProjectRegistration $registration): JsonResponse

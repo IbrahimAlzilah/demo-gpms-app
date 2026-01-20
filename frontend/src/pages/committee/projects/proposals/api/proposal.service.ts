@@ -91,4 +91,34 @@ export const committeeProposalService = {
   delete: async (id: string): Promise<void> => {
     await apiClient.delete(`/projects-committee/proposals/${id}`)
   },
+
+  /**
+   * Create a proposal on behalf of a student or student group
+   * Project Committee is not restricted by time windows
+   */
+  create: async (data: {
+    title: string
+    description: string
+    requirements?: string
+    proposedSupervisorId?: string
+    submitterId: string
+    studentGroupId?: string
+    targetProjectId?: string
+    teamMembers?: Array<{ name: string; role: string }>
+  }): Promise<Proposal> => {
+    const response = await apiClient.post<Proposal>(
+      '/projects-committee/proposals',
+      {
+        title: data.title,
+        description: data.description,
+        requirements: data.requirements,
+        proposed_supervisor_id: data.proposedSupervisorId,
+        submitter_id: data.submitterId,
+        student_group_id: data.studentGroupId,
+        target_project_id: data.targetProjectId,
+        team_members: data.teamMembers,
+      }
+    )
+    return response.data
+  },
 }

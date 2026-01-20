@@ -4,7 +4,7 @@ import { Card, CardContent, Button, Badge } from '@/components/ui'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { LoadingSpinner, EmptyState, ModalDialog } from '@/components/common'
 import { toast } from 'sonner'
-import { Briefcase, UserCheck, User, Loader2 } from 'lucide-react'
+import { Briefcase, UserCheck, Loader2, AlertCircle } from 'lucide-react'
 import { useSupervisorsList } from './SupervisorsList.hook'
 
 export function SupervisorsList() {
@@ -43,7 +43,11 @@ export function SupervisorsList() {
   }
 
   if (data.isLoading && data.projects.length === 0) {
-    return <LoadingSpinner />
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <LoadingSpinner />
+      </div>
+    )
   }
 
   if (!data.isLoading && data.projects.length === 0) {
@@ -52,44 +56,53 @@ export function SupervisorsList() {
         icon={Briefcase}
         title={t('committee.supervisors.noProjects')}
         description={t('committee.supervisors.noProjectsDescription')}
+        className="animate-in fade-in zoom-in-50 duration-500"
       />
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between bg-orange-50/50 p-4 rounded-lg border border-orange-100">
-        <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-          {t('committee.supervisors.projectsWithoutSupervisor')}
-        </h3>
-        <Badge variant="secondary" className="bg-orange-100 text-orange-700 hover:bg-orange-200 border-none px-3 py-1">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-muted/30 p-4 rounded-xl border border-border/50 backdrop-blur-sm">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <AlertCircle className="w-5 h-5 text-primary" />
+          </div>
+          <h3 className="font-semibold text-lg tracking-tight text-foreground">
+            {t('committee.supervisors.projectsWithoutSupervisor')}
+          </h3>
+        </div>
+        <Badge variant="secondary" className="w-fit px-3 py-1 text-sm font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80">
           {pagination.totalProjects} {t('project.label')}
         </Badge>
       </div>
 
       <div className="grid gap-4">
         {data.projects.map((project) => (
-          <Card key={project.id} className="overflow-hidden hover:shadow-md transition-shadow border-muted p-0">
-            <CardContent className="p-5">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="space-y-2 flex-1">
-                  <h4 className="text-xl font-bold text-gray-900 leading-tight">
-                    {project.title}
-                  </h4>
-                  <p className="text-sm text-gray-500 line-clamp-2 max-w-3xl">
+          <Card key={project.id} className="group overflow-hidden border-border bg-card/50 hover:bg-card hover:shadow-md hover:border-primary/20 transition-all duration-300">
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+                <div className="space-y-3 flex-1">
+                  <div>
+                    <h4 className="text-lg font-bold text-foreground leading-tight group-hover:text-primary transition-colors">
+                      {project.title}
+                    </h4>
+                    {project.specialization && (
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1.5">
+                        <Badge variant="outline" className="text-xs font-normal bg-background/50">
+                          {project.specialization}
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground line-clamp-2 max-w-3xl leading-relaxed">
                     {project.description}
                   </p>
-                  {project.specialization && (
-                    <div className="flex items-center gap-2 text-sm text-gray-500 pt-1">
-                      <span className="font-medium text-gray-700">{t('project.specialization')}:</span>
-                      {project.specialization}
-                    </div>
-                  )}
                 </div>
 
                 <Button
                   onClick={() => setState(prev => ({ ...prev, selectedProject: project, selectedSupervisor: '' }))}
-                  className="bg-orange-600 hover:bg-orange-700 text-white shadow-sm shrink-0 md:w-auto w-full"
+                  className="shrink-0 md:w-auto w-full shadow-sm hover:translate-y-[-1px] transition-all"
                 >
                   <UserCheck className="w-4 h-4 mr-2 rtl:ml-2 rtl:mr-0" />
                   {t('committee.supervisors.assignSupervisor')}
@@ -101,12 +114,12 @@ export function SupervisorsList() {
       </div>
 
       {pagination.hasNextPage && (
-        <div className="flex justify-center pt-4">
+        <div className="flex justify-center pt-8">
           <Button
             variant="outline"
             onClick={() => pagination.fetchNextPage()}
             disabled={pagination.isFetchingNextPage}
-            className="w-full md:w-auto"
+            className="w-full md:w-auto min-w-[150px]"
           >
             {pagination.isFetchingNextPage ? (
               <>
@@ -127,30 +140,33 @@ export function SupervisorsList() {
         className="sm:max-w-[500px]"
       >
         <div className="space-y-6 pt-4">
-          <div className="grid gap-2">
-            <h4 className="text-sm font-medium text-muted-foreground">{t('project.title')}</h4>
-            <div className="p-3 bg-muted/40 rounded-md border text-sm font-medium">
+          <div className="p-4 bg-muted/30 rounded-lg border border-border/50 space-y-2">
+            <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('project.title')}</h4>
+            <p className="text-sm font-semibold text-foreground leading-relaxed">
               {state.selectedProject?.title}
-            </div>
+            </p>
           </div>
 
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium leading-none flex items-center gap-2">
+              <UserCheck className="w-4 h-4 text-primary" />
               {t('committee.supervisors.selectSupervisor')}
             </h4>
             <Select
               value={state.selectedSupervisor}
               onValueChange={(value) => setState(prev => ({ ...prev, selectedSupervisor: value }))}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full h-11 bg-background">
                 <SelectValue placeholder={t('committee.supervisors.selectSupervisorPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {data.supervisors.map((supervisor) => (
                   <SelectItem key={supervisor.id} value={supervisor.id}>
                     <div className="flex items-center gap-2">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      <span>{supervisor.name}</span>
+                      <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold">
+                        {supervisor.name.charAt(0)}
+                      </div>
+                      <span className="font-medium">{supervisor.name}</span>
                     </div>
                   </SelectItem>
                 ))}
@@ -158,14 +174,13 @@ export function SupervisorsList() {
             </Select>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
-            <Button variant="outline" onClick={() => handleCloseModal(false)}>
+          <div className="flex justify-end gap-3 pt-4 border-t border-border/50">
+            <Button variant="ghost" onClick={() => handleCloseModal(false)}>
               {t('common.cancel')}
             </Button>
             <Button
               onClick={handleAssign}
               disabled={!state.selectedSupervisor || assignSupervisor.isPending}
-              className="bg-primary hover:bg-primary/90"
             >
               {assignSupervisor.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t('common.confirm')}

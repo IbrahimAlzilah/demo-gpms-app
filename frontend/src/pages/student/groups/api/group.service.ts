@@ -1,6 +1,7 @@
 import { apiClient } from '../../../../lib/axios'
 import type {
   ProjectGroup,
+  StudentGroup,
   GroupInvitation,
   GroupJoinRequest,
 } from '../../../../types/project.types'
@@ -30,9 +31,9 @@ export const groupService = {
     }
   },
 
-  getByStudentId: async (_studentId: string): Promise<ProjectGroup | null> => {
+  getByStudentId: async (_studentId: string): Promise<StudentGroup | null> => {
     try {
-      const response = await apiClient.get<ProjectGroup>('/student/groups')
+      const response = await apiClient.get<StudentGroup>('/student/groups')
       // Backend returns null when no group exists - this is a valid response
       return response.data
     } catch (error) {
@@ -41,13 +42,12 @@ export const groupService = {
   },
 
   create: async (
-    projectId: string,
-    _leaderId: string,
+    name: string | null,
     members: User[]
-  ): Promise<ProjectGroup> => {
+  ): Promise<StudentGroup> => {
     try {
-      const response = await apiClient.post<ProjectGroup>('/student/groups', {
-        project_id: projectId,
+      const response = await apiClient.post<StudentGroup>('/student/groups', {
+        name: name || null,
         member_ids: members.map(m => m.id),
       })
       return response.data
@@ -56,7 +56,7 @@ export const groupService = {
     }
   },
 
-  addMember: async (groupId: string, member: User): Promise<ProjectGroup> => {
+  addMember: async (groupId: string, member: User): Promise<StudentGroup> => {
     try {
       const response = await apiClient.post<ProjectGroup>(
         `/student/groups/${groupId}/members`,
@@ -71,7 +71,7 @@ export const groupService = {
   removeMember: async (
     groupId: string,
     memberId: string
-  ): Promise<ProjectGroup> => {
+  ): Promise<StudentGroup> => {
     try {
       const response = await apiClient.delete<ProjectGroup>(
         `/student/groups/${groupId}/members/${memberId}`
@@ -85,7 +85,7 @@ export const groupService = {
   updateLeader: async (
     groupId: string,
     newLeaderId: string
-  ): Promise<ProjectGroup> => {
+  ): Promise<StudentGroup> => {
     try {
       const response = await apiClient.put<ProjectGroup>(
         `/student/groups/${groupId}/leader`,
@@ -128,7 +128,7 @@ export const groupService = {
   acceptInvitation: async (
     invitationId: string,
     _studentId: string
-  ): Promise<ProjectGroup> => {
+  ): Promise<StudentGroup> => {
     try {
       const response = await apiClient.post<ProjectGroup>(
         `/student/groups/invitations/${invitationId}/accept`
@@ -150,7 +150,7 @@ export const groupService = {
     }
   },
 
-  join: async (groupId: string, userId: string): Promise<ProjectGroup> => {
+  join: async (groupId: string, userId: string): Promise<StudentGroup> => {
     try {
       const response = await apiClient.post<ProjectGroup>(
         `/student/groups/${groupId}/members`,
@@ -189,7 +189,7 @@ export const groupService = {
     }
   },
 
-  approveJoinRequest: async (requestId: string): Promise<ProjectGroup> => {
+  approveJoinRequest: async (requestId: string): Promise<StudentGroup> => {
     try {
       const response = await apiClient.post<ProjectGroup>(
         `/student/groups/join-requests/${requestId}/approve`

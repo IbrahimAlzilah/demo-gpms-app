@@ -63,6 +63,8 @@ export const proposalService = {
       description: data.description,
       requirements: data.requirements || null,
       proposed_supervisor_id: data.proposedSupervisorId || null,
+      student_group_id: data.studentGroupId || null,
+      target_project_id: data.targetProjectId || null,
       team_members: data.teamMembers || [],
     });
     return response.data?.data || response.data;
@@ -76,6 +78,8 @@ export const proposalService = {
         description: data.description,
         requirements: data.requirements || null,
         proposed_supervisor_id: data.proposedSupervisorId || null,
+        student_group_id: data.studentGroupId || null,
+        target_project_id: data.targetProjectId || null,
         team_members: data.teamMembers || [],
       }
     );

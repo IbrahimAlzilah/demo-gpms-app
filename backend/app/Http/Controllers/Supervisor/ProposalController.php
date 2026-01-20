@@ -45,6 +45,15 @@ class ProposalController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        // Check if proposal submission window is active (supervisors restricted by this window)
+        $timeWindowService = app(\App\Services\TimeWindowService::class);
+        if (!$timeWindowService->isWindowActive(\App\Enums\TimePeriodType::PROPOSAL_SUBMISSION)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Proposal submission is only allowed during the proposal submission window',
+            ], 403);
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',

@@ -18,19 +18,27 @@ export interface UseProposalFormOptions {
 export function useProposalForm(options: UseProposalFormOptions = {}) {
   const { t } = useTranslation();
   const { user } = useAuthStore();
-  const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck(
+  const { isPeriodActive: isSubmissionPeriod, isLoading: submissionPeriodLoading } = usePeriodCheck(
     "proposal_submission"
   );
+  const { isPeriodActive: isRegistrationPeriod, isLoading: registrationPeriodLoading } = usePeriodCheck(
+    "project_registration"
+  );
+  const isPeriodActive = isSubmissionPeriod || isRegistrationPeriod;
+  const periodLoading = submissionPeriodLoading || registrationPeriodLoading;
+  const isRegistrationWindow = isRegistrationPeriod && !isSubmissionPeriod;
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [error, setError] = useState("");
 
   const form = useForm<ProposalFormSchema>({
-    resolver: zodResolver(proposalFormSchema(t)),
+    resolver: zodResolver(proposalFormSchema(t, isRegistrationWindow)),
     defaultValues: {
       title: "",
       description: "",
       requirements: "",
       proposedSupervisorId: "",
+      studentGroupId: "",
+      targetProjectId: "",
       teamMembers: [],
       ...options.defaultValues,
     },
@@ -55,6 +63,8 @@ export function useProposalForm(options: UseProposalFormOptions = {}) {
         description: data.description.trim(),
         requirements: data.requirements?.trim() || undefined,
         proposedSupervisorId: data.proposedSupervisorId || undefined,
+        studentGroupId: data.studentGroupId || undefined,
+        targetProjectId: data.targetProjectId || undefined,
         teamMembers: data.teamMembers?.filter(m => m.name.trim() && m.role.trim()) || [],
       };
 
@@ -82,6 +92,7 @@ export function useProposalForm(options: UseProposalFormOptions = {}) {
     setError,
     isPeriodActive,
     periodLoading,
+    isRegistrationWindow,
     handleSubmit: form.handleSubmit(handleSubmit),
     handleFileChange,
     resetForm,

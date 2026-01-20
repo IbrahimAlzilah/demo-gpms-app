@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   useRegisterProject,
@@ -7,9 +7,11 @@ import {
 } from '../../hooks/useProjectOperations'
 import { useStudentRegistrations } from '../../hooks/useProjects'
 import { usePeriodCheck } from '@/hooks/usePeriodCheck'
+import { useMyGroup } from '@/pages/student/groups/hooks/useGroups'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
   AlertCircle,
   CheckCircle2,
@@ -40,8 +42,17 @@ export function ProjectRegistrationForm({
   const { data: registration, isLoading: registrationLoading } = useProjectRegistration(project.id)
   const { data: allRegistrations } = useStudentRegistrations()
   const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('project_registration')
+  const { data: studentGroup, isLoading: groupLoading } = useMyGroup()
+  const [selectedGroupId, setSelectedGroupId] = useState<string>('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  
+  // Update selectedGroupId when studentGroup loads
+  useEffect(() => {
+    if (studentGroup?.id) {
+      setSelectedGroupId(studentGroup.id)
+    }
+  }, [studentGroup?.id])
   
   // Check if there's a rejected registration for another project
   const rejectedRegistrationForOtherProject = allRegistrations?.find(
@@ -54,6 +65,11 @@ export function ProjectRegistrationForm({
       return
     }
 
+    if (!selectedGroupId) {
+      setError(t('project.selectGroupRequired'))
+      return
+    }
+
     if (project.currentStudents >= project.maxStudents) {
       setError(t('project.fullCapacity'))
       return
@@ -62,7 +78,7 @@ export function ProjectRegistrationForm({
     setError('')
     setSuccess(false)
     try {
-      await registerProject.mutateAsync(project.id)
+      await registerProject.mutateAsync({ projectId: project.id, studentGroupId: selectedGroupId })
       setSuccess(true)
       setTimeout(() => {
         onSuccess?.()
@@ -93,7 +109,7 @@ export function ProjectRegistrationForm({
     }
   }
 
-  if (registrationLoading || periodLoading) {
+  if (registrationLoading || periodLoading || groupLoading) {
     return (
       <Card>
         <CardContent className="pt-6">
@@ -472,6 +488,35 @@ export function ProjectRegistrationForm({
           </div>
         </div>
 
+        {/* Group Selection */}
+        {!studentGroup ? (
+          <div className="flex items-start gap-2 p-3 text-sm text-warning bg-warning/10 border border-warning/20 rounded-md">
+            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+            <div className="flex-1">
+              <p className="font-medium mb-1">{t('project.noGroupRequired')}</p>
+              <p className="text-xs text-muted-foreground">
+                {t('project.createGroupFirst')}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <label className="text-sm font-medium">{t('project.selectGroup')}</label>
+            <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
+              <SelectTrigger>
+                <SelectValue placeholder={t('project.selectGroupPlaceholder')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={studentGroup.id}>
+                  {studentGroup.name || `${t('project.group')} #${studentGroup.id}`}
+                  {' '}
+                  ({studentGroup.memberCount}/{studentGroup.maxMembers} {t('project.members')})
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
         {/* Show info if there's a rejected registration for another project */}
         {rejectedRegistrationForOtherProject && (
           <div className="flex items-start gap-2 p-3 text-sm text-info bg-info/10 border border-info/20 rounded-md">
@@ -515,6 +560,8 @@ export function ProjectRegistrationForm({
               registerProject.isPending ||
               success ||
               !isPeriodActive ||
+              !studentGroup ||
+              !selectedGroupId ||
               project.currentStudents >= project.maxStudents
             }
             className="flex-1"

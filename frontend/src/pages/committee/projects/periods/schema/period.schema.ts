@@ -7,11 +7,16 @@ export const timePeriodSchema = (t: (key: string) => string, isEditMode = false)
     type: z.enum(
       [
         "proposal_submission",
+        "proposal_review",
         "project_registration",
+        "project_execution",
         "document_submission",
+        "deliverable_submission",
         "supervisor_evaluation",
         "committee_evaluation",
         "discussion_evaluation",
+        "discussion_evaluation_1",
+        "discussion_evaluation_2",
         "final_discussion",
         "grade_approval",
         "general",

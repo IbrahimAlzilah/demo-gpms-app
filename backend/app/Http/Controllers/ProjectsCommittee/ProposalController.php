@@ -20,7 +20,7 @@ class ProposalController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = Proposal::with(['submitter', 'reviewer', 'project']);
+        $query = Proposal::with(['submitter', 'reviewer', 'project', 'studentGroup', 'targetProject']);
 
         if ($request->has('status')) {
             $query->where('status', $request->status);
@@ -29,6 +29,72 @@ class ProposalController extends Controller
         $query = $this->applyTableQuery($query, $request);
 
         return response()->json($this->getPaginatedResponse($query, $request, ProposalResource::class));
+    }
+
+    /**
+     * Create a proposal on behalf of a student or student group
+     * Project Committee is not restricted by time windows
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'requirements' => 'nullable|string',
+            'proposed_supervisor_id' => 'nullable|exists:users,id',
+            'submitter_id' => 'required|exists:users,id',
+            'student_group_id' => 'nullable|exists:student_groups,id',
+            'target_project_id' => 'nullable|exists:projects,id',
+            'team_members' => 'nullable|array',
+            'team_members.*.name' => 'required_with:team_members|string|max:255',
+            'team_members.*.role' => 'required_with:team_members|string|max:255',
+        ]);
+
+        // Validate that submitter_id is a student
+        $submitter = \App\Models\User::findOrFail($validated['submitter_id']);
+        if (!$submitter->isStudent()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Submitter must be a student',
+            ], 422);
+        }
+
+        // If student_group_id is provided, validate submitter is a member
+        if (isset($validated['student_group_id'])) {
+            $studentGroup = \App\Models\StudentGroup::findOrFail($validated['student_group_id']);
+            if (!$studentGroup->hasMember($submitter->id) && $studentGroup->leader_id !== $submitter->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Submitter must be a member of the selected group',
+                ], 422);
+            }
+        }
+
+        // Validate that proposed_supervisor_id is actually a supervisor
+        if (isset($validated['proposed_supervisor_id'])) {
+            $supervisor = \App\Models\User::find($validated['proposed_supervisor_id']);
+            if (!$supervisor || !$supervisor->isSupervisor()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'The selected user is not a supervisor',
+                ], 422);
+            }
+        }
+
+        try {
+            $proposal = $this->proposalService->create($validated, $submitter);
+
+            return response()->json([
+                'success' => true,
+                'data' => new ProposalResource($proposal->load(['submitter', 'proposedSupervisor', 'studentGroup', 'targetProject'])),
+                'message' => 'Proposal created successfully',
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
     }
 
     public function show(Proposal $proposal): JsonResponse

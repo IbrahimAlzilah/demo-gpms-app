@@ -1,0 +1,437 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\StudentGroup;
+use App\Models\StudentGroupInvitation;
+use App\Models\StudentGroupJoinRequest;
+use App\Models\User;
+use App\Services\SettingsService;
+use Illuminate\Support\Facades\DB;
+
+class StudentGroupService
+{
+    public function __construct(
+        protected SettingsService $settingsService
+    ) {}
+
+    /**
+     * Create a new student group
+     */
+    public function create(User $leader, ?string $name = null, array $memberIds = []): StudentGroup
+    {
+        if (!$leader->isStudent()) {
+            throw new \Exception('Only students can create groups');
+        }
+
+        $minMembers = $this->settingsService->getGroupMinMembers();
+        $maxMembers = $this->settingsService->getGroupMaxMembers();
+
+        // Check if leader is already in an active group
+        $existingGroup = StudentGroup::where(function ($query) use ($leader) {
+            $query->where('leader_id', $leader->id)
+                ->orWhereHas('members', function ($q) use ($leader) {
+                    $q->where('users.id', $leader->id);
+                });
+        })
+        ->where('status', 'active')
+        ->first();
+
+        if ($existingGroup) {
+            throw new \Exception('You are already a member of an active group');
+        }
+
+        // Validate member count (including leader)
+        // Only enforce maximum at creation time - minimum is enforced when registering/submitting proposals
+        $totalMembers = count($memberIds) + 1; // +1 for leader
+        if ($totalMembers > $maxMembers) {
+            throw new \Exception("Group cannot have more than {$maxMembers} members");
+        }
+
+        return DB::transaction(function () use ($leader, $name, $memberIds) {
+            $group = StudentGroup::create([
+                'name' => $name,
+                'leader_id' => $leader->id,
+                'status' => 'active',
+            ]);
+
+            // Add leader as group member
+            $group->members()->attach($leader->id);
+
+            // Add other members to group
+            if (!empty($memberIds)) {
+                // Validate all members are students and not in other groups
+                foreach ($memberIds as $memberId) {
+                    $member = User::findOrFail($memberId);
+                    if (!$member->isStudent()) {
+                        throw new \Exception("User {$member->name} is not a student");
+                    }
+
+                    // Check if member is already in an active group (as leader or member)
+                    $memberGroup = StudentGroup::where(function ($query) use ($member) {
+                        $query->where('leader_id', $member->id)
+                            ->orWhereHas('members', function ($q) use ($member) {
+                                $q->where('users.id', $member->id);
+                            });
+                    })
+                    ->where('status', 'active')
+                    ->first();
+
+                    if ($memberGroup) {
+                        throw new \Exception("Student {$member->name} is already a member of another active group");
+                    }
+                }
+
+                $group->members()->attach($memberIds);
+            }
+
+            // Don't enforce minimum at creation - allow groups with just the leader
+            // Minimum will be enforced when registering for projects or submitting proposals
+
+            return $group->fresh()->load(['leader', 'members']);
+        });
+    }
+
+    /**
+     * Add member to group
+     */
+    public function addMember(StudentGroup $group, User $member): StudentGroup
+    {
+        $this->ensureGroupNotAssigned($group);
+
+        if ($group->status !== 'active') {
+            throw new \Exception('Cannot add members to an inactive group');
+        }
+
+        if (!$member->isStudent()) {
+            throw new \Exception('Only students can be added to groups');
+        }
+
+        if ($group->isFull()) {
+            $maxMembers = $this->settingsService->getGroupMaxMembers();
+            throw new \Exception("Group is full (maximum {$maxMembers} members)");
+        }
+
+        if ($group->hasMember($member->id)) {
+            throw new \Exception('Member is already in the group');
+        }
+
+        // Check if member is already in another active group (as leader or member)
+        $existingGroup = StudentGroup::where(function ($query) use ($member) {
+            $query->where('leader_id', $member->id)
+                ->orWhereHas('members', function ($q) use ($member) {
+                    $q->where('users.id', $member->id);
+                });
+        })
+        ->where('status', 'active')
+        ->where('id', '!=', $group->id)
+        ->first();
+
+        if ($existingGroup) {
+            throw new \Exception('Student is already a member of another active group');
+        }
+
+        $group->members()->attach($member->id);
+
+        return $group->fresh()->load(['leader', 'members']);
+    }
+
+    /**
+     * Remove member from group
+     */
+    public function removeMember(StudentGroup $group, User $member): StudentGroup
+    {
+        $this->ensureGroupNotAssigned($group);
+
+        if ($group->leader_id === $member->id) {
+            throw new \Exception('Cannot remove group leader. Change leader first.');
+        }
+
+        if (!$group->hasMember($member->id)) {
+            throw new \Exception('User is not a member of this group');
+        }
+
+        $minMembers = $this->settingsService->getGroupMinMembers();
+        $currentTotal = $group->getTotalMemberCount(); // Includes leader
+        if (($currentTotal - 1) < $minMembers) {
+            throw new \Exception("Group must have at least {$minMembers} members");
+        }
+
+        $group->members()->detach($member->id);
+
+        return $group->fresh()->load(['leader', 'members']);
+    }
+
+    /**
+     * Update group leader
+     */
+    public function updateLeader(StudentGroup $group, User $newLeader): StudentGroup
+    {
+        if (!$group->hasMember($newLeader->id)) {
+            throw new \Exception('New leader must be a member of the group');
+        }
+
+        $group->update(['leader_id' => $newLeader->id]);
+
+        return $group->fresh()->load(['leader', 'members']);
+    }
+
+    /**
+     * Send group invitation
+     */
+    public function inviteMember(StudentGroup $group, User $inviter, User $invitee, ?string $message = null): StudentGroupInvitation
+    {
+        $this->ensureGroupNotAssigned($group);
+
+        // Verify inviter is leader or member of the group
+        if ($group->leader_id !== $inviter->id && !$group->hasMember($inviter->id)) {
+            throw new \Exception('Only group leader or members can invite new members');
+        }
+
+        if ($group->isFull()) {
+            $maxMembers = $this->settingsService->getGroupMaxMembers();
+            throw new \Exception("Group is full (maximum {$maxMembers} members)");
+        }
+
+        if ($group->hasMember($invitee->id)) {
+            throw new \Exception('User is already a member of this group');
+        }
+
+        if (!$invitee->isStudent()) {
+            throw new \Exception('Only students can be invited to groups');
+        }
+
+        // Check if invitee is already in another active group (as leader or member)
+        $existingGroup = StudentGroup::where(function ($query) use ($invitee) {
+            $query->where('leader_id', $invitee->id)
+                ->orWhereHas('members', function ($q) use ($invitee) {
+                    $q->where('users.id', $invitee->id);
+                });
+        })
+        ->where('status', 'active')
+        ->where('id', '!=', $group->id)
+        ->first();
+
+        if ($existingGroup) {
+            throw new \Exception('Student is already a member of another active group');
+        }
+
+        // Check for existing pending invitation
+        $existingInvitation = StudentGroupInvitation::where('group_id', $group->id)
+            ->where('invitee_id', $invitee->id)
+            ->where('status', 'pending')
+            ->first();
+
+        if ($existingInvitation) {
+            throw new \Exception('Invitation already sent to this user');
+        }
+
+        return StudentGroupInvitation::create([
+            'group_id' => $group->id,
+            'inviter_id' => $inviter->id,
+            'invitee_id' => $invitee->id,
+            'status' => 'pending',
+            'message' => $message,
+        ]);
+    }
+
+    /**
+     * Accept group invitation
+     */
+    public function acceptInvitation(StudentGroupInvitation $invitation, User $invitee): StudentGroup
+    {
+        $this->ensureGroupNotAssigned($invitation->group);
+
+        if ($invitation->invitee_id !== $invitee->id) {
+            throw new \Exception('Unauthorized to accept this invitation');
+        }
+
+        if (!$invitation->isPending()) {
+            throw new \Exception('Invitation is no longer valid');
+        }
+
+        return DB::transaction(function () use ($invitation, $invitee) {
+            $group = $invitation->group;
+
+            if ($group->isFull()) {
+                throw new \Exception('Group is now full');
+            }
+
+            // Check if student is already in another active group (as leader or member)
+            $existingGroup = StudentGroup::where(function ($query) use ($invitee) {
+                $query->where('leader_id', $invitee->id)
+                    ->orWhereHas('members', function ($q) use ($invitee) {
+                        $q->where('users.id', $invitee->id);
+                    });
+            })
+            ->where('status', 'active')
+            ->where('id', '!=', $group->id)
+            ->first();
+
+            if ($existingGroup) {
+                throw new \Exception('You are already a member of another active group');
+            }
+
+            // Add student to group members
+            $group->members()->attach($invitation->invitee_id);
+
+            // Update invitation status
+            $invitation->update(['status' => 'accepted']);
+
+            return $group->fresh()->load(['leader', 'members']);
+        });
+    }
+
+    /**
+     * Reject group invitation
+     */
+    public function rejectInvitation(StudentGroupInvitation $invitation, User $invitee): void
+    {
+        if ($invitation->invitee_id !== $invitee->id) {
+            throw new \Exception('Unauthorized to reject this invitation');
+        }
+
+        if (!$invitation->isPending()) {
+            throw new \Exception('Invitation is no longer valid');
+        }
+
+        $invitation->update(['status' => 'rejected']);
+    }
+
+    /**
+     * Create a join request for a group
+     */
+    public function createJoinRequest(StudentGroup $group, User $student, ?string $message = null): StudentGroupJoinRequest
+    {
+        if ($group->isFull()) {
+            $maxMembers = $this->settingsService->getGroupMaxMembers();
+            throw new \Exception("Group is full (maximum {$maxMembers} members)");
+        }
+
+        if ($group->hasMember($student->id)) {
+            throw new \Exception('You are already a member of this group');
+        }
+
+        if (!$student->isStudent()) {
+            throw new \Exception('Only students can request to join groups');
+        }
+
+        // Check if student is already in another active group (as leader or member)
+        $existingGroup = StudentGroup::where(function ($query) use ($student) {
+            $query->where('leader_id', $student->id)
+                ->orWhereHas('members', function ($q) use ($student) {
+                    $q->where('users.id', $student->id);
+                });
+        })
+        ->where('status', 'active')
+        ->where('id', '!=', $group->id)
+        ->first();
+
+        if ($existingGroup) {
+            throw new \Exception('You are already a member of another active group');
+        }
+
+        // Check for existing pending request
+        $existingRequest = StudentGroupJoinRequest::where('group_id', $group->id)
+            ->where('student_id', $student->id)
+            ->where('status', 'pending')
+            ->first();
+
+        if ($existingRequest) {
+            throw new \Exception('You already have a pending join request for this group');
+        }
+
+        return StudentGroupJoinRequest::create([
+            'group_id' => $group->id,
+            'student_id' => $student->id,
+            'status' => 'pending',
+            'message' => $message,
+            'requested_at' => now(),
+        ]);
+    }
+
+    /**
+     * Approve a join request
+     */
+    public function approveJoinRequest(StudentGroupJoinRequest $request, User $reviewer): StudentGroup
+    {
+        $this->ensureGroupNotAssigned($request->group);
+
+        // Verify reviewer is the group leader
+        if ($request->group->leader_id !== $reviewer->id) {
+            throw new \Exception('Only the group leader can approve join requests');
+        }
+
+        if (!$request->isPending()) {
+            throw new \Exception('Join request is no longer valid');
+        }
+
+        return DB::transaction(function () use ($request, $reviewer) {
+            $group = $request->group;
+            $student = $request->student;
+
+            if ($group->isFull()) {
+                throw new \Exception('Group is now full');
+            }
+
+            // Check if student is already in another active group (as leader or member)
+            $existingGroup = StudentGroup::where(function ($query) use ($student) {
+                $query->where('leader_id', $student->id)
+                    ->orWhereHas('members', function ($q) use ($student) {
+                        $q->where('users.id', $student->id);
+                    });
+            })
+            ->where('status', 'active')
+            ->where('id', '!=', $group->id)
+            ->first();
+
+            if ($existingGroup) {
+                throw new \Exception('Student is already a member of another active group');
+            }
+
+            // Add student to group members
+            $group->members()->attach($student->id);
+
+            // Update request status
+            $request->update([
+                'status' => 'approved',
+                'reviewed_at' => now(),
+                'reviewed_by' => $reviewer->id,
+            ]);
+
+            return $group->fresh()->load(['leader', 'members']);
+        });
+    }
+
+    /**
+     * Reject a join request
+     */
+    public function rejectJoinRequest(StudentGroupJoinRequest $request, User $reviewer, ?string $comments = null): void
+    {
+        // Verify reviewer is the group leader
+        if ($request->group->leader_id !== $reviewer->id) {
+            throw new \Exception('Only the group leader can reject join requests');
+        }
+
+        if (!$request->isPending()) {
+            throw new \Exception('Join request is no longer valid');
+        }
+
+        $request->update([
+            'status' => 'rejected',
+            'reviewed_at' => now(),
+            'reviewed_by' => $reviewer->id,
+            'review_comments' => $comments,
+        ]);
+    }
+
+    /**
+     * Ensure group is not assigned to any project
+     */
+    protected function ensureGroupNotAssigned(StudentGroup $group): void
+    {
+        if ($group->assignedProjects()->exists()) {
+            throw new \Exception('Group is already assigned to a project. Member changes must be requested via the Project Committee.');
+        }
+    }
+}
