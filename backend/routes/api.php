@@ -54,13 +54,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Student routes
     Route::prefix('student')->middleware('role:student')->group(function () {
         Route::get('dashboard', [App\Http\Controllers\Student\DashboardController::class, 'index']);
-        // Proposals with time window check for create/store
+        // Proposals routes - time window check is handled in controller (allows proposal_submission OR project_registration)
         Route::get('proposals', [App\Http\Controllers\Student\ProposalController::class, 'index']);
         Route::get('proposals/{proposal}', [App\Http\Controllers\Student\ProposalController::class, 'show']);
-        Route::post('proposals', [App\Http\Controllers\Student\ProposalController::class, 'store'])
-            ->middleware('window:proposal_submission');
-        Route::put('proposals/{proposal}', [App\Http\Controllers\Student\ProposalController::class, 'update'])
-            ->middleware('window:proposal_submission');
+        Route::post('proposals', [App\Http\Controllers\Student\ProposalController::class, 'store']);
+        Route::put('proposals/{proposal}', [App\Http\Controllers\Student\ProposalController::class, 'update']);
         Route::delete('proposals/{proposal}', [App\Http\Controllers\Student\ProposalController::class, 'destroy']);
         // Supervisors
         Route::get('supervisors', [App\Http\Controllers\Student\SupervisorController::class, 'index']);
@@ -78,6 +76,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('projects/{project}/meetings', [App\Http\Controllers\Student\ProjectController::class, 'getMeetings']);
         Route::get('projects/{project}/progress', [App\Http\Controllers\Student\ProjectController::class, 'getProgress']);
         Route::get('groups', [App\Http\Controllers\Student\StudentGroupController::class, 'show']);
+        Route::get('groups/lookup', [App\Http\Controllers\Student\StudentGroupController::class, 'findByCode']);
         Route::post('groups', [App\Http\Controllers\Student\StudentGroupController::class, 'create']);
         Route::post('groups/invite', [App\Http\Controllers\Student\StudentGroupController::class, 'invite']);
         Route::get('groups/invitations', [App\Http\Controllers\Student\StudentGroupController::class, 'getInvitations']);

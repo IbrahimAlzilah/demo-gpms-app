@@ -107,38 +107,48 @@ export function ProjectDetailsView({
             </div>
           )}
 
-          {/* Students Information */}
+          {/* Groups Information */}
           <div className="p-4 rounded-lg bg-muted border border-muted-foreground/20">
             <div className="flex items-center gap-2 mb-3">
               <Users className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-sm font-semibold">{t('project.students')}</h4>
+              <h4 className="text-sm font-semibold">{t('project.groups')}</h4>
             </div>
             <div className="space-y-2 text-sm">
               <div>
                 <span className="font-medium">
-                  {project.currentStudents || 0} / {project.maxStudents}
+                  {project.currentGroups ?? 0} / {project.maxGroups ?? 1}
                 </span>
                 <span className="text-muted-foreground ml-2">
-                  {t('project.studentsCount')}
+                  {t('project.groupsCount')}
                 </span>
               </div>
-              {project.students && project.students.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-muted-foreground/20">
-                  <p className="text-xs font-medium text-muted-foreground mb-2">
-                    {t('project.registeredStudents')}:
-                  </p>
-                  <div className="space-y-1">
-                    {project.students.map((student) => (
-                      <div key={student.id} className="text-sm">
-                        <span className="font-medium">{student.name}</span>
-                        {student.email && (
-                          <span className="text-muted-foreground ml-2 text-xs">
-                            ({student.email})
-                          </span>
-                        )}
+              {project.groups && project.groups.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-muted-foreground/20 space-y-3">
+                  {project.groups.map((group) => (
+                    <div key={group.id}>
+                      <p className="text-xs font-medium text-muted-foreground mb-2">
+                        {group.name || group.groupCode || t('project.group')}
+                      </p>
+                      {group.groupCode && (
+                        <p className="text-xs text-muted-foreground mb-2">{group.groupCode}</p>
+                      )}
+                      <div className="text-xs text-muted-foreground mb-1">
+                        {t('groups.members')} ({group.memberCount}/{group.maxMembers})
                       </div>
-                    ))}
-                  </div>
+                      {group.members && group.members.length > 0 && (
+                        <div className="space-y-1">
+                          {group.members.map((member) => (
+                            <div key={member.id} className="text-xs">
+                              <span className="font-medium">{member.name}</span>
+                              {member.id === group.leaderId && (
+                                <span className="text-primary ml-1">({t('groups.leader')})</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

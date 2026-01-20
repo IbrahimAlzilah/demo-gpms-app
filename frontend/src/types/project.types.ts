@@ -24,6 +24,10 @@ export interface Project extends BaseEntity {
   documents: (string | Document)[];
   maxStudents: number;
   currentStudents: number;
+  currentGroups?: number;
+  maxGroups?: number;
+  assignedGroup?: StudentGroup;
+  groups?: StudentGroup[];
   specialization?: string;
   keywords?: string[];
   supervisorApprovalStatus?: "pending" | "approved" | "rejected";
@@ -59,6 +63,7 @@ export interface Proposal extends BaseEntity {
 export interface ProjectGroup extends BaseEntity {
   projectId: string;
   project?: Project;
+  groupCode?: string;
   members: User[];
   leaderId: string;
   leader?: User;
@@ -68,6 +73,7 @@ export interface ProjectGroup extends BaseEntity {
 
 export interface StudentGroup extends BaseEntity {
   name?: string;
+  groupCode?: string;
   leaderId: string;
   leader?: User;
   members: User[];

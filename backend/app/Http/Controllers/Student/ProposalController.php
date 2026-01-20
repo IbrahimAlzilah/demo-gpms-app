@@ -178,6 +178,22 @@ class ProposalController extends Controller
     {
         $this->authorize('update', $proposal);
 
+        $timeWindowService = app(\App\Services\TimeWindowService::class);
+        
+        // Check which window is active
+        $isProposalSubmissionWindow = $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::PROPOSAL_SUBMISSION);
+        $isRegistrationWindow = $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::PROJECT_REGISTRATION);
+        
+        // Students can update proposals during active windows OR when proposal requires modification
+        $canUpdate = $isProposalSubmissionWindow || $isRegistrationWindow || $proposal->requiresModification();
+        
+        if (!$canUpdate) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Proposal updates are only allowed during proposal submission or project registration windows, or when revisions are requested.',
+            ], 403);
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',

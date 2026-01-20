@@ -110,7 +110,7 @@ export function ProjectsView({ projectId, open, onClose, onRegister }: ProjectsV
               id="reason"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="اذكر سبب اختيارك لهذا المشروع..."
+              placeholder={t('project.registerDescription')}
               className="min-h-[100px] resize-none bg-background"
             />
           </div>

@@ -36,91 +36,14 @@ class ProjectService
 
     /**
      * Register a student to a project
+     * 
+     * @deprecated Individual registration is not allowed. Use registerStudentGroup() instead.
+     * This method is kept for backward compatibility but will throw an error.
      */
     public function registerStudent(Project $project, User $student): ProjectRegistration
     {
-        if (!$project->isAvailableForRegistration()) {
-            throw new \Exception('Project is not available for registration');
-        }
-
-        if ($project->students()->where('users.id', $student->id)->exists()) {
-            throw new \Exception('Student is already registered to this project');
-        }
-
-        // Check if student already has a pending registration for this project
-        $existingRegistration = ProjectRegistration::where('student_id', $student->id)
-            ->where('project_id', $project->id)
-            ->where('status', 'pending')
-            ->first();
-
-        if ($existingRegistration) {
-            throw new \Exception('You already have a pending registration for this project');
-        }
-
-        // Check if student already has a pending registration for any project
-        $hasPendingRegistration = ProjectRegistration::where('student_id', $student->id)
-            ->where('status', 'pending')
-            ->exists();
-
-        if ($hasPendingRegistration) {
-            throw new \Exception('You already have a pending registration for another project');
-        }
-
-        // Check if student is already registered in an approved project
-        $hasApprovedProject = Project::whereHas('students', function ($query) use ($student) {
-            $query->where('users.id', $student->id);
-        })->exists();
-
-        if ($hasApprovedProject) {
-            throw new \Exception('You are already registered in another project');
-        }
-
-        return DB::transaction(function () use ($project, $student) {
-            // Check if there's an existing cancelled registration for this project and student
-            // Note: Rejected registrations are handled in the controller and should not reach here
-            $existingCancelledRegistration = ProjectRegistration::where('project_id', $project->id)
-                ->where('student_id', $student->id)
-                ->where('status', 'cancelled')
-                ->first();
-
-            if ($existingCancelledRegistration) {
-                // Update the existing cancelled registration to pending
-                $existingCancelledRegistration->update([
-                    'status' => 'pending',
-                    'submitted_at' => now(),
-                    'reviewed_at' => null,
-                    'reviewed_by' => null,
-                    'review_comments' => null,
-                ]);
-                $registration = $existingCancelledRegistration->fresh();
-            } else {
-                // Create new registration
-                $registration = ProjectRegistration::create([
-                    'project_id' => $project->id,
-                    'student_id' => $student->id,
-                    'status' => 'pending',
-                    'submitted_at' => now(),
-                ]);
-            }
-
-            // UC-ST-03: Notify projects committee about new registration
-            $committeeMembers = User::where('role', 'projects_committee')
-                ->where('status', 'active')
-                ->pluck('id')
-                ->toArray();
-
-            if (!empty($committeeMembers) && $this->notificationService) {
-                $this->notificationService->createForUsers(
-                    $committeeMembers,
-                    "طلب تسجيل جديد من الطالب {$student->name} في المشروع: {$project->title}",
-                    'registration_submitted',
-                    'project',
-                    $project->id
-                );
-            }
-
-            return $registration;
-        });
+        // Per specification: Registration requires a student group
+        throw new \Exception('Individual registration is not allowed. Registration must be done through a student group. Use registerStudentGroup() instead.');
     }
 
     /**
@@ -233,11 +156,9 @@ class ProjectService
                     'reserved_at' => now(),
                 ]);
             } else {
-                // Individual registration (backward compatibility)
-                if (!$project->students()->where('users.id', $registration->student_id)->exists()) {
-                    $project->students()->attach($registration->student_id);
-                    $project->increment('current_students');
-                }
+                // Registration without group is not allowed per specification
+                // All registrations must be through groups
+                throw new \Exception('Registration requires a student group. Individual registration is not allowed.');
             }
 
             return $registration->fresh();

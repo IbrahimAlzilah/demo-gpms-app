@@ -19,7 +19,7 @@ class ProjectController extends Controller
             $q->where('users.id', $request->user()->id);
         })
         ->where('status', 'in_progress')
-        ->with(['supervisor', 'students', 'group']);
+        ->with(['supervisor', 'students', 'assignedGroup.leader', 'assignedGroup.members', 'group']);
 
         $query = $this->applyTableQuery($query, $request);
 
@@ -39,7 +39,7 @@ class ProjectController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => new ProjectResource($project->load(['supervisor', 'students', 'group', 'grades', 'committeeMembers'])),
+            'data' => new ProjectResource($project->load(['supervisor', 'students', 'assignedGroup.leader', 'assignedGroup.members', 'group', 'grades', 'committeeMembers'])),
         ]);
     }
 

@@ -342,6 +342,13 @@
     "sending": "جاري الإرسال...",
     "sendInvitation": "إرسال الدعوة",
     "fullCapacity": "المجموعة ممتلئة",
+    "groupCode": "رمز المجموعة",
+    "groupCodePlaceholder": "أدخل رمز المجموعة GP-XXXX-XXXX",
+    "groupCodeDescription": "رمز المجموعة الذي شاركه معك قائد المجموعة",
+    "groupCodeRequired": "رمز المجموعة مطلوب",
+    "shareGroupCode": "شارك رمز المجموعة",
+    "groupCodeCopied": "تم نسخ رمز المجموعة",
+    "noCode": "لا يوجد رمز",
     "onlyLeaderCanRemoveMembers": "يمكن فقط مشرف المجموعة إزالة الأعضاء"
   },
   "theme": {
@@ -1206,6 +1213,9 @@
     "students": "الطلاب",
     "studentsCount": "طالب",
     "registeredStudents": "الطلاب المسجلون",
+    "groups": "المجموعات",
+    "groupsCount": "مجموعة",
+    "group": "المجموعة",
     "specialization": "التخصص",
     "keywords": "الكلمات المفتاحية",
     "documents": "المستندات",

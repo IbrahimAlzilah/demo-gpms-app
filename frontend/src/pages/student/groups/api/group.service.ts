@@ -41,6 +41,17 @@ export const groupService = {
     }
   },
 
+  lookupByCode: async (code: string): Promise<StudentGroup> => {
+    try {
+      const response = await apiClient.get<StudentGroup>('/student/groups/lookup', {
+        params: { code },
+      })
+      return response.data
+    } catch (error) {
+      throw new Error(getErrorMessage(error))
+    }
+  },
+
   create: async (
     name: string | null,
     members: User[]
@@ -58,7 +69,7 @@ export const groupService = {
 
   addMember: async (groupId: string, member: User): Promise<StudentGroup> => {
     try {
-      const response = await apiClient.post<ProjectGroup>(
+      const response = await apiClient.post<StudentGroup>(
         `/student/groups/${groupId}/members`,
         { member_id: member.id }
       )
@@ -73,7 +84,7 @@ export const groupService = {
     memberId: string
   ): Promise<StudentGroup> => {
     try {
-      const response = await apiClient.delete<ProjectGroup>(
+      const response = await apiClient.delete<StudentGroup>(
         `/student/groups/${groupId}/members/${memberId}`
       )
       return response.data
@@ -87,7 +98,7 @@ export const groupService = {
     newLeaderId: string
   ): Promise<StudentGroup> => {
     try {
-      const response = await apiClient.put<ProjectGroup>(
+      const response = await apiClient.put<StudentGroup>(
         `/student/groups/${groupId}/leader`,
         { leader_id: newLeaderId }
       )
@@ -130,7 +141,7 @@ export const groupService = {
     _studentId: string
   ): Promise<StudentGroup> => {
     try {
-      const response = await apiClient.post<ProjectGroup>(
+      const response = await apiClient.post<StudentGroup>(
         `/student/groups/invitations/${invitationId}/accept`
       )
       return response.data
@@ -152,7 +163,7 @@ export const groupService = {
 
   join: async (groupId: string, userId: string): Promise<StudentGroup> => {
     try {
-      const response = await apiClient.post<ProjectGroup>(
+      const response = await apiClient.post<StudentGroup>(
         `/student/groups/${groupId}/members`,
         { member_id: userId }
       )
@@ -191,7 +202,7 @@ export const groupService = {
 
   approveJoinRequest: async (requestId: string): Promise<StudentGroup> => {
     try {
-      const response = await apiClient.post<ProjectGroup>(
+      const response = await apiClient.post<StudentGroup>(
         `/student/groups/join-requests/${requestId}/approve`
       )
       return response.data

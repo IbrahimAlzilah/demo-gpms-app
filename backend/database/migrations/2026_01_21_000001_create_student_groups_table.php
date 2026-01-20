@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('student_groups', function (Blueprint $table) {
             $table->id();
             $table->string('name')->nullable();
+            $table->string('group_code')->unique()->nullable();
             $table->foreignId('leader_id')->constrained('users')->onDelete('cascade');
             $table->enum('status', ['active', 'archived'])->default('active');
             $table->timestamps();

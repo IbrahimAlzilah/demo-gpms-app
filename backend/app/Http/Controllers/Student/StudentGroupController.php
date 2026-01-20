@@ -45,6 +45,30 @@ class StudentGroupController extends Controller
         ]);
     }
 
+    public function findByCode(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'code' => 'required|string',
+        ]);
+
+        $group = StudentGroup::where('group_code', $validated['code'])
+            ->where('status', 'active')
+            ->with(['leader', 'members'])
+            ->first();
+
+        if (!$group) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Group not found',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => new StudentGroupResource($group),
+        ]);
+    }
+
     public function create(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -84,11 +108,11 @@ class StudentGroupController extends Controller
         try {
             $group = StudentGroup::findOrFail($validated['group_id']);
             
-            // Verify user is leader or member of the group
-            if ($group->leader_id !== $request->user()->id && !$group->hasMember($request->user()->id)) {
+            // Verify user is leader
+            if ($group->leader_id !== $request->user()->id) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Unauthorized to invite members',
+                    'message' => 'Only the group leader can invite members',
                 ], 403);
             }
 
@@ -204,11 +228,11 @@ class StudentGroupController extends Controller
 
     public function addMember(Request $request, StudentGroup $group): JsonResponse
     {
-        // Verify user is leader or member
-        if ($group->leader_id !== $request->user()->id && !$group->hasMember($request->user()->id)) {
+        // Verify user is leader
+        if ($group->leader_id !== $request->user()->id) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized to add members',
+                'message' => 'Only the group leader can add members',
             ], 403);
         }
 

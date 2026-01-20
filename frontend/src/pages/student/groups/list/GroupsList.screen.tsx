@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button } from '@/components/ui'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui'
+import { useState } from 'react'
 import { BlockContent, ModalDialog, LoadingSpinner } from '@/components/common'
 import { AlertCircle, Users, Mail, Crown, Loader2, CheckCircle2, XCircle, Plus, UserPlus } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
@@ -25,6 +26,7 @@ export function GroupsList() {
   const acceptInvitation = useAcceptInvitation()
   const rejectInvitation = useRejectInvitation()
   const createGroup = useCreateGroup()
+  const [isCopied, setIsCopied] = useState(false)
 
   const handleCreateGroup = async (name?: string, members: User[] = []) => {
     setState((prev) => ({ ...prev, error: '', success: '' }))
@@ -33,10 +35,10 @@ export function GroupsList() {
       const memberIds = Array.isArray(members) && members.length > 0
         ? members.map(m => (typeof m === 'object' && m !== null && 'id' in m ? m.id : m)).filter(Boolean)
         : []
-      
+
       // Map to User objects with just id property if needed
       const cleanMembers: User[] = memberIds.map(id => ({ id: String(id) } as User))
-      
+
       await createGroup.mutateAsync({
         name: name || null,
         members: cleanMembers,
@@ -425,21 +427,32 @@ export function GroupsList() {
               <CardContent>
                 <div className="flex items-center gap-3 p-4 bg-primary/10 border border-primary/20 rounded-lg">
                   <div className="flex-1">
-                    <p className="text-sm text-muted-foreground mb-1">{t('groups.shareGroupId')}</p>
-                    <p className="text-2xl font-bold text-primary font-mono">{data.group.id}</p>
+                    <p className="text-sm text-muted-foreground mb-1">{t('groups.shareGroupCode')}</p>
+                    <p className="text-2xl font-bold text-primary font-mono">{data.group.groupCode || t('groups.noCode')}</p>
                   </div>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      navigator.clipboard.writeText(data.group?.id || '')
-                      setState((prev) => ({
-                        ...prev,
-                        success: t('groups.groupIdCopied'),
-                      }))
-                    }}
-                  >
-                    {t('common.copy')}
-                  </Button>
+                  <Tooltip open={isCopied}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          if (data.group?.groupCode) {
+                            navigator.clipboard.writeText(data.group.groupCode)
+                            setIsCopied(true)
+                            setTimeout(() => setIsCopied(false), 2000)
+                          }
+                        }}
+                      >
+                        {t('common.copy')}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-success" />
+                        <span>{t('groups.groupCodeCopied')}</span>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
               </CardContent>
             </Card>

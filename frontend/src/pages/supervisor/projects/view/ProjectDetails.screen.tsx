@@ -215,9 +215,9 @@ export function ProjectDetails() {
                     <div className="flex items-center gap-2">
                       <Users className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-xs text-muted-foreground">{t('project.students')}</p>
+                        <p className="text-xs text-muted-foreground">{t('project.groups')}</p>
                         <p className="text-sm font-medium">
-                          {project.currentStudents}/{project.maxStudents}
+                          {project.currentGroups ?? 0}/{project.maxGroups ?? 1}
                         </p>
                       </div>
                     </div>
@@ -263,32 +263,51 @@ export function ProjectDetails() {
                 </CardContent>
               </Card>
 
-              {/* Students List */}
-              {project.students && project.students.length > 0 && (
+              {/* Groups List */}
+              {project.groups && project.groups.length > 0 && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Users className="h-5 w-5 text-primary" />
-                      {t('project.students')} ({project.students.length})
+                      {t('project.groups')} ({project.groups.length})
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-2">
-                      {project.students.map((student) => (
-                        <div
-                          key={student.id}
-                          className="flex items-center justify-between p-3 border rounded-lg"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                              <User className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium">{student.name}</p>
-                              {student.email && (
-                                <p className="text-xs text-muted-foreground">{student.email}</p>
-                              )}
-                            </div>
+                    <div className="space-y-4">
+                      {project.groups.map((group) => (
+                        <div key={group.id} className="p-4 border rounded-lg">
+                          <div className="mb-3">
+                            <h4 className="font-medium text-sm mb-1">
+                              {group.name || group.groupCode || t('project.group')}
+                            </h4>
+                            {group.groupCode && (
+                              <p className="text-xs text-muted-foreground">{group.groupCode}</p>
+                            )}
+                          </div>
+                          <div className="space-y-2">
+                            <p className="text-xs font-medium text-muted-foreground mb-2">
+                              {t('groups.members')} ({group.memberCount}/{group.maxMembers})
+                            </p>
+                            {group.members && group.members.length > 0 && (
+                              <div className="space-y-2">
+                                {group.members.map((member) => (
+                                  <div
+                                    key={member.id}
+                                    className="flex items-center gap-3 p-2 bg-muted rounded"
+                                  >
+                                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-xs">
+                                      {member.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                      <p className="text-sm font-medium">{member.name}</p>
+                                      {member.id === group.leaderId && (
+                                        <p className="text-xs text-primary">{t('groups.leader')}</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))}

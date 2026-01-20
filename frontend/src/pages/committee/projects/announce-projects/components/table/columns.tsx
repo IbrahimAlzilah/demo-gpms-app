@@ -99,13 +99,13 @@ export function createAnnounceProjectsColumns({
       ),
     },
     {
-      accessorKey: "maxStudents",
+      accessorKey: "currentGroups",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.maxStudents')} />
+        <DataTableColumnHeader column={column} title={t('project.groups')} />
       ),
       cell: ({ row }) => (
         <div className="text-sm">
-          {row.original.currentStudents || 0} / {row.original.maxStudents}
+          {row.original.currentGroups ?? 0} / {row.original.maxGroups ?? 1}
         </div>
       ),
     },

@@ -21,6 +21,8 @@ class ProjectResource extends JsonResource
             'status' => $this->status,
             'maxStudents' => $this->max_students,
             'currentStudents' => $this->current_students,
+            'currentGroups' => $this->assigned_group_id ? 1 : 0,
+            'maxGroups' => 1,
             'specialization' => $this->specialization,
             'keywords' => $this->keywords,
             'supervisorId' => $this->supervisor_id ? (string) $this->supervisor_id : null,
@@ -34,6 +36,12 @@ class ProjectResource extends JsonResource
                 return new UserResource($this->supervisor);
             }),
             'students' => UserResource::collection($this->whenLoaded('students') ?? []),
+            'assignedGroup' => $this->when($this->relationLoaded('assignedGroup') && $this->assignedGroup !== null, function () {
+                return new StudentGroupResource($this->assignedGroup);
+            }),
+            'groups' => $this->when($this->relationLoaded('assignedGroup') && $this->assignedGroup !== null, function () {
+                return [new StudentGroupResource($this->assignedGroup)];
+            }, []),
             'groupId' => $this->when($this->relationLoaded('group') && $this->group !== null, function () {
                 return (string) $this->group->id;
             }),

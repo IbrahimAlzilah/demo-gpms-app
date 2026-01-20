@@ -41,13 +41,13 @@ export function createProjectColumns({
       ),
     },
     {
-      accessorKey: 'currentStudents',
+      accessorKey: 'currentGroups',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('project.students')} />
+        <DataTableColumnHeader column={column} title={t('project.groups')} />
       ),
       cell: ({ row }) => (
         <div>
-          {row.original.currentStudents}/{row.original.maxStudents}
+          {row.original.currentGroups ?? 0}/{row.original.maxGroups ?? 1}
         </div>
       ),
     },

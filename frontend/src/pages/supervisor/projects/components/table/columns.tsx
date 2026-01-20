@@ -33,15 +33,15 @@ export function createProjectColumns({
       ),
     },
     {
-      accessorKey: "currentStudents",
+      accessorKey: "currentGroups",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.students')} />
+        <DataTableColumnHeader column={column} title={t('project.groups')} />
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <Users className="h-4 w-4 text-muted-foreground" />
           <span>
-            {row.original.currentStudents}/{row.original.maxStudents}
+            {row.original.currentGroups ?? 0}/{row.original.maxGroups ?? 1}
           </span>
         </div>
       ),

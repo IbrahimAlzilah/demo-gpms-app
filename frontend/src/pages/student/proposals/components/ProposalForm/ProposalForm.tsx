@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Input, Textarea, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { LoadingSpinner, FileUpload } from '@/components/common'
@@ -46,9 +47,9 @@ export function ProposalForm({
   })
 
   // Auto-select group if student is a member of one
-  React.useEffect(() => {
+  useEffect(() => {
     if (studentGroup) {
-      form.setValue('studentGroupId', Number(studentGroup.id))
+      form.setValue('studentGroupId', String(studentGroup.id))
     }
   }, [studentGroup, form])
 
@@ -168,7 +169,7 @@ export function ProposalForm({
             ) : (
               <Select
                 value={selectedGroupId ? String(selectedGroupId) : ''}
-                onValueChange={(value) => form.setValue('studentGroupId', Number(value))}
+                onValueChange={(value) => form.setValue('studentGroupId', value)}
                 disabled={!!studentGroup} // Disable selection if user is already in a group
               >
                 <SelectTrigger className={errors.studentGroupId ? 'border-destructive' : ''}>
@@ -218,7 +219,7 @@ export function ProposalForm({
           ) : (
             <Select
               value={watch('proposedSupervisorId') ? String(watch('proposedSupervisorId')) : ''}
-              onValueChange={(value) => form.setValue('proposedSupervisorId', Number(value))}
+              onValueChange={(value) => form.setValue('proposedSupervisorId', value)}
             >
               <SelectTrigger id="proposedSupervisorId" className={errors.proposedSupervisorId ? 'border-destructive' : ''}>
                 <SelectValue placeholder={t('proposal.selectSupervisor')} />

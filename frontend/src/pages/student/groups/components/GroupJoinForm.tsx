@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Button, Label, Input, Textarea } from '@/components/ui'
 import { AlertCircle, Users, Loader2 } from 'lucide-react'
 import { useCreateJoinRequest } from '../hooks/useGroupOperations'
+import { groupService } from '../api/group.service'
 import { groupJoinSchema, type GroupJoinSchema } from '../schema'
 
 interface GroupJoinFormProps {
@@ -23,15 +24,17 @@ export function GroupJoinForm({ onSuccess, onError }: GroupJoinFormProps) {
   } = useForm<GroupJoinSchema>({
     resolver: zodResolver(groupJoinSchema(t)),
     defaultValues: {
-      groupId: '',
+      groupCode: '',
       message: '',
     },
   })
 
   const onSubmit = async (data: GroupJoinSchema) => {
     try {
+      const group = await groupService.lookupByCode(data.groupCode)
+
       await createJoinRequest.mutateAsync({
-        groupId: data.groupId,
+        groupId: group.id,
         message: data.message,
       })
       reset()
@@ -44,24 +47,24 @@ export function GroupJoinForm({ onSuccess, onError }: GroupJoinFormProps) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div>
-        <Label htmlFor="groupId">
-          {t('groups.groupId')} <span className="text-red-500">*</span>
+        <Label htmlFor="groupCode">
+          {t('groups.groupCode')} <span className="text-red-500">*</span>
         </Label>
         <Input
-          id="groupId"
-          {...register('groupId')}
-          placeholder={t('groups.groupIdPlaceholder')}
-          className={errors.groupId ? 'border-red-500' : ''}
-          aria-invalid={!!errors.groupId}
+          id="groupCode"
+          {...register('groupCode')}
+          placeholder="GP-202X-XXXX"
+          className={errors.groupCode ? 'border-red-500' : ''}
+          aria-invalid={!!errors.groupCode}
         />
-        {errors?.groupId && (
+        {errors?.groupCode && (
           <p className="text-sm text-red-600 flex items-center gap-1 mt-1">
             <AlertCircle className="h-3 w-3" />
-            {errors.groupId.message}
+            {errors.groupCode.message}
           </p>
         )}
         <p className="text-xs text-muted-foreground mt-1">
-          {t('groups.groupIdDescription')}
+          {t('groups.groupCodeDescription')}
         </p>
       </div>
       <div>

@@ -25,7 +25,7 @@ class ProjectController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = Project::with(['supervisor', 'students']);
+        $query = Project::with(['supervisor', 'students', 'assignedGroup.leader', 'assignedGroup.members']);
 
         // Filter by status if provided
         if ($request->has('status')) {
@@ -53,7 +53,7 @@ class ProjectController extends Controller
     {
         return response()->json([
             'success' => true,
-            'data' => new ProjectResource($project->load(['supervisor', 'students', 'group'])),
+            'data' => new ProjectResource($project->load(['supervisor', 'students', 'assignedGroup.leader', 'assignedGroup.members', 'group'])),
         ]);
     }
 

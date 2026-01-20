@@ -14,9 +14,38 @@ class StudentGroup extends Model
 
     protected $fillable = [
         'name',
+        'group_code',
         'leader_id',
         'status',
     ];
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (StudentGroup $group) {
+            if (empty($group->group_code)) {
+                $year = date('Y');
+                // Find the last group code for the current year to determine the next sequence
+                $lastGroup = static::where('group_code', 'like', "GP-{$year}-%")
+                    ->orderBy('group_code', 'desc')
+                    ->first();
+
+                $sequence = 1;
+                if ($lastGroup) {
+                    // Extract sequence number from the last group code (GP-YYYY-XXXX)
+                    $parts = explode('-', $lastGroup->group_code);
+                    if (count($parts) === 3) {
+                        $sequence = intval($parts[2]) + 1;
+                    }
+                }
+
+                // Format: GP-YYYY-XXXX (e.g., GP-2026-0001)
+                $group->group_code = sprintf('GP-%s-%04d', $year, $sequence);
+            }
+        });
+    }
 
     /**
      * Get the leader of the group
@@ -82,10 +111,15 @@ class StudentGroup extends Model
     }
 
     /**
-     * Check if a user is a member
+     * Check if a user is a member (including leader)
      */
     public function hasMember(int $userId): bool
     {
+        // Check if user is the leader
+        if ($this->leader_id === $userId) {
+            return true;
+        }
+        // Check if user is in the members pivot table
         return $this->members()->where('users.id', $userId)->exists();
     }
 

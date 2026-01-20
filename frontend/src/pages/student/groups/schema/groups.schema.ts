@@ -16,9 +16,9 @@ export type GroupInviteSchema = z.infer<ReturnType<typeof groupInviteSchema>>;
 // Group Join Schema
 export const groupJoinSchema = (t: (key: string) => string) => {
   return z.object({
-    groupId: z
+    groupCode: z
       .string()
-      .min(1, t("groups.groupIdRequired"))
+      .min(1, t("groups.groupCodeRequired"))
       .trim(),
     message: z.string().optional(),
   });

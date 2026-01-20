@@ -55,8 +55,10 @@ class StudentGroupService
                 'status' => 'active',
             ]);
 
-            // Add leader as group member
-            $group->members()->attach($leader->id);
+            // Note: Leader is NOT added to members() pivot table.
+            // Leader is tracked separately via leader_id column.
+            // getTotalMemberCount() adds +1 for leader, so adding them
+            // to members() would cause double-counting.
 
             // Add other members to group
             if (!empty($memberIds)) {
@@ -167,6 +169,10 @@ class StudentGroupService
      */
     public function updateLeader(StudentGroup $group, User $newLeader): StudentGroup
     {
+        // Allow leader changes before and during project registration (per UC-ST-04)
+        // Only block after group is assigned to a project (approved registration)
+        $this->ensureGroupNotAssigned($group);
+
         if (!$group->hasMember($newLeader->id)) {
             throw new \Exception('New leader must be a member of the group');
         }
@@ -183,9 +189,9 @@ class StudentGroupService
     {
         $this->ensureGroupNotAssigned($group);
 
-        // Verify inviter is leader or member of the group
-        if ($group->leader_id !== $inviter->id && !$group->hasMember($inviter->id)) {
-            throw new \Exception('Only group leader or members can invite new members');
+        // Verify inviter is leader of the group
+        if ($group->leader_id !== $inviter->id) {
+            throw new \Exception('Only the group leader can invite new members');
         }
 
         if ($group->isFull()) {
@@ -226,13 +232,24 @@ class StudentGroupService
             throw new \Exception('Invitation already sent to this user');
         }
 
-        return StudentGroupInvitation::create([
+        $invitation = StudentGroupInvitation::create([
             'group_id' => $group->id,
             'inviter_id' => $inviter->id,
             'invitee_id' => $invitee->id,
             'status' => 'pending',
             'message' => $message,
         ]);
+
+        // Create notification for match invitee
+        \App\Models\Notification::create([
+            'user_id' => $invitee->id,
+            'message' => "You have been invited to join group '{$group->name}' by {$inviter->name}",
+            'type' => 'group_invitation',
+            'related_entity_type' => StudentGroupInvitation::class,
+            'related_entity_id' => $invitation->id,
+        ]);
+
+        return $invitation;
     }
 
     /**
@@ -278,6 +295,15 @@ class StudentGroupService
             // Update invitation status
             $invitation->update(['status' => 'accepted']);
 
+            // Notify group leader
+            \App\Models\Notification::create([
+                'user_id' => $group->leader_id,
+                'message' => "Student {$invitee->name} accepted your invitation to join group '{$group->name}'",
+                'type' => 'group_invitation_accepted',
+                'related_entity_type' => StudentGroup::class,
+                'related_entity_id' => $group->id,
+            ]);
+
             return $group->fresh()->load(['leader', 'members']);
         });
     }
@@ -296,6 +322,16 @@ class StudentGroupService
         }
 
         $invitation->update(['status' => 'rejected']);
+
+        // Notify group leader
+        $group = $invitation->group;
+        \App\Models\Notification::create([
+            'user_id' => $group->leader_id,
+            'message' => "Student {$invitee->name} rejected your invitation to join group '{$group->name}'",
+            'type' => 'group_invitation_rejected',
+            'related_entity_type' => StudentGroup::class,
+            'related_entity_id' => $group->id,
+        ]);
     }
 
     /**
@@ -341,13 +377,24 @@ class StudentGroupService
             throw new \Exception('You already have a pending join request for this group');
         }
 
-        return StudentGroupJoinRequest::create([
+        $request = StudentGroupJoinRequest::create([
             'group_id' => $group->id,
             'student_id' => $student->id,
             'status' => 'pending',
             'message' => $message,
             'requested_at' => now(),
         ]);
+
+        // Notify group leader
+        \App\Models\Notification::create([
+            'user_id' => $group->leader_id,
+            'message' => "Student {$student->name} requested to join your group '{$group->name}'",
+            'type' => 'group_join_request',
+            'related_entity_type' => StudentGroupJoinRequest::class,
+            'related_entity_id' => $request->id,
+        ]);
+
+        return $request;
     }
 
     /**
@@ -399,6 +446,15 @@ class StudentGroupService
                 'reviewed_by' => $reviewer->id,
             ]);
 
+            // Notify student
+            \App\Models\Notification::create([
+                'user_id' => $student->id,
+                'message' => "Your request to join group '{$group->name}' has been approved",
+                'type' => 'group_join_request_approved',
+                'related_entity_type' => StudentGroup::class,
+                'related_entity_id' => $group->id,
+            ]);
+
             return $group->fresh()->load(['leader', 'members']);
         });
     }
@@ -422,6 +478,16 @@ class StudentGroupService
             'reviewed_at' => now(),
             'reviewed_by' => $reviewer->id,
             'review_comments' => $comments,
+        ]);
+
+        // Notify student
+        $group = $request->group;
+        \App\Models\Notification::create([
+            'user_id' => $request->student_id,
+            'message' => "Your request to join group '{$group->name}' has been rejected",
+            'type' => 'group_join_request_rejected',
+            'related_entity_type' => StudentGroup::class,
+            'related_entity_id' => $group->id,
         ]);
     }
 
