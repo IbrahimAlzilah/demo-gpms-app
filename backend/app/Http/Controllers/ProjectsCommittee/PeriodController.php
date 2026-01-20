@@ -42,6 +42,32 @@ class PeriodController extends Controller
             'is_active' => true,
         ]);
 
+        // Notify all students about the new period
+        $students = \App\Models\User::role('student')->get(['id']);
+        if ($students->isNotEmpty()) {
+            $now = now();
+            $notifications = $students->map(function ($student) use ($period, $now) {
+                return [
+                    'user_id' => $student->id,
+                    'message' => json_encode([
+                        'key' => 'notifications.periods.new_announcement',
+                        'params' => [
+                            'type' => $period->type,
+                            'name' => $period->name,
+                        ],
+                    ]),
+                    'type' => 'period_announcement',
+                    'related_entity_type' => TimePeriod::class,
+                    'related_entity_id' => $period->id,
+                    'is_read' => false,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            })->toArray();
+            
+            \App\Models\Notification::insert($notifications);
+        }
+
         return response()->json([
             'success' => true,
             'data' => new TimePeriodResource($period->load('creator')),
@@ -82,6 +108,34 @@ class PeriodController extends Controller
         }
 
         $period->update($validated);
+
+        // Notify students if the period was just activated
+        if ($period->wasChanged('is_active') && $period->is_active) {
+            $students = \App\Models\User::role('student')->get(['id']);
+            if ($students->isNotEmpty()) {
+                $now = now();
+                $notifications = $students->map(function ($student) use ($period, $now) {
+                    return [
+                        'user_id' => $student->id,
+                        'message' => json_encode([
+                            'key' => 'notifications.periods.activated',
+                            'params' => [
+                                'type' => $period->type,
+                                'name' => $period->name,
+                            ],
+                        ]),
+                        'type' => 'period_announcement',
+                        'related_entity_type' => TimePeriod::class,
+                        'related_entity_id' => $period->id,
+                        'is_read' => false,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
+                })->toArray();
+                
+                \App\Models\Notification::insert($notifications);
+            }
+        }
 
         return response()->json([
             'success' => true,

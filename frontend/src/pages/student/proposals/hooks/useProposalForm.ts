@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/pages/auth/login";
 import { usePeriodCheck } from "@/hooks/usePeriodCheck";
+import { useMyGroup } from "@/pages/student/groups/hooks/useGroups";
 import { proposalFormSchema, type ProposalFormSchema } from "../schema";
 import type { ProposalFormData } from "../types/Proposals.types";
 
@@ -24,14 +25,20 @@ export function useProposalForm(options: UseProposalFormOptions = {}) {
   const { isPeriodActive: isRegistrationPeriod, isLoading: registrationPeriodLoading } = usePeriodCheck(
     "project_registration"
   );
+  const { data: studentGroup } = useMyGroup();
   const isPeriodActive = isSubmissionPeriod || isRegistrationPeriod;
   const periodLoading = submissionPeriodLoading || registrationPeriodLoading;
   const isRegistrationWindow = isRegistrationPeriod && !isSubmissionPeriod;
+  
+  // Rule 5: After group creation, all proposals must be submitted under the group name
+  // Group is required if: (1) student is in a group, OR (2) it's registration-only window
+  const requireGroup = !!studentGroup || isRegistrationWindow;
+  
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [error, setError] = useState("");
 
   const form = useForm<ProposalFormSchema>({
-    resolver: zodResolver(proposalFormSchema(t, isRegistrationWindow)),
+    resolver: zodResolver(proposalFormSchema(t, requireGroup)),
     defaultValues: {
       title: "",
       description: "",

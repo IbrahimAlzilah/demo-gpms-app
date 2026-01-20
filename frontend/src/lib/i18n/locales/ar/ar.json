@@ -1372,5 +1372,43 @@
     "goToPreviousPage": "الانتقال إلى الصفحة السابقة",
     "goToNextPage": "الانتقال إلى الصفحة التالية",
     "goToLastPage": "الانتقال إلى الصفحة الأخيرة"
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "markAllAsRead": "tمييز الكل كمقروء",
+    "deleteAll": "حذف الكل",
+    "noNotifications": "لا توجد إشعارات",
+    "loading": "جاري التحميل...",
+    "confirmDeleteAll": "هل أنت متأكد من حذف جميع الإشعارات؟",
+    "types": {
+      "proposal_approved": "تم قبول مقترح المشروع",
+      "proposal_rejected": "تم رفض المقترح",
+      "request_approved": "تم قبول الطلب",
+      "request_rejected": "تم رفض الطلب",
+      "deadline_approaching": "موعد تسليم قريب",
+      "registration_approved": "تم قبول التسجيل",
+      "registration_rejected": "تم رفض التسجيل",
+      "grade_approved": "تم اعتماد الدرجة",
+      "announcement_created": "إعلان جديد",
+      "period_announcement": "إعلان فترة زمنية",
+      "group_invitation": "دعوة انضمام لمجموعة",
+      "group_invitation_accepted": "تم قبول الدعوة",
+      "group_invitation_rejected": "تم رفض الدعوة",
+      "group_join_request": "طلب انضمام جديد",
+      "group_join_request_approved": "تم قبول طلب الانضمام",
+      "group_join_request_rejected": "تم رفض طلب الانضمام"
+    },
+    "groups": {
+      "invitation_received": "تم دعوتك للانضمام إلى المجموعة '{{group_name}}' بواسطة {{inviter_name}}",
+      "invitation_accepted": "قام الطالب {{student_name}} بقبول دعوتك للانضمام إلى المجموعة '{{group_name}}'",
+      "invitation_rejected": "قام الطالب {{student_name}} برفض دعوتك للانضمام إلى المجموعة '{{group_name}}'",
+      "join_request_received": "قام الطالب {{student_name}} بطلب الانضمام إلى مجموعتك '{{group_name}}'",
+      "join_request_approved": "تم قبول طلبك للانضمام إلى المجموعة '{{group_name}}'",
+      "join_request_rejected": "تم رفض طلبك للانضمام إلى المجموعة '{{group_name}}'"
+    },
+    "periods": {
+      "new_announcement": "تم الإعلان عن فترة {{type}} جديدة: '{{name}}'",
+      "activated": "الفترة {{type}} '{{name}}' مفتوحة الآن"
+    }
   }
 }

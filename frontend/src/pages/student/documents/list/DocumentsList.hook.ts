@@ -12,7 +12,7 @@ export function useDocumentsList() {
   const { t } = useTranslation()
   const { user } = useAuthStore()
   const { data: projects } = useProjects()
-  const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('document_submission')
+  const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('deliverable_submission')
 
   const [state, setState] = useState<DocumentsListState>({
     selectedDocument: null,

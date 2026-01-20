@@ -92,7 +92,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('groups/join-requests/{joinRequest}/reject', [App\Http\Controllers\Student\StudentGroupController::class, 'rejectJoinRequest']);
         Route::get('documents/{document}/download', [App\Http\Controllers\Student\DocumentController::class, 'download']);
         Route::post('documents', [App\Http\Controllers\Student\DocumentController::class, 'store'])
-            ->middleware('window:document_submission');
+            ->middleware('window:deliverable_submission');
         Route::get('documents', [App\Http\Controllers\Student\DocumentController::class, 'index']);
         Route::get('documents/{document}', [App\Http\Controllers\Student\DocumentController::class, 'show']);
         Route::delete('documents/{document}', [App\Http\Controllers\Student\DocumentController::class, 'destroy']);

@@ -1270,5 +1270,43 @@
     "goToPreviousPage": "Go to previous page",
     "goToNextPage": "Go to next page",
     "goToLastPage": "Go to last page"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllAsRead": "Mark all as read",
+    "deleteAll": "Delete all",
+    "noNotifications": "No notifications",
+    "loading": "Loading...",
+    "confirmDeleteAll": "Are you sure you want to delete all notifications?",
+    "types": {
+      "proposal_approved": "Proposal Approved",
+      "proposal_rejected": "Proposal Rejected",
+      "request_approved": "Request Approved",
+      "request_rejected": "Request Rejected",
+      "deadline_approaching": "Deadline Approaching",
+      "registration_approved": "Registration Approved",
+      "registration_rejected": "Registration Rejected",
+      "grade_approved": "Grade Approved",
+      "announcement_created": "New Announcement",
+      "period_announcement": "Period Announcement",
+      "group_invitation": "Group Invitation",
+      "group_invitation_accepted": "Invitation Accepted",
+      "group_invitation_rejected": "Invitation Rejected",
+      "group_join_request": "Join Request",
+      "group_join_request_approved": "Join Request Approved",
+      "group_join_request_rejected": "Join Request Rejected"
+    },
+    "groups": {
+      "invitation_received": "You have been invited to join group '{{group_name}}' by {{inviter_name}}",
+      "invitation_accepted": "Student {{student_name}} accepted your invitation to join group '{{group_name}}'",
+      "invitation_rejected": "Student {{student_name}} rejected your invitation to join group '{{group_name}}'",
+      "join_request_received": "Student {{student_name}} requested to join your group '{{group_name}}'",
+      "join_request_approved": "Your request to join group '{{group_name}}' has been approved",
+      "join_request_rejected": "Your request to join group '{{group_name}}' has been rejected"
+    },
+    "periods": {
+      "new_announcement": "A new {{type}} period '{{name}}' has been announced",
+      "activated": "The {{type}} period '{{name}}' is now open"
+    }
   }
 }

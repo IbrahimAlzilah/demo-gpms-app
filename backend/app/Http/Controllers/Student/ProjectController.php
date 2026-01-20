@@ -181,63 +181,15 @@ class ProjectController extends Controller
         $student = $request->user();
         
         // Get all ProjectRegistration records for the student
+        // After migration backfill, all students in project_student should have corresponding
+        // project_registrations records, so we only return real database records
         $registrations = ProjectRegistration::where('student_id', $student->id)
             ->with(['project', 'reviewer'])
             ->get();
 
-        // Get all projects where the student is directly attached via students relationship
-        $attachedProjects = Project::whereHas('students', function ($q) use ($student) {
-            $q->where('users.id', $student->id);
-        })
-        ->with(['supervisor', 'students' => function ($q) use ($student) {
-            $q->where('users.id', $student->id);
-        }])
-        ->get();
-
-        // Get project IDs that already have approved registration records
-        $approvedRegistrationProjectIds = $registrations
-            ->where('status', 'approved')
-            ->pluck('project_id')
-            ->toArray();
-
-        // Create synthetic registration records for projects where student is attached
-        // but doesn't have an approved registration record
-        $syntheticRegistrations = collect();
-        foreach ($attachedProjects as $project) {
-            if (!in_array($project->id, $approvedRegistrationProjectIds)) {
-                // Get pivot data for timestamps
-                $pivot = $project->students->first()?->pivot;
-                $pivotCreatedAt = $pivot->created_at ?? now();
-                $pivotUpdatedAt = $pivot->updated_at ?? now();
-                
-                // Create a synthetic ProjectRegistration instance (not saved to DB)
-                $syntheticRegistration = new ProjectRegistration([
-                    'project_id' => $project->id,
-                    'student_id' => $student->id,
-                    'status' => 'approved',
-                    'submitted_at' => $pivotCreatedAt,
-                    'reviewed_at' => $pivotUpdatedAt,
-                    'reviewed_by' => null,
-                    'review_comments' => null,
-                ]);
-                
-                // Set the project relationship
-                $syntheticRegistration->setRelation('project', $project);
-                $syntheticRegistration->setRelation('reviewer', null);
-                
-                // Set ID to a unique synthetic ID to avoid conflicts
-                $syntheticRegistration->id = 'synthetic_' . $project->id;
-                
-                $syntheticRegistrations->push($syntheticRegistration);
-            }
-        }
-
-        // Merge real registrations with synthetic ones
-        $allRegistrations = $registrations->merge($syntheticRegistrations);
-
         return response()->json([
             'success' => true,
-            'data' => ProjectRegistrationResource::collection($allRegistrations),
+            'data' => ProjectRegistrationResource::collection($registrations),
         ]);
     }
 
@@ -250,20 +202,16 @@ class ProjectController extends Controller
             ], 403);
         }
 
-        if (!in_array($registration->status, ['pending', 'approved'])) {
+        // Only allow cancelling pending registrations to avoid partially cancelling
+        // group-based approved registrations (which would create inconsistent state)
+        if ($registration->status !== 'pending') {
             return response()->json([
                 'success' => false,
-                'message' => 'Cannot cancel registration in current status',
+                'message' => 'Only pending registrations can be cancelled. Approved registrations cannot be cancelled.',
             ], 400);
         }
 
         try {
-            if ($registration->status === 'approved') {
-                $project = $registration->project;
-                $project->students()->detach($registration->student_id);
-                $project->decrement('current_students');
-            }
-
             $registration->update(['status' => 'cancelled']);
 
             return response()->json([

@@ -243,7 +243,13 @@ class StudentGroupService
         // Create notification for match invitee
         \App\Models\Notification::create([
             'user_id' => $invitee->id,
-            'message' => "You have been invited to join group '{$group->name}' by {$inviter->name}",
+            'message' => json_encode([
+                'key' => 'notifications.groups.invitation_received',
+                'params' => [
+                    'group_name' => $group->name,
+                    'inviter_name' => $inviter->name,
+                ],
+            ]),
             'type' => 'group_invitation',
             'related_entity_type' => StudentGroupInvitation::class,
             'related_entity_id' => $invitation->id,
@@ -298,7 +304,13 @@ class StudentGroupService
             // Notify group leader
             \App\Models\Notification::create([
                 'user_id' => $group->leader_id,
-                'message' => "Student {$invitee->name} accepted your invitation to join group '{$group->name}'",
+                'message' => json_encode([
+                    'key' => 'notifications.groups.invitation_accepted',
+                    'params' => [
+                        'student_name' => $invitee->name,
+                        'group_name' => $group->name,
+                    ],
+                ]),
                 'type' => 'group_invitation_accepted',
                 'related_entity_type' => StudentGroup::class,
                 'related_entity_id' => $group->id,
@@ -327,7 +339,13 @@ class StudentGroupService
         $group = $invitation->group;
         \App\Models\Notification::create([
             'user_id' => $group->leader_id,
-            'message' => "Student {$invitee->name} rejected your invitation to join group '{$group->name}'",
+            'message' => json_encode([
+                'key' => 'notifications.groups.invitation_rejected',
+                'params' => [
+                    'student_name' => $invitee->name,
+                    'group_name' => $group->name,
+                ],
+            ]),
             'type' => 'group_invitation_rejected',
             'related_entity_type' => StudentGroup::class,
             'related_entity_id' => $group->id,
@@ -388,7 +406,13 @@ class StudentGroupService
         // Notify group leader
         \App\Models\Notification::create([
             'user_id' => $group->leader_id,
-            'message' => "Student {$student->name} requested to join your group '{$group->name}'",
+            'message' => json_encode([
+                'key' => 'notifications.groups.join_request_received',
+                'params' => [
+                    'student_name' => $student->name,
+                    'group_name' => $group->name,
+                ],
+            ]),
             'type' => 'group_join_request',
             'related_entity_type' => StudentGroupJoinRequest::class,
             'related_entity_id' => $request->id,
@@ -449,7 +473,12 @@ class StudentGroupService
             // Notify student
             \App\Models\Notification::create([
                 'user_id' => $student->id,
-                'message' => "Your request to join group '{$group->name}' has been approved",
+                'message' => json_encode([
+                    'key' => 'notifications.groups.join_request_approved',
+                    'params' => [
+                        'group_name' => $group->name,
+                    ],
+                ]),
                 'type' => 'group_join_request_approved',
                 'related_entity_type' => StudentGroup::class,
                 'related_entity_id' => $group->id,
@@ -484,7 +513,12 @@ class StudentGroupService
         $group = $request->group;
         \App\Models\Notification::create([
             'user_id' => $request->student_id,
-            'message' => "Your request to join group '{$group->name}' has been rejected",
+            'message' => json_encode([
+                'key' => 'notifications.groups.join_request_rejected',
+                'params' => [
+                    'group_name' => $group->name,
+                ],
+            ]),
             'type' => 'group_join_request_rejected',
             'related_entity_type' => StudentGroup::class,
             'related_entity_id' => $group->id,

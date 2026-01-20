@@ -5,6 +5,7 @@ export function useNotifications(page = 1, perPage = 15) {
   return useQuery({
     queryKey: ['notifications', page, perPage],
     queryFn: () => notificationsService.getNotifications(page, perPage),
+    refetchInterval: 30000, // Refetch every 30 seconds
   })
 }
 

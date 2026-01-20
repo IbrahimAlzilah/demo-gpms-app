@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -36,6 +37,7 @@ const notificationBgColors = {
 }
 
 export function NotificationsPopover({ className }: NotificationsPopoverProps) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [hoveredNotificationId, setHoveredNotificationId] = useState<string | null>(null)
   const navigate = useNavigate()
@@ -49,6 +51,45 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
   const deleteNotification = useDeleteNotification()
 
   const notifications = notificationsData?.data || []
+
+  const getNotificationTitle = (notification: NotificationDto): string => {
+    const { type, message } = notification
+
+    // Try to get title from type
+    if (type && type.trim() !== '') {
+      const typeKey = `notifications.types.${type}`;
+      const translated = t(typeKey);
+      // If translation exists and is different from key (or valid), return it
+      if (translated !== typeKey) return translated;
+    }
+
+    // Fallback: extract first sentence from message
+    // If message is JSON, parse it to get a fallback text or just return "Notification"
+    try {
+      const parsed = JSON.parse(message);
+      if (parsed.key) {
+        return t('notifications.title');
+      }
+    } catch (e) {
+      // plain text
+      const firstSentence = message.split('\n')[0]
+      return firstSentence.length > 50 ? firstSentence.substring(0, 50) + '...' : firstSentence
+    }
+
+    return t('notifications.title');
+  }
+
+  const getNotificationMessage = (message: string) => {
+    try {
+      const parsed = JSON.parse(message);
+      if (parsed.key) {
+        return t(parsed.key, parsed.params);
+      }
+      return message;
+    } catch (e) {
+      return message;
+    }
+  }
 
   const handleNotificationClick = (notification: NotificationDto) => {
     if (!notification.isRead) {
@@ -68,7 +109,7 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
   }
 
   const handleDeleteAll = async () => {
-    if (window.confirm('هل أنت متأكد من حذف جميع الإشعارات؟')) {
+    if (window.confirm(t('notifications.confirmDeleteAll'))) {
       try {
         await deleteAll.mutateAsync()
       } catch (error) {
@@ -115,7 +156,7 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border p-4">
-          <h3 className="font-bold text-lg">الإشعارات</h3>
+          <h3 className="font-bold text-lg">{t('notifications.title')}</h3>
           {notifications.length > 0 && (
             <Button
               variant="outline"
@@ -124,7 +165,7 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
               onClick={handleMarkAllAsRead}
               disabled={markAllAsRead.isPending}
             >
-              <span>تمييز الكل</span>
+              <span>{t('notifications.markAllAsRead')}</span>
               <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
             </Button>
           )}
@@ -133,9 +174,9 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
         {/* Notifications List */}
         <div className="flex-1 overflow-y-auto">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">جاري التحميل...</div>
+            <div className="p-8 text-center text-muted-foreground">{t('notifications.loading')}</div>
           ) : notifications.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground">لا توجد إشعارات</div>
+            <div className="p-8 text-center text-muted-foreground">{t('notifications.noNotifications')}</div>
           ) : (
             <div className="divide-y divide-border">
               {notifications.map((notification) => {
@@ -180,7 +221,7 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
                                 <button
                                   onClick={(e) => handleMarkAsRead(e, notification.id)}
                                   className="flex h-6 w-6 items-center justify-center rounded-md border border-input bg-background hover:bg-accent text-muted-foreground hover:text-green-600 transition-colors"
-                                  title="تمييز كمقروء"
+                                  title={t('common.approve')}
                                 >
                                   <CheckCircle2 className="h-3.5 w-3.5" />
                                 </button>
@@ -188,7 +229,7 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
                               <button
                                 onClick={(e) => handleDelete(e, notification.id)}
                                 className="flex h-6 w-6 items-center justify-center rounded-md border border-input bg-background hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-                                title="حذف"
+                                title={t('common.delete')}
                               >
                                 <X className="h-3.5 w-3.5" />
                               </button>
@@ -199,7 +240,7 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
                           </div>
                         </div>
                         <p className="text-sm text-muted-foreground line-clamp-2 mb-2 leading-relaxed">
-                          {notification.message}
+                          {getNotificationMessage(notification.message)}
                         </p>
                         {target.label && (
                           <button
@@ -232,48 +273,11 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
               disabled={deleteAll.isPending}
             >
               <Trash2 className="h-4 w-4" />
-              <span className="font-medium">حذف جميع الإشعارات</span>
+              <span className="font-medium">{t('notifications.deleteAll')}</span>
             </Button>
           </div>
         )}
       </PopoverContent>
     </Popover>
   )
-}
-
-function getNotificationTitle(notification: NotificationDto): string {
-  const { type, message } = notification
-
-  // Extract a title from common notification types
-  if (type === 'proposal_approved') {
-    return 'تم قبول مقترح المشروع'
-  }
-  if (type === 'proposal_rejected') {
-    return 'تم رفض المقترح'
-  }
-  if (type === 'request_approved') {
-    return 'تم قبول الطلب'
-  }
-  if (type === 'request_rejected') {
-    return 'تم رفض الطلب'
-  }
-  if (type?.startsWith('deadline_')) {
-    return 'موعد تسليم قريب'
-  }
-  if (type === 'registration_approved') {
-    return 'تم قبول التسجيل'
-  }
-  if (type === 'registration_rejected') {
-    return 'تم رفض التسجيل'
-  }
-  if (type === 'grade_approved') {
-    return 'تم اعتماد الدرجة'
-  }
-  if (type === 'announcement_created') {
-    return 'تم إعلان مشاريع جديدة متاحة'
-  }
-
-  // Fallback: extract first sentence from message
-  const firstSentence = message.split('\n')[0]
-  return firstSentence.length > 50 ? firstSentence.substring(0, 50) + '...' : firstSentence
 }
