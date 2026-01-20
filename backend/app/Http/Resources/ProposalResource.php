@@ -18,7 +18,6 @@ class ProposalResource extends JsonResource
             'id' => (string) $this->id,
             'title' => $this->title,
             'description' => $this->description,
-            'requirements' => $this->requirements,
             'proposedSupervisorId' => $this->proposed_supervisor_id ? (string) $this->proposed_supervisor_id : null,
             'teamMembers' => $this->team_members ?? [],
             'status' => $this->status,

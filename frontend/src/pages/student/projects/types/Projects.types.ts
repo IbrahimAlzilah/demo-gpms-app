@@ -17,6 +17,8 @@ export interface ProjectTableColumnsProps {
   onViewRejection?: (project: Project, registration: any) => void
   t: (key: string) => string
   registrationMap?: Map<string, any>
+  studentGroup?: any
+  groupLoading?: boolean
 }
 
 /**

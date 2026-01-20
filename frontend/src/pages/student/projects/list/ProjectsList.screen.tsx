@@ -17,6 +17,8 @@ export function ProjectsList() {
     isPeriodActive,
     periodLoading,
     registrations,
+    studentGroup,
+    groupLoading,
     totalCount,
     pageCount,
     sorting,
@@ -48,6 +50,11 @@ export function ProjectsList() {
 
   const handleRegisterClick = () => {
     if (state.selectedProject) {
+      // Per specification: Registration requires a group
+      if (!studentGroup) {
+        return
+      }
+      
       // Check if project was rejected - prevent registration
       const registration = registrations?.find((r) => r.projectId === state.selectedProject?.id)
       if (registration?.status === 'rejected') {
@@ -134,6 +141,8 @@ export function ProjectsList() {
         <ProjectBrowser
           onSelectProject={handleSelectProject}
           onViewRejection={handleViewRejection}
+          studentGroup={studentGroup}
+          groupLoading={groupLoading}
         />
 
         {data.error && (

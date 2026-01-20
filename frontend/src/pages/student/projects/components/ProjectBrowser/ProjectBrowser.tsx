@@ -10,9 +10,11 @@ import { useStudentRegistrations } from '../../hooks/useProjects'
 interface ProjectBrowserProps {
   onSelectProject?: (project: Project) => void
   onViewRejection?: (project: Project, registration: any) => void
+  studentGroup?: any
+  groupLoading?: boolean
 }
 
-export function ProjectBrowser({ onSelectProject, onViewRejection }: ProjectBrowserProps) {
+export function ProjectBrowser({ onSelectProject, onViewRejection, studentGroup, groupLoading }: ProjectBrowserProps) {
   const { t } = useTranslation()
   const { data: registrations } = useStudentRegistrations()
 
@@ -58,8 +60,10 @@ export function ProjectBrowser({ onSelectProject, onViewRejection }: ProjectBrow
         onViewRejection,
         t,
         registrationMap,
+        studentGroup,
+        groupLoading,
       }),
-    [onSelectProject, onViewRejection, t, registrationMap]
+    [onSelectProject, onViewRejection, t, registrationMap, studentGroup, groupLoading]
   )
 
   return (

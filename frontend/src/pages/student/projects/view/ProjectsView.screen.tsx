@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Textarea, Label } from '@/components/ui'
 import { ModalDialog, LoadingSpinner, StatusBadge } from '@/components/common'
-import { CheckCircle2 } from 'lucide-react'
+import { CheckCircle2, AlertCircle } from 'lucide-react'
 import { useProjectsView } from './ProjectsView.hook'
+import { useMyGroup } from '@/pages/student/groups/hooks/useGroups'
 
 interface ProjectsViewProps {
   projectId: string
@@ -15,6 +16,7 @@ interface ProjectsViewProps {
 export function ProjectsView({ projectId, open, onClose, onRegister }: ProjectsViewProps) {
   const { t } = useTranslation()
   const { project, isLoading, error } = useProjectsView(projectId)
+  const { data: studentGroup, isLoading: groupLoading } = useMyGroup()
   const [reason, setReason] = useState('')
 
   if (isLoading) {
@@ -116,46 +118,7 @@ export function ProjectsView({ projectId, open, onClose, onRegister }: ProjectsV
           </div>
         )}
 
-        {/* Eligibility Check - Only in Registration Mode */}
-        {isRegistrationMode && (
-          <div className="border border-green-200 bg-green-50/50 rounded-lg p-4 space-y-3">
-            <div className="flex items-center gap-2 text-green-700 font-semibold border-b border-green-200 pb-2">
-              <CheckCircle2 className="h-5 w-5" />
-              <span>مؤهل للتسجيل</span>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-                  <span className="font-medium text-foreground">الساعات المطلوبة</span>
-                </div>
-                <span className="text-green-700 font-bold dir-ltr">120/100</span>
-              </div>
-
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-                  <span className="font-medium text-foreground">المعدل التراكمي</span>
-                </div>
-                <span className="text-muted-foreground dir-ltr">3.50 / الحد الأدنى: 2.5</span>
-              </div>
-
-              <div className="flex items-center gap-2 text-sm">
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
-                <span className="font-medium text-foreground">عدم التسجيل في مشروع آخر</span>
-              </div>
-
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-                  <span className="font-medium text-foreground">المتطلبات الأساسية</span>
-                </div>
-                <span className="text-green-700 font-medium">مكتملة</span>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Note: Eligibility is determined by backend - no hardcoded checks */}
 
         {/* Note - Only in Registration Mode */}
         {isRegistrationMode && (
@@ -167,6 +130,19 @@ export function ProjectsView({ projectId, open, onClose, onRegister }: ProjectsV
           </div>
         )}
 
+        {/* Group Requirement Warning - Only in Registration Mode */}
+        {isRegistrationMode && !studentGroup && !groupLoading && (
+          <div className="flex items-start gap-2 p-3 text-sm text-warning bg-warning/10 border border-warning/20 rounded-md">
+            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+            <div className="flex-1">
+              <p className="font-medium mb-1">{t('project.noGroupRequired')}</p>
+              <p className="text-xs text-muted-foreground">
+                {t('project.createGroupFirst')}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Actions */}
         <div className="flex gap-3 justify-end pt-2">
           {isRegistrationMode ? (
@@ -174,7 +150,11 @@ export function ProjectsView({ projectId, open, onClose, onRegister }: ProjectsV
               <Button variant="outline" onClick={onClose} className="min-w-[100px]">
                 إلغاء
               </Button>
-              <Button onClick={onRegister} className="min-w-[140px] bg-[#1e293b] hover:bg-[#0f172a]">
+              <Button 
+                onClick={onRegister} 
+                disabled={!studentGroup || groupLoading}
+                className="min-w-[140px] bg-[#1e293b] hover:bg-[#0f172a]"
+              >
                 إرسال طلب التسجيل
               </Button>
             </>

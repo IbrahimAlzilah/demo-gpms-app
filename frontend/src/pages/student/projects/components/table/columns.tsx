@@ -11,6 +11,8 @@ export function createProjectColumns({
   onViewRejection,
   t,
   registrationMap,
+  studentGroup,
+  groupLoading,
 }: ProjectTableColumnsProps): ColumnDef<Project>[] {
   return [
     {

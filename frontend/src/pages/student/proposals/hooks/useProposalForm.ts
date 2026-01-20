@@ -42,7 +42,6 @@ export function useProposalForm(options: UseProposalFormOptions = {}) {
     defaultValues: {
       title: "",
       description: "",
-      requirements: "",
       proposedSupervisorId: "",
       studentGroupId: "",
       targetProjectId: "",
@@ -68,7 +67,6 @@ export function useProposalForm(options: UseProposalFormOptions = {}) {
       const formData: ProposalFormData = {
         title: data.title.trim(),
         description: data.description.trim(),
-        requirements: data.requirements?.trim() || undefined,
         proposedSupervisorId: data.proposedSupervisorId || undefined,
         studentGroupId: data.studentGroupId || undefined,
         targetProjectId: data.targetProjectId || undefined,

@@ -98,11 +98,25 @@ class ProjectPolicy
 
     /**
      * Determine if the user can register for the project.
+     * 
+     * Per specification: Registration requires a student group.
      */
     public function register(User $user, Project $project): bool
     {
         // Only students can register
         if (!$user->isStudent()) {
+            return false;
+        }
+
+        // CRITICAL: Student must be in an active group to register
+        $userGroup = \App\Models\StudentGroup::where(function ($query) use ($user) {
+            $query->where('leader_id', $user->id)
+                ->orWhereHas('members', function ($q) use ($user) {
+                    $q->where('users.id', $user->id);
+                });
+        })->where('status', 'active')->first();
+
+        if (!$userGroup) {
             return false;
         }
 
@@ -113,15 +127,7 @@ class ProjectPolicy
 
         // If project is already assigned to a group, deny registration (unless it's the same group)
         if ($project->assigned_group_id) {
-            // Allow if user's group is the assigned group (edge case during approval)
-            $userGroup = \App\Models\StudentGroup::where(function ($query) use ($user) {
-                $query->where('leader_id', $user->id)
-                    ->orWhereHas('members', function ($q) use ($user) {
-                        $q->where('users.id', $user->id);
-                    });
-            })->where('status', 'active')->first();
-
-            if (!$userGroup || $userGroup->id !== $project->assigned_group_id) {
+            if ($userGroup->id !== $project->assigned_group_id) {
                 return false;
             }
         }

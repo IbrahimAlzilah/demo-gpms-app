@@ -61,7 +61,6 @@ export const proposalService = {
     const response = await apiClient.post<{ success: boolean; data: Proposal }>("/student/proposals", {
       title: data.title,
       description: data.description,
-      requirements: data.requirements || null,
       proposed_supervisor_id: data.proposedSupervisorId || null,
       student_group_id: data.studentGroupId || null,
       target_project_id: data.targetProjectId || null,
@@ -76,7 +75,6 @@ export const proposalService = {
       {
         title: data.title,
         description: data.description,
-        requirements: data.requirements || null,
         proposed_supervisor_id: data.proposedSupervisorId || null,
         student_group_id: data.studentGroupId || null,
         target_project_id: data.targetProjectId || null,

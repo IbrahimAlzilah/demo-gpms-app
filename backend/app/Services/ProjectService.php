@@ -150,10 +150,12 @@ class ProjectService
                     }
                 }
 
-                // Mark project as assigned to this group
+                // Mark project as assigned to this group and set status to IN_PROGRESS
+                // Per specification: When a group registration is approved, the project becomes reserved for that group
                 $project->update([
                     'assigned_group_id' => $studentGroup->id,
                     'reserved_at' => now(),
+                    'status' => \App\Enums\ProjectStatus::IN_PROGRESS->value,
                 ]);
             } else {
                 // Registration without group is not allowed per specification

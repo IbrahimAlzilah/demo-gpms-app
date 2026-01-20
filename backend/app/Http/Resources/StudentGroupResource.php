@@ -33,6 +33,7 @@ class StudentGroupResource extends JsonResource
             'minMembers' => app(\App\Services\SettingsService::class)->getGroupMinMembers(),
             'createdAt' => $this->created_at,
             'updatedAt' => $this->updated_at,
+            'projectId' => $this->assignedProjects->first()?->id,
         ];
     }
 }

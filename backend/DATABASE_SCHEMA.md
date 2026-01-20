@@ -83,19 +83,31 @@ Main projects table.
 - `supervisor_approval_status` (enum: `pending`, `approved`, `rejected`, nullable)
 - `supervisor_approval_comments` (text, nullable)
 - `supervisor_approval_at` (timestamp, nullable)
+- `assigned_group_id` (bigint, foreign key → `student_groups.id`, nullable) - **Group assigned to this project**
+- `reserved_at` (timestamp, nullable) - **When project was reserved for a group**
 - `created_at`, `updated_at` (timestamps)
 
 **Relationships:**
 - `belongsTo(User)` - supervisor
-- `belongsToMany(User)` - students (via `project_student`)
-- `hasOne(ProjectGroup)`
+- `belongsToMany(User)` - students (via `project_student`) - **All group members when group is registered**
+- `belongsTo(StudentGroup)` - assigned group (via `assigned_group_id`)
+- `hasOne(ProjectGroup)` - legacy project-bound groups (deprecated)
 - `belongsToMany(User)` - committee members (via `committee_assignments`)
 - `belongsTo(ProjectCommittee)`
 - `belongsTo(DiscussionCommittee)`
 - `hasMany(Document)`
 - `hasMany(Grade)`
 - `hasMany(Proposal)`
+- `hasMany(ProjectRegistration)` - registration records for all students
 - `belongsToMany(TimePeriod)` - via `project_time_period`
+
+**Indexes:** `supervisor_id`, `status`, `assigned_group_id`, `committee_id`
+
+**Notes:**
+- `assigned_group_id` is set when a group's proposal is approved or registration is approved
+- When a group is assigned, all group members are added to `project_student` pivot
+- `project_student` reflects actual registration state (all group members)
+- `project_registrations` tracks the registration process (one record per student)
 
 #### `proposals`
 Proposal submissions from students or supervisors.
@@ -106,49 +118,78 @@ Proposal submissions from students or supervisors.
 - `description` (text)
 - `requirements` (text, nullable)
 - `submitter_id` (bigint, foreign key → `users.id`)
+- `student_group_id` (bigint, foreign key → `student_groups.id`, nullable) - **Group submitting the proposal**
 - `proposed_supervisor_id` (bigint, foreign key → `users.id`, nullable)
-- `team_members` (json, nullable) - Array of student IDs
+- `target_project_id` (bigint, foreign key → `projects.id`, nullable) - **Target project (during registration window)**
+- `team_members` (json, nullable) - Array of student IDs (legacy, for individual proposals)
 - `status` (enum: `pending_review`, `approved`, `rejected`, `requires_modification`)
 - `review_notes` (text, nullable)
 - `reviewed_by` (bigint, foreign key → `users.id`, nullable)
 - `reviewed_at` (timestamp, nullable)
-- `project_id` (bigint, foreign key → `projects.id`, nullable)
+- `project_id` (bigint, foreign key → `projects.id`, nullable) - **Created project (if approved)**
 - `created_at`, `updated_at` (timestamps)
 
 **Relationships:**
 - `belongsTo(User)` - submitter
 - `belongsTo(User)` - reviewer
 - `belongsTo(User)` - proposed supervisor
-- `belongsTo(Project)` - linked project (if approved)
+- `belongsTo(StudentGroup)` - group submitting the proposal
+- `belongsTo(Project)` - target project (during registration)
+- `belongsTo(Project)` - created project (if approved)
+
+**Indexes:** `submitter_id`, `status`, `reviewed_by`, `student_group_id`, `target_project_id`, `(student_group_id, status)` composite
+
+**Notes:**
+- During `proposal_submission` window: `student_group_id` is optional (individual proposals allowed)
+- During `project_registration` window: `student_group_id` is required
+- After group creation: All proposals must have `student_group_id` (enforced by backend)
+- When a group proposal is approved: Group is auto-registered to the project
 
 ### Groups
 
-#### `project_groups`
-Groups working on projects (1:1 with projects).
+#### `student_groups`
+**Independent student groups** that exist before project assignment (per Student Workflow specification).
 
 **Columns:**
 - `id` (bigint, primary key)
-- `project_id` (bigint, foreign key → `projects.id`, unique)
-- `leader_id` (bigint, foreign key → `users.id`)
-- `max_members` (integer, default: 4)
-- `group_name` (string, nullable)
+- `name` (string, nullable) - Optional group name
+- `group_code` (string, unique, nullable) - Auto-generated code (e.g., GP-2026-0001)
+- `leader_id` (bigint, foreign key → `users.id`) - Group leader
+- `status` (enum: `active`, `archived`) - Group status
 - `created_at`, `updated_at` (timestamps)
 
 **Relationships:**
-- `belongsTo(Project)`
 - `belongsTo(User)` - leader
-- `belongsToMany(User)` - members (via `project_group_member`)
+- `belongsToMany(User)` - members (via `student_group_members`)
+- `hasMany(Project)` - assigned projects (via `projects.assigned_group_id`)
+- `hasMany(Proposal)` - proposals submitted by the group
+- `hasMany(StudentGroupInvitation)` - group invitations
+- `hasMany(StudentGroupJoinRequest)` - join requests
 
-#### `project_group_member`
+**Indexes:** `leader_id`, `status`, `group_code` (unique)
+
+**Notes:**
+- Groups are **independent entities** - they can exist without being assigned to a project
+- Groups are created by students before or during project registration window
+- A group can submit multiple proposals
+- When a group's proposal is approved, the group is auto-registered to the project
+- The group that creates a project becomes the assigned group
+
+#### `student_group_members`
 Pivot table for group members (many-to-many).
 
 **Columns:**
 - `id` (bigint, primary key)
-- `group_id` (bigint, foreign key → `project_groups.id`)
-- `member_id` (bigint, foreign key → `users.id`)
+- `group_id` (bigint, foreign key → `student_groups.id`)
+- `student_id` (bigint, foreign key → `users.id`)
 - `created_at`, `updated_at` (timestamps)
 
-**Unique Constraint:** `(group_id, member_id)`
+**Unique Constraint:** `(group_id, student_id)`
+**Indexes:** `group_id`, `student_id`
+
+**Notes:**
+- Leader is stored in `student_groups.leader_id`, not in this pivot table
+- Total group size = leader + members (min 2, max 5 per specification)
 
 ### Committees
 
@@ -332,10 +373,56 @@ Pivot table linking projects to time periods (many-to-many aggregation).
 
 ## Additional Tables
 
+#### `project_registrations`
+**Registration records for students** (tracks the registration process).
+
+**Columns:**
+- `id` (bigint, primary key)
+- `project_id` (bigint, foreign key → `projects.id`)
+- `student_id` (bigint, foreign key → `users.id`)
+- `status` (enum: `pending`, `approved`, `rejected`, `cancelled`)
+- `submitted_at` (timestamp)
+- `reviewed_at` (timestamp, nullable)
+- `reviewed_by` (bigint, foreign key → `users.id`, nullable)
+- `review_comments` (text, nullable)
+- `created_at`, `updated_at` (timestamps)
+
+**Unique Constraint:** `(project_id, student_id)`
+**Indexes:** `project_id`, `student_id`, `status`, `(project_id, status)` composite
+
+**Relationships:**
+- `belongsTo(Project)`
+- `belongsTo(User)` - student
+- `belongsTo(User)` - reviewer
+
+**Notes:**
+- **One record per student** - even for group registrations, each group member has their own record
+- When a group registers: One `pending` record is created for the submitter, then all members get `approved` records when approved
+- When a group proposal is approved: All group members get `approved` records created automatically
+- `project_student` pivot reflects actual registration (all approved students)
+- `project_registrations` tracks the registration process (status, review, etc.)
+
+#### `project_student`
+**Pivot table** linking students to projects (reflects actual registration state).
+
+**Columns:**
+- `id` (bigint, primary key)
+- `project_id` (bigint, foreign key → `projects.id`)
+- `student_id` (bigint, foreign key → `users.id`)
+- `created_at`, `updated_at` (timestamps)
+
+**Unique Constraint:** `(project_id, student_id)`
+**Indexes:** `project_id`, `student_id`
+
+**Notes:**
+- **Reflects actual registration state** - students in this table are registered in the project
+- When a group is registered: All group members are added to this pivot table
+- Should be in sync with `project_registrations` where `status = 'approved'`
+- Used for queries like "get all students in a project" or "is student registered in project"
+
 The system also includes these supporting tables:
-- `project_registrations` - Student registrations for projects
-- `group_invitations` - Group invitation system
-- `group_join_requests` - Join requests for groups
+- `student_group_invitations` - Group invitation system
+- `student_group_join_requests` - Join requests for groups
 - `supervisor_notes` - Notes from supervisors
 - `note_replies` - Replies to supervisor notes
 - `project_milestones` - Project milestones
@@ -358,17 +445,28 @@ The system also includes these supporting tables:
 - DiscussionCommittee → Projects
 
 ### Many-to-Many
-- User ↔ Projects (via `project_student`)
-- User ↔ ProjectGroups (via `project_group_member`)
+- User ↔ Projects (via `project_student`) - **Actual registration state**
+- User ↔ StudentGroups (via `student_group_members`) - **Group membership**
 - User ↔ ProjectCommittees (via `project_committee_user`)
 - User ↔ DiscussionCommittees (via `discussion_committee_user`)
 - User ↔ Projects (via `committee_assignments`) - Discussion committee members
 - Project ↔ TimePeriods (via `project_time_period`)
 
+### One-to-Many
+- StudentGroup → Projects (via `projects.assigned_group_id`) - **Groups can have multiple projects over time**
+- StudentGroup → Proposals (via `proposals.student_group_id`) - **Groups can submit multiple proposals**
+
 ### One-to-One
 - User ↔ Student (via `students.user_id`)
 - User ↔ Supervisor (via `supervisors.user_id`)
-- Project ↔ ProjectGroup (via `project_groups.project_id`)
+- Project ↔ StudentGroup (via `projects.assigned_group_id`) - **One group per project (when assigned)**
+
+### Workflow Relationships (Student Workflow)
+1. **Group Creation**: `student_groups` (independent) → `student_group_members` (members)
+2. **Proposal Submission**: `proposals.student_group_id` → `student_groups.id` (optional during proposal_submission, required during project_registration)
+3. **Proposal Approval**: `proposals` → creates/links `projects` → auto-registers group
+4. **Group Registration**: `project_registrations` (one per student) → `project_student` (all members) → `projects.assigned_group_id`
+5. **Registration State**: `project_student` reflects actual registration, `project_registrations` tracks process
 
 ## Seeders
 

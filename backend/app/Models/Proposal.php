@@ -14,7 +14,6 @@ class Proposal extends Model
     protected $fillable = [
         'title',
         'description',
-        'requirements',
         'submitter_id',
         'proposed_supervisor_id',
         'team_members',

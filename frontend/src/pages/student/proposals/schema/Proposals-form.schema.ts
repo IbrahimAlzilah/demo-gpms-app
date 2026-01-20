@@ -14,7 +14,6 @@ export const proposalFormSchema = (t: (key: string) => string, requireGroup = fa
       .string()
       .min(1, t('proposal.validation.descriptionRequired'))
       .min(50, t('proposal.validation.descriptionMinLength')),
-    requirements: z.string().optional(),
     proposedSupervisorId: z.string().optional(),
     studentGroupId: requireGroup 
       ? z.string().min(1, t('proposal.validation.groupRequired'))

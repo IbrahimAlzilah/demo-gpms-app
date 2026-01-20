@@ -23,7 +23,6 @@ class ProposalService
         $proposal = Proposal::create([
             'title' => $data['title'],
             'description' => $data['description'],
-            'requirements' => $data['requirements'] ?? null,
             'proposed_supervisor_id' => $data['proposed_supervisor_id'] ?? null,
             'team_members' => $data['team_members'] ?? null,
             'submitter_id' => $submitter->id,
@@ -137,10 +136,12 @@ class ProposalService
                         }
                     }
 
-                    // Mark project as assigned to this group
+                    // Mark project as assigned to this group and set status to IN_PROGRESS
+                    // Per specification: When a group proposal is approved, the project becomes reserved for that group
                     $project->update([
                         'assigned_group_id' => $studentGroup->id,
                         'reserved_at' => now(),
+                        'status' => \App\Enums\ProjectStatus::IN_PROGRESS->value,
                     ]);
                 }
             }
@@ -252,7 +253,6 @@ class ProposalService
         $proposal->update(array_merge([
             'title' => $data['title'] ?? $proposal->title,
             'description' => $data['description'] ?? $proposal->description,
-            'requirements' => $data['requirements'] ?? $proposal->requirements,
             'proposed_supervisor_id' => $data['proposed_supervisor_id'] ?? $proposal->proposed_supervisor_id,
             'team_members' => $data['team_members'] ?? $proposal->team_members,
         ], $statusUpdate));

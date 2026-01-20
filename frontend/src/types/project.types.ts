@@ -38,7 +38,6 @@ export interface Project extends BaseEntity {
 export interface Proposal extends BaseEntity {
   title: string;
   description: string;
-  requirements?: string;
   proposedSupervisorId?: string;
   proposedSupervisor?: User;
   teamMembers?: Array<{
@@ -81,6 +80,7 @@ export interface StudentGroup extends BaseEntity {
   memberCount: number;
   maxMembers: number;
   minMembers: number;
+  projectId?: string;
 }
 
 export type ProjectRegistrationStatus =

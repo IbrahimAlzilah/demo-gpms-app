@@ -4,12 +4,14 @@ import { useDataTable } from '@/hooks/useDataTable'
 import { projectService } from '../api/project.service'
 import { usePeriodCheck } from '@/hooks/usePeriodCheck'
 import { useStudentRegistrations } from '../hooks/useProjects'
+import { useMyGroup } from '@/pages/student/groups/hooks/useGroups'
 import type { ProjectsListState, ProjectsListData } from './ProjectsList.types'
 
 export function useProjectsList() {
   const { t } = useTranslation()
   const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('project_registration')
   const { data: registrations } = useStudentRegistrations()
+  const { data: studentGroup, isLoading: groupLoading } = useMyGroup()
 
   const [state, setState] = useState<ProjectsListState>({
     selectedProject: null,
@@ -57,6 +59,8 @@ export function useProjectsList() {
     isPeriodActive,
     periodLoading,
     registrations,
+    studentGroup,
+    groupLoading,
     // Table controls
     totalCount,
     pageCount,

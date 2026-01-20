@@ -14,7 +14,6 @@ export function useProposalsEdit(proposalId: string, onSuccess?: () => void) {
           ? {
               title: proposal.title,
               description: proposal.description,
-              requirements: proposal.requirements || '',
               proposedSupervisorId: proposal.proposedSupervisorId || '',
               teamMembers: proposal.teamMembers || [],
             }
@@ -58,7 +57,6 @@ export function useProposalsEdit(proposalId: string, onSuccess?: () => void) {
       form.form.reset({
         title: proposal.title,
         description: proposal.description,
-        requirements: proposal.requirements || '',
         proposedSupervisorId: proposal.proposedSupervisorId || undefined,
         teamMembers: proposal.teamMembers || [],
       });
