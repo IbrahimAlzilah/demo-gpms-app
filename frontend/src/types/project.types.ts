@@ -38,6 +38,7 @@ export interface Project extends BaseEntity {
 export interface Proposal extends BaseEntity {
   title: string;
   description: string;
+  requirements?: string;
   proposedSupervisorId?: string;
   proposedSupervisor?: User;
   teamMembers?: Array<{

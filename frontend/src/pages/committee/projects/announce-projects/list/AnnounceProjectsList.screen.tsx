@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useAnnounceProjects as useAnnounceProjectsOperation, useUnannounceProjects } from '../hooks/useAnnounceProjectsOperations'
 import { DataTable, Button, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui'
 import { BlockContent, ConfirmDialog } from '@/components/common'
-import { toast } from 'sonner'
+import { useToast } from '@/components/common'
 import { createAnnounceProjectsColumns } from '../components/table'
 import { ProjectDetailsView } from '../components/ProjectDetailsView'
 import { Loader2, Megaphone, AlertCircle } from 'lucide-react'
@@ -12,6 +12,7 @@ import type { Project } from '@/types/project.types'
 
 export function AnnounceProjectsList() {
   const { t } = useTranslation()
+  const { success, error, warning } = useToast()
 
   const announceProjectsOperation = useAnnounceProjectsOperation()
   const unannounceProjectsOperation = useUnannounceProjects()
@@ -37,18 +38,16 @@ export function AnnounceProjectsList() {
 
   const handleAnnounce = async () => {
     if (state.selectedProjects.size === 0) {
-      toast.warning(t('committee.announce.selectAtLeastOne'))
+      warning('committee.announce.selectAtLeastOne')
       return
     }
 
     try {
       await announceProjectsOperation.mutateAsync(Array.from(state.selectedProjects))
-      toast.success(t('committee.announce.success'))
+      success('committee.announce.success')
       setState((prev) => ({ ...prev, selectedProjects: new Set() }))
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : t('committee.announce.error')
-      )
+      error(err instanceof Error ? err.message : 'committee.announce.error')
     }
   }
 
@@ -65,16 +64,14 @@ export function AnnounceProjectsList() {
 
     try {
       await unannounceProjectsOperation.mutateAsync([state.projectToRemove.id])
-      toast.success(t('committee.announce.removeSuccess'))
+      success('committee.announce.removeSuccess')
       setState((prev) => ({
         ...prev,
         projectToRemove: null,
         showRemoveConfirm: false,
       }))
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : t('committee.announce.removeError')
-      )
+      error(err instanceof Error ? err.message : 'committee.announce.removeError')
     }
   }
 

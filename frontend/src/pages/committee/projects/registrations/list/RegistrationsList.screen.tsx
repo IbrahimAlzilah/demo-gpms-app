@@ -10,12 +10,13 @@ import { Card, CardContent } from '@/components/ui/card'
 import { LoadingSpinner, ConfirmDialog, BlockContent } from '@/components/common'
 import type { ProjectRegistration } from '@/types/project.types'
 import { useRegistrationsList } from './RegistrationsList.hook'
-import { toast } from 'sonner'
+import { useToast } from '@/components/common'
 import { AlertCircle, UserPlus } from 'lucide-react'
 import { apiClient } from '@/lib/axios'
 
 export function RegistrationsList() {
   const { t } = useTranslation()
+  const { success, error } = useToast()
   const queryClient = useQueryClient()
   const [showManualRegistration, setShowManualRegistration] = useState(false)
 
@@ -23,10 +24,10 @@ export function RegistrationsList() {
   const rejectRegistration = useRejectRegistration()
 
   const manualRegisterMutation = useMutation({
-    mutationFn: async ({ projectId, groupId, autoApprove }: { 
+    mutationFn: async ({ projectId, groupId, autoApprove }: {
       projectId: string
       groupId: string
-      autoApprove: boolean 
+      autoApprove: boolean
     }) => {
       const response = await apiClient.post('/projects-committee/registrations', {
         project_id: projectId,
@@ -36,13 +37,13 @@ export function RegistrationsList() {
       return response.data
     },
     onSuccess: () => {
-      toast.success(t('registration.manualRegistrationSuccess', { defaultValue: 'Group registered successfully' }))
+      success('registration.manualRegistrationSuccess')
       queryClient.invalidateQueries({ queryKey: ['committee-registrations'] })
       queryClient.invalidateQueries({ queryKey: ['committee-registrations-table'] })
       queryClient.invalidateQueries({ queryKey: ['project-registrations'] })
     },
-    onError: (error: any) => {
-      toast.error(error?.message || t('registration.manualRegistrationError', { defaultValue: 'Failed to register group' }))
+    onError: (err: any) => {
+      error(err?.message || 'registration.manualRegistrationError')
     },
   })
 
@@ -69,7 +70,7 @@ export function RegistrationsList() {
         registrationId: state.selectedRegistration.id,
         comments: state.comments || undefined,
       })
-      toast.success(t('registration.approveSuccess'))
+      success('registration.approveSuccess')
       setState((prev) => ({
         ...prev,
         showDialog: false,
@@ -78,16 +79,14 @@ export function RegistrationsList() {
         comments: '',
       }))
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : t('registration.approveError')
-      )
+      error(err instanceof Error ? err.message : 'registration.approveError')
     }
   }
 
   const handleReject = async () => {
     if (!state.selectedRegistration) return
     if (!state.comments.trim()) {
-      toast.error(t('registration.commentsRequired'))
+      error('registration.commentsRequired')
       return
     }
     try {
@@ -95,7 +94,7 @@ export function RegistrationsList() {
         registrationId: state.selectedRegistration.id,
         comments: state.comments,
       })
-      toast.success(t('registration.rejectSuccess'))
+      success('registration.rejectSuccess')
       setState((prev) => ({
         ...prev,
         showDialog: false,
@@ -104,9 +103,7 @@ export function RegistrationsList() {
         comments: '',
       }))
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : t('registration.rejectError')
-      )
+      error(err instanceof Error ? err.message : 'registration.rejectError')
     }
   }
 
@@ -145,7 +142,7 @@ export function RegistrationsList() {
 
   return (
     <>
-      <BlockContent 
+      <BlockContent
         title={t('registration.management')}
         actions={
           <Button onClick={() => setShowManualRegistration(true)}>

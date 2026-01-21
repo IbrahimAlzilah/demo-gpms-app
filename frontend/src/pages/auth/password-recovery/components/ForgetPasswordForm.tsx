@@ -6,12 +6,13 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { mockAuthService } from '@/lib/mock/auth.mock'
 import { Button, Input, Label } from '@/components/ui'
 import { ROUTES } from '@/lib/constants'
-import { toast } from 'sonner'
+import { useToast } from '@/components/common'
 import { AlertCircle, CheckCircle2, Loader2, Mail, ArrowLeft } from 'lucide-react'
 import { forgetPasswordSchema, type ForgetPasswordSchema } from '../schema/password-recovery.schema'
 
 export function ForgetPasswordForm() {
   const { t } = useTranslation()
+  const { success, error: toastError } = useToast()
 
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState('')
@@ -42,14 +43,14 @@ export function ForgetPasswordForm() {
       const successMessage = response.message || t('auth.forgetPassword.success')
       setMessage(successMessage)
       setIsSuccess(true)
-      toast.success(successMessage)
+      success(successMessage)
     } catch (err) {
       const errorMessage = err instanceof Error
         ? err.message
         : t('auth.forgetPassword.error')
       setError(errorMessage)
       setIsSuccess(false)
-      toast.error(errorMessage)
+      toastError(errorMessage)
     } finally {
       setIsLoading(false)
     }

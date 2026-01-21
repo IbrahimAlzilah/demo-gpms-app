@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useCreatePeriod, useUpdatePeriod, useDeletePeriod } from '../hooks/usePeriodOperations'
 import { Button, DataTable } from '@/components/ui'
 import { BlockContent, ModalDialog } from '@/components/common'
-import { toast } from 'sonner'
+import { useToast } from '@/components/common'
 import { AlertCircle, Loader2, PlusCircle } from 'lucide-react'
 import { createPeriodColumns } from '../components/table'
 import { PeriodForm } from '../components/PeriodForm'
@@ -12,6 +12,7 @@ import type { TimePeriodSchema } from '../schema'
 
 export function PeriodsList() {
   const { t } = useTranslation()
+  const { success, error } = useToast()
 
   const createPeriod = useCreatePeriod()
   const updatePeriod = useUpdatePeriod()
@@ -60,7 +61,7 @@ export function PeriodsList() {
             isActive: 'isActive' in data ? (data as any).isActive : undefined,
           },
         })
-        toast.success(t('committee.periods.periodUpdated'))
+        success('committee.periods.periodUpdated')
         setState((prev) => ({ ...prev, selectedPeriod: null, showForm: false }))
       } else {
         await createPeriod.mutateAsync({
@@ -68,11 +69,30 @@ export function PeriodsList() {
           isActive: true,
         })
         setState((prev) => ({ ...prev, success: true, showForm: false }))
-        toast.success(t('committee.periods.periodCreated'))
+        success('committee.periods.periodCreated')
       }
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : (state.selectedPeriod ? t('committee.periods.updateError') : t('committee.periods.createError'))
-      toast.error(errorMsg)
+    } catch (err: any) {
+      // Extract error message from API response
+      let errorMsg: string = state.selectedPeriod ? 'committee.periods.updateError' : 'committee.periods.createError'
+
+      if (err?.response?.data) {
+        const errorData = err.response.data
+        // Check for validation errors (these are usually already translated strings from backend)
+        if (errorData.errors && errorData.errors.type) {
+          errorMsg = Array.isArray(errorData.errors.type)
+            ? errorData.errors.type[0]
+            : errorData.errors.type
+        } else if (errorData.message) {
+          errorMsg = errorData.message
+        } else if (errorData.error) {
+          errorMsg = errorData.error
+        }
+      } else if (err instanceof Error) {
+        errorMsg = err.message
+      }
+
+      // useToast hook will try to translate, and if not found, will use the message as-is
+      error(errorMsg)
     }
   }
 
@@ -81,11 +101,24 @@ export function PeriodsList() {
 
     try {
       await deletePeriod.mutateAsync(state.selectedPeriod.id.toString())
-      toast.success(t('committee.periods.periodDeleted'))
+      success('committee.periods.periodDeleted')
       setState((prev) => ({ ...prev, showDeleteDialog: false, selectedPeriod: null }))
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : t('committee.periods.deleteError')
-      toast.error(errorMsg)
+    } catch (err: any) {
+      let errorMsg: string = 'committee.periods.deleteError'
+
+      if (err?.response?.data) {
+        const errorData = err.response.data
+        if (errorData.message) {
+          errorMsg = errorData.message
+        } else if (errorData.error) {
+          errorMsg = errorData.error
+        }
+      } else if (err instanceof Error) {
+        errorMsg = err.message
+      }
+
+      // useToast hook will try to translate, and if not found, will use the message as-is
+      error(errorMsg)
     }
   }
 

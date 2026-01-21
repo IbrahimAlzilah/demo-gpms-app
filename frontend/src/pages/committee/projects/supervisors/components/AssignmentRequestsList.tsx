@@ -15,11 +15,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoadingSpinner } from '@/components/common'
 import { X, Clock, CheckCircle2, XCircle } from 'lucide-react'
 import { supervisorAssignmentService } from '../api/supervisor.service'
-import { toast } from 'sonner'
+import { useToast } from '@/components/common'
 import { ConfirmDialog } from '@/components/common'
 
 export function AssignmentRequestsList() {
   const { t } = useTranslation()
+  const { success, error } = useToast()
   const queryClient = useQueryClient()
   const [cancelRequestId, setCancelRequestId] = useState<number | null>(null)
 
@@ -31,12 +32,12 @@ export function AssignmentRequestsList() {
   const cancelMutation = useMutation({
     mutationFn: (requestId: number) => supervisorAssignmentService.cancelAssignmentRequest(requestId),
     onSuccess: () => {
-      toast.success(t('supervisor.requestCancelled', { defaultValue: 'Assignment request cancelled' }))
+      success('supervisor.requestCancelled')
       queryClient.invalidateQueries({ queryKey: ['supervisor-assignment-requests'] })
       setCancelRequestId(null)
     },
     onError: () => {
-      toast.error(t('common.error', { defaultValue: 'An error occurred' }))
+      error('common.error')
     },
   })
 

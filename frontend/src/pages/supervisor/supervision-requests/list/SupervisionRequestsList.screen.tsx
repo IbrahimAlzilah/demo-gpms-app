@@ -2,7 +2,7 @@ import { useMemo, useCallback, useState } from 'react'
 import { DataTable, Card, CardContent, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { ConfirmDialog } from '@/components/common'
-import { toast } from 'sonner'
+import { useToast } from '@/components/common'
 import { CheckCircle2, AlertTriangle, User, Briefcase, MessageSquare, Users, FileSignature } from 'lucide-react'
 import { createSupervisionRequestColumns } from '../components/table'
 import { useSupervisionRequestsList } from './SupervisionRequestsList.hook'
@@ -13,6 +13,8 @@ import type { Project } from '@/types/project.types'
 
 export function SupervisionRequestsList() {
   const [activeTab, setActiveTab] = useState('student-requests')
+  const { success, error } = useToast()
+
 
   const approveRequest = useApproveSupervisionRequest()
   const rejectRequest = useRejectSupervisionRequest()
@@ -39,7 +41,7 @@ export function SupervisionRequestsList() {
 
     // Validate request status
     if (state.selectedRequest.supervisorApprovalStatus !== 'pending') {
-      toast.error(t('supervision.requestNotPending'))
+      error('supervision.requestNotPending')
       setState((prev) => ({
         ...prev,
         showConfirmDialog: false,
@@ -51,13 +53,13 @@ export function SupervisionRequestsList() {
     }
 
     if (data.currentProjectCount >= data.maxProjectsPerSupervisor) {
-      toast.error(t('supervision.maxProjectsReached'))
+      error('supervision.maxProjectsReached')
       return
     }
 
     try {
       await approveRequest.mutateAsync(state.selectedRequest.id)
-      toast.success(t('supervision.approveSuccess'))
+      success('supervision.approveSuccess')
       setState((prev) => ({
         ...prev,
         comments: '',
@@ -70,7 +72,7 @@ export function SupervisionRequestsList() {
         (err as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message ||
         (err as { message?: string })?.message ||
         t('supervision.approveError')
-      toast.error(errorMessage)
+      error(errorMessage)
     }
   }
 
@@ -79,7 +81,7 @@ export function SupervisionRequestsList() {
 
     // Validate request status
     if (state.selectedRequest.supervisorApprovalStatus !== 'pending') {
-      toast.error(t('supervision.requestNotPending'))
+      error('supervision.requestNotPending')
       setState((prev) => ({
         ...prev,
         showConfirmDialog: false,
@@ -95,7 +97,7 @@ export function SupervisionRequestsList() {
         requestId: state.selectedRequest.id,
         comments: state.comments || undefined
       })
-      toast.success(t('supervision.rejectSuccess'))
+      success('supervision.rejectSuccess')
       setState((prev) => ({
         ...prev,
         comments: '',
@@ -108,18 +110,18 @@ export function SupervisionRequestsList() {
         (err as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message ||
         (err as { message?: string })?.message ||
         t('supervision.rejectError')
-      toast.error(errorMessage)
+      error(errorMessage)
     }
   }
 
   const handleApproveClick = useCallback((request: Project) => {
     if (request.supervisorApprovalStatus !== 'pending') {
-      toast.error(t('supervision.requestNotPending'))
+      error('supervision.requestNotPending')
       return
     }
 
     if (data.currentProjectCount >= data.maxProjectsPerSupervisor) {
-      toast.error(t('supervision.maxProjectsReached'))
+      error('supervision.maxProjectsReached')
       return
     }
     setState((prev) => ({
@@ -132,7 +134,7 @@ export function SupervisionRequestsList() {
 
   const handleRejectClick = useCallback((request: Project) => {
     if (request.supervisorApprovalStatus !== 'pending') {
-      toast.error(t('supervision.requestNotPending'))
+      error('supervision.requestNotPending')
       return
     }
 

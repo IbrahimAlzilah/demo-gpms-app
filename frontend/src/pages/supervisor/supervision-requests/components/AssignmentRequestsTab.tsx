@@ -15,13 +15,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoadingSpinner } from '@/components/common'
 import { CheckCircle2, XCircle, Clock } from 'lucide-react'
 import { supervisionService } from '../api/supervision.service'
-import { toast } from 'sonner'
+import { useToast } from '@/components/common'
 import { ConfirmDialog } from '@/components/common'
 import { Textarea, Label } from '@/components/ui'
 import type { SupervisorAssignmentRequest } from '../types/SupervisionRequests.types'
 
 export function AssignmentRequestsTab() {
     const { t } = useTranslation()
+    const { success, error } = useToast()
     const queryClient = useQueryClient()
     const [selectedRequest, setSelectedRequest] = useState<SupervisorAssignmentRequest | null>(null)
     const [action, setAction] = useState<'approve' | 'reject' | null>(null)
@@ -37,12 +38,12 @@ export function AssignmentRequestsTab() {
         mutationFn: ({ id, response }: { id: number; response?: string }) =>
             supervisionService.approveAssignmentRequest(id, response),
         onSuccess: () => {
-            toast.success(t('supervisor.requestApproved', { defaultValue: 'Assignment request approved' }))
+            success('supervisor.requestApproved', { description: 'Assignment request approved' })
             queryClient.invalidateQueries({ queryKey: ['supervisor-assignment-requests-tab'] })
             handleClose()
         },
         onError: (err: any) => {
-            toast.error(err?.message || t('common.error'))
+            error(err?.message || t('common.error'))
         }
     })
 
@@ -51,12 +52,12 @@ export function AssignmentRequestsTab() {
         mutationFn: ({ id, response }: { id: number; response: string }) =>
             supervisionService.rejectAssignmentRequest(id, response),
         onSuccess: () => {
-            toast.success(t('supervisor.requestRejected', { defaultValue: 'Assignment request rejected' }))
+            success('supervisor.requestRejected', { description: 'Assignment request rejected' })
             queryClient.invalidateQueries({ queryKey: ['supervisor-assignment-requests-tab'] })
             handleClose()
         },
         onError: (err: any) => {
-            toast.error(err?.message || t('common.error'))
+            error(err?.message || t('common.error'))
         }
     })
 
@@ -79,7 +80,7 @@ export function AssignmentRequestsTab() {
             approveMutation.mutate({ id: selectedRequest.id, response })
         } else {
             if (!response.trim()) {
-                toast.error(t('supervisor.responseRequired', { defaultValue: 'Response is required for rejection' }))
+                error('supervisor.responseRequired', { description: 'Response is required for rejection' })
                 return
             }
             rejectMutation.mutate({ id: selectedRequest.id, response })

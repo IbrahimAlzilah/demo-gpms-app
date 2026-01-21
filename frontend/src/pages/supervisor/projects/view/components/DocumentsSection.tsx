@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle, Button, Label, Textarea } from '@/components/ui'
 import { LoadingSpinner, StatusBadge, ModalDialog } from '@/components/common'
-import { toast } from 'sonner'
+import { useToast } from '@/components/common'
 import { FileText, Download, CheckCircle, XCircle } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
 import { supervisorDocumentService } from '../../api/document.service'
@@ -18,6 +18,7 @@ interface DocumentsSectionProps {
 
 export function DocumentsSection({ documents, isLoading, projectId }: DocumentsSectionProps) {
   const { t } = useTranslation()
+  const { success, error } = useToast()
   const { id } = useParams<{ id: string }>()
   const actualProjectId = projectId || id || ''
   const queryClient = useQueryClient()
@@ -48,10 +49,10 @@ export function DocumentsSection({ documents, isLoading, projectId }: DocumentsS
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['supervisor-project', actualProjectId] })
       setReviewState({ document: null, status: null, comments: '', showDialog: false })
-      toast.success(t('supervisor.documentReviewed'))
+      success('supervisor.documentReviewed')
     },
     onError: () => {
-      toast.error(t('supervisor.failedToReviewDocument'))
+      error('supervisor.failedToReviewDocument')
     },
   })
 
@@ -61,7 +62,7 @@ export function DocumentsSection({ documents, isLoading, projectId }: DocumentsS
     } catch (err) {
       console.error('Failed to download document:', err)
       console.error('Failed to download document:', err)
-      toast.error(t('supervisor.failedToDownloadDocument'))
+      error('supervisor.failedToDownloadDocument')
     }
   }
 

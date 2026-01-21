@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
 import { LoadingSpinner, ConfirmDialog } from '@/components/common'
-import { toast } from 'sonner'
+import { useToast } from '@/components/common'
 import { CheckCircle2, Calendar, Edit, Trash2, Plus, Flag } from 'lucide-react'
 import { formatDate } from '@/lib/utils/format'
 import { milestoneService } from '../api/milestone.service'
@@ -23,6 +23,7 @@ interface MilestonesManagerProps {
 
 export function MilestonesManager({ projectId }: MilestonesManagerProps) {
   const { t } = useTranslation()
+  const { success, error } = useToast()
   const [showForm, setShowForm] = useState(false)
   const [editingMilestone, setEditingMilestone] = useState<ProjectMilestone | null>(null)
   const [deletingMilestone, setDeletingMilestone] = useState<ProjectMilestone | null>(null)
@@ -46,10 +47,10 @@ export function MilestonesManager({ projectId }: MilestonesManagerProps) {
         due_date: data.dueDate,
         type: data.type,
       })
-      toast.success(t('milestone.createSuccess'))
+      success('milestone.createSuccess')
       setShowForm(false)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('milestone.createError'))
+      error(err instanceof Error ? err.message : 'milestone.createError')
     }
   }
 
@@ -65,10 +66,10 @@ export function MilestonesManager({ projectId }: MilestonesManagerProps) {
           type: data.type,
         },
       })
-      toast.success(t('milestone.updateSuccess'))
+      success('milestone.updateSuccess')
       setEditingMilestone(null)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('milestone.updateError'))
+      error(err instanceof Error ? err.message : 'milestone.updateError')
     }
   }
 
@@ -76,19 +77,19 @@ export function MilestonesManager({ projectId }: MilestonesManagerProps) {
     if (!deletingMilestone) return
     try {
       await deleteMilestone.mutateAsync(deletingMilestone.id)
-      toast.success(t('milestone.deleteSuccess'))
+      success('milestone.deleteSuccess')
       setDeletingMilestone(null)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('milestone.deleteError'))
+      error(err instanceof Error ? err.message : 'milestone.deleteError')
     }
   }
 
   const handleMarkCompleted = async (milestone: ProjectMilestone) => {
     try {
       await markCompleted.mutateAsync(milestone.id)
-      toast.success(t('milestone.markCompletedSuccess'))
+      success('milestone.markCompletedSuccess')
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('milestone.markCompletedError'))
+      error(err instanceof Error ? err.message : 'milestone.markCompletedError')
     }
   }
 

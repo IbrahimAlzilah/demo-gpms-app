@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/select'
 import { LoadingSpinner } from '@/components/common'
 import { apiClient } from '@/lib/axios'
-import { toast } from 'sonner'
+import { useToast } from '@/components/common'
 import { committeeProposalService } from '../api/proposal.service'
 
 interface Student {
@@ -38,6 +38,7 @@ interface ProposalCreateDialogProps {
 
 export function ProposalCreateDialog({ open, onOpenChange }: ProposalCreateDialogProps) {
     const { t } = useTranslation()
+    const { success, error } = useToast()
     const queryClient = useQueryClient()
 
     const [title, setTitle] = useState('')
@@ -61,7 +62,7 @@ export function ProposalCreateDialog({ open, onOpenChange }: ProposalCreateDialo
     const createMutation = useMutation({
         mutationFn: committeeProposalService.create,
         onSuccess: () => {
-            toast.success(t('committee.proposal.createSuccess', { defaultValue: 'Proposal created successfully' }))
+            success('committee.proposal.createSuccess')
             queryClient.invalidateQueries({ queryKey: ['committee-proposals'] })
             queryClient.invalidateQueries({ queryKey: ['committee-proposals-table'] })
             onOpenChange(false)
@@ -73,7 +74,7 @@ export function ProposalCreateDialog({ open, onOpenChange }: ProposalCreateDialo
             setStudentSearch('')
         },
         onError: (err: any) => {
-            toast.error(err?.message || t('common.error'))
+            error(err?.message || 'common.error')
         }
     })
 
@@ -85,7 +86,7 @@ export function ProposalCreateDialog({ open, onOpenChange }: ProposalCreateDialo
 
     const handleSubmit = () => {
         if (!title || !description || !selectedStudent) {
-            toast.error(t('common.fillRequiredFields'))
+            error('common.fillRequiredFields')
             return
         }
 

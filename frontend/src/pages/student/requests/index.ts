@@ -35,12 +35,8 @@ export type {
 } from './types/Requests.types'
 
 // Schemas
-export {
-  requestSubmissionSchema,
-} from './schema'
-export type {
-  RequestSubmissionSchema,
-} from './schema'
+export { requestSubmissionSchema } from './schema'
+export type { RequestSubmissionSchema } from './schema'
 
 // API Services (for internal use, but exported for flexibility)
 export { requestService } from './api/request.service'

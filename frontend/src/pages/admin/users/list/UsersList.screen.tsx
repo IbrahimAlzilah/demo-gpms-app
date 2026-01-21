@@ -6,7 +6,7 @@ import {
   ModalDialog,
   ConfirmDialog,
 } from '@/components/common'
-import { toast } from 'sonner'
+import { useToast } from '@/components/common'
 import { AlertCircle, PlusCircle } from 'lucide-react'
 import { createUserColumns } from '../components/table'
 import { UserForm } from '../components/UserForm'
@@ -15,6 +15,7 @@ import { useDeleteUser } from '../hooks/useUserOperations'
 
 export function UsersList() {
   const { t } = useTranslation()
+  const { success, error } = useToast()
 
   const deleteUser = useDeleteUser()
   const {
@@ -55,14 +56,14 @@ export function UsersList() {
     if (!state.userToDelete) return
     try {
       await deleteUser.mutateAsync(state.userToDelete.id)
-      toast.success(t('user.deleteSuccess'))
+      success('user.deleteSuccess')
       setState((prev) => ({
         ...prev,
         userToDelete: null,
         showDeleteDialog: false,
       }))
     } catch {
-      toast.error(t('user.deleteError'))
+      error('user.deleteError')
     }
   }
 
@@ -73,9 +74,7 @@ export function UsersList() {
       showForm: false,
       selectedUser: null,
     }))
-    toast.success(
-      wasEditing ? t('user.updateSuccess') : t('user.createSuccess')
-    )
+    success(wasEditing ? 'user.updateSuccess' : 'user.createSuccess')
   }
 
   const handleFormCancel = () => {

@@ -6,13 +6,14 @@ import { DataTable, Select, SelectContent, SelectItem, SelectTrigger, SelectValu
 import { BlockContent, ConfirmDialog } from '@/components/common'
 import { AlertCircle, User, MessageSquare } from 'lucide-react'
 import { Textarea, Label } from '@/components/ui'
-import { toast } from 'sonner'
+import { useToast } from '@/components/common'
 import { useRequestsList } from './RequestsList.hook'
 import { RequestDetailsView } from '../view/RequestDetailsView.screen'
 import type { Request } from '@/types/request.types'
 
 export function RequestsList() {
   const { t } = useTranslation()
+  const { success, error } = useToast()
 
   const approveRequest = useApproveRequest()
   const rejectRequest = useRejectRequest()
@@ -38,7 +39,7 @@ export function RequestsList() {
     if (!state.selectedRequest) return
     try {
       await approveRequest.mutateAsync({ id: state.selectedRequest.id, comments: state.comments || undefined })
-      toast.success(t('committee.requests.approveSuccess'))
+      success('committee.requests.approveSuccess')
       setState((prev) => ({
         ...prev,
         comments: '',
@@ -47,9 +48,7 @@ export function RequestsList() {
         showConfirmDialog: false,
       }))
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : t('committee.requests.processingError')
-      )
+      error(err instanceof Error ? err.message : 'committee.requests.processingError')
     }
   }
 
@@ -57,7 +56,7 @@ export function RequestsList() {
     if (!state.selectedRequest) return
     try {
       await rejectRequest.mutateAsync({ id: state.selectedRequest.id, comments: state.comments || undefined })
-      toast.success(t('committee.requests.rejectSuccess'))
+      success('committee.requests.rejectSuccess')
       setState((prev) => ({
         ...prev,
         comments: '',
@@ -66,9 +65,7 @@ export function RequestsList() {
         showConfirmDialog: false,
       }))
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : t('committee.requests.processingError')
-      )
+      error(err instanceof Error ? err.message : 'committee.requests.processingError')
     }
   }
 

@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DataTable, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { BlockContent, ConfirmDialog } from '@/components/common'
-import { toast } from 'sonner'
+import { useToast } from '@/components/common'
 import { AlertCircle, PlusCircle } from 'lucide-react'
 import { createRequestColumns } from '../components/table'
 import { StatisticsCards } from '../components/StatisticsCards'
@@ -14,6 +14,7 @@ import { useCancelRequest, useDeleteRequest } from '../hooks/useRequestOperation
 
 export function RequestsList() {
   const { t } = useTranslation()
+  const { success, error } = useToast()
 
   const cancelRequest = useCancelRequest()
   const deleteRequest = useDeleteRequest()
@@ -37,14 +38,14 @@ export function RequestsList() {
     if (!state.requestToCancel) return
     try {
       await cancelRequest.mutateAsync(state.requestToCancel.id)
-      toast.success(t('request.cancelSuccess'))
+      success('request.cancelSuccess')
       setState((prev) => ({
         ...prev,
         requestToCancel: null,
         showCancelDialog: false,
       }))
     } catch {
-      toast.error(t('request.cancelError'))
+      error('request.cancelError')
     }
   }
 
@@ -52,20 +53,20 @@ export function RequestsList() {
     if (!state.requestToDelete) return
     try {
       await deleteRequest.mutateAsync(state.requestToDelete.id)
-      toast.success(t('request.deleteSuccess'))
+      success('request.deleteSuccess')
       setState((prev) => ({
         ...prev,
         requestToDelete: null,
         showDeleteDialog: false,
       }))
     } catch {
-      toast.error(t('request.deleteError'))
+      error('request.deleteError')
     }
   }
 
   const handleEditSuccess = () => {
     setState((prev) => ({ ...prev, requestToEdit: null, showEditForm: false }))
-    toast.success(t('request.updateSuccess'))
+    success('request.updateSuccess')
   }
 
   const columns = useMemo(
@@ -102,7 +103,7 @@ export function RequestsList() {
 
   const handleFormSuccess = () => {
     setState((prev) => ({ ...prev, showForm: false }))
-    toast.success(t('request.submitSuccess'))
+    success('request.submitSuccess')
   }
 
   const actions = useMemo(

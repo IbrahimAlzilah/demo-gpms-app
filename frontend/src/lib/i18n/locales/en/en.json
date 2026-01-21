@@ -1031,6 +1031,8 @@
       "noPeriods": "No periods found",
       "announcePeriod": "Announce Period",
       "currentPeriods": "Current Time Periods",
+      "duplicateTypeError": "A time period with this type already exists. Please update the existing period or delete it first.",
+      "duplicateTypeErrorTitle": "Duplicate Period Type",
       "types": {
         "proposalSubmission": "Proposal Submission",
         "projectRegistration": "Project Registration",

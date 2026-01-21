@@ -1121,6 +1121,8 @@
       "noPeriods": "لا توجد فترات زمنية",
       "announcePeriod": "إعلان الفترة",
       "currentPeriods": "الفترات الزمنية الحالية",
+      "duplicateTypeError": "فترة زمنية من هذا النوع موجودة بالفعل. يرجى تحديث الفترة الموجودة أو حذفها أولاً.",
+      "duplicateTypeErrorTitle": "نوع الفترة الزمنية مكرر",
       "types": {
         "proposalSubmission": "تقديم المقترحات",
         "proposalReview": "مراجعة المقترحات",

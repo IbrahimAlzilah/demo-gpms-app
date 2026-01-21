@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label, Textarea } from '@/components/ui'
 import { LoadingSpinner } from '@/components/common'
-import { toast } from 'sonner'
+import { useToast } from '@/components/common'
 import { AlertCircle, Loader2 } from 'lucide-react'
 import { useAuthStore } from '@/pages/auth/login'
 import { useEvaluationForm } from '../../hooks/useEvaluationForm'
@@ -20,6 +20,7 @@ export function FinalEvaluationForm({
   onSuccess,
 }: FinalEvaluationFormProps) {
   const { t } = useTranslation()
+  const { success } = useToast()
 
   const submitGrade = useSubmitFinalGrade()
   const { user } = useAuthStore()
@@ -49,7 +50,7 @@ export function FinalEvaluationForm({
         },
       })
 
-      toast.success(t('discussion.evaluationSaved'))
+      success('discussion.evaluationSaved')
       onSuccess?.()
     },
   })

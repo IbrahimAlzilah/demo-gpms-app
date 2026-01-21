@@ -83,7 +83,17 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
     try {
       const parsed = JSON.parse(message);
       if (parsed.key) {
-        return t(parsed.key, parsed.params);
+        // Translate period type if it exists in params
+        const params = { ...parsed.params };
+        if (params?.type) {
+          const typeKey = `committee.periods.types.${params.type}`;
+          const translatedType = t(typeKey);
+          // Only use translated type if translation exists (not the same as key)
+          if (translatedType !== typeKey) {
+            params.type = translatedType;
+          }
+        }
+        return t(parsed.key, params);
       }
       return message;
     } catch (e) {

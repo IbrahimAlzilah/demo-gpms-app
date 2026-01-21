@@ -8,10 +8,11 @@ import { LoadingSpinner, ConfirmDialog } from '@/components/common'
 import { Info } from 'lucide-react'
 import type { Grade } from '@/types/evaluation.types'
 import { useGradesList } from './GradesList.hook'
-import { toast } from 'sonner'
+import { useToast } from '@/components/common'
 
 export function GradesList() {
   const { t } = useTranslation()
+  const { success, error } = useToast()
   const approveGrade = useApproveGrade()
 
   const {
@@ -38,7 +39,7 @@ export function GradesList() {
       await approveGrade.mutateAsync({
         gradeId: state.selectedGrade.id,
       })
-      toast.success(t('grades.approveSuccess'))
+      success('grades.approveSuccess')
       setState((prev) => ({
         ...prev,
         showDialog: false,
@@ -46,9 +47,7 @@ export function GradesList() {
         action: null,
       }))
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : t('grades.approveError')
-      )
+      error(err instanceof Error ? err.message : 'grades.approveError')
     }
   }
 

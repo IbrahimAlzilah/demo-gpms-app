@@ -5,7 +5,7 @@ import { useProjectGrades } from '@/pages/supervisor/evaluation/hooks/useEvaluat
 import { projectService } from '@/pages/supervisor/projects/api/project.service'
 import { Card, CardContent, CardHeader, CardTitle, Button, Label, Textarea } from '@/components/ui'
 import { LoadingSpinner } from '@/components/common'
-import { toast } from 'sonner'
+import { useToast } from '@/components/common'
 import { MessageSquare, Award, Loader2 } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
 
@@ -15,6 +15,7 @@ interface ProjectProgressTrackerProps {
 
 export function ProjectProgressTracker({ projectId }: ProjectProgressTrackerProps) {
   const { t } = useTranslation()
+  const { success, error } = useToast()
   const [notes, setNotes] = useState('')
   const { data: grades, isLoading } = useProjectGrades(projectId)
 
@@ -33,11 +34,10 @@ export function ProjectProgressTracker({ projectId }: ProjectProgressTrackerProp
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['supervisor-notes', projectId] })
       setNotes('')
-      setNotes('')
-      toast.success(t('supervisor.noteSaved'))
+      success('supervisor.noteSaved')
     },
     onError: () => {
-      toast.error(t('supervisor.failedToSaveNote'))
+      error('supervisor.failedToSaveNote')
     },
   })
 

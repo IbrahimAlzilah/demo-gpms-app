@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
 import { LoadingSpinner, ConfirmDialog } from '@/components/common'
-import { toast } from 'sonner'
+import { useToast } from '@/components/common'
 import { Calendar, Edit, Trash2, Plus, Users, MapPin, Clock } from 'lucide-react'
 import { formatDate } from '@/lib/utils/format'
 import { meetingService } from '../api/meeting.service'
@@ -23,6 +23,7 @@ interface MeetingsManagerProps {
 
 export function MeetingsManager({ projectId, project }: MeetingsManagerProps) {
   const { t } = useTranslation()
+  const { success, error } = useToast()
   const [showForm, setShowForm] = useState(false)
   const [editingMeeting, setEditingMeeting] = useState<ProjectMeeting | null>(null)
   const [deletingMeeting, setDeletingMeeting] = useState<ProjectMeeting | null>(null)
@@ -46,10 +47,10 @@ export function MeetingsManager({ projectId, project }: MeetingsManagerProps) {
         agenda: data.agenda,
         attendee_ids: data.attendeeIds,
       })
-      toast.success(t('meeting.createSuccess'))
+      success('meeting.createSuccess')
       setShowForm(false)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('meeting.createError'))
+      error(err instanceof Error ? err.message : 'meeting.createError')
     }
   }
 
@@ -66,10 +67,10 @@ export function MeetingsManager({ projectId, project }: MeetingsManagerProps) {
           attendee_ids: data.attendeeIds,
         },
       })
-      toast.success(t('meeting.updateSuccess'))
+      success('meeting.updateSuccess')
       setEditingMeeting(null)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('meeting.updateError'))
+      error(err instanceof Error ? err.message : 'meeting.updateError')
     }
   }
 
@@ -77,10 +78,10 @@ export function MeetingsManager({ projectId, project }: MeetingsManagerProps) {
     if (!deletingMeeting) return
     try {
       await deleteMeeting.mutateAsync(deletingMeeting.id)
-      toast.success(t('meeting.deleteSuccess'))
+      success('meeting.deleteSuccess')
       setDeletingMeeting(null)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('meeting.deleteError'))
+      error(err instanceof Error ? err.message : 'meeting.deleteError')
     }
   }
 

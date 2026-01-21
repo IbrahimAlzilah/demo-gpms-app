@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useAssignSupervisor } from '../hooks/useSupervisorOperations'
 import { Card, CardContent, Button, Badge, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui'
 import { LoadingSpinner, EmptyState } from '@/components/common'
-import { toast } from 'sonner'
+import { useToast } from '@/components/common'
 import { Briefcase, UserCheck, Loader2, AlertCircle, ListChecks } from 'lucide-react'
 import { useSupervisorsList } from './SupervisorsList.hook'
 import { SupervisorAssignmentDialog } from '../components/SupervisorAssignmentDialog'
@@ -12,6 +12,7 @@ import { supervisorAssignmentService } from '../api/supervisor.service'
 
 export function SupervisorsList() {
   const { t } = useTranslation()
+  const { success, error } = useToast()
   const assignSupervisor = useAssignSupervisor()
   const [tab, setTab] = useState<'projects' | 'requests'>('projects')
 
@@ -32,18 +33,18 @@ export function SupervisorsList() {
       if (requiresApproval) {
         // Send request for approval
         await supervisorAssignmentService.requestAssignment(projectId, supervisorId, notes)
-        toast.success(t('supervisor.requestSent', { defaultValue: 'Assignment request sent successfully' }))
+        success('supervisor.requestSent')
       } else {
         // Direct assignment
         await assignSupervisor.mutateAsync({
           projectId,
           supervisorId,
         })
-        toast.success(t('committee.supervisors.assignmentSuccess'))
+        success('committee.supervisors.assignmentSuccess')
       }
       setState((prev) => ({ ...prev, selectedProject: null, selectedSupervisor: '' }))
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('committee.supervisors.assignmentError'))
+      error(err instanceof Error ? err.message : 'committee.supervisors.assignmentError')
     }
   }
 

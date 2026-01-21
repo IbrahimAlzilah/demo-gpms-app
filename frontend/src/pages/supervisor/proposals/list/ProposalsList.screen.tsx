@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DataTable, Button } from '@/components/ui'
 import { BlockContent, ModalDialog, StatusBadge } from '@/components/common'
-import { toast } from 'sonner'
+import { useToast } from '@/components/common'
 import { AlertCircle, PlusCircle, MessageSquare } from 'lucide-react'
 import { formatDate } from '@/lib/utils/format'
 import { createProposalColumns } from '../components/table'
@@ -12,6 +12,7 @@ import { useProposalsList } from './ProposalsList.hook'
 
 export function ProposalsList() {
   const { t } = useTranslation()
+  const { success } = useToast()
   const {
     data,
     state,
@@ -43,7 +44,7 @@ export function ProposalsList() {
 
   const handleFormSuccess = () => {
     setState((prev) => ({ ...prev, showForm: false }))
-    toast.success(t('proposal.submitSuccess'))
+    success('proposal.submitSuccess')
   }
 
   const actions = useMemo(

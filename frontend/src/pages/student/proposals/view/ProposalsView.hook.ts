@@ -1,10 +1,11 @@
 import { useProposal } from '../hooks/useProposals'
 import { useResubmitProposal } from '../hooks/useProposalOperations'
-import { toast } from 'sonner'
-import { useTranslation } from 'react-i18next'
+import { useToast } from '@/components/common'
+// import { useTranslation } from 'react-i18next'
 
 export function useProposalsView(proposalId: string) {
-  const { t } = useTranslation()
+  // const { t } = useTranslation()
+  const { success, error } = useToast() 
 
   const { data: proposal, isLoading } = useProposal(proposalId)
   const resubmitProposal = useResubmitProposal()
@@ -14,10 +15,10 @@ export function useProposalsView(proposalId: string) {
 
     try {
       await resubmitProposal.mutateAsync(proposal)
-      toast.success(t('proposal.resubmitSuccess'))
+      success('proposal.resubmitSuccess')
       return true
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('proposal.resubmitError'))
+      error(err instanceof Error ? err.message : 'proposal.resubmitError')
       return false
     }
   }

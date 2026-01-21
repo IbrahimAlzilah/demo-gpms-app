@@ -14,3 +14,4 @@ export * from './StatsCard'
 
 export * from './ActionsDropdown'
 export * from './DashboardHeader'
+export * from './toaster'

@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DataTable, Button } from '@/components/ui'
 import { BlockContent, ModalDialog } from '@/components/common'
-import { toast } from 'sonner'
+import { useToast } from '@/components/common'
 import { AlertCircle, PlusCircle, RotateCcw, Loader2 } from 'lucide-react'
 import { createProposalColumns } from '../components/table'
 import { StatisticsCards } from '../components/StatisticsCards'
@@ -14,6 +14,7 @@ import { useResubmitProposal } from '../hooks/useProposalOperations'
 
 export function ProposalsList() {
   const { t } = useTranslation()
+  const { success, error } = useToast()
 
   const resubmitProposal = useResubmitProposal()
   const {
@@ -45,7 +46,7 @@ export function ProposalsList() {
           if (proposal.status === 'pending_review') {
             setState((prev) => ({ ...prev, editingProposalId: String(proposal.id) }))
           } else {
-            toast.error(t('proposal.cannotEdit'))
+            error('proposal.cannotEdit')
           }
         },
         t,
@@ -55,12 +56,12 @@ export function ProposalsList() {
 
   const handleFormSuccess = () => {
     setState((prev) => ({ ...prev, showForm: false }))
-    toast.success(t('proposal.submitSuccess'))
+    success('proposal.submitSuccess')
   }
 
   const handleEditSuccess = () => {
     setState((prev) => ({ ...prev, editingProposalId: null }))
-    toast.success(t('proposal.updateSuccess'))
+    success('proposal.updateSuccess')
   }
 
   const handleResubmit = async () => {
@@ -68,7 +69,7 @@ export function ProposalsList() {
 
     try {
       await resubmitProposal.mutateAsync(state.proposalToResubmit)
-      toast.success(t('proposal.resubmitSuccess'))
+      success('proposal.resubmitSuccess')
       setState((prev) => ({
         ...prev,
         showResubmitDialog: false,
@@ -76,7 +77,7 @@ export function ProposalsList() {
         selectedProposal: null,
       }))
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('proposal.resubmitError'))
+      error(err instanceof Error ? err.message : 'proposal.resubmitError')
     }
   }
 

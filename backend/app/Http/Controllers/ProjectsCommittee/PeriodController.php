@@ -28,7 +28,18 @@ class PeriodController extends Controller
         
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'type' => 'required|in:' . implode(',', $allowedTypes),
+            'type' => [
+                'required',
+                'in:' . implode(',', $allowedTypes),
+                function ($attribute, $value, $fail) {
+                    // Check if a period with this type already exists
+                    $existingPeriod = TimePeriod::where('type', $value)->first();
+                    if ($existingPeriod) {
+                        $typeLabel = \App\Enums\TimePeriodType::from($value)->label();
+                        $fail("A time period with type '{$typeLabel}' already exists. Please update the existing period or delete it first.");
+                    }
+                },
+            ],
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
             'academic_year' => 'nullable|string',
@@ -36,11 +47,26 @@ class PeriodController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $period = TimePeriod::create([
-            ...$validated,
-            'created_by' => $request->user()->id,
-            'is_active' => true,
-        ]);
+        try {
+            $period = TimePeriod::create([
+                ...$validated,
+                'created_by' => $request->user()->id,
+                'is_active' => true,
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Handle unique constraint violation
+            if ($e->getCode() === '23000' && str_contains($e->getMessage(), 'Duplicate entry')) {
+                $typeLabel = \App\Enums\TimePeriodType::from($validated['type'])->label();
+                return response()->json([
+                    'success' => false,
+                    'message' => "A time period with type '{$typeLabel}' already exists.",
+                    'errors' => [
+                        'type' => ["A time period with this type already exists. Please update the existing period or delete it first."],
+                    ],
+                ], 422);
+            }
+            throw $e;
+        }
 
         // Notify all students about the new period
         $students = \App\Models\User::role('student')->get(['id']);
@@ -107,7 +133,42 @@ class PeriodController extends Controller
             }
         }
 
-        $period->update($validated);
+        // Check for duplicate type if type is being changed
+        if (isset($validated['type']) && $validated['type'] !== $period->type) {
+            $existingPeriod = TimePeriod::where('type', $validated['type'])
+                ->where('id', '!=', $period->id)
+                ->first();
+            
+            if ($existingPeriod) {
+                $typeLabel = \App\Enums\TimePeriodType::from($validated['type'])->label();
+                return response()->json([
+                    'success' => false,
+                    'message' => "A time period with type '{$typeLabel}' already exists.",
+                    'errors' => [
+                        'type' => ["A time period with this type already exists. Please update the existing period or delete it first."],
+                    ],
+                ], 422);
+            }
+        }
+
+        try {
+            $period->update($validated);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Handle unique constraint violation
+            if ($e->getCode() === '23000' && str_contains($e->getMessage(), 'Duplicate entry')) {
+                $typeLabel = isset($validated['type']) 
+                    ? \App\Enums\TimePeriodType::from($validated['type'])->label()
+                    : \App\Enums\TimePeriodType::from($period->type)->label();
+                return response()->json([
+                    'success' => false,
+                    'message' => "A time period with type '{$typeLabel}' already exists.",
+                    'errors' => [
+                        'type' => ["A time period with this type already exists. Please update the existing period or delete it first."],
+                    ],
+                ], 422);
+            }
+            throw $e;
+        }
 
         // Notify students if the period was just activated
         if ($period->wasChanged('is_active') && $period->is_active) {
