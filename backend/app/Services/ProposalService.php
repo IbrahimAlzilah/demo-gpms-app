@@ -256,13 +256,20 @@ class ProposalService
         }
 
         // Update only editable fields
+        // For Projects Committee: only title and description can be edited
         // Review data (reviewed_by, reviewed_at, review_notes, project_id) is preserved for approved/rejected proposals
-        $proposal->update(array_merge([
+        $updateData = [
             'title' => $data['title'] ?? $proposal->title,
             'description' => $data['description'] ?? $proposal->description,
-            'proposed_supervisor_id' => $data['proposed_supervisor_id'] ?? $proposal->proposed_supervisor_id,
-            'team_members' => $data['team_members'] ?? $proposal->team_members,
-        ], $statusUpdate));
+        ];
+        
+        // Only update other fields if user is not a committee member (for backward compatibility with other roles)
+        if ($user && !$user->isProjectsCommittee()) {
+            $updateData['proposed_supervisor_id'] = $data['proposed_supervisor_id'] ?? $proposal->proposed_supervisor_id;
+            $updateData['team_members'] = $data['team_members'] ?? $proposal->team_members;
+        }
+        
+        $proposal->update(array_merge($updateData, $statusUpdate));
 
         return $proposal->fresh();
     }

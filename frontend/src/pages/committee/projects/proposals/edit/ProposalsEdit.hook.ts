@@ -11,13 +11,6 @@ const proposalEditSchema = (t: (key: string) => string) =>
   z.object({
     title: z.string().min(1, t('proposal.validation.titleRequired')).max(255, t('proposal.validation.titleMaxLength255')),
     description: z.string().min(1, t('proposal.validation.descriptionRequired')),
-    proposedSupervisorId: z.string().optional(),
-    teamMembers: z.array(
-      z.object({
-        name: z.string().min(1, 'Member name is required'),
-        role: z.string().min(1, 'Role is required'),
-      })
-    ).optional(),
   })
 
 type ProposalEditSchema = z.infer<ReturnType<typeof proposalEditSchema>>
@@ -34,14 +27,10 @@ export function useProposalsEdit(proposalId: string, onSuccess?: () => void) {
       ? {
         title: proposal.title,
         description: proposal.description,
-        proposedSupervisorId: proposal.proposedSupervisorId || '',
-        teamMembers: proposal.teamMembers || [],
       }
       : {
         title: '',
         description: '',
-        proposedSupervisorId: '',
-        teamMembers: [],
       },
   })
 
@@ -53,8 +42,6 @@ export function useProposalsEdit(proposalId: string, onSuccess?: () => void) {
       reset({
         title: proposal.title,
         description: proposal.description,
-        proposedSupervisorId: proposal.proposedSupervisorId || '',
-        teamMembers: proposal.teamMembers || [],
       })
     }
   }, [proposal, form.formState.isDirty, reset])
@@ -71,15 +58,14 @@ export function useProposalsEdit(proposalId: string, onSuccess?: () => void) {
         data: {
           title: data.title,
           description: data.description,
-          proposedSupervisorId: data.proposedSupervisorId || undefined,
-          teamMembers: data.teamMembers || [],
         },
       })
       toastSuccess('committee.proposal.updateSuccess')
       onSuccess?.()
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'committee.proposal.updateError'
-      toastError(errorMsg)
+    } catch (err: any) {
+      // Handle validation errors from backend
+      const errorMessage = err?.response?.data?.message || err?.message || 'committee.proposal.updateError'
+      toastError(errorMessage)
     }
   }
 

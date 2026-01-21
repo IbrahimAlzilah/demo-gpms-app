@@ -211,13 +211,10 @@ class ProposalController extends Controller
     {
         $this->authorize('update', $proposal);
 
+        // Projects Committee can only edit title and description
         $validated = $request->validate([
-            'title' => 'sometimes|string|max:255',
-            'description' => 'sometimes|string',
-            'proposed_supervisor_id' => 'nullable|exists:users,id',
-            'team_members' => 'nullable|array',
-            'team_members.*.name' => 'required_with:team_members|string|max:255',
-            'team_members.*.role' => 'required_with:team_members|string|max:255',
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
         ]);
 
         try {

@@ -80,10 +80,13 @@ export const committeeProposalService = {
     return response.data
   },
 
-  update: async (id: string, data: Partial<Proposal>): Promise<Proposal> => {
+  update: async (id: string, data: { title: string; description: string }): Promise<Proposal> => {
     const response = await apiClient.put<Proposal>(
       `/projects-committee/proposals/${id}`,
-      data
+      {
+        title: data.title,
+        description: data.description,
+      }
     )
     return response.data
   },
