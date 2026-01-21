@@ -9,7 +9,7 @@ import { useDistributeCommitteesList } from './DistributeCommitteesList.hook'
 
 export function DistributeCommitteesList() {
   const { t } = useTranslation()
-  const { success, error, warning } = useToast()
+  const { toastSuccess, toastError, toastWarning } = useToast()
 
   const distributeProjects = useDistributeProjects()
 
@@ -37,7 +37,7 @@ export function DistributeCommitteesList() {
 
   const handleDistribute = async () => {
     if (state.assignments.size === 0) {
-      warning('committee.distribute.selectAtLeastOne')
+      toastWarning('committee.distribute.selectAtLeastOne')
       return
     }
 
@@ -50,10 +50,10 @@ export function DistributeCommitteesList() {
 
     try {
       await distributeProjects.mutateAsync(assignmentArray)
-      success('committee.distribute.success')
+      toastSuccess('committee.distribute.success')
       setState((prev) => ({ ...prev, assignments: new Map() }))
     } catch (err) {
-      error(err instanceof Error ? err.message : 'committee.distribute.error')
+      toastError(err instanceof Error ? err.message : 'committee.distribute.error')
     }
   }
 

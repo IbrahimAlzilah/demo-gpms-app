@@ -12,7 +12,7 @@ interface ProgressListProps {
 }
 
 export function ProgressList({ projectId }: ProgressListProps) {
-  const { warning, success, error } = useToast()
+  const { toastWarning, toastSuccess, toastError } = useToast()
   const {
     data,
     state,
@@ -23,15 +23,15 @@ export function ProgressList({ projectId }: ProgressListProps) {
 
   const handleSaveNote = async () => {
     if (!state.notes.trim()) {
-      warning('supervisor.noteRequired')
+      toastWarning('supervisor.noteRequired')
       return
     }
 
     try {
       await saveNote.mutateAsync(state.notes.trim())
-      success('supervisor.noteSaved')
+      toastSuccess('supervisor.noteSaved')
     } catch {
-      error('supervisor.noteError')
+      toastError('supervisor.noteError')
     }
   }
 

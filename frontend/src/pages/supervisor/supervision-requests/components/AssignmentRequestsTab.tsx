@@ -22,7 +22,7 @@ import type { SupervisorAssignmentRequest } from '../types/SupervisionRequests.t
 
 export function AssignmentRequestsTab() {
     const { t } = useTranslation()
-    const { success, error } = useToast()
+    const { toastSuccess, toastError } = useToast()
     const queryClient = useQueryClient()
     const [selectedRequest, setSelectedRequest] = useState<SupervisorAssignmentRequest | null>(null)
     const [action, setAction] = useState<'approve' | 'reject' | null>(null)
@@ -38,12 +38,12 @@ export function AssignmentRequestsTab() {
         mutationFn: ({ id, response }: { id: number; response?: string }) =>
             supervisionService.approveAssignmentRequest(id, response),
         onSuccess: () => {
-            success('supervisor.requestApproved', { description: 'Assignment request approved' })
+            toastSuccess('supervisor.requestApproved', { description: 'Assignment request approved' })
             queryClient.invalidateQueries({ queryKey: ['supervisor-assignment-requests-tab'] })
             handleClose()
         },
         onError: (err: any) => {
-            error(err?.message || t('common.error'))
+            toastError(err?.message || t('common.error'))
         }
     })
 
@@ -52,12 +52,12 @@ export function AssignmentRequestsTab() {
         mutationFn: ({ id, response }: { id: number; response: string }) =>
             supervisionService.rejectAssignmentRequest(id, response),
         onSuccess: () => {
-            success('supervisor.requestRejected', { description: 'Assignment request rejected' })
+            toastSuccess('supervisor.requestRejected', { description: 'Assignment request rejected' })
             queryClient.invalidateQueries({ queryKey: ['supervisor-assignment-requests-tab'] })
             handleClose()
         },
         onError: (err: any) => {
-            error(err?.message || t('common.error'))
+            toastError(err?.message || t('common.error'))
         }
     })
 
@@ -80,7 +80,7 @@ export function AssignmentRequestsTab() {
             approveMutation.mutate({ id: selectedRequest.id, response })
         } else {
             if (!response.trim()) {
-                error('supervisor.responseRequired', { description: 'Response is required for rejection' })
+                toastError('supervisor.responseRequired', { description: 'Response is required for rejection' })
                 return
             }
             rejectMutation.mutate({ id: selectedRequest.id, response })

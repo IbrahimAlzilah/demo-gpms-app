@@ -12,7 +12,7 @@ import type { TimePeriodSchema } from '../schema'
 
 export function PeriodsList() {
   const { t } = useTranslation()
-  const { success, error } = useToast()
+  const { toastSuccess, toastError } = useToast()
 
   const createPeriod = useCreatePeriod()
   const updatePeriod = useUpdatePeriod()
@@ -61,7 +61,7 @@ export function PeriodsList() {
             isActive: 'isActive' in data ? (data as any).isActive : undefined,
           },
         })
-        success('committee.periods.periodUpdated')
+        toastSuccess('committee.periods.periodUpdated')
         setState((prev) => ({ ...prev, selectedPeriod: null, showForm: false }))
       } else {
         await createPeriod.mutateAsync({
@@ -69,7 +69,7 @@ export function PeriodsList() {
           isActive: true,
         })
         setState((prev) => ({ ...prev, success: true, showForm: false }))
-        success('committee.periods.periodCreated')
+        toastSuccess('committee.periods.periodCreated')
       }
     } catch (err: any) {
       // Extract error message from API response
@@ -92,7 +92,7 @@ export function PeriodsList() {
       }
 
       // useToast hook will try to translate, and if not found, will use the message as-is
-      error(errorMsg)
+      toastError(errorMsg)
     }
   }
 
@@ -101,7 +101,7 @@ export function PeriodsList() {
 
     try {
       await deletePeriod.mutateAsync(state.selectedPeriod.id.toString())
-      success('committee.periods.periodDeleted')
+      toastSuccess('committee.periods.periodDeleted')
       setState((prev) => ({ ...prev, showDeleteDialog: false, selectedPeriod: null }))
     } catch (err: any) {
       let errorMsg: string = 'committee.periods.deleteError'
@@ -118,7 +118,7 @@ export function PeriodsList() {
       }
 
       // useToast hook will try to translate, and if not found, will use the message as-is
-      error(errorMsg)
+      toastError(errorMsg)
     }
   }
 

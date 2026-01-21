@@ -5,14 +5,14 @@ import type { EvaluationNewProps } from './EvaluationNew.types'
 
 export function EvaluationNew({ projectId, studentId, onSuccess }: EvaluationNewProps) {
   // const { t } = useTranslation()
-  const { success } = useToast()
+  const { toastSuccess } = useToast()
 
   return (
     <FinalEvaluationForm
       projectId={projectId}
       studentId={studentId}
       onSuccess={() => {
-        success('discussion.evaluationSaved')
+        toastSuccess('discussion.evaluationSaved')
         onSuccess?.()
       }}
     />

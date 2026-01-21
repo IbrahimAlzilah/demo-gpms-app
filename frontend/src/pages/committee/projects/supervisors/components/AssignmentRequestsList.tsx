@@ -20,7 +20,7 @@ import { ConfirmDialog } from '@/components/common'
 
 export function AssignmentRequestsList() {
   const { t } = useTranslation()
-  const { success, error } = useToast()
+  const { toastSuccess, toastError } = useToast()
   const queryClient = useQueryClient()
   const [cancelRequestId, setCancelRequestId] = useState<number | null>(null)
 
@@ -32,12 +32,12 @@ export function AssignmentRequestsList() {
   const cancelMutation = useMutation({
     mutationFn: (requestId: number) => supervisorAssignmentService.cancelAssignmentRequest(requestId),
     onSuccess: () => {
-      success('supervisor.requestCancelled')
+      toastSuccess('supervisor.requestCancelled')
       queryClient.invalidateQueries({ queryKey: ['supervisor-assignment-requests'] })
       setCancelRequestId(null)
     },
     onError: () => {
-      error('common.error')
+      toastError('common.error')
     },
   })
 

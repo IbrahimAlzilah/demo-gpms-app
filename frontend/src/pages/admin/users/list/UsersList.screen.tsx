@@ -15,7 +15,7 @@ import { useDeleteUser } from '../hooks/useUserOperations'
 
 export function UsersList() {
   const { t } = useTranslation()
-  const { success, error } = useToast()
+  const { toastSuccess, toastError } = useToast()
 
   const deleteUser = useDeleteUser()
   const {
@@ -56,14 +56,14 @@ export function UsersList() {
     if (!state.userToDelete) return
     try {
       await deleteUser.mutateAsync(state.userToDelete.id)
-      success('user.deleteSuccess')
+      toastSuccess('user.deleteSuccess')
       setState((prev) => ({
         ...prev,
         userToDelete: null,
         showDeleteDialog: false,
       }))
     } catch {
-      error('user.deleteError')
+      toastError('user.deleteError')
     }
   }
 
@@ -74,7 +74,7 @@ export function UsersList() {
       showForm: false,
       selectedUser: null,
     }))
-    success(wasEditing ? 'user.updateSuccess' : 'user.createSuccess')
+    toastSuccess(wasEditing ? 'user.updateSuccess' : 'user.createSuccess')
   }
 
   const handleFormCancel = () => {

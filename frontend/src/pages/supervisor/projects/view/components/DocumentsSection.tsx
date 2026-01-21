@@ -18,7 +18,7 @@ interface DocumentsSectionProps {
 
 export function DocumentsSection({ documents, isLoading, projectId }: DocumentsSectionProps) {
   const { t } = useTranslation()
-  const { success, error } = useToast()
+  const { toastSuccess, toastError } = useToast()
   const { id } = useParams<{ id: string }>()
   const actualProjectId = projectId || id || ''
   const queryClient = useQueryClient()
@@ -49,10 +49,10 @@ export function DocumentsSection({ documents, isLoading, projectId }: DocumentsS
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['supervisor-project', actualProjectId] })
       setReviewState({ document: null, status: null, comments: '', showDialog: false })
-      success('supervisor.documentReviewed')
+      toastSuccess('supervisor.documentReviewed')
     },
     onError: () => {
-      error('supervisor.failedToReviewDocument')
+      toastError('supervisor.failedToReviewDocument')
     },
   })
 
@@ -62,7 +62,7 @@ export function DocumentsSection({ documents, isLoading, projectId }: DocumentsS
     } catch (err) {
       console.error('Failed to download document:', err)
       console.error('Failed to download document:', err)
-      error('supervisor.failedToDownloadDocument')
+      toastError('supervisor.failedToDownloadDocument')
     }
   }
 

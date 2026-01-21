@@ -17,7 +17,7 @@ interface EvaluationFormProps {
 
 export function EvaluationForm({ projectId, studentId, onSuccess }: EvaluationFormProps) {
   const { t } = useTranslation()
-  const { success, error } = useToast()
+  const { toastSuccess, toastError } = useToast()
   const submitGrade = useSubmitGrade()
   const { data: { isPeriodActive, periodLoading } } = useEvaluationList()
 
@@ -38,7 +38,7 @@ export function EvaluationForm({ projectId, studentId, onSuccess }: EvaluationFo
   const onSubmit = async (data: any) => {
     if (!isPeriodActive) {
       const errorMsg = t('supervisor.evaluationPeriodClosed')
-      error(errorMsg)
+      toastError(errorMsg)
       return
     }
 
@@ -56,12 +56,12 @@ export function EvaluationForm({ projectId, studentId, onSuccess }: EvaluationFo
           comments: data.comments || undefined,
         },
       })
-      success('supervisor.evaluationSaved')
+      toastSuccess('supervisor.evaluationSaved')
       reset()
       onSuccess?.()
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : t('supervisor.evaluationError')
-      error(errorMsg)
+      toastError(errorMsg)
     }
   }
 

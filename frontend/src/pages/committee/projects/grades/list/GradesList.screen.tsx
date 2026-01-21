@@ -12,7 +12,7 @@ import { useToast } from '@/components/common'
 
 export function GradesList() {
   const { t } = useTranslation()
-  const { success, error } = useToast()
+  const { toastSuccess, toastError } = useToast()
   const approveGrade = useApproveGrade()
 
   const {
@@ -39,7 +39,7 @@ export function GradesList() {
       await approveGrade.mutateAsync({
         gradeId: state.selectedGrade.id,
       })
-      success('grades.approveSuccess')
+      toastSuccess('grades.approveSuccess')
       setState((prev) => ({
         ...prev,
         showDialog: false,
@@ -47,7 +47,7 @@ export function GradesList() {
         action: null,
       }))
     } catch (err) {
-      error(err instanceof Error ? err.message : 'grades.approveError')
+      toastError(err instanceof Error ? err.message : 'grades.approveError')
     }
   }
 

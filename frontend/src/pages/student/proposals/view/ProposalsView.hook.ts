@@ -5,7 +5,7 @@ import { useToast } from '@/components/common'
 
 export function useProposalsView(proposalId: string) {
   // const { t } = useTranslation()
-  const { success, error } = useToast() 
+  const { toastSuccess, toastError } = useToast()
 
   const { data: proposal, isLoading } = useProposal(proposalId)
   const resubmitProposal = useResubmitProposal()
@@ -15,10 +15,10 @@ export function useProposalsView(proposalId: string) {
 
     try {
       await resubmitProposal.mutateAsync(proposal)
-      success('proposal.resubmitSuccess')
+      toastSuccess('proposal.resubmitSuccess')
       return true
     } catch (err) {
-      error(err instanceof Error ? err.message : 'proposal.resubmitError')
+      toastError(err instanceof Error ? err.message : 'proposal.resubmitError')
       return false
     }
   }

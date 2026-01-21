@@ -20,7 +20,7 @@ export function FinalEvaluationForm({
   onSuccess,
 }: FinalEvaluationFormProps) {
   const { t } = useTranslation()
-  const { success } = useToast()
+  const { toastSuccess } = useToast()
 
   const submitGrade = useSubmitFinalGrade()
   const { user } = useAuthStore()
@@ -50,7 +50,7 @@ export function FinalEvaluationForm({
         },
       })
 
-      success('discussion.evaluationSaved')
+      toastSuccess('discussion.evaluationSaved')
       onSuccess?.()
     },
   })

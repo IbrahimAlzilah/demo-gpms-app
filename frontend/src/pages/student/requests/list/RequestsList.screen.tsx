@@ -14,7 +14,7 @@ import { useCancelRequest, useDeleteRequest } from '../hooks/useRequestOperation
 
 export function RequestsList() {
   const { t } = useTranslation()
-  const { success, error } = useToast()
+  const { toastSuccess, toastError } = useToast()
 
   const cancelRequest = useCancelRequest()
   const deleteRequest = useDeleteRequest()
@@ -38,14 +38,14 @@ export function RequestsList() {
     if (!state.requestToCancel) return
     try {
       await cancelRequest.mutateAsync(state.requestToCancel.id)
-      success('request.cancelSuccess')
+      toastSuccess('request.cancelSuccess')
       setState((prev) => ({
         ...prev,
         requestToCancel: null,
         showCancelDialog: false,
       }))
     } catch {
-      error('request.cancelError')
+      toastError('request.cancelError')
     }
   }
 
@@ -53,20 +53,20 @@ export function RequestsList() {
     if (!state.requestToDelete) return
     try {
       await deleteRequest.mutateAsync(state.requestToDelete.id)
-      success('request.deleteSuccess')
+      toastSuccess('request.deleteSuccess')
       setState((prev) => ({
         ...prev,
         requestToDelete: null,
         showDeleteDialog: false,
       }))
     } catch {
-      error('request.deleteError')
+      toastError('request.deleteError')
     }
   }
 
   const handleEditSuccess = () => {
     setState((prev) => ({ ...prev, requestToEdit: null, showEditForm: false }))
-    success('request.updateSuccess')
+    toastSuccess('request.updateSuccess')
   }
 
   const columns = useMemo(
@@ -103,7 +103,7 @@ export function RequestsList() {
 
   const handleFormSuccess = () => {
     setState((prev) => ({ ...prev, showForm: false }))
-    success('request.submitSuccess')
+    toastSuccess('request.submitSuccess')
   }
 
   const actions = useMemo(

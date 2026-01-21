@@ -23,7 +23,7 @@ interface MeetingsManagerProps {
 
 export function MeetingsManager({ projectId, project }: MeetingsManagerProps) {
   const { t } = useTranslation()
-  const { success, error } = useToast()
+  const { toastSuccess, toastError } = useToast()
   const [showForm, setShowForm] = useState(false)
   const [editingMeeting, setEditingMeeting] = useState<ProjectMeeting | null>(null)
   const [deletingMeeting, setDeletingMeeting] = useState<ProjectMeeting | null>(null)
@@ -47,10 +47,10 @@ export function MeetingsManager({ projectId, project }: MeetingsManagerProps) {
         agenda: data.agenda,
         attendee_ids: data.attendeeIds,
       })
-      success('meeting.createSuccess')
+      toastSuccess('meeting.createSuccess')
       setShowForm(false)
     } catch (err) {
-      error(err instanceof Error ? err.message : 'meeting.createError')
+      toastError(err instanceof Error ? err.message : 'meeting.createError')
     }
   }
 
@@ -67,10 +67,10 @@ export function MeetingsManager({ projectId, project }: MeetingsManagerProps) {
           attendee_ids: data.attendeeIds,
         },
       })
-      success('meeting.updateSuccess')
+      toastSuccess('meeting.updateSuccess')
       setEditingMeeting(null)
     } catch (err) {
-      error(err instanceof Error ? err.message : 'meeting.updateError')
+      toastError(err instanceof Error ? err.message : 'meeting.updateError')
     }
   }
 
@@ -78,10 +78,10 @@ export function MeetingsManager({ projectId, project }: MeetingsManagerProps) {
     if (!deletingMeeting) return
     try {
       await deleteMeeting.mutateAsync(deletingMeeting.id)
-      success('meeting.deleteSuccess')
+      toastSuccess('meeting.deleteSuccess')
       setDeletingMeeting(null)
     } catch (err) {
-      error(err instanceof Error ? err.message : 'meeting.deleteError')
+      toastError(err instanceof Error ? err.message : 'meeting.deleteError')
     }
   }
 

@@ -16,7 +16,7 @@ import { apiClient } from '@/lib/axios'
 
 export function RegistrationsList() {
   const { t } = useTranslation()
-  const { success, error } = useToast()
+  const { toastSuccess, toastError } = useToast()
   const queryClient = useQueryClient()
   const [showManualRegistration, setShowManualRegistration] = useState(false)
 
@@ -37,13 +37,13 @@ export function RegistrationsList() {
       return response.data
     },
     onSuccess: () => {
-      success('registration.manualRegistrationSuccess')
+      toastSuccess('registration.manualRegistrationSuccess')
       queryClient.invalidateQueries({ queryKey: ['committee-registrations'] })
       queryClient.invalidateQueries({ queryKey: ['committee-registrations-table'] })
       queryClient.invalidateQueries({ queryKey: ['project-registrations'] })
     },
     onError: (err: any) => {
-      error(err?.message || 'registration.manualRegistrationError')
+      toastError(err?.message || 'registration.manualRegistrationError')
     },
   })
 
@@ -70,7 +70,7 @@ export function RegistrationsList() {
         registrationId: state.selectedRegistration.id,
         comments: state.comments || undefined,
       })
-      success('registration.approveSuccess')
+      toastSuccess('registration.approveSuccess')
       setState((prev) => ({
         ...prev,
         showDialog: false,
@@ -79,14 +79,14 @@ export function RegistrationsList() {
         comments: '',
       }))
     } catch (err) {
-      error(err instanceof Error ? err.message : 'registration.approveError')
+      toastError(err instanceof Error ? err.message : 'registration.approveError')
     }
   }
 
   const handleReject = async () => {
     if (!state.selectedRegistration) return
     if (!state.comments.trim()) {
-      error('registration.commentsRequired')
+      toastError('registration.commentsRequired')
       return
     }
     try {
@@ -94,7 +94,7 @@ export function RegistrationsList() {
         registrationId: state.selectedRegistration.id,
         comments: state.comments,
       })
-      success('registration.rejectSuccess')
+      toastSuccess('registration.rejectSuccess')
       setState((prev) => ({
         ...prev,
         showDialog: false,
@@ -103,7 +103,7 @@ export function RegistrationsList() {
         comments: '',
       }))
     } catch (err) {
-      error(err instanceof Error ? err.message : 'registration.rejectError')
+      toastError(err instanceof Error ? err.message : 'registration.rejectError')
     }
   }
 

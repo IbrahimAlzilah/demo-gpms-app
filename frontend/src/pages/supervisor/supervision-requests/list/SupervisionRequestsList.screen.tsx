@@ -13,7 +13,7 @@ import type { Project } from '@/types/project.types'
 
 export function SupervisionRequestsList() {
   const [activeTab, setActiveTab] = useState('student-requests')
-  const { success, error } = useToast()
+  const { toastSuccess, toastError } = useToast()
 
 
   const approveRequest = useApproveSupervisionRequest()
@@ -41,7 +41,7 @@ export function SupervisionRequestsList() {
 
     // Validate request status
     if (state.selectedRequest.supervisorApprovalStatus !== 'pending') {
-      error('supervision.requestNotPending')
+      toastError('supervision.requestNotPending')
       setState((prev) => ({
         ...prev,
         showConfirmDialog: false,
@@ -53,13 +53,13 @@ export function SupervisionRequestsList() {
     }
 
     if (data.currentProjectCount >= data.maxProjectsPerSupervisor) {
-      error('supervision.maxProjectsReached')
+      toastError('supervision.maxProjectsReached')
       return
     }
 
     try {
       await approveRequest.mutateAsync(state.selectedRequest.id)
-      success('supervision.approveSuccess')
+      toastSuccess('supervision.approveSuccess')
       setState((prev) => ({
         ...prev,
         comments: '',
@@ -72,7 +72,7 @@ export function SupervisionRequestsList() {
         (err as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message ||
         (err as { message?: string })?.message ||
         t('supervision.approveError')
-      error(errorMessage)
+      toastError(errorMessage)
     }
   }
 
@@ -81,7 +81,7 @@ export function SupervisionRequestsList() {
 
     // Validate request status
     if (state.selectedRequest.supervisorApprovalStatus !== 'pending') {
-      error('supervision.requestNotPending')
+      toastError('supervision.requestNotPending')
       setState((prev) => ({
         ...prev,
         showConfirmDialog: false,
@@ -97,7 +97,7 @@ export function SupervisionRequestsList() {
         requestId: state.selectedRequest.id,
         comments: state.comments || undefined
       })
-      success('supervision.rejectSuccess')
+      toastSuccess('supervision.rejectSuccess')
       setState((prev) => ({
         ...prev,
         comments: '',
@@ -110,18 +110,18 @@ export function SupervisionRequestsList() {
         (err as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message ||
         (err as { message?: string })?.message ||
         t('supervision.rejectError')
-      error(errorMessage)
+      toastError(errorMessage)
     }
   }
 
   const handleApproveClick = useCallback((request: Project) => {
     if (request.supervisorApprovalStatus !== 'pending') {
-      error('supervision.requestNotPending')
+      toastError('supervision.requestNotPending')
       return
     }
 
     if (data.currentProjectCount >= data.maxProjectsPerSupervisor) {
-      error('supervision.maxProjectsReached')
+      toastError('supervision.maxProjectsReached')
       return
     }
     setState((prev) => ({
@@ -134,7 +134,7 @@ export function SupervisionRequestsList() {
 
   const handleRejectClick = useCallback((request: Project) => {
     if (request.supervisorApprovalStatus !== 'pending') {
-      error('supervision.requestNotPending')
+      toastError('supervision.requestNotPending')
       return
     }
 

@@ -1,3 +1,4 @@
+import type { User } from '@/types/user.types'
 import type { Project } from '@/types/project.types'
 
 export interface SupervisorsListState {
@@ -7,7 +8,7 @@ export interface SupervisorsListState {
 
 export interface SupervisorsListData {
   projects: Project[]
-  supervisors: Array<{ id: string; name: string }>
+  supervisors: User[]
   isLoading: boolean
   error: Error | null
 }

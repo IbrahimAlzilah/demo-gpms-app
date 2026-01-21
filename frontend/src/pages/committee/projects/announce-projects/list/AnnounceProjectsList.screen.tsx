@@ -12,7 +12,7 @@ import type { Project } from '@/types/project.types'
 
 export function AnnounceProjectsList() {
   const { t } = useTranslation()
-  const { success, error, warning } = useToast()
+  const { toastSuccess, toastError, toastWarning } = useToast()
 
   const announceProjectsOperation = useAnnounceProjectsOperation()
   const unannounceProjectsOperation = useUnannounceProjects()
@@ -38,16 +38,16 @@ export function AnnounceProjectsList() {
 
   const handleAnnounce = async () => {
     if (state.selectedProjects.size === 0) {
-      warning('committee.announce.selectAtLeastOne')
+      toastWarning('committee.announce.selectAtLeastOne')
       return
     }
 
     try {
       await announceProjectsOperation.mutateAsync(Array.from(state.selectedProjects))
-      success('committee.announce.success')
+      toastSuccess('committee.announce.success')
       setState((prev) => ({ ...prev, selectedProjects: new Set() }))
     } catch (err) {
-      error(err instanceof Error ? err.message : 'committee.announce.error')
+      toastError(err instanceof Error ? err.message : 'committee.announce.error')
     }
   }
 
@@ -64,14 +64,14 @@ export function AnnounceProjectsList() {
 
     try {
       await unannounceProjectsOperation.mutateAsync([state.projectToRemove.id])
-      success('committee.announce.removeSuccess')
+      toastSuccess('committee.announce.removeSuccess')
       setState((prev) => ({
         ...prev,
         projectToRemove: null,
         showRemoveConfirm: false,
       }))
     } catch (err) {
-      error(err instanceof Error ? err.message : 'committee.announce.removeError')
+      toastError(err instanceof Error ? err.message : 'committee.announce.removeError')
     }
   }
 

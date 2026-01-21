@@ -23,7 +23,7 @@ interface MilestonesManagerProps {
 
 export function MilestonesManager({ projectId }: MilestonesManagerProps) {
   const { t } = useTranslation()
-  const { success, error } = useToast()
+  const { toastSuccess, toastError } = useToast()
   const [showForm, setShowForm] = useState(false)
   const [editingMilestone, setEditingMilestone] = useState<ProjectMilestone | null>(null)
   const [deletingMilestone, setDeletingMilestone] = useState<ProjectMilestone | null>(null)
@@ -47,10 +47,10 @@ export function MilestonesManager({ projectId }: MilestonesManagerProps) {
         due_date: data.dueDate,
         type: data.type,
       })
-      success('milestone.createSuccess')
+      toastSuccess('milestone.createSuccess')
       setShowForm(false)
     } catch (err) {
-      error(err instanceof Error ? err.message : 'milestone.createError')
+      toastError(err instanceof Error ? err.message : 'milestone.createError')
     }
   }
 
@@ -66,10 +66,10 @@ export function MilestonesManager({ projectId }: MilestonesManagerProps) {
           type: data.type,
         },
       })
-      success('milestone.updateSuccess')
+      toastSuccess('milestone.updateSuccess')
       setEditingMilestone(null)
     } catch (err) {
-      error(err instanceof Error ? err.message : 'milestone.updateError')
+      toastError(err instanceof Error ? err.message : 'milestone.updateError')
     }
   }
 
@@ -77,19 +77,19 @@ export function MilestonesManager({ projectId }: MilestonesManagerProps) {
     if (!deletingMilestone) return
     try {
       await deleteMilestone.mutateAsync(deletingMilestone.id)
-      success('milestone.deleteSuccess')
+      toastSuccess('milestone.deleteSuccess')
       setDeletingMilestone(null)
     } catch (err) {
-      error(err instanceof Error ? err.message : 'milestone.deleteError')
+      toastError(err instanceof Error ? err.message : 'milestone.deleteError')
     }
   }
 
   const handleMarkCompleted = async (milestone: ProjectMilestone) => {
     try {
       await markCompleted.mutateAsync(milestone.id)
-      success('milestone.markCompletedSuccess')
+      toastSuccess('milestone.markCompletedSuccess')
     } catch (err) {
-      error(err instanceof Error ? err.message : 'milestone.markCompletedError')
+      toastError(err instanceof Error ? err.message : 'milestone.markCompletedError')
     }
   }
 

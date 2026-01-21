@@ -13,7 +13,7 @@ import type { Request } from '@/types/request.types'
 
 export function RequestsList() {
   const { t } = useTranslation()
-  const { success, error } = useToast()
+  const { toastSuccess, toastError } = useToast()
 
   const approveRequest = useApproveRequest()
   const rejectRequest = useRejectRequest()
@@ -39,7 +39,7 @@ export function RequestsList() {
     if (!state.selectedRequest) return
     try {
       await approveRequest.mutateAsync({ id: state.selectedRequest.id, comments: state.comments || undefined })
-      success('committee.requests.approveSuccess')
+      toastSuccess('committee.requests.approveSuccess')
       setState((prev) => ({
         ...prev,
         comments: '',
@@ -48,7 +48,7 @@ export function RequestsList() {
         showConfirmDialog: false,
       }))
     } catch (err) {
-      error(err instanceof Error ? err.message : 'committee.requests.processingError')
+      toastError(err instanceof Error ? err.message : 'committee.requests.processingError')
     }
   }
 
@@ -56,7 +56,7 @@ export function RequestsList() {
     if (!state.selectedRequest) return
     try {
       await rejectRequest.mutateAsync({ id: state.selectedRequest.id, comments: state.comments || undefined })
-      success('committee.requests.rejectSuccess')
+      toastSuccess('committee.requests.rejectSuccess')
       setState((prev) => ({
         ...prev,
         comments: '',
@@ -65,7 +65,7 @@ export function RequestsList() {
         showConfirmDialog: false,
       }))
     } catch (err) {
-      error(err instanceof Error ? err.message : 'committee.requests.processingError')
+      toastError(err instanceof Error ? err.message : 'committee.requests.processingError')
     }
   }
 

@@ -7,7 +7,7 @@ import type { ReportsListState, ReportsListData } from './ReportsList.types'
 
 export function useReportsList() {
   const { t } = useTranslation()
-  const { success, error: toastError } = useToast()
+  const { toastSuccess, toastError } = useToast()
 
   const downloadReport = useDownloadReport()
 
@@ -19,7 +19,7 @@ export function useReportsList() {
     setState((prev) => ({ ...prev, loadingReport: type }))
     try {
       await downloadReport.mutateAsync({ type, options: { format: 'pdf' } })
-      success(`تم توليد تقرير ${type} بنجاح`)
+      toastSuccess(`تم توليد تقرير ${type} بنجاح`)
     } catch (error) {
       console.error('Error generating report:', error)
       toastError(

@@ -15,7 +15,7 @@ export interface UseEvaluationFormOptions {
  */
 export function useEvaluationForm(options: UseEvaluationFormOptions = {}) {
   const { t } = useTranslation()
-  const { error } = useToast()
+  const { toastError } = useToast()
   const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('discussion_evaluation')
 
   const form = useForm<FinalEvaluationSchema>({
@@ -30,14 +30,14 @@ export function useEvaluationForm(options: UseEvaluationFormOptions = {}) {
 
   const handleSubmit = async (data: FinalEvaluationSchema) => {
     if (!isPeriodActive) {
-      error('discussion.evaluationPeriodClosed')
+      toastError('discussion.evaluationPeriodClosed')
       return
     }
 
     try {
       await options.onSubmit?.(data)
     } catch (err) {
-      error(err instanceof Error ? err.message : 'discussion.evaluationError')
+      toastError(err instanceof Error ? err.message : 'discussion.evaluationError')
     }
   }
 

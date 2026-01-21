@@ -12,7 +12,7 @@ import { useProposalsList } from './ProposalsList.hook'
 
 export function ProposalsList() {
   const { t } = useTranslation()
-  const { success } = useToast()
+  const { toastSuccess } = useToast()
   const {
     data,
     state,
@@ -44,7 +44,7 @@ export function ProposalsList() {
 
   const handleFormSuccess = () => {
     setState((prev) => ({ ...prev, showForm: false }))
-    success('proposal.submitSuccess')
+    toastSuccess('proposal.submitSuccess')
   }
 
   const actions = useMemo(

@@ -15,7 +15,7 @@ interface ProjectProgressTrackerProps {
 
 export function ProjectProgressTracker({ projectId }: ProjectProgressTrackerProps) {
   const { t } = useTranslation()
-  const { success, error } = useToast()
+  const { toastSuccess, toastError } = useToast()
   const [notes, setNotes] = useState('')
   const { data: grades, isLoading } = useProjectGrades(projectId)
 
@@ -34,10 +34,10 @@ export function ProjectProgressTracker({ projectId }: ProjectProgressTrackerProp
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['supervisor-notes', projectId] })
       setNotes('')
-      success('supervisor.noteSaved')
+      toastSuccess('supervisor.noteSaved')
     },
     onError: () => {
-      error('supervisor.failedToSaveNote')
+      toastError('supervisor.failedToSaveNote')
     },
   })
 

@@ -25,7 +25,7 @@ export function useSupervisorsList() {
 
   const data: SupervisorsListData = {
     projects,
-    supervisors: (supervisors || []).map(s => ({ id: s.id, name: s.name })),
+    supervisors: supervisors || [],
     isLoading: projectsLoading || supervisorsLoading,
     error: null,
   }

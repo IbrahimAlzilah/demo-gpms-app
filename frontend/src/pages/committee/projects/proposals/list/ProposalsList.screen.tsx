@@ -16,7 +16,7 @@ import type { Proposal } from '@/types/project.types'
 
 export function ProposalsList() {
   const { t } = useTranslation()
-  const { success, error } = useToast()
+  const { toastSuccess, toastError } = useToast()
 
   const approveProposal = useApproveProposal()
   const rejectProposal = useRejectProposal()
@@ -76,31 +76,31 @@ export function ProposalsList() {
     try {
       if (actionType === 'approve') {
         await approveProposal.mutateAsync({ id: proposalId })
-        success('committee.proposal.approveSuccess')
+        toastSuccess('committee.proposal.approveSuccess')
       } else if (actionType === 'reject') {
         await rejectProposal.mutateAsync({ id: proposalId, reviewNotes: notes })
-        success('committee.proposal.rejectSuccess')
+        toastSuccess('committee.proposal.rejectSuccess')
       } else if (actionType === 'modify') {
         if (!notes) {
-          error('committee.proposal.modificationsRequired')
+          toastError('committee.proposal.modificationsRequired')
           return
         }
         await requestModification.mutateAsync({ id: proposalId, reviewNotes: notes })
-        success('committee.proposal.modifySuccess')
+        toastSuccess('committee.proposal.modifySuccess')
       }
       setState((prev) => ({ ...prev, selectedProposal: null, action: null }))
     } catch (err) {
-      error(err instanceof Error ? err.message : 'committee.proposal.processError')
+      toastError(err instanceof Error ? err.message : 'committee.proposal.processError')
     }
   }
 
   const handleEdit = async (proposalId: string, data: Partial<Proposal>) => {
     try {
       await updateProposal.mutateAsync({ id: proposalId, data })
-      success('committee.proposal.updateSuccess')
+      toastSuccess('committee.proposal.updateSuccess')
       setState((prev) => ({ ...prev, proposalToEdit: null }))
     } catch (err) {
-      error(err instanceof Error ? err.message : 'committee.proposal.updateError')
+      toastError(err instanceof Error ? err.message : 'committee.proposal.updateError')
     }
   }
 
@@ -108,10 +108,10 @@ export function ProposalsList() {
     if (!state.proposalToDelete) return
     try {
       await deleteProposal.mutateAsync(state.proposalToDelete.id)
-      success('committee.proposal.deleteSuccess')
+      toastSuccess('committee.proposal.deleteSuccess')
       setState((prev) => ({ ...prev, proposalToDelete: null }))
     } catch (err) {
-      error(err instanceof Error ? err.message : 'committee.proposal.deleteError')
+      toastError(err instanceof Error ? err.message : 'committee.proposal.deleteError')
     }
   }
 

@@ -12,7 +12,7 @@ import { supervisorAssignmentService } from '../api/supervisor.service'
 
 export function SupervisorsList() {
   const { t } = useTranslation()
-  const { success, error } = useToast()
+  const { toastSuccess, toastError } = useToast()
   const assignSupervisor = useAssignSupervisor()
   const [tab, setTab] = useState<'projects' | 'requests'>('projects')
 
@@ -33,18 +33,18 @@ export function SupervisorsList() {
       if (requiresApproval) {
         // Send request for approval
         await supervisorAssignmentService.requestAssignment(projectId, supervisorId, notes)
-        success('supervisor.requestSent')
+        toastSuccess('supervisor.requestSent')
       } else {
         // Direct assignment
         await assignSupervisor.mutateAsync({
           projectId,
           supervisorId,
         })
-        success('committee.supervisors.assignmentSuccess')
+        toastSuccess('committee.supervisors.assignmentSuccess')
       }
       setState((prev) => ({ ...prev, selectedProject: null, selectedSupervisor: '' }))
     } catch (err) {
-      error(err instanceof Error ? err.message : 'committee.supervisors.assignmentError')
+      toastError(err instanceof Error ? err.message : 'committee.supervisors.assignmentError')
     }
   }
 

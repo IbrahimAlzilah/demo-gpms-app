@@ -14,7 +14,7 @@ import { useResubmitProposal } from '../hooks/useProposalOperations'
 
 export function ProposalsList() {
   const { t } = useTranslation()
-  const { success, error } = useToast()
+  const { toastSuccess, toastError } = useToast()
 
   const resubmitProposal = useResubmitProposal()
   const {
@@ -46,7 +46,7 @@ export function ProposalsList() {
           if (proposal.status === 'pending_review') {
             setState((prev) => ({ ...prev, editingProposalId: String(proposal.id) }))
           } else {
-            error('proposal.cannotEdit')
+            toastError('proposal.cannotEdit')
           }
         },
         t,
@@ -56,12 +56,12 @@ export function ProposalsList() {
 
   const handleFormSuccess = () => {
     setState((prev) => ({ ...prev, showForm: false }))
-    success('proposal.submitSuccess')
+    toastSuccess('proposal.submitSuccess')
   }
 
   const handleEditSuccess = () => {
     setState((prev) => ({ ...prev, editingProposalId: null }))
-    success('proposal.updateSuccess')
+    toastSuccess('proposal.updateSuccess')
   }
 
   const handleResubmit = async () => {
@@ -69,7 +69,7 @@ export function ProposalsList() {
 
     try {
       await resubmitProposal.mutateAsync(state.proposalToResubmit)
-      success('proposal.resubmitSuccess')
+      toastSuccess('proposal.resubmitSuccess')
       setState((prev) => ({
         ...prev,
         showResubmitDialog: false,
@@ -77,7 +77,7 @@ export function ProposalsList() {
         selectedProposal: null,
       }))
     } catch (err) {
-      error(err instanceof Error ? err.message : 'proposal.resubmitError')
+      toastError(err instanceof Error ? err.message : 'proposal.resubmitError')
     }
   }
 

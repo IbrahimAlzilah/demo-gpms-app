@@ -12,7 +12,7 @@ import { forgetPasswordSchema, type ForgetPasswordSchema } from '../schema/passw
 
 export function ForgetPasswordForm() {
   const { t } = useTranslation()
-  const { success, error: toastError } = useToast()
+  const { toastSuccess, toastError } = useToast()
 
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState('')
@@ -43,7 +43,7 @@ export function ForgetPasswordForm() {
       const successMessage = response.message || t('auth.forgetPassword.success')
       setMessage(successMessage)
       setIsSuccess(true)
-      success(successMessage)
+      toastSuccess(successMessage)
     } catch (err) {
       const errorMessage = err instanceof Error
         ? err.message
