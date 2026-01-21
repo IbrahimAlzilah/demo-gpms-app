@@ -11,7 +11,6 @@ const proposalEditSchema = (t: (key: string) => string) =>
   z.object({
     title: z.string().min(1, t('proposal.validation.titleRequired')).max(255, t('proposal.validation.titleMaxLength255')),
     description: z.string().min(1, t('proposal.validation.descriptionRequired')),
-    requirements: z.string().optional(),
     proposedSupervisorId: z.string().optional(),
     teamMembers: z.array(
       z.object({
@@ -49,7 +48,6 @@ export function ProposalEditDialog({
       ? {
         title: proposal.title,
         description: proposal.description,
-        requirements: proposal.requirements || '',
         proposedSupervisorId: proposal.proposedSupervisorId || '',
         teamMembers: proposal.teamMembers || [],
       }
@@ -67,7 +65,6 @@ export function ProposalEditDialog({
     onConfirm(proposal.id, {
       title: data.title,
       description: data.description,
-      requirements: data.requirements || undefined,
       proposedSupervisorId: data.proposedSupervisorId || undefined,
       teamMembers: data.teamMembers || [],
     })
@@ -81,7 +78,6 @@ export function ProposalEditDialog({
       open={!!proposal}
       onOpenChange={(open) => !open && onClose()}
       title={t('committee.proposal.editProposal')}
-      description={t('committee.proposal.editDescription')}
       size="xl"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4">
@@ -120,26 +116,6 @@ export function ProposalEditDialog({
             <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.description.message}
-            </p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="requirements">
-            {t('proposal.requirements') || 'Requirements'}
-          </Label>
-          <Textarea
-            id="requirements"
-            {...register('requirements')}
-            placeholder={t('proposal.requirementsPlaceholder') || 'Enter project requirements...'}
-            rows={4}
-            className={errors.requirements ? 'border-destructive' : ''}
-            aria-invalid={!!errors.requirements}
-          />
-          {errors.requirements && (
-            <p className="text-xs text-destructive flex items-center gap-1">
-              <AlertCircle className="h-3 w-3" />
-              {errors.requirements.message}
             </p>
           )}
         </div>

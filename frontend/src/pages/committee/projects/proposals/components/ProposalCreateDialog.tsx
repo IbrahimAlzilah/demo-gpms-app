@@ -1,28 +1,14 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
-import { LoadingSpinner } from '@/components/common'
+import { Button, Input, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
+import { ModalDialog, LoadingSpinner, useToast } from '@/components/common'
 import { apiClient } from '@/lib/axios'
-import { useToast } from '@/components/common'
+import { AlertCircle, Loader2 } from 'lucide-react'
 import { committeeProposalService } from '../api/proposal.service'
+import { proposalCreateSchema, type ProposalCreateSchema } from '../schema/proposal-create.schema'
 
 interface Student {
     id: string
@@ -41,10 +27,17 @@ export function ProposalCreateDialog({ open, onOpenChange }: ProposalCreateDialo
     const { toastSuccess, toastError } = useToast()
     const queryClient = useQueryClient()
 
-    const [title, setTitle] = useState('')
-    const [description, setDescription] = useState('')
-    const [requirements, setRequirements] = useState('')
-    const [selectedStudent, setSelectedStudent] = useState<string>('')
+    const form = useForm<ProposalCreateSchema>({
+        resolver: zodResolver(proposalCreateSchema(t)),
+        defaultValues: {
+            submitterId: '',
+            title: '',
+            description: '',
+        },
+    })
+
+    const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = form
+    const submitterId = watch('submitterId')
     const [studentSearch, setStudentSearch] = useState('')
 
     // Search students query
@@ -65,118 +58,159 @@ export function ProposalCreateDialog({ open, onOpenChange }: ProposalCreateDialo
             toastSuccess('committee.proposal.createSuccess')
             queryClient.invalidateQueries({ queryKey: ['committee-proposals'] })
             queryClient.invalidateQueries({ queryKey: ['committee-proposals-table'] })
-            onOpenChange(false)
-            // Reset form
-            setTitle('')
-            setDescription('')
-            setRequirements('')
-            setSelectedStudent('')
+            reset()
             setStudentSearch('')
+            onOpenChange(false)
         },
         onError: (err: any) => {
-            toastError(err?.message || 'common.error')
+            const errorMsg = err?.response?.data?.message || err?.message || 'common.error'
+            toastError(errorMsg)
         }
     })
 
-    // Debounce search input (simple implementation)
-    const handleSearchChange = (val: string) => {
-        setStudentSearch(val)
-        if (val === '') setSelectedStudent('')
-    }
-
-    const handleSubmit = () => {
-        if (!title || !description || !selectedStudent) {
-            toastError('common.fillRequiredFields')
-            return
+    // Reset form when dialog closes
+    useEffect(() => {
+        if (!open) {
+            reset()
+            setStudentSearch('')
         }
+    }, [open, reset])
 
+    const onSubmit = async (data: ProposalCreateSchema) => {
         createMutation.mutate({
-            title,
-            description,
-            requirements,
-            submitterId: selectedStudent,
+            title: data.title,
+            description: data.description,
+            submitterId: data.submitterId,
         })
     }
 
+    const handleSearchChange = (val: string) => {
+        setStudentSearch(val)
+        if (val === '') {
+            setValue('submitterId', '')
+        }
+    }
+
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[600px]">
-                <DialogHeader>
-                    <DialogTitle>{t('committee.proposal.createTitle', { defaultValue: 'Create Proposal on behalf of Student' })}</DialogTitle>
-                </DialogHeader>
-
-                <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                        <Label>{t('committee.proposal.studentSearch', { defaultValue: 'Select Student' })}</Label>
-                        <div className="relative">
-                            <Select value={selectedStudent} onValueChange={setSelectedStudent}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder={t('committee.proposal.searchStudentPlaceholder', { defaultValue: 'Search by name or ID...' })} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <div className="p-2">
-                                        <Input
-                                            placeholder={t('common.search')}
-                                            value={studentSearch}
-                                            onChange={(e) => handleSearchChange(e.target.value)}
-                                            className="mb-2"
-                                        />
-                                    </div>
-                                    {loadingStudents ? (
-                                        <div className="p-2 flex justify-center"><LoadingSpinner className="h-4 w-4" /></div>
-                                    ) : students?.length === 0 ? (
-                                        <div className="p-2 text-center text-muted-foreground text-sm">{t('common.noResults')}</div>
-                                    ) : (
-                                        students?.map((student) => (
-                                            <SelectItem key={student.id} value={String(student.id)}>
-                                                {student.name} ({student.university_id})
-                                            </SelectItem>
-                                        ))
-                                    )}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label>{t('proposal.title')}</Label>
-                        <Input
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            placeholder={t('proposal.titlePlaceholder')}
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label>{t('proposal.description')}</Label>
-                        <Textarea
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            placeholder={t('proposal.descriptionPlaceholder')}
-                            rows={4}
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label>{t('proposal.requirements')} ({t('common.optional')})</Label>
-                        <Textarea
-                            value={requirements}
-                            onChange={(e) => setRequirements(e.target.value)}
-                            rows={2}
-                        />
-                    </div>
+        <ModalDialog
+            open={open}
+            onOpenChange={onOpenChange}
+            title={t('committee.proposal.createTitle')}
+            size="lg"
+        >
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                {/* Student Selection */}
+                <div className="space-y-2">
+                    <Label htmlFor="submitterId">
+                        {t('committee.proposal.studentSearch')} <span className="text-destructive">*</span>
+                    </Label>
+                    <Select
+                        value={submitterId}
+                        onValueChange={(value) => setValue('submitterId', value, { shouldValidate: true })}
+                    >
+                        <SelectTrigger
+                            id="submitterId"
+                            className={errors.submitterId ? 'border-destructive' : ''}
+                        >
+                            <SelectValue placeholder={t('committee.proposal.searchStudentPlaceholder')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <div className="p-2">
+                                <Input
+                                    placeholder={t('common.search')}
+                                    value={studentSearch}
+                                    onChange={(e) => handleSearchChange(e.target.value)}
+                                    className="mb-2"
+                                />
+                            </div>
+                            {loadingStudents ? (
+                                <div className="p-2 flex justify-center">
+                                    <LoadingSpinner size="sm" />
+                                </div>
+                            ) : students?.length === 0 ? (
+                                <div className="p-2 text-center text-muted-foreground text-sm">
+                                    {t('common.noResults')}
+                                </div>
+                            ) : (
+                                students?.map((student) => (
+                                    <SelectItem key={student.id} value={String(student.id)}>
+                                        {student.name} ({student.university_id})
+                                    </SelectItem>
+                                ))
+                            )}
+                        </SelectContent>
+                    </Select>
+                    {errors.submitterId && (
+                        <p className="text-xs text-destructive flex items-center gap-1">
+                            <AlertCircle className="h-3 w-3" />
+                            {errors.submitterId.message}
+                        </p>
+                    )}
                 </div>
 
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>
+                {/* Title */}
+                <div className="space-y-2">
+                    <Label htmlFor="title">
+                        {t('proposal.title')} <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                        id="title"
+                        {...register('title')}
+                        placeholder={t('proposal.titlePlaceholder')}
+                        className={errors.title ? 'border-destructive' : ''}
+                        aria-invalid={!!errors.title}
+                    />
+                    {errors.title && (
+                        <p className="text-xs text-destructive flex items-center gap-1">
+                            <AlertCircle className="h-3 w-3" />
+                            {errors.title.message}
+                        </p>
+                    )}
+                </div>
+
+                {/* Description */}
+                <div className="space-y-2">
+                    <Label htmlFor="description">
+                        {t('proposal.description')} <span className="text-destructive">*</span>
+                    </Label>
+                    <Textarea
+                        id="description"
+                        {...register('description')}
+                        placeholder={t('proposal.descriptionPlaceholder')}
+                        rows={4}
+                        className={errors.description ? 'border-destructive' : ''}
+                        aria-invalid={!!errors.description}
+                    />
+                    {errors.description && (
+                        <p className="text-xs text-destructive flex items-center gap-1">
+                            <AlertCircle className="h-3 w-3" />
+                            {errors.description.message}
+                        </p>
+                    )}
+                </div>
+
+                {/* Footer Actions */}
+                <div className="flex justify-end gap-2 pt-4 border-t">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => onOpenChange(false)}
+                        disabled={createMutation.isPending}
+                    >
                         {t('common.cancel')}
                     </Button>
-                    <Button onClick={handleSubmit} disabled={createMutation.isPending}>
-                        {createMutation.isPending && <LoadingSpinner className="mr-2 h-4 w-4" />}
-                        {t('common.create')}
+                    <Button type="submit" disabled={createMutation.isPending}>
+                        {createMutation.isPending ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                {t('common.creating')}
+                            </>
+                        ) : (
+                            t('common.create')
+                        )}
                     </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                </div>
+            </form>
+        </ModalDialog>
     )
 }

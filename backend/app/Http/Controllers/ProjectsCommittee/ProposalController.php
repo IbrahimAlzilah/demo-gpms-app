@@ -65,7 +65,6 @@ class ProposalController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'requirements' => 'nullable|string',
             'proposed_supervisor_id' => 'nullable|exists:users,id',
             'submitter_id' => 'required|exists:users,id',
             'student_group_id' => 'nullable|exists:student_groups,id',

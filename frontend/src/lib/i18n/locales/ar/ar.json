@@ -526,7 +526,8 @@
       "titleMaxLength": "العنوان يجب أن يكون أقل من 200 حرف",
       "titleMaxLength255": "العنوان يجب أن يكون أقل من 255 حرف",
       "descriptionRequired": "الوصف مطلوب",
-      "descriptionMinLength": "الوصف يجب أن يكون 50 حرفاً على الأقل"
+      "descriptionMinLength": "الوصف يجب أن يكون 50 حرفاً على الأقل",
+      "submitterRequired": "يرجى اختيار طالب"
     },
     "fileTooLarge": "الملف كبير جداً (الحد الأقصى 10MB)",
     "invalidFileType": "نوع الملف غير مدعوم",
@@ -989,8 +990,6 @@
     "createNewProposal": "إنشاء مقترح جديد",
     "studentGrades": "درجات الطلاب",
     "noProposals": "لا توجد مقترحات",
-    "requirements": "المتطلبات",
-    "requirementsPlaceholder": "أدخل متطلبات المشروع...",
     "requestApproved": "تم قبول طلب التعيين بنجاح",
     "requestRejected": "تم رفض طلب التعيين بنجاح",
     "responseRequired": "الرد مطلوب للرفض",
@@ -1093,6 +1092,8 @@
       "confirmDeleteDescription": "هل أنت متأكد من حذف المقترح \"{{title}}\"؟",
       "editProposal": "تعديل المقترح",
       "editDescription": "قم بتعديل تفاصيل المقترح",
+      "editingApprovedProposal": "تعديل مقترح معتمد/مرفوض",
+      "editingApprovedProposalDesc": "أنت تقوم بتعديل مقترح تمت مراجعته بالفعل. سيتم الحفاظ على معلومات المراجعة (المراجع، تاريخ المراجعة، ملاحظات المراجعة) والمشروع المرتبط.",
       "createTitle": "إنشاء مقترح نيابة عن طالب",
       "studentSearch": "اختر الطالب",
       "searchStudentPlaceholder": "البحث بالاسم أو الرقم...",

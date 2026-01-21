@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
+import { useToast } from '@/components/common'
 import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -9,8 +10,7 @@ import type { Request } from '@/types/request.types'
 export function useRequestsEdit(request: Request | null, onSuccess?: () => void) {
   const { t } = useTranslation()
   const updateRequest = useUpdateRequest()
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
+  const { toastSuccess, toastError } = useToast()
 
   const form = useForm<RequestSubmissionSchema>({
     resolver: zodResolver(requestSubmissionSchema(t)),
@@ -41,9 +41,6 @@ export function useRequestsEdit(request: Request | null, onSuccess?: () => void)
   const handleSubmit = async (data: RequestSubmissionSchema) => {
     if (!request) return
 
-    setError('')
-    setSuccess(false)
-
     try {
       await updateRequest.mutateAsync({
         id: request.id,
@@ -53,24 +50,16 @@ export function useRequestsEdit(request: Request | null, onSuccess?: () => void)
           projectId: data.projectId,
         },
       })
-      setSuccess(true)
-      // Close modal after a short delay
-      setTimeout(() => {
-        onSuccess?.()
-      }, 1500)
+      toastSuccess('request.updateSuccess')
+      onSuccess?.()
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : t('request.updateError')
-      )
+      const errorMessage = err instanceof Error ? err.message : t('request.updateError')
+      toastError(errorMessage)
     }
   }
 
   return {
     form,
-    error,
-    success,
     isLoading: updateRequest.isPending,
     handleSubmit: form.handleSubmit(handleSubmit),
   }

@@ -132,15 +132,6 @@ export function ProposalsList() {
               </p>
             </div>
 
-            {state.selectedProposal?.requirements && (
-              <div className="mt-4">
-                <h4 className="text-sm font-medium mb-2">{t('proposal.requirements') || 'Requirements'}</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {state.selectedProposal?.requirements}
-                </p>
-              </div>
-            )}
-
             {state.selectedProposal?.reviewNotes && (
               <div className="rounded-lg bg-muted p-4 border border-muted-foreground/20">
                 <div className="flex items-center gap-2 mb-2">

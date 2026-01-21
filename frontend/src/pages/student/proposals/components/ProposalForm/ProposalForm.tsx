@@ -11,7 +11,6 @@ import { useFieldArray } from 'react-hook-form'
 interface ProposalFormProps {
   form: UseProposalFormReturn['form']
   attachedFiles: UseProposalFormReturn['attachedFiles']
-  error: UseProposalFormReturn['error']
   isPeriodActive: UseProposalFormReturn['isPeriodActive']
   periodLoading: UseProposalFormReturn['periodLoading']
   isRegistrationWindow: UseProposalFormReturn['isRegistrationWindow']
@@ -25,7 +24,6 @@ interface ProposalFormProps {
 export function ProposalForm({
   form,
   attachedFiles,
-  error,
   isPeriodActive,
   periodLoading,
   isRegistrationWindow,
@@ -81,12 +79,7 @@ export function ProposalForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-      {error && (
-        <div className="flex items-start gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
-          <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-          <span>{error}</span>
-        </div>
-      )}
+      {/* Error block removed */}
 
       {/* Basic Information Section */}
       <div className="space-y-4">

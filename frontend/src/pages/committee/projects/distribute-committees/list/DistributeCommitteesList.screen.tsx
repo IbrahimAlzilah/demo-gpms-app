@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useDistributeProjects } from '../hooks/useDistributeCommitteesOperations'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
+import { BlockContent } from '@/components/common'
 import { LoadingSpinner, EmptyState } from '@/components/common'
 import { useToast } from '@/components/common'
 import { Briefcase, Users, CheckCircle2, Loader2, UserCheck } from 'lucide-react'
@@ -71,28 +72,28 @@ export function DistributeCommitteesList() {
     )
   }
 
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-end">
-        <Button
-          onClick={handleDistribute}
-          disabled={state.assignments.size === 0 || distributeProjects.isPending}
-          className="w-full sm:w-auto"
-        >
-          {distributeProjects.isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {t('committee.distribute.distributing')}
-            </>
-          ) : (
-            <>
-              <Users className="mr-2 h-4 w-4" />
-              {t('committee.distribute.distributeProjects')}
-            </>
-          )}
-        </Button>
-      </div>
+  const actions = (
+    <Button
+      onClick={handleDistribute}
+      disabled={state.assignments.size === 0 || distributeProjects.isPending}
+      className="w-full sm:w-auto"
+    >
+      {distributeProjects.isPending ? (
+        <>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          {t('committee.distribute.distributing')}
+        </>
+      ) : (
+        <>
+          <Users className="mr-2 h-4 w-4" />
+          {t('committee.distribute.distributeProjects')}
+        </>
+      )}
+    </Button>
+  )
 
+  return (
+    <BlockContent title={t('committee.distribute.title')} actions={actions}>
       <div className="space-y-4">
         {data.projects.map((project) => {
           const assignedMembers = state.assignments.get(project.id) || []
@@ -162,6 +163,6 @@ export function DistributeCommitteesList() {
           )
         })}
       </div>
-    </div>
+    </BlockContent>
   )
 }

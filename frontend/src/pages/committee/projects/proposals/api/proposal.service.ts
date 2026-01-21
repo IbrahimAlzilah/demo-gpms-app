@@ -99,7 +99,6 @@ export const committeeProposalService = {
   create: async (data: {
     title: string
     description: string
-    requirements?: string
     proposedSupervisorId?: string
     submitterId: string
     studentGroupId?: string
@@ -111,7 +110,6 @@ export const committeeProposalService = {
       {
         title: data.title,
         description: data.description,
-        requirements: data.requirements,
         proposed_supervisor_id: data.proposedSupervisorId,
         submitter_id: data.submitterId,
         student_group_id: data.studentGroupId,

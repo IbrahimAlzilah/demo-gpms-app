@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui'
 import { useState } from 'react'
-import { BlockContent, ModalDialog, LoadingSpinner } from '@/components/common'
-import { AlertCircle, Users, Mail, Crown, Loader2, CheckCircle2, XCircle, Plus, UserPlus } from 'lucide-react'
+import { useToast } from '@/components/common'
+import { BlockContent, ModalDialog } from '@/components/common'
+import { Users, Mail, Crown, Loader2, CheckCircle2, XCircle, Plus, UserPlus } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
 import { useAuthStore } from '@/pages/auth/login'
 import { useAcceptInvitation, useRejectInvitation, useCreateGroup } from '../hooks/useGroupOperations'
@@ -16,11 +17,11 @@ import { useGroupsList } from './GroupsList.hook'
 export function GroupsList() {
   const { t } = useTranslation()
   const { user } = useAuthStore()
+  const { toastSuccess, toastError } = useToast()
   const {
     data,
     state,
     setState,
-    registrations,
   } = useGroupsList()
 
   const acceptInvitation = useAcceptInvitation()
@@ -29,7 +30,6 @@ export function GroupsList() {
   const [isCopied, setIsCopied] = useState(false)
 
   const handleCreateGroup = async (name?: string, members: User[] = []) => {
-    setState((prev) => ({ ...prev, error: '', success: '' }))
     try {
       // Ensure we only pass user IDs, not full User objects with React elements
       const memberIds = Array.isArray(members) && members.length > 0
@@ -46,32 +46,22 @@ export function GroupsList() {
       setState((prev) => ({
         ...prev,
         showCreateGroupModal: false,
-        success: t('groups.createSuccess'),
       }))
+      toastSuccess(t('groups.createSuccess'))
     } catch (err) {
-      setState((prev) => ({
-        ...prev,
-        error: err instanceof Error ? err.message : t('groups.createError'),
-      }))
+      const errorMessage = err instanceof Error ? err.message : t('groups.createError')
+      toastError(errorMessage)
     }
   }
 
-  if (data.isLoading || data.invitationsLoading) {
-    return (
-      <Card>
-        <CardContent className="pt-6">
-          <LoadingSpinner />
-        </CardContent>
-      </Card>
-    )
-  }
+  // ... (loading state check)
 
   if (!data.group) {
     const headerActions = (
       <div className="flex items-center gap-3">
         <Button
           onClick={() => {
-            setState((prev) => ({ ...prev, showJoinGroupModal: true, error: '' }))
+            setState((prev) => ({ ...prev, showJoinGroupModal: true }))
           }}
           variant="outline"
         >
@@ -80,7 +70,7 @@ export function GroupsList() {
         </Button>
         <Button
           onClick={() => {
-            setState((prev) => ({ ...prev, showCreateGroupModal: true, error: '' }))
+            setState((prev) => ({ ...prev, showCreateGroupModal: true }))
           }}
           className="bg-primary text-white hover:bg-primary/90"
         >
@@ -98,21 +88,10 @@ export function GroupsList() {
           className="bg-white"
         >
           <div className="space-y-6">
-            {state.success && (
-              <div className="flex items-start gap-2 p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-md">
-                <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" />
-                <span>{state.success}</span>
-              </div>
-            )}
-
-            {state.error && (
-              <div className="flex items-start gap-2 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
-                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                <span>{state.error}</span>
-              </div>
-            )}
+            {/* Removed inline success/error blocks */}
 
             {data.invitations && data.invitations.length > 0 && (
+              // ... (invitations rendering)
               <div className="mb-6 space-y-3">
                 {data.invitations.map((invitation) => (
                   <div
@@ -139,7 +118,10 @@ export function GroupsList() {
                     <div className="flex gap-2">
                       <Button
                         size="sm"
-                        onClick={() => acceptInvitation.mutate(invitation.id)}
+                        onClick={() => acceptInvitation.mutate(invitation.id, {
+                          onSuccess: () => toastSuccess('groups.invitationAccepted'),
+                          onError: (err) => toastError(err.message)
+                        })}
                         disabled={acceptInvitation.isPending || rejectInvitation.isPending}
                       >
                         {acceptInvitation.isPending ? (
@@ -154,7 +136,10 @@ export function GroupsList() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => rejectInvitation.mutate(invitation.id)}
+                        onClick={() => rejectInvitation.mutate(invitation.id, {
+                          onSuccess: () => toastSuccess('groups.invitationRejected'),
+                          onError: (err) => toastError(err.message)
+                        })}
                         disabled={acceptInvitation.isPending || rejectInvitation.isPending}
                       >
                         {rejectInvitation.isPending ? (
@@ -186,7 +171,7 @@ export function GroupsList() {
               <div className="flex items-center gap-4">
                 <Button
                   onClick={() => {
-                    setState((prev) => ({ ...prev, showCreateGroupModal: true, error: '' }))
+                    setState((prev) => ({ ...prev, showCreateGroupModal: true }))
                   }}
                   className="bg-primary text-white hover:bg-primary/90"
                 >
@@ -210,12 +195,11 @@ export function GroupsList() {
               setState((prev) => ({
                 ...prev,
                 showJoinGroupModal: false,
-                success: t('groups.joinSuccess'),
-                error: '',
               }))
+              toastSuccess(t('groups.joinSuccess'))
             }}
             onError={(error) => {
-              setState((prev) => ({ ...prev, error }))
+              toastError(error)
             }}
           />
         </ModalDialog>
@@ -264,55 +248,12 @@ export function GroupsList() {
   const isLeader = user?.id === data.group.leaderId
   const isFull = data.group.members.length >= data.group.maxMembers
 
-  // Check if user has an approved registration for the group's project
-  // const groupProjectRegistration = data.group.projectId
-  //   ? registrations?.find(r => r.projectId === data.group.projectId && r.status === 'approved')
-  //   : null
-
-  // const hasApprovedRegistration =
-  //   groupProjectRegistration ||
-  //   (data.group.project?.students && data.group.project.students.some(s => s.id === user?.id))
-
-  // if (!hasApprovedRegistration) {
-  //   // Find the registration for this project to show appropriate message
-  //   const projectRegistration = data.group.projectId
-  //     ? registrations?.find(r => r.projectId === data.group.projectId)
-  //     : null
-
-  //   return (
-  //     <Card>
-  //       <CardHeader>
-  //         <CardTitle className="flex items-center gap-2">
-  //           <AlertCircle className="h-5 w-5 text-warning" />
-  //           {t('groups.registrationRequired')}
-  //         </CardTitle>
-  //       </CardHeader>
-  //       <CardContent>
-  //         <div className="flex items-start gap-3 p-4 bg-warning/10 border border-warning/20 rounded-lg">
-  //           <AlertCircle className="h-5 w-5 text-warning mt-0.5" />
-  //           <div className="flex-1">
-  //             <p className="font-medium mb-1 text-warning">
-  //               {t('groups.registrationRequiredTitle')}
-  //             </p>
-  //             <p className="text-sm text-muted-foreground">
-  //               {projectRegistration?.status === 'pending'
-  //                 ? t('groups.registrationPendingMessage')
-  //                 : t('groups.registrationNotApprovedMessage')}
-  //             </p>
-  //           </div>
-  //         </div>
-  //       </CardContent>
-  //     </Card>
-  //   )
-  // }
-
   const headerActions = isLeader && !isFull ? (
     <Button
       onClick={() => {
         setState((prev) => ({
           ...prev,
           showInviteModal: true,
-          error: '',
         }))
       }}
       className="bg-primary text-white hover:bg-primary/90"
@@ -330,16 +271,7 @@ export function GroupsList() {
         className="bg-white"
       >
         <div className="space-y-6">
-          {state.success && (
-            <Card className="border-success">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-2 text-success">
-                  <CheckCircle2 className="h-5 w-5" />
-                  <span>{state.success}</span>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {/* Removed inline success block */}
 
           {data.invitations && data.invitations.length > 0 && (
             <Card>
@@ -379,7 +311,10 @@ export function GroupsList() {
                       <div className="flex gap-2">
                         <Button
                           size="sm"
-                          onClick={() => acceptInvitation.mutate(invitation.id)}
+                          onClick={() => acceptInvitation.mutate(invitation.id, {
+                            onSuccess: () => toastSuccess('groups.invitationAccepted'),
+                            onError: (err) => toastError(err.message)
+                          })}
                           disabled={acceptInvitation.isPending || rejectInvitation.isPending}
                         >
                           {acceptInvitation.isPending ? (
@@ -394,7 +329,10 @@ export function GroupsList() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => rejectInvitation.mutate(invitation.id)}
+                          onClick={() => rejectInvitation.mutate(invitation.id, {
+                            onSuccess: () => toastSuccess('groups.invitationRejected'),
+                            onError: (err) => toastError(err.message)
+                          })}
                           disabled={acceptInvitation.isPending || rejectInvitation.isPending}
                         >
                           {rejectInvitation.isPending ? (
@@ -462,8 +400,8 @@ export function GroupsList() {
           {isLeader && (
             <GroupJoinRequestsList
               group={data.group}
-              onError={(error) => setState((prev) => ({ ...prev, error }))}
-              onSuccess={(message) => setState((prev) => ({ ...prev, success: message, error: '' }))}
+              onError={(error) => toastError(error)}
+              onSuccess={(message) => toastSuccess(message)}
             />
           )}
 
@@ -489,17 +427,12 @@ export function GroupsList() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              {state.error && (
-                <div className="flex items-start gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
-                  <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                  <span>{state.error}</span>
-                </div>
-              )}
+              {/* Removed inline error block */}
 
               <GroupMembersList
                 group={data.group}
-                onError={(error) => setState((prev) => ({ ...prev, error }))}
-                onSuccess={(message) => setState((prev) => ({ ...prev, success: message, error: '' }))}
+                onError={(error) => toastError(error)}
+                onSuccess={(message) => toastSuccess(message)}
               />
             </CardContent>
           </Card>
@@ -519,12 +452,11 @@ export function GroupsList() {
               setState((prev) => ({
                 ...prev,
                 showInviteModal: false,
-                success: t('groups.inviteSuccess'),
-                error: '',
               }))
+              toastSuccess(t('groups.inviteSuccess'))
             }}
             onError={(error) => {
-              setState((prev) => ({ ...prev, error }))
+              toastError(error)
             }}
           />
         </ModalDialog>

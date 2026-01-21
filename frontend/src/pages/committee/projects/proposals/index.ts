@@ -2,10 +2,12 @@
 
 // Screens
 export { ProposalsList } from "./list/ProposalsList.screen"
+export { ProposalsNew } from "./new/ProposalsNew.screen"
+export { ProposalsEdit } from "./edit/ProposalsEdit.screen"
+export { ProposalsView } from "./view/ProposalsView.screen"
 
 // Components
 export { ProposalReviewDialog } from "./components/ProposalReviewDialog"
-export { ProposalsView } from "./view/ProposalsView.screen"
 export { createProposalColumns } from "./components/table"
 export type { ProposalTableColumnsProps } from "./components/table"
 

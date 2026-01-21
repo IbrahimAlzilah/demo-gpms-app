@@ -15,7 +15,7 @@ interface RequestsNewProps {
 export function RequestsNew({ open, onClose, onSuccess }: RequestsNewProps) {
   const { t } = useTranslation()
   const { user } = useAuthStore()
-  const { form, error, success, isLoading, handleSubmit } = useRequestsNew(onSuccess)
+  const { form, isLoading, handleSubmit } = useRequestsNew(onSuccess)
   const { register, watch, setValue, formState: { errors } } = form
   const selectedType = watch('type')
   const reason = watch('reason')
@@ -51,21 +51,6 @@ export function RequestsNew({ open, onClose, onSuccess }: RequestsNewProps) {
   return (
     <ModalDialog open={open} onOpenChange={onClose} title={t('request.submitNew')}>
       <form onSubmit={handleSubmit} className="space-y-6">
-        {error && (
-          <div className="flex items-start gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
-            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        {success && (
-          <div className="flex items-start gap-2 p-3 text-sm text-success bg-success/10 border border-success/20 rounded-md">
-            <FileCheck className="h-4 w-4 mt-0.5 shrink-0" />
-            <span>
-              {t('request.submitSuccess')}
-            </span>
-          </div>
-        )}
 
         <div className="space-y-2">
           <Label htmlFor="type">
@@ -146,7 +131,7 @@ export function RequestsNew({ open, onClose, onSuccess }: RequestsNewProps) {
           </Button>
           <Button
             type="submit"
-            disabled={isLoading || success || !selectedType}
+            disabled={isLoading || !selectedType}
             className="flex-1"
           >
             {isLoading ? (

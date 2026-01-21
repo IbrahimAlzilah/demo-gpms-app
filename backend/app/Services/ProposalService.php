@@ -228,6 +228,10 @@ class ProposalService
      * @param Proposal $proposal The proposal to update
      * @param array $data The data to update
      * @param User|null $user The user performing the update (null for committee members)
+     * 
+     * Note: Projects Committee members can edit proposals regardless of status.
+     * For approved/rejected proposals, review data (reviewed_by, reviewed_at, review_notes, project_id)
+     * is preserved to maintain data integrity.
      */
     public function update(Proposal $proposal, array $data, ?User $user = null): Proposal
     {
@@ -245,11 +249,14 @@ class ProposalService
         }
 
         // If proposal requires modification and is being updated, change status to pending_review
+        // Note: For approved/rejected proposals, status is preserved (committee can edit without changing status)
         $statusUpdate = [];
         if ($proposal->status === ProposalStatus::REQUIRES_MODIFICATION) {
             $statusUpdate['status'] = ProposalStatus::PENDING_REVIEW;
         }
 
+        // Update only editable fields
+        // Review data (reviewed_by, reviewed_at, review_notes, project_id) is preserved for approved/rejected proposals
         $proposal->update(array_merge([
             'title' => $data['title'] ?? $proposal->title,
             'description' => $data['description'] ?? $proposal->description,

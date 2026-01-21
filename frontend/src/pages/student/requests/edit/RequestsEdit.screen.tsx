@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { ModalDialog } from '@/components/common'
 import { Button, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
-import { AlertCircle, FileCheck, Loader2, User, Users, Briefcase, MoreHorizontal, Edit } from 'lucide-react'
+import { AlertCircle, Loader2, User, Users, Briefcase, MoreHorizontal, Edit } from 'lucide-react'
 import { useRequestsEdit } from './RequestsEdit.hook'
 import type { Request } from '@/types/request.types'
 
@@ -14,7 +14,7 @@ interface RequestsEditProps {
 
 export function RequestsEdit({ open, onClose, onSuccess, request }: RequestsEditProps) {
   const { t } = useTranslation()
-  const { form, error, success, isLoading, handleSubmit } = useRequestsEdit(request, () => {
+  const { form, isLoading, handleSubmit } = useRequestsEdit(request, () => {
     onSuccess?.()
     onClose()
   })
@@ -48,22 +48,6 @@ export function RequestsEdit({ open, onClose, onSuccess, request }: RequestsEdit
   return (
     <ModalDialog open={open} onOpenChange={onClose} title={t('request.editRequest')}>
       <form onSubmit={handleSubmit} className="space-y-6">
-        {error && (
-          <div className="flex items-start gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
-            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        {success && (
-          <div className="flex items-start gap-2 p-3 text-sm text-success bg-success/10 border border-success/20 rounded-md">
-            <FileCheck className="h-4 w-4 mt-0.5 shrink-0" />
-            <span>
-              {t('request.updateSuccess')}
-            </span>
-          </div>
-        )}
-
         <div className="space-y-2">
           <Label htmlFor="type">
             {t('request.type')} <span className="text-destructive">*</span>
@@ -132,7 +116,7 @@ export function RequestsEdit({ open, onClose, onSuccess, request }: RequestsEdit
           </Button>
           <Button
             type="submit"
-            disabled={isLoading || success || !selectedType}
+            disabled={isLoading || !selectedType}
             className="flex-1"
           >
             {isLoading ? (

@@ -5,8 +5,6 @@ export interface GroupsListState {
   showInviteModal: boolean
   showCreateGroupModal: boolean
   showJoinGroupModal: boolean
-  error: string
-  success: string
 }
 
 export interface GroupsListData {

@@ -16,12 +16,10 @@ export function useGroupsList() {
     showInviteModal: false,
     showCreateGroupModal: false,
     showJoinGroupModal: false,
-    error: '',
-    success: '',
   })
 
   const data: GroupsListData = {
-    group: group || null,
+    group: (group as any) || null,
     invitations: invitations || [],
     isLoading,
     invitationsLoading,

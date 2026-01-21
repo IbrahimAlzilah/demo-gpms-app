@@ -15,13 +15,15 @@ interface ProposalFormProps {
   onSuccess?: () => void
 }
 
+import { useToast } from '@/components/common'
+
 export function ProposalForm({ onSuccess }: ProposalFormProps) {
   const { t } = useTranslation()
   const { user } = useAuthStore()
   const createProposal = useCreateProposal()
   const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('proposal_submission')
   const [attachedFiles, setAttachedFiles] = useState<File[]>([])
-  const [error, setError] = useState('')
+  const { toastSuccess, toastError } = useToast()
 
   const {
     register,
@@ -36,7 +38,6 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
     defaultValues: {
       title: '',
       description: '',
-      requirements: '',
       proposedSupervisorId: '',
       teamMembers: [],
     },
@@ -55,22 +56,19 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
 
   const onSubmit = async (data: ProposalFormSchema) => {
     if (!user) {
-      setError(t('proposal.authRequired'))
+      toastError(t('proposal.authRequired'))
       return
     }
 
     if (!isPeriodActive) {
-      setError(t('proposal.periodClosed'))
+      toastError(t('proposal.periodClosed'))
       return
     }
-
-    setError('')
 
     try {
       await createProposal.mutateAsync({
         title: data.title.trim(),
         description: data.description.trim(),
-        requirements: data.requirements?.trim() || undefined,
         proposedSupervisorId: data.proposedSupervisorId || undefined,
         teamMembers: data.teamMembers?.filter(m => m.name.trim() && m.role.trim()) || [],
         submitterId: user.id,
@@ -79,20 +77,16 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
       // Reset form and files
       reset()
       setAttachedFiles([])
-      setError('')
+      toastSuccess('proposal.createSuccess')
       onSuccess?.()
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : t('proposal.submitError')
-      )
+      const errorMessage = err instanceof Error ? err.message : t('proposal.submitError')
+      toastError(errorMessage)
     }
   }
 
   const handleFileChange = (files: File[]) => {
     setAttachedFiles(files)
-    setError('')
   }
 
   if (periodLoading) {
@@ -100,6 +94,7 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
   }
 
   if (!isPeriodActive) {
+    // ... existing period closed warning (keep it as it is structural, not transient) ...
     return (
       <div className="flex items-start gap-3 p-4 bg-warning/10 border border-warning/20 rounded-lg">
         <Calendar className="h-5 w-5 text-warning mt-0.5" />
@@ -117,12 +112,7 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
-      {error && (
-        <div className="flex items-start gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
-          <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-          <span>{error}</span>
-        </div>
-      )}
+      {/* Removed inline error block */}
 
       {/* Basic Information Section */}
       <div className="space-y-4">
@@ -165,26 +155,6 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
             <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.description.message}
-            </p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="requirements">
-            {t('proposal.requirements') || 'Requirements'}
-          </Label>
-          <Textarea
-            id="requirements"
-            {...register('requirements')}
-            placeholder={t('proposal.requirementsPlaceholder') || 'Enter project requirements...'}
-            rows={4}
-            className={errors.requirements ? 'border-destructive' : ''}
-            aria-invalid={!!errors.requirements}
-          />
-          {errors.requirements && (
-            <p className="text-xs text-destructive flex items-center gap-1">
-              <AlertCircle className="h-3 w-3" />
-              {errors.requirements.message}
             </p>
           )}
         </div>

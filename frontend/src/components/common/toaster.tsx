@@ -1,6 +1,7 @@
 import { toast, Toaster as SonnerToaster } from "sonner"
 import { useTranslation } from "react-i18next"
 import { useThemeStore } from "@/stores/theme.store"
+import React from "react"
 
 /**
  * Truncates long error messages to prevent UI clutter
@@ -53,7 +54,7 @@ export function useToast() {
 }
 
 export function Toaster() {
-  const {theme} = useThemeStore()
+  const { theme } = useThemeStore()
   const { i18n } = useTranslation()
   return (
     <SonnerToaster
@@ -63,9 +64,11 @@ export function Toaster() {
       closeButton
       theme={theme} // Or use theme context if available, but system is safe default
       className="toaster-group"
+      style={{ fontFamily: 'var(--font-expo-arabic)' } as React.CSSProperties}
       toastOptions={{
+        style: { fontFamily: 'var(--font-expo-arabic)' } as React.CSSProperties,
         classNames: {
-          toast: 'group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg',
+          toast: 'group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg font-expo-arabic',
           description: 'group-[.toast]:text-muted-foreground',
           actionButton: 'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
           cancelButton: 'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useToast } from "@/components/common";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
@@ -35,7 +36,7 @@ export function useProposalForm(options: UseProposalFormOptions = {}) {
   const requireGroup = !!studentGroup || isRegistrationWindow;
   
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
-  const [error, setError] = useState("");
+  const { toastError } = useToast()
 
   const form = useForm<ProposalFormSchema>({
     resolver: zodResolver(proposalFormSchema(t, requireGroup)),
@@ -52,16 +53,14 @@ export function useProposalForm(options: UseProposalFormOptions = {}) {
 
   const handleSubmit = async (data: ProposalFormSchema) => {
     if (!user) {
-      setError(t("proposal.authRequired"));
+      toastError(t("proposal.authRequired"));
       return;
     }
 
     if (!isPeriodActive) {
-      setError(t("proposal.periodClosed"));
+      toastError(t("proposal.periodClosed"));
       return;
     }
-
-    setError("");
 
     try {
       const formData: ProposalFormData = {
@@ -75,26 +74,22 @@ export function useProposalForm(options: UseProposalFormOptions = {}) {
 
       await options.onSubmit?.(formData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("proposal.submitError"));
+      toastError(err instanceof Error ? err.message : t("proposal.submitError"));
     }
   };
 
   const handleFileChange = (files: File[]) => {
     setAttachedFiles(files);
-    setError("");
   };
 
   const resetForm = () => {
     form.reset();
     setAttachedFiles([]);
-    setError("");
   };
 
   return {
     form,
     attachedFiles,
-    error,
-    setError,
     isPeriodActive,
     periodLoading,
     isRegistrationWindow,

@@ -116,7 +116,6 @@ Proposal submissions from students or supervisors.
 - `id` (bigint, primary key)
 - `title` (string)
 - `description` (text)
-- `requirements` (text, nullable)
 - `submitter_id` (bigint, foreign key → `users.id`)
 - `student_group_id` (bigint, foreign key → `student_groups.id`, nullable) - **Group submitting the proposal**
 - `proposed_supervisor_id` (bigint, foreign key → `users.id`, nullable)

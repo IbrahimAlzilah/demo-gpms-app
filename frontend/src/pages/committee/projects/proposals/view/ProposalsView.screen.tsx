@@ -59,19 +59,6 @@ export function ProposalsView({
           </div>
         )}
 
-        {/* Proposal Requirements */}
-        {proposal.requirements && (
-          <div className="p-4 rounded-lg border border-border">
-            <div className="flex items-center gap-2 mb-3">
-              <FileText className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-sm font-semibold">{t('proposal.requirements') || 'Requirements'}</h4>
-            </div>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-              {proposal.requirements}
-            </p>
-          </div>
-        )}
-
         {/* Proposed Supervisor */}
         {proposal.proposedSupervisor && (
           <div className="p-4 rounded-lg bg-muted border border-muted-foreground/20">

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useToast } from '@/components/common'
 import { useTranslation } from 'react-i18next'
 import {
   useRegisterProject,
@@ -44,16 +45,15 @@ export function ProjectRegistrationForm({
   const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('project_registration')
   const { data: studentGroup, isLoading: groupLoading } = useMyGroup()
   const [selectedGroupId, setSelectedGroupId] = useState<string>('')
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
-  
+  const { toastSuccess, toastError } = useToast()
+
   // Update selectedGroupId when studentGroup loads
   useEffect(() => {
     if (studentGroup?.id) {
       setSelectedGroupId(studentGroup.id)
     }
   }, [studentGroup?.id])
-  
+
   // Check if there's a rejected registration for another project
   const rejectedRegistrationForOtherProject = allRegistrations?.find(
     (reg) => reg.status === 'rejected' && reg.projectId !== project.id
@@ -61,25 +61,23 @@ export function ProjectRegistrationForm({
 
   const handleSubmit = async () => {
     if (!isPeriodActive) {
-      setError(t('project.periodClosed'))
+      toastError(t('project.periodClosed'))
       return
     }
 
     if (!selectedGroupId) {
-      setError(t('project.selectGroupRequired'))
+      toastError(t('project.selectGroupRequired'))
       return
     }
 
     if (project.currentStudents >= project.maxStudents) {
-      setError(t('project.fullCapacity'))
+      toastError(t('project.fullCapacity'))
       return
     }
 
-    setError('')
-    setSuccess(false)
     try {
       await registerProject.mutateAsync({ projectId: project.id, studentGroupId: selectedGroupId })
-      setSuccess(true)
+      toastSuccess('project.registrationSuccess')
       setTimeout(() => {
         onSuccess?.()
       }, 2000)
@@ -89,13 +87,12 @@ export function ProjectRegistrationForm({
         err?.response?.data?.message ||
         err?.message ||
         t('project.registrationError')
-      setError(errorMessage)
+      toastError(errorMessage)
     }
   }
 
   const handleCancelRegistration = async () => {
     if (!registration) return
-    setError('')
     try {
       await cancelRegistration.mutateAsync(registration.id)
       onSuccess?.()
@@ -105,7 +102,7 @@ export function ProjectRegistrationForm({
         err?.response?.data?.message ||
         err?.message ||
         t('project.cancelRegistrationError')
-      setError(errorMessage)
+      toastError(errorMessage)
     }
   }
 
@@ -148,7 +145,7 @@ export function ProjectRegistrationForm({
               <p className="text-sm text-muted-foreground mb-3">
                 {t('project.registrationPendingDescription')}
               </p>
-              
+
               {/* What you can do */}
               <div className="space-y-2 mb-3">
                 <p className="text-xs font-medium text-muted-foreground mb-1">
@@ -170,12 +167,7 @@ export function ProjectRegistrationForm({
             </div>
           </div>
 
-          {error && (
-            <div className="flex items-start gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
-              <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
+          {/* Error block removed */}
 
           <div className="flex gap-2 pt-4 border-t">
             <Button
@@ -236,7 +228,7 @@ export function ProjectRegistrationForm({
               <p className="text-sm text-muted-foreground mb-3">
                 {t('project.registrationApprovedDescription')}
               </p>
-              
+
               {/* What you can do after approval */}
               <div className="space-y-2 mb-3">
                 <p className="text-xs font-medium text-muted-foreground mb-1">
@@ -303,7 +295,7 @@ export function ProjectRegistrationForm({
                 <p className="text-sm text-muted-foreground mb-3">
                   {t('project.registrationRejectedDescription')}
                 </p>
-                
+
                 {/* Review Comments */}
                 {registration.reviewComments ? (
                   <div className="mb-3 p-4 bg-background rounded-lg border-2 border-destructive/30 shadow-sm">
@@ -420,7 +412,7 @@ export function ProjectRegistrationForm({
               <p className="text-sm text-muted-foreground mb-3">
                 {t('project.registrationCancelledDescription')}
               </p>
-              
+
               {/* What you can do */}
               <div className="space-y-2">
                 <p className="text-xs font-medium text-muted-foreground mb-1">
@@ -537,28 +529,13 @@ export function ProjectRegistrationForm({
           </div>
         )}
 
-        {error && (
-          <div className="flex items-start gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
-            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
 
-        {success && (
-          <div className="flex items-start gap-2 p-3 text-sm text-success bg-success/10 border border-success/20 rounded-md">
-            <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" />
-            <span>
-              {t('project.registrationSuccess')}
-            </span>
-          </div>
-        )}
 
         <div className="flex gap-2 pt-4 border-t">
           <Button
             onClick={handleSubmit}
             disabled={
               registerProject.isPending ||
-              success ||
               !isPeriodActive ||
               !studentGroup ||
               !selectedGroupId ||

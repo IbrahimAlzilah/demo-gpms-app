@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useToast } from '@/components/common'
 import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -8,8 +9,7 @@ import { requestSubmissionSchema, type RequestSubmissionSchema } from '../schema
 export function useRequestsNew(onSuccess?: () => void) {
   const { t } = useTranslation()
   const createRequest = useCreateRequest()
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
+  const { toastSuccess, toastError } = useToast()
 
   const form = useForm<RequestSubmissionSchema>({
     resolver: zodResolver(requestSubmissionSchema(t)),
@@ -21,33 +21,23 @@ export function useRequestsNew(onSuccess?: () => void) {
   })
 
   const handleSubmit = async (data: RequestSubmissionSchema) => {
-    setError('')
-    setSuccess(false)
-
     try {
       await createRequest.mutateAsync({
         type: data.type,
         reason: data.reason.trim(),
         projectId: data.projectId, // Backend will auto-fetch from group if not provided for change_supervisor
       })
-      setSuccess(true)
+      toastSuccess('request.submitSuccess')
       form.reset()
-      setTimeout(() => {
-        onSuccess?.()
-      }, 2000)
+      onSuccess?.()
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : t('request.submitError')
-      )
+      const errorMessage = err instanceof Error ? err.message : t('request.submitError')
+      toastError(errorMessage)
     }
   }
 
   return {
     form,
-    error,
-    success,
     isLoading: createRequest.isPending,
     handleSubmit: form.handleSubmit(handleSubmit),
   }

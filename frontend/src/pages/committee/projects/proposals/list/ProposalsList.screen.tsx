@@ -1,18 +1,16 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useApproveProposal, useRejectProposal, useRequestModification, useUpdateProposal, useDeleteProposal } from '../hooks/useProposalOperations'
-import { useProposal } from '../hooks/useProposals'
-import { DataTable, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Dialog, DialogContent, Button } from '@/components/ui'
-import { BlockContent, ConfirmDialog, LoadingSpinner } from '@/components/common'
+import { useApproveProposal, useRejectProposal, useRequestModification, useDeleteProposal } from '../hooks/useProposalOperations'
+import { DataTable, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Button } from '@/components/ui'
+import { BlockContent, ConfirmDialog } from '@/components/common'
 import { createProposalColumns } from '../components/table'
 import { ProposalReviewDialog } from '../components/ProposalReviewDialog'
-import { ProposalEditDialog } from '../components/ProposalEditDialog'
-import { ProposalCreateDialog } from '../components/ProposalCreateDialog'
+import { ProposalsNew } from '../new/ProposalsNew.screen'
+import { ProposalsEdit } from '../edit/ProposalsEdit.screen'
 import { ProposalsView } from '../view/ProposalsView.screen'
 import { useProposalsList } from './ProposalsList.hook'
 import { AlertCircle, Plus } from 'lucide-react'
 import { useToast } from '@/components/common'
-import type { Proposal } from '@/types/project.types'
 
 export function ProposalsList() {
   const { t } = useTranslation()
@@ -21,10 +19,10 @@ export function ProposalsList() {
   const approveProposal = useApproveProposal()
   const rejectProposal = useRejectProposal()
   const requestModification = useRequestModification()
-  const updateProposal = useUpdateProposal()
   const deleteProposal = useDeleteProposal()
 
   const [showCreateDialog, setShowCreateDialog] = useState(false)
+  const [editingProposalId, setEditingProposalId] = useState<string | null>(null)
 
   const {
     data,
@@ -58,7 +56,7 @@ export function ProposalsList() {
           setState((prev) => ({ ...prev, selectedProposal: proposal, action: 'modify' }))
         },
         onEdit: (proposal) => {
-          setState((prev) => ({ ...prev, proposalToEditId: proposal.id }))
+          setEditingProposalId(proposal.id)
         },
         onDelete: (proposal) => {
           setState((prev) => ({ ...prev, proposalToDelete: proposal }))
@@ -94,14 +92,8 @@ export function ProposalsList() {
     }
   }
 
-  const handleEdit = async (proposalId: string, data: Partial<Proposal>) => {
-    try {
-      await updateProposal.mutateAsync({ id: proposalId, data })
-      toastSuccess('committee.proposal.updateSuccess')
-      setState((prev) => ({ ...prev, proposalToEdit: null }))
-    } catch (err) {
-      toastError(err instanceof Error ? err.message : 'committee.proposal.updateError')
-    }
+  const handleEditSuccess = () => {
+    setEditingProposalId(null)
   }
 
   const handleDelete = async () => {
@@ -117,9 +109,6 @@ export function ProposalsList() {
 
   const isLoadingAction =
     approveProposal.isPending || rejectProposal.isPending || requestModification.isPending
-
-  // Fetch full proposal data when editing
-  const { data: proposalToEdit, isLoading: isLoadingProposal } = useProposal(state.proposalToEditId || '')
 
   return (
     <>
@@ -176,9 +165,10 @@ export function ProposalsList() {
         />
       </BlockContent>
 
-      <ProposalCreateDialog
+      <ProposalsNew
         open={showCreateDialog}
-        onOpenChange={setShowCreateDialog}
+        onClose={() => setShowCreateDialog(false)}
+        onSuccess={() => setShowCreateDialog(false)}
       />
 
       {data.error && (
@@ -200,27 +190,13 @@ export function ProposalsList() {
         isLoading={isLoadingAction}
       />
 
-      {state.proposalToEditId && (
-        <>
-          {isLoadingProposal ? (
-            <Dialog open={true} onOpenChange={() => setState((prev) => ({ ...prev, proposalToEditId: null }))}>
-              <DialogContent>
-                <div className="flex items-center justify-center p-8">
-                  <LoadingSpinner />
-                </div>
-              </DialogContent>
-            </Dialog>
-          ) : proposalToEdit ? (
-            <ProposalEditDialog
-              proposal={proposalToEdit}
-              onClose={() => {
-                setState((prev) => ({ ...prev, proposalToEditId: null }))
-              }}
-              onConfirm={handleEdit}
-              isLoading={updateProposal.isPending}
-            />
-          ) : null}
-        </>
+      {editingProposalId && (
+        <ProposalsEdit
+          proposalId={editingProposalId}
+          open={!!editingProposalId}
+          onClose={() => setEditingProposalId(null)}
+          onSuccess={handleEditSuccess}
+        />
       )}
 
       <ConfirmDialog

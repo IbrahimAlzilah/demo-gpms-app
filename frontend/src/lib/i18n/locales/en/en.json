@@ -506,7 +506,8 @@
       "titleMaxLength": "Title must be less than 200 characters",
       "titleMaxLength255": "Title must be less than 255 characters",
       "descriptionRequired": "Description is required",
-      "descriptionMinLength": "Description must be at least 50 characters"
+      "descriptionMinLength": "Description must be at least 50 characters",
+      "submitterRequired": "Please select a student"
     },
     "fileTooLarge": "File is too large (maximum 10MB)",
     "invalidFileType": "Unsupported file type",
@@ -899,8 +900,6 @@
     "createNewProposal": "Create New Proposal",
     "studentGrades": "Student Grades",
     "noProposals": "No proposals",
-    "requirements": "Requirements",
-    "requirementsPlaceholder": "Enter project requirements...",
     "requestApproved": "Assignment request approved",
     "requestRejected": "Assignment request rejected",
     "responseRequired": "Response is required for rejection",
@@ -1006,7 +1005,9 @@
       "createTitle": "Create Proposal on behalf of Student",
       "studentSearch": "Select Student",
       "searchStudentPlaceholder": "Search by name or ID...",
-      "create": "New Proposal"
+      "create": "New Proposal",
+      "editingApprovedProposal": "Editing Approved/Rejected Proposal",
+      "editingApprovedProposalDesc": "You are editing a proposal that has already been reviewed. Review information (reviewer, review date, review notes) and linked project will be preserved."
     },
     "periods": {
       "createNew": "Announce New Time Period",
