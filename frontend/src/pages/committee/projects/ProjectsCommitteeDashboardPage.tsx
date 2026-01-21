@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/u
 import { ROUTES } from '../../../lib/constants'
 import { Link } from 'react-router-dom'
 import {
-  Calendar,
   FileText,
   Megaphone,
   UserPlus,
@@ -18,25 +17,22 @@ import {
   RefreshCw,
   CheckCircle2,
   ChevronRight,
-  Hourglass
 } from 'lucide-react'
-import { StatsCard as StatsCardComponent, LoadingSpinner, BlockContent, DashboardHeader } from '@/components/common'
+import { StatsCard as StatsCardComponent, LoadingSpinner, BlockContent } from '@/components/common'
 import { cn } from '@/lib/utils'
 import { useProjectsCommitteeDashboard } from './hooks/useProjectsCommitteeDashboard'
 import type { PeriodType } from '@/types/period.types'
-import { useAuthStore } from '../../../pages/auth/login'
 
 export function ProjectsCommitteeDashboardPage() {
   const { t, i18n } = useTranslation()
   const isRTL = i18n.dir() === 'rtl'
   const { data, isLoading, error, refetch } = useProjectsCommitteeDashboard()
-  const { user } = useAuthStore()
 
   const ArrowIcon = isRTL ? ArrowLeft : ArrowRight
 
   // Helper function to get period type label
   const getPeriodTypeLabel = (type: PeriodType): string => {
-    const labels: Record<PeriodType, string> = {
+    const labels: Partial<Record<PeriodType, string>> = {
       proposal_submission: t('phase.proposalSubmission', { defaultValue: 'Proposal Submission' }),
       project_registration: t('phase.projectRegistration', { defaultValue: 'Project Registration' }),
       document_submission: t('phase.documentSubmission', { defaultValue: 'Document Submission' }),
@@ -155,10 +151,9 @@ export function ProjectsCommitteeDashboardPage() {
             {/* Current Phase Card - Hero Element */}
             <Card className="overflow-hidden border-border bg-gradient-to-br from-card to-card/50 shadow-sm relative">
               <div className="absolute top-0 right-0 p-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
-              <CardHeader className="border-b border-border/40 bg-muted/10">
+              <CardHeader className="border-b border-border/40 bg-muted/10 !pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-medium flex items-center gap-2">
-                    <Clock className="h-5 w-5 text-primary" />
                     {t('dashboard.committee.currentPhase', { defaultValue: 'Current Phase' })}
                   </CardTitle>
                   {currentPhase.period && (
@@ -166,12 +161,12 @@ export function ProjectsCommitteeDashboardPage() {
                       "px-2.5 py-0.5 rounded-full text-xs font-medium border",
                       currentPhase.period.isActive ? "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800" : "bg-muted text-muted-foreground"
                     )}>
-                      {currentPhase.period.isActive ? "Active Now" : "Scheduled"}
+                      {currentPhase.period.isActive ? t('dashboard.committee.activeNow') : t('dashboard.committee.scheduled')}
                     </div>
                   )}
                 </div>
               </CardHeader>
-              <CardContent className="pt-8 pb-8 relative z-10">
+              <CardContent className="p-0 relative z-10">
                 {currentPhase.period ? (
                   <div className="space-y-8">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -185,14 +180,14 @@ export function ProjectsCommitteeDashboardPage() {
                       </div>
                       <div className="text-right">
                         <div className="text-3xl font-bold text-primary">
-                          {currentPhase.endsInDays !== null ? currentPhase.endsInDays : '-'} <span className="text-sm font-normal text-muted-foreground">days left</span>
+                          {currentPhase.endsInDays !== null ? currentPhase.endsInDays : '-'} <span className="text-sm font-normal text-muted-foreground">{t('dashboard.committee.daysLeft')}</span>
                         </div>
                       </div>
                     </div>
 
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm font-medium">
-                        <span>Progress</span>
+                        <span>{t('dashboard.committee.progress')}</span>
                         <span>{currentPhase.progressPercent}%</span>
                       </div>
                       <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
@@ -215,7 +210,7 @@ export function ProjectsCommitteeDashboardPage() {
                           <p className="font-medium text-sm">{currentPhase.nextPeriod.name || getPeriodTypeLabel(currentPhase.nextPeriod.type)}</p>
                         </div>
                         <div className="ml-auto text-xs text-muted-foreground bg-background px-2 py-1 rounded border">
-                          Starts {new Date(currentPhase.nextPeriod.startDate).toLocaleDateString()}
+                          {t('dashboard.committee.starts')} {new Date(currentPhase.nextPeriod.startDate).toLocaleDateString()}
                         </div>
                       </div>
                     )}
@@ -227,7 +222,7 @@ export function ProjectsCommitteeDashboardPage() {
                     </div>
                     <h3 className="font-semibold text-lg mb-1">{t('dashboard.committee.noActivePhase', { defaultValue: 'No active phase' })}</h3>
                     <p className="text-sm text-muted-foreground max-w-sm">
-                      There is no active phase currently. Check the schedule to manage upcoming periods.
+                      {t('dashboard.committee.noActivePhaseDesc')}
                     </p>
                     <Button className="mt-4" variant="outline" asChild>
                       <Link to={ROUTES.PROJECTS_COMMITTEE.PERIODS}>{t('dashboard.committee.managePeriods')}</Link>
@@ -240,11 +235,10 @@ export function ProjectsCommitteeDashboardPage() {
             {/* Urgent Tasks Section */}
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <Hourglass className="h-5 w-5 text-muted-foreground" />
                 <h2 className="text-lg font-semibold tracking-tight">{t('dashboard.committee.urgentTasks')}</h2>
               </div>
 
-              <div className="grid gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {stats.pendingProposals > 0 && (
                   <TaskRow
                     icon={FileText}
@@ -289,7 +283,7 @@ export function ProjectsCommitteeDashboardPage() {
                     </div>
                     <h3 className="font-semibold">{t('dashboard.committee.allCaughtUp', { defaultValue: 'All caught up!' })}</h3>
                     <p className="text-sm text-muted-foreground mt-1">
-                      No pending items requiring immediate attention.
+                      {t('dashboard.committee.noPendingItems')}
                     </p>
                   </div>
                 )}
