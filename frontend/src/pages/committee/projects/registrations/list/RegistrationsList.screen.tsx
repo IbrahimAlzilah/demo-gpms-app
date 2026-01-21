@@ -1,21 +1,50 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useApproveRegistration, useRejectRegistration } from '../hooks/useRegistrationOperations'
 import { createRegistrationColumns } from '../components/table'
 import { RegistrationDetailsView } from '../components/RegistrationDetailsView'
-import { DataTable, Textarea, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
+import { ManualRegistrationDialog } from '../components/ManualRegistrationDialog'
+import { DataTable, Textarea, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Button } from '@/components/ui'
 import { Card, CardContent } from '@/components/ui/card'
 import { LoadingSpinner, ConfirmDialog, BlockContent } from '@/components/common'
 import type { ProjectRegistration } from '@/types/project.types'
 import { useRegistrationsList } from './RegistrationsList.hook'
 import { toast } from 'sonner'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, UserPlus } from 'lucide-react'
+import { apiClient } from '@/lib/axios'
 
 export function RegistrationsList() {
   const { t } = useTranslation()
+  const queryClient = useQueryClient()
+  const [showManualRegistration, setShowManualRegistration] = useState(false)
 
   const approveRegistration = useApproveRegistration()
   const rejectRegistration = useRejectRegistration()
+
+  const manualRegisterMutation = useMutation({
+    mutationFn: async ({ projectId, groupId, autoApprove }: { 
+      projectId: string
+      groupId: string
+      autoApprove: boolean 
+    }) => {
+      const response = await apiClient.post('/projects-committee/registrations', {
+        project_id: projectId,
+        student_group_id: groupId,
+        auto_approve: autoApprove,
+      })
+      return response.data
+    },
+    onSuccess: () => {
+      toast.success(t('registration.manualRegistrationSuccess', { defaultValue: 'Group registered successfully' }))
+      queryClient.invalidateQueries({ queryKey: ['committee-registrations'] })
+      queryClient.invalidateQueries({ queryKey: ['committee-registrations-table'] })
+      queryClient.invalidateQueries({ queryKey: ['project-registrations'] })
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || t('registration.manualRegistrationError', { defaultValue: 'Failed to register group' }))
+    },
+  })
 
   const {
     data,
@@ -116,7 +145,15 @@ export function RegistrationsList() {
 
   return (
     <>
-      <BlockContent title={t('registration.management')}>
+      <BlockContent 
+        title={t('registration.management')}
+        actions={
+          <Button onClick={() => setShowManualRegistration(true)}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            {t('registration.manualRegistration', { defaultValue: 'Manual Registration' })}
+          </Button>
+        }
+      >
         <DataTable
           toolbarContent={
             <Select
@@ -223,6 +260,15 @@ export function RegistrationsList() {
         onClose={() => {
           setState((prev) => ({ ...prev, registrationToViewId: null }))
         }}
+      />
+
+      <ManualRegistrationDialog
+        open={showManualRegistration}
+        onOpenChange={setShowManualRegistration}
+        onRegister={async (projectId, groupId, autoApprove) => {
+          await manualRegisterMutation.mutateAsync({ projectId, groupId, autoApprove })
+        }}
+        loading={manualRegisterMutation.isPending}
       />
     </>
   )

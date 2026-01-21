@@ -39,6 +39,31 @@ class YemeniDataHelper
     }
 
     /**
+     * Get a random Yemeni Arabic male name only
+     */
+    public static function yemeniMaleName(): string
+    {
+        $maleFirstNames = [
+            'أحمد', 'محمد', 'علي', 'عبدالله', 'يوسف', 'خالد', 'عمر', 'حسن',
+            'محمود', 'إبراهيم', 'عبدالرحمن', 'عبدالعزيز', 'سعيد', 'طارق', 'ناصر',
+            'فهد', 'صالح', 'عبدالوهاب', 'عبدالسلام', 'عبدالكريم', 'عبدالرزاق',
+            'عبدالغني', 'عبدالملك', 'عبدالهادي', 'عبدالخالق', 'عبدالستار', 'عبدالفتاح'
+        ];
+
+        $lastNames = [
+            'الأحمد', 'المحمد', 'العلي', 'الخالد', 'الصالح', 'الناصر', 'السعيد',
+            'الطاهر', 'الزين', 'الحسن', 'المحمود', 'الإبراهيم', 'العباس', 'الحسين',
+            'الجعفر', 'المنصور', 'الهادي', 'الراشد', 'الوهاب', 'الكريم', 'الرحمن',
+            'العزيز', 'الملك', 'الفتاح', 'الستار', 'الرزاق', 'الغني', 'الهادي'
+        ];
+
+        $firstName = fake()->randomElement($maleFirstNames);
+        $lastName = fake()->randomElement($lastNames);
+
+        return $firstName . ' ' . $lastName;
+    }
+
+    /**
      * Get Yemeni university departments (Arabic)
      */
     public static function yemeniDepartment(): string

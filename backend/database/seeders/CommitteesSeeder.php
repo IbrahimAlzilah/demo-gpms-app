@@ -28,12 +28,17 @@ class CommitteesSeeder extends Seeder
 
         // Attach members to project committees (only if not already attached)
         $projectsCommitteeMembers = User::where('role', 'projects_committee')->get();
-        foreach ($projectCommittees as $index => $committee) {
-            $members = $projectsCommitteeMembers->skip($index * 2)->take(2);
-            $existingMemberIds = $committee->members()->pluck('users.id')->toArray();
-            $newMemberIds = $members->pluck('id')->diff($existingMemberIds)->toArray();
-            if (!empty($newMemberIds)) {
-                $committee->members()->attach($newMemberIds);
+        if ($projectsCommitteeMembers->isNotEmpty() && $projectCommittees->isNotEmpty()) {
+            // Distribute members evenly across committees (1 member per committee with 2 committees and 2 members)
+            $membersPerCommittee = max(1, (int) floor($projectsCommitteeMembers->count() / $projectCommittees->count()));
+            foreach ($projectCommittees as $index => $committee) {
+                $startIndex = $index * $membersPerCommittee;
+                $members = $projectsCommitteeMembers->skip($startIndex)->take($membersPerCommittee);
+                $existingMemberIds = $committee->members()->pluck('users.id')->toArray();
+                $newMemberIds = $members->pluck('id')->diff($existingMemberIds)->toArray();
+                if (!empty($newMemberIds)) {
+                    $committee->members()->attach($newMemberIds);
+                }
             }
         }
 
@@ -49,15 +54,19 @@ class CommitteesSeeder extends Seeder
         // Get all discussion committees (existing + newly created)
         $discussionCommittees = DiscussionCommittee::all();
 
-        // Attach members to discussion committees (2-3 members per committee as per UML)
+        // Attach members to discussion committees (1 member per committee with 3 committees and 3 members)
         $discussionCommitteeMembers = User::where('role', 'discussion_committee')->get();
-        foreach ($discussionCommittees as $index => $committee) {
-            $memberCount = fake()->numberBetween(2, 3);
-            $members = $discussionCommitteeMembers->skip($index * 2)->take($memberCount);
-            $existingMemberIds = $committee->members()->pluck('users.id')->toArray();
-            $newMemberIds = $members->pluck('id')->diff($existingMemberIds)->toArray();
-            if (!empty($newMemberIds)) {
-                $committee->members()->attach($newMemberIds);
+        if ($discussionCommitteeMembers->isNotEmpty() && $discussionCommittees->isNotEmpty()) {
+            // Distribute members evenly across committees (1 member per committee)
+            $membersPerCommittee = max(1, (int) floor($discussionCommitteeMembers->count() / $discussionCommittees->count()));
+            foreach ($discussionCommittees as $index => $committee) {
+                $startIndex = $index * $membersPerCommittee;
+                $members = $discussionCommitteeMembers->skip($startIndex)->take($membersPerCommittee);
+                $existingMemberIds = $committee->members()->pluck('users.id')->toArray();
+                $newMemberIds = $members->pluck('id')->diff($existingMemberIds)->toArray();
+                if (!empty($newMemberIds)) {
+                    $committee->members()->attach($newMemberIds);
+                }
             }
         }
 

@@ -174,41 +174,35 @@ export interface AdminDashboardData {
 export const dashboardService = {
   // Student Dashboard
   getStudentDashboard: async (): Promise<StudentDashboardData> => {
-    const response = await apiClient.get<{ success: boolean; data: StudentDashboardData }>(
-      '/student/dashboard'
-    )
-    return response.data?.data || response.data
+    const response = await apiClient.get<StudentDashboardData>('/student/dashboard')
+    return response.data
   },
 
   // Supervisor Dashboard
   getSupervisorDashboard: async (): Promise<SupervisorDashboardData> => {
-    const response = await apiClient.get<{ success: boolean; data: SupervisorDashboardData }>(
-      '/supervisor/dashboard'
-    )
-    return response.data?.data || response.data
+    const response = await apiClient.get<SupervisorDashboardData>('/supervisor/dashboard')
+    return response.data
   },
 
   // Projects Committee Dashboard
   getProjectsCommitteeDashboard: async (): Promise<ProjectsCommitteeDashboardData> => {
-    const response = await apiClient.get<{ success: boolean; data: ProjectsCommitteeDashboardData }>(
+    const response = await apiClient.get<ProjectsCommitteeDashboardData>(
       '/projects-committee/dashboard'
     )
-    return response.data?.data || response.data
+    return response.data
   },
 
   // Discussion Committee Dashboard
   getDiscussionCommitteeDashboard: async (): Promise<DiscussionCommitteeDashboardData> => {
-    const response = await apiClient.get<{ success: boolean; data: DiscussionCommitteeDashboardData }>(
+    const response = await apiClient.get<DiscussionCommitteeDashboardData>(
       '/discussion-committee/dashboard'
     )
-    return response.data?.data || response.data
+    return response.data
   },
 
   // Admin Dashboard
   getAdminDashboard: async (): Promise<AdminDashboardData> => {
-    const response = await apiClient.get<{ success: boolean; data: AdminDashboardData }>(
-      '/admin/dashboard'
-    )
-    return response.data?.data || response.data
+    const response = await apiClient.get<AdminDashboardData>('/admin/dashboard')
+    return response.data
   },
 }

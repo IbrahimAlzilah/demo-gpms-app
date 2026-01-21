@@ -1,6 +1,7 @@
 import { apiClient } from '../../../../lib/axios'
 import type { Project } from '../../../../types/project.types'
 import type { TableQueryParams, TableResponse } from '../../../../types/table.types'
+import type { SupervisorAssignmentRequest } from '../types/SupervisionRequests.types'
 
 export const supervisionService = {
   getRequests: async (): Promise<Project[]> => {
@@ -61,5 +62,32 @@ export const supervisionService = {
       { comments }
     )
     return response.data
+  },
+
+  getAssignmentRequests: async (): Promise<SupervisorAssignmentRequest[]> => {
+    const response = await apiClient.get<SupervisorAssignmentRequest[]>('/supervisor/assignment-requests')
+    return Array.isArray(response.data) ? response.data : []
+  },
+
+  approveAssignmentRequest: async (
+    requestId: number,
+    response?: string
+  ): Promise<SupervisorAssignmentRequest> => {
+    const res = await apiClient.post<SupervisorAssignmentRequest>(
+      `/supervisor/assignment-requests/${requestId}/approve`,
+      { response }
+    )
+    return res.data
+  },
+
+  rejectAssignmentRequest: async (
+    requestId: number,
+    response: string
+  ): Promise<SupervisorAssignmentRequest> => {
+    const res = await apiClient.post<SupervisorAssignmentRequest>(
+      `/supervisor/assignment-requests/${requestId}/reject`,
+      { response }
+    )
+    return res.data
   },
 }

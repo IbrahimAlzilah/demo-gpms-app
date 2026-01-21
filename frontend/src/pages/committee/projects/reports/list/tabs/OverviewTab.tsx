@@ -42,7 +42,7 @@ export function OverviewTab({ filters }: OverviewTabProps) {
 
   const renderKPI = (title: string, value: string | number, subtext: string | React.ReactNode, icon: React.ReactNode, colorClass: string) => (
     <Card>
-      <CardContent className="p-6">
+      <CardContent className="px-4">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-muted-foreground font-medium">{title}</p>

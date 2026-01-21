@@ -1,15 +1,18 @@
-import { useMemo, useCallback } from 'react'
+import { useMemo, useCallback, useState } from 'react'
 import { DataTable, Card, CardContent, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
-import { BlockContent, ConfirmDialog } from '@/components/common'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { ConfirmDialog } from '@/components/common'
 import { toast } from 'sonner'
-import { AlertCircle, CheckCircle2, AlertTriangle, User, Briefcase, MessageSquare } from 'lucide-react'
+import { CheckCircle2, AlertTriangle, User, Briefcase, MessageSquare, Users, FileSignature } from 'lucide-react'
 import { createSupervisionRequestColumns } from '../components/table'
 import { useSupervisionRequestsList } from './SupervisionRequestsList.hook'
 import { useApproveSupervisionRequest, useRejectSupervisionRequest } from '../hooks/useSupervisionRequestOperations'
 import { SupervisionRequestDetailsView } from '../components/SupervisionRequestDetailsView'
+import { AssignmentRequestsTab } from '../components/AssignmentRequestsTab'
 import type { Project } from '@/types/project.types'
 
 export function SupervisionRequestsList() {
+  const [activeTab, setActiveTab] = useState('student-requests')
 
   const approveRequest = useApproveSupervisionRequest()
   const rejectRequest = useRejectSupervisionRequest()
@@ -63,7 +66,6 @@ export function SupervisionRequestsList() {
         showConfirmDialog: false,
       }))
     } catch (err: unknown) {
-      // Extract error message from API response
       const errorMessage =
         (err as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message ||
         (err as { message?: string })?.message ||
@@ -102,7 +104,6 @@ export function SupervisionRequestsList() {
         showConfirmDialog: false,
       }))
     } catch (err: unknown) {
-      // Extract error message from API response
       const errorMessage =
         (err as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message ||
         (err as { message?: string })?.message ||
@@ -112,7 +113,6 @@ export function SupervisionRequestsList() {
   }
 
   const handleApproveClick = useCallback((request: Project) => {
-    // Validate request status before showing dialog
     if (request.supervisorApprovalStatus !== 'pending') {
       toast.error(t('supervision.requestNotPending'))
       return
@@ -131,7 +131,6 @@ export function SupervisionRequestsList() {
   }, [data.currentProjectCount, data.maxProjectsPerSupervisor, t, setState])
 
   const handleRejectClick = useCallback((request: Project) => {
-    // Validate request status before showing dialog
     if (request.supervisorApprovalStatus !== 'pending') {
       toast.error(t('supervision.requestNotPending'))
       return
@@ -165,88 +164,105 @@ export function SupervisionRequestsList() {
   )
 
   return (
-    <>
-      {/* Project Count Info */}
-      <Card className={canAcceptMore ? 'border-info mb-5 py-4' : 'border-warning mb-5 py-4'}>
-        <CardContent className="pt-0">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium">
-                {t('supervision.currentProjects')}
-              </p>
-              <p className="text-2xl font-bold">
-                {data.currentProjectCount} / {data.maxProjectsPerSupervisor}
-              </p>
-            </div>
-            {canAcceptMore ? (
-              <CheckCircle2 className="h-8 w-8 text-success" />
-            ) : (
-              <AlertTriangle className="h-8 w-8 text-warning" />
-            )}
-          </div>
-          {!canAcceptMore && (
-            <p className="text-xs text-warning mt-2">
-              {t('supervision.maxProjectsReached')}
-            </p>
-          )}
-        </CardContent>
-      </Card>
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="flex flex-col space-y-2">
+        <h2 className="text-2xl font-bold tracking-tight">{t('nav.supervisionRequests')}</h2>
+        <p className="text-muted-foreground">
+          {t('supervision.manageRequestsDescription', { defaultValue: 'Manage supervision requests from students and the project committee.' })}
+        </p>
+      </div>
 
-      <BlockContent title={t('nav.supervisionRequests')}>
-        <DataTable
-          toolbarContent={
-            <Select
-              value={state.statusFilter}
-              onValueChange={(value) => {
-                setState((prev) => ({ ...prev, statusFilter: value as typeof prev.statusFilter }))
-                // Reset to first page when filter changes
-                setPagination((prev) => ({ ...prev, pageIndex: 0 }))
-              }}
-            >
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder={t('common.filterByStatus')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('common.all')}</SelectItem>
-                <SelectItem value="pending">{t('common.pending')}</SelectItem>
-                <SelectItem value="approved">{t('common.approved')}</SelectItem>
-                <SelectItem value="rejected">{t('common.rejected')}</SelectItem>
-              </SelectContent>
-            </Select>
-          }
-          columns={columns}
-          data={data.requests}
-          isLoading={data.isLoading}
-          error={data.error}
-          pageCount={pageCount}
-          totalCount={totalCount}
-          pageIndex={pagination.pageIndex}
-          pageSize={pagination.pageSize}
-          onPaginationChange={(pageIndex, pageSize) => {
-            setPagination({ pageIndex, pageSize })
-          }}
-          sorting={sorting}
-          onSortingChange={setSorting}
-          columnFilters={columnFilters}
-          onColumnFiltersChange={setColumnFilters}
-          searchValue={globalFilter}
-          onSearchChange={setGlobalFilter}
-          enableFiltering={true}
-          enableViews={true}
-          emptyMessage={t('supervision.noRequests')}
-        />
-      </BlockContent>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
+          <TabsTrigger value="student-requests" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            {t('supervisor.studentRequests', { defaultValue: 'Student Requests' })}
+          </TabsTrigger>
+          <TabsTrigger value="committee-requests" className="flex items-center gap-2">
+            <FileSignature className="h-4 w-4" />
+            {t('supervisor.committeeRequests', { defaultValue: 'Committee Requests' })}
+          </TabsTrigger>
+        </TabsList>
 
-      {data.error && (
-        <BlockContent variant="container" className="border-destructive">
-          <div className="flex items-center gap-2 text-destructive">
-            <AlertCircle className="h-5 w-5" />
-            <span>{t('supervision.loadError')}</span>
-          </div>
-        </BlockContent>
-      )}
+        <TabsContent value="student-requests" className="space-y-4 mt-6">
+          {/* Project Count Info */}
+          <Card className={canAcceptMore ? 'border-info py-4' : 'border-warning py-4'}>
+            <CardContent className="pt-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">
+                    {t('supervision.currentProjects')}
+                  </p>
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-2xl font-bold">
+                      {data.currentProjectCount} / {data.maxProjectsPerSupervisor}
+                    </p>
+                    <span className="text-sm text-muted-foreground">{t('project.activeProjects', { defaultValue: 'Active Projects' })}</span>
+                  </div>
+                </div>
+                {canAcceptMore ? (
+                  <CheckCircle2 className="h-8 w-8 text-success" />
+                ) : (
+                  <AlertTriangle className="h-8 w-8 text-warning" />
+                )}
+              </div>
+              {!canAcceptMore && (
+                <p className="text-xs text-warning mt-2">
+                  {t('supervision.maxProjectsReached')}
+                </p>
+              )}
+            </CardContent>
+          </Card>
 
-      {/* Confirm Dialog with Comments */}
+          <DataTable
+            toolbarContent={
+              <Select
+                value={state.statusFilter}
+                onValueChange={(value) => {
+                  setState((prev) => ({ ...prev, statusFilter: value as typeof prev.statusFilter }))
+                  setPagination((prev) => ({ ...prev, pageIndex: 0 }))
+                }}
+              >
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder={t('common.filterByStatus')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('common.all')}</SelectItem>
+                  <SelectItem value="pending">{t('common.pending')}</SelectItem>
+                  <SelectItem value="approved">{t('common.approved')}</SelectItem>
+                  <SelectItem value="rejected">{t('common.rejected')}</SelectItem>
+                </SelectContent>
+              </Select>
+            }
+            columns={columns}
+            data={data.requests}
+            isLoading={data.isLoading}
+            error={data.error}
+            pageCount={pageCount}
+            totalCount={totalCount}
+            pageIndex={pagination.pageIndex}
+            pageSize={pagination.pageSize}
+            onPaginationChange={(pageIndex, pageSize) => {
+              setPagination({ pageIndex, pageSize })
+            }}
+            sorting={sorting}
+            onSortingChange={setSorting}
+            columnFilters={columnFilters}
+            onColumnFiltersChange={setColumnFilters}
+            searchValue={globalFilter}
+            onSearchChange={setGlobalFilter}
+            enableFiltering={true}
+            enableViews={true}
+            emptyMessage={t('supervision.noRequests')}
+          />
+        </TabsContent>
+
+        <TabsContent value="committee-requests" className="mt-6">
+          <AssignmentRequestsTab />
+        </TabsContent>
+      </Tabs>
+
+      {/* Confirm Dialog used for Student Requests */}
       <ConfirmDialog
         open={state.showConfirmDialog}
         onClose={() => {
@@ -319,12 +335,12 @@ export function SupervisionRequestsList() {
         )}
       </ConfirmDialog>
 
-      {/* Request Details View */}
+      {/* Request Details View for Student Requests */}
       <SupervisionRequestDetailsView
         request={state.viewingRequest}
         open={!!state.viewingRequest}
         onClose={() => setState((prev) => ({ ...prev, viewingRequest: null }))}
       />
-    </>
+    </div>
   )
 }

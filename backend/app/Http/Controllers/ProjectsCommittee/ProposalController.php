@@ -18,6 +18,31 @@ class ProposalController extends Controller
         protected ProposalService $proposalService
     ) {}
 
+    /**
+     * Search students for proposal submission
+     */
+    public function searchStudents(Request $request): JsonResponse
+    {
+        $search = $request->input('query');
+        
+        $students = \App\Models\User::where('role', 'student')
+            ->where('status', 'active')
+            ->when($search, function ($q) use ($search) {
+                return $q->where(function ($subQ) use ($search) {
+                    $subQ->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('university_id', 'like', "%{$search}%");
+                });
+            })
+            ->limit(20)
+            ->get(['id', 'name', 'email', 'university_id']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $students,
+        ]);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $query = Proposal::with(['submitter', 'reviewer', 'project', 'studentGroup', 'targetProject']);

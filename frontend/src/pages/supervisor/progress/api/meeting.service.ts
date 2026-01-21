@@ -20,10 +20,10 @@ export interface UpdateMeetingData {
 
 export const meetingService = {
   getAll: async (projectId: string): Promise<ProjectMeeting[]> => {
-    const response = await apiClient.get<{ success: boolean; data: ProjectMeeting[] }>(
+    const response = await apiClient.get<ProjectMeeting[]>(
       `/supervisor/projects/${projectId}/meetings`
     )
-    return response.data?.data || response.data || []
+    return response.data || []
   },
 
   create: async (projectId: string, data: CreateMeetingData): Promise<ProjectMeeting> => {

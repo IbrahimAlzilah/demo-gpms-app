@@ -15,73 +15,102 @@ class ProposalsSeeder extends Seeder
      */
     public function run(): void
     {
-        $students = User::where('role', 'student')->get();
         $supervisors = User::where('role', 'supervisor')->get();
         $projectsCommitteeMembers = User::where('role', 'projects_committee')->get();
-        $projects = Project::all();
+        $students = User::where('role', 'student')->get();
 
-        // Create pending proposals from students (only if we don't have enough)
-        $existingPendingCount = Proposal::where('status', ProposalStatus::PENDING_REVIEW)->count();
-        $pendingToCreate = max(0, 10 - $existingPendingCount);
-        $pendingProposals = collect();
-        if ($pendingToCreate > 0) {
-            $pendingProposals = Proposal::factory()
-                ->count($pendingToCreate)
-                ->pending()
-                ->create();
-        }
+        // Identify students already in projects
+        // We use the DB facade to check the pivot table directly as User model might not have 'projects' relation defined
+        $assignedStudentIds = \Illuminate\Support\Facades\DB::table('project_student')->pluck('student_id')->toArray();
 
-        foreach ($pendingProposals as $proposal) {
-            $proposal->update([
-                'submitter_id' => $students->random()->id,
-                'proposed_supervisor_id' => $supervisors->random()->id,
-                'team_members' => $students->random(fake()->numberBetween(1, 3))->pluck('id')->toArray(),
-            ]);
-        }
+        $unassignedStudents = $students->whereNotIn('id', $assignedStudentIds)->values();
 
-        // Create approved proposals linked to projects
+        // 1. Create Approved Proposals for Projects (Backfill)
+        // Find projects that HAVE students
+        $projectsWithStudents = Project::whereHas('students')->with('students')->get();
         $approvedProposals = collect();
-        foreach ($projects->take(8) as $project) {
+
+        foreach ($projectsWithStudents as $project) {
+            $projectStudents = $project->students;
+            if ($projectStudents->isEmpty()) continue;
+
+            $submitter = $projectStudents->first(); // Leader
+            
             $proposal = Proposal::factory()
                 ->create([
                     'status' => ProposalStatus::APPROVED,
-                    'submitter_id' => $students->random()->id,
-                    'proposed_supervisor_id' => $project->supervisor_id,
-                    'team_members' => $project->students->pluck('id')->toArray(),
+                    'submitter_id' => $submitter->id,
+                    'proposed_supervisor_id' => $project->supervisor_id ?? $supervisors->random()->id,
+                    'team_members' => $projectStudents->pluck('id')->toArray(),
                     'project_id' => $project->id,
                     'reviewed_by' => $projectsCommitteeMembers->random()->id,
                     'reviewed_at' => now(),
+                    'title' => 'Proposal for ' . $project->title,
+                    'description' => 'Approved proposal description for project: ' . $project->title,
                 ]);
 
             $approvedProposals->push($proposal);
         }
 
-        // Create some rejected proposals
-        $rejectedProposals = Proposal::factory()
-            ->count(3)
-            ->create([
-                'status' => ProposalStatus::REJECTED,
-                'submitter_id' => $students->random()->id,
-                'proposed_supervisor_id' => $supervisors->random()->id,
-                'reviewed_by' => $projectsCommitteeMembers->random()->id,
-                'reviewed_at' => now(),
-            ]);
+        // 2. Create Pending/Rejected Proposals using UNASSIGNED students
+        // We will group remaining students into small teams or individuals
+        $pendingProposals = collect();
+        $rejectedProposals = collect();
+        $modificationProposals = collect();
 
-        // Create some requiring modification
-        $modificationProposals = Proposal::factory()
-            ->count(4)
-            ->create([
-                'status' => ProposalStatus::REQUIRES_MODIFICATION,
-                'submitter_id' => $students->random()->id,
-                'proposed_supervisor_id' => $supervisors->random()->id,
-                'reviewed_by' => $projectsCommitteeMembers->random()->id,
-                'reviewed_at' => now(),
-                'review_notes' => fake()->paragraph(),
-            ]);
+        if ($unassignedStudents->isNotEmpty()) {
+            // chunk students into groups of 1-2
+            $chunks = $unassignedStudents->chunk(2);
+            
+            foreach ($chunks as $index => $chunk) {
+                // Alternating statuses for variety
+                // 0: Pending, 1: Rejected, 2: Requires Modification, ...
+                
+                $submitter = $chunk->first();
+                $teamIds = $chunk->pluck('id')->toArray();
+                
+                if ($index % 3 === 0) {
+                    // Pending
+                    $proposal = Proposal::factory()->create([
+                        'status' => ProposalStatus::PENDING_REVIEW,
+                        'submitter_id' => $submitter->id,
+                        'proposed_supervisor_id' => $supervisors->random()->id,
+                        'team_members' => $teamIds,
+                        'title' => 'Pending Proposal ' . ($index + 1),
+                    ]);
+                    $pendingProposals->push($proposal);
+                } elseif ($index % 3 === 1) {
+                    // Rejected
+                    $proposal = Proposal::factory()->create([
+                        'status' => ProposalStatus::REJECTED,
+                        'submitter_id' => $submitter->id,
+                        'proposed_supervisor_id' => $supervisors->random()->id,
+                        'team_members' => $teamIds,
+                        'reviewed_by' => $projectsCommitteeMembers->random()->id,
+                        'reviewed_at' => now(),
+                        'title' => 'Rejected Proposal ' . ($index + 1),
+                    ]);
+                    $rejectedProposals->push($proposal);
+                } else {
+                    // Requires Modification
+                    $proposal = Proposal::factory()->create([
+                        'status' => ProposalStatus::REQUIRES_MODIFICATION,
+                        'submitter_id' => $submitter->id,
+                        'proposed_supervisor_id' => $supervisors->random()->id,
+                        'team_members' => $teamIds,
+                        'reviewed_by' => $projectsCommitteeMembers->random()->id,
+                        'reviewed_at' => now(),
+                        'review_notes' => fake()->paragraph(),
+                        'title' => 'Proposal needing modification ' . ($index + 1),
+                    ]);
+                    $modificationProposals->push($proposal);
+                }
+            }
+        }
 
         $this->command->info('Created proposals:');
+        $this->command->info('- ' . $approvedProposals->count() . ' approved (linked to projects)');
         $this->command->info('- ' . $pendingProposals->count() . ' pending');
-        $this->command->info('- ' . $approvedProposals->count() . ' approved');
         $this->command->info('- ' . $rejectedProposals->count() . ' rejected');
         $this->command->info('- ' . $modificationProposals->count() . ' requiring modification');
     }

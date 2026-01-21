@@ -2,6 +2,24 @@ import { apiClient } from '../../../../../lib/axios'
 import type { Project } from '../../../../../types/project.types'
 import type { User } from '../../../../../types/user.types'
 
+export interface SupervisorAssignmentRequest {
+  id: number
+  project_id: number
+  project: Project
+  supervisor_id: number
+  supervisor: User
+  requested_by: number
+  requestedBy: User
+  responded_by?: number
+  respondedBy?: User
+  status: 'pending' | 'approved' | 'rejected'
+  committee_notes?: string
+  supervisor_response?: string
+  responded_at?: string
+  created_at: string
+  updated_at: string
+}
+
 export const supervisorAssignmentService = {
   getProjectsWithoutSupervisor: async (page = 1, pageSize = 10): Promise<{ data: Project[], meta: { total: number, page: number, totalPages: number } }> => {
     const response = await apiClient.get(
@@ -34,6 +52,7 @@ export const supervisorAssignmentService = {
     return Array.isArray(response.data) ? response.data : []
   },
 
+  // Direct assignment (without approval requirement)
   assignSupervisor: async (projectId: string, supervisorId: string): Promise<Project> => {
     const response = await apiClient.post<Project>(
       `/projects-committee/supervisors/assign`,
@@ -43,5 +62,36 @@ export const supervisorAssignmentService = {
       }
     )
     return response.data
+  },
+
+  // Request assignment (requires supervisor approval)
+  requestAssignment: async (projectId: string, supervisorId: string, notes?: string): Promise<SupervisorAssignmentRequest> => {
+    const response = await apiClient.post<SupervisorAssignmentRequest>(
+      `/projects-committee/supervisors/request-assignment`,
+      {
+        project_id: projectId,
+        supervisor_id: supervisorId,
+        committee_notes: notes,
+      }
+    )
+    return response.data
+  },
+
+  // Get assignment requests
+  getAssignmentRequests: async (status?: string): Promise<SupervisorAssignmentRequest[]> => {
+    const params = new URLSearchParams()
+    if (status) params.append('status', status)
+
+    const response = await apiClient.get<SupervisorAssignmentRequest[]>(
+      `/projects-committee/supervisors/assignment-requests?${params.toString()}`
+    )
+
+    // Axios interceptor already extracts data, so response.data is the array
+    return Array.isArray(response.data) ? response.data : []
+  },
+
+  // Cancel assignment request
+  cancelAssignmentRequest: async (requestId: number): Promise<void> => {
+    await apiClient.delete(`/projects-committee/supervisors/assignment-requests/${requestId}`)
   },
 }

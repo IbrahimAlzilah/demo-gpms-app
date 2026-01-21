@@ -35,24 +35,24 @@ export const notificationsService = {
    * Mark a notification as read
    */
   markAsRead: async (id: string): Promise<NotificationDto> => {
-    const response = await apiService.post<{ data: NotificationDto }>(`/notifications/${id}/read`)
-    return response.data.data
+    const response = await apiService.post<NotificationDto>(`/notifications/${id}/read`)
+    return response.data
   },
 
   /**
    * Mark all notifications as read
    */
   markAllAsRead: async (): Promise<number> => {
-    const response = await apiService.post<{ data: { count: number } }>('/notifications/read-all')
-    return response.data.data.count
+    const response = await apiService.post<{ count: number }>('/notifications/read-all')
+    return response.data.count
   },
 
   /**
    * Delete all notifications
    */
   deleteAll: async (): Promise<number> => {
-    const response = await apiService.delete<{ data: { count: number } }>('/notifications')
-    return response.data.data.count
+    const response = await apiService.delete<{ count: number }>('/notifications')
+    return response.data.count
   },
 
   /**

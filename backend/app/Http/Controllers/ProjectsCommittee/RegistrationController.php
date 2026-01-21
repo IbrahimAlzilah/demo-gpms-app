@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ProjectRegistrationResource;
 use App\Http\Traits\HasTableQuery;
 use App\Models\ProjectRegistration;
+use App\Models\StudentGroup;
 use App\Services\ProjectService;
 use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
@@ -40,6 +41,46 @@ class RegistrationController extends Controller
         $query = $this->applyTableQuery($query, $request);
 
         return response()->json($this->getPaginatedResponse($query, $request, ProjectRegistrationResource::class));
+    }
+
+    /**
+     * List student groups for manual registration
+     * Returns leader info and members count for UI selection.
+     */
+    public function groups(Request $request): JsonResponse
+    {
+        $query = StudentGroup::query()
+            ->with(['leader:id,name,email'])
+            ->withCount('members')
+            ->orderBy('id', 'desc');
+
+        // Optional: only groups that are eligible (meets min/max members)
+        if ($request->boolean('eligible_only', false)) {
+            $minMembers = app(\App\Services\SettingsService::class)->getGroupMinMembers();
+            $maxMembers = app(\App\Services\SettingsService::class)->getGroupMaxMembers();
+
+            // members_count is members only; total = members_count + 1 (leader)
+            $query->havingRaw('(members_count + 1) >= ? AND (members_count + 1) <= ?', [$minMembers, $maxMembers]);
+        }
+
+        $groups = $query->get()->map(function (StudentGroup $group) {
+            return [
+                'id' => (string) $group->id,
+                'name' => $group->name,
+                'code' => $group->group_code,
+                'leader' => [
+                    'id' => (string) ($group->leader?->id),
+                    'name' => $group->leader?->name,
+                    'email' => $group->leader?->email,
+                ],
+                'members_count' => (int) ($group->members_count + 1), // include leader for UI
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $groups,
+        ]);
     }
 
     /**

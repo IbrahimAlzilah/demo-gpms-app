@@ -125,6 +125,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('supervision-requests', [App\Http\Controllers\Supervisor\SupervisionController::class, 'index']);
         Route::post('supervision-requests/{project}/approve', [App\Http\Controllers\Supervisor\SupervisionController::class, 'approve']);
         Route::post('supervision-requests/{project}/reject', [App\Http\Controllers\Supervisor\SupervisionController::class, 'reject']);
+        // New assignment request routes
+        Route::get('assignment-requests', [App\Http\Controllers\Supervisor\SupervisionController::class, 'listAssignmentRequests']);
+        Route::post('assignment-requests/{assignmentRequest}/approve', [App\Http\Controllers\Supervisor\SupervisionController::class, 'approveAssignmentRequest']);
+        Route::post('assignment-requests/{assignmentRequest}/reject', [App\Http\Controllers\Supervisor\SupervisionController::class, 'rejectAssignmentRequest']);
         // Custom evaluation routes (before apiResource to match frontend expectations)
         // Note: Supervisor grading is NOT restricted by time windows per specifications
         Route::get('evaluations', [App\Http\Controllers\Supervisor\EvaluationController::class, 'index']);
@@ -153,6 +157,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('proposals/{proposal}/approve', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'approve']);
         Route::post('proposals/{proposal}/reject', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'reject']);
         Route::post('proposals/{proposal}/request-modification', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'requestModification']);
+        Route::get('proposals/students/search', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'searchStudents']);
         // apiResource automatically includes POST /proposals for store() method
         Route::apiResource('proposals', App\Http\Controllers\ProjectsCommittee\ProposalController::class);
         Route::apiResource('projects', App\Http\Controllers\ProjectsCommittee\ProjectController::class);
@@ -161,11 +166,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('periods', App\Http\Controllers\ProjectsCommittee\PeriodController::class);
         Route::get('supervisors', [App\Http\Controllers\ProjectsCommittee\SupervisorController::class, 'index']);
         Route::post('supervisors/assign', [App\Http\Controllers\ProjectsCommittee\SupervisorController::class, 'assign']);
+        Route::post('supervisors/request-assignment', [App\Http\Controllers\ProjectsCommittee\SupervisorController::class, 'requestAssignment']);
+        Route::get('supervisors/assignment-requests', [App\Http\Controllers\ProjectsCommittee\SupervisorController::class, 'listRequests']);
+        Route::get('supervisors/assignment-requests/{request}', [App\Http\Controllers\ProjectsCommittee\SupervisorController::class, 'showRequest']);
+        Route::delete('supervisors/assignment-requests/{assignmentRequest}', [App\Http\Controllers\ProjectsCommittee\SupervisorController::class, 'cancelRequest']);
         // Custom request routes (must be before apiResource to match correctly)
         Route::post('requests/{projectRequest}/approve', [App\Http\Controllers\ProjectsCommittee\RequestController::class, 'approve']);
         Route::post('requests/{projectRequest}/reject', [App\Http\Controllers\ProjectsCommittee\RequestController::class, 'reject']);
         Route::apiResource('requests', App\Http\Controllers\ProjectsCommittee\RequestController::class);
         Route::get('registrations', [App\Http\Controllers\ProjectsCommittee\RegistrationController::class, 'index']);
+        Route::get('registrations/groups', [App\Http\Controllers\ProjectsCommittee\RegistrationController::class, 'groups']);
         Route::get('registrations/{registration}', [App\Http\Controllers\ProjectsCommittee\RegistrationController::class, 'show']);
         Route::post('registrations', [App\Http\Controllers\ProjectsCommittee\RegistrationController::class, 'store']);
         Route::post('registrations/{registration}/approve', [App\Http\Controllers\ProjectsCommittee\RegistrationController::class, 'approve']);

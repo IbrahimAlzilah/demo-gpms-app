@@ -9,14 +9,14 @@ export const gradeService = {
     }
     const queryString = params.toString()
     const url = `/student/grades${queryString ? `?${queryString}` : ''}`
-    const response = await apiClient.get<{ success: boolean; data: Grade[] }>(url)
-    return Array.isArray(response.data?.data) ? response.data.data : []
+    const response = await apiClient.get<Grade[]>(url)
+    return Array.isArray(response.data) ? response.data : []
   },
 
   getGradeById: async (id: string): Promise<Grade | null> => {
     try {
-      const response = await apiClient.get<{ success: boolean; data: Grade }>(`/student/grades/${id}`)
-      return response.data?.data || null
+      const response = await apiClient.get<Grade>(`/student/grades/${id}`)
+      return response.data || null
     } catch {
       return null
     }

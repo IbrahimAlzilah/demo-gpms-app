@@ -1,15 +1,16 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useApproveProposal, useRejectProposal, useRequestModification, useUpdateProposal, useDeleteProposal } from '../hooks/useProposalOperations'
 import { useProposal } from '../hooks/useProposals'
-import { DataTable, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Dialog, DialogContent } from '@/components/ui'
+import { DataTable, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Dialog, DialogContent, Button } from '@/components/ui'
 import { BlockContent, ConfirmDialog, LoadingSpinner } from '@/components/common'
 import { createProposalColumns } from '../components/table'
 import { ProposalReviewDialog } from '../components/ProposalReviewDialog'
 import { ProposalEditDialog } from '../components/ProposalEditDialog'
+import { ProposalCreateDialog } from '../components/ProposalCreateDialog'
 import { ProposalsView } from '../view/ProposalsView.screen'
 import { useProposalsList } from './ProposalsList.hook'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Proposal } from '@/types/project.types'
 
@@ -21,6 +22,8 @@ export function ProposalsList() {
   const requestModification = useRequestModification()
   const updateProposal = useUpdateProposal()
   const deleteProposal = useDeleteProposal()
+
+  const [showCreateDialog, setShowCreateDialog] = useState(false)
 
   const {
     data,
@@ -122,7 +125,16 @@ export function ProposalsList() {
 
   return (
     <>
-      <BlockContent title={t('committee.proposal.reviewPanel')}>
+
+      <BlockContent
+        title={t('committee.proposal.reviewPanel')}
+        actions={
+          <Button onClick={() => setShowCreateDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            {t('committee.proposal.create', { defaultValue: 'New Proposal' })}
+          </Button>
+        }
+      >
 
         <DataTable
           toolbarContent={
@@ -165,6 +177,11 @@ export function ProposalsList() {
           emptyMessage={t('committee.proposal.noProposals')}
         />
       </BlockContent>
+
+      <ProposalCreateDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+      />
 
       {data.error && (
         <BlockContent variant="container" className="border-destructive">

@@ -17,89 +17,78 @@ class ProjectsSeeder extends Seeder
     public function run(): void
     {
         $supervisors = User::where('role', 'supervisor')->get();
-        $students = User::where('role', 'student')->get();
+        // Get students in random order
+        $students = User::where('role', 'student')->inRandomOrder()->get();
         $projectCommittees = ProjectCommittee::all();
         $discussionCommittees = DiscussionCommittee::all();
 
-        // Create projects with various statuses (only if we don't have enough)
-        $existingProjectsCount = Project::count();
-        $targetProjectsCount = 16; // 5 + 8 + 3
-        $projectsToCreate = max(0, $targetProjectsCount - $existingProjectsCount);
+        // Partition students:
+        // Use 6 students for active projects (2 groups of 3)
+        // Leave 4 students for proposals/other states
+        $studentsForProjects = $students->take(6);
+        $studentChunks = $studentsForProjects->chunk(3);
+
         $projects = collect();
 
-        // Create some available for registration projects
-        $availableCount = min(5, $projectsToCreate);
-        for ($i = 0; $i < $availableCount; $i++) {
+        // 1. Create Fully Populated Projects (In Progress / Completed)
+        foreach ($studentChunks as $index => $groupStudents) {
+            $status = $index === 0 ? ProjectStatus::IN_PROGRESS : ProjectStatus::COMPLETED;
+            
+            $project = Project::factory()->create([
+                'status' => $status,
+                'supervisor_id' => $supervisors->random()->id,
+                'project_committee_id' => $projectCommittees->random()->id,
+                'discussion_committee_id' => $discussionCommittees->random()->id,
+                'current_students' => $groupStudents->count(),
+                'max_students' => 3,
+            ]);
+
+            $project->students()->attach($groupStudents->pluck('id'));
+            $projects->push($project);
+        }
+
+        // 2. Create Available Projects (Empty)
+        // Create 5 available projects for manual testing of registration
+        for ($i = 0; $i < 5; $i++) {
             $project = Project::factory()
                 ->availableForRegistration()
                 ->create([
                     'supervisor_id' => $supervisors->random()->id,
                     'project_committee_id' => $projectCommittees->random()->id,
                     'discussion_committee_id' => $discussionCommittees->random()->id,
+                    'current_students' => 0,
+                    'max_students' => 3,
                 ]);
-
-            // Attach some students to projects (only if not already attached)
-            $projectStudents = $students->random(fake()->numberBetween(1, $project->max_students));
-            $existingStudentIds = $project->students()->pluck('users.id')->toArray();
-            $newStudentIds = $projectStudents->pluck('id')->diff($existingStudentIds)->toArray();
-            if (!empty($newStudentIds)) {
-                $project->students()->attach($newStudentIds);
-            }
-            $project->update(['current_students' => $project->students()->count()]);
-
             $projects->push($project);
         }
 
-        // Create in-progress projects
-        $inProgressCount = min(8, max(0, $projectsToCreate - $availableCount));
-        for ($i = 0; $i < $inProgressCount; $i++) {
-            $project = Project::factory()
-                ->inProgress()
-                ->create([
-                    'supervisor_id' => $supervisors->random()->id,
-                    'project_committee_id' => $projectCommittees->random()->id,
-                    'discussion_committee_id' => $discussionCommittees->random()->id,
-                ]);
+        // 3. Create Draft Projects (Empty)
+        // Create 2 draft projects
+        Project::factory()->count(2)->create([
+            'status' => ProjectStatus::DRAFT,
+            'supervisor_id' => $supervisors->random()->id,
+            'project_committee_id' => $projectCommittees->random()->id,
+            'discussion_committee_id' => $discussionCommittees->random()->id,
+            'current_students' => 0,
+        ]);
 
-            $projectStudents = $students->random(fake()->numberBetween(2, $project->max_students));
-            $project->students()->attach($projectStudents->pluck('id'));
-            $project->update(['current_students' => $projectStudents->count()]);
-
-            $projects->push($project);
-        }
-
-        // Create completed projects
-        $completedCount = min(3, max(0, $projectsToCreate - $availableCount - $inProgressCount));
-        for ($i = 0; $i < $completedCount; $i++) {
-            $project = Project::factory()
-                ->completed()
-                ->create([
-                    'supervisor_id' => $supervisors->random()->id,
-                    'project_committee_id' => $projectCommittees->random()->id,
-                    'discussion_committee_id' => $discussionCommittees->random()->id,
-                ]);
-
-            $projectStudents = $students->random(fake()->numberBetween(2, $project->max_students));
-            $project->students()->attach($projectStudents->pluck('id'));
-            $project->update(['current_students' => $projectStudents->count()]);
-
-            $projects->push($project);
-        }
-
-        // Get all projects (newly created + existing)
+        // Assign discussion committee members to all projects
         $allProjects = Project::all();
-
-        // Assign discussion committee members to projects (2-3 per project as per UML)
         $discussionCommitteeMembers = User::where('role', 'discussion_committee')->get();
-        foreach ($allProjects as $project) {
-            $committeeMembers = $discussionCommitteeMembers->random(fake()->numberBetween(2, 3));
-            $existingMemberIds = $project->committeeMembers()->pluck('users.id')->toArray();
-            $newMemberIds = $committeeMembers->pluck('id')->diff($existingMemberIds)->toArray();
-            if (!empty($newMemberIds)) {
-                $project->committeeMembers()->attach($newMemberIds);
+        
+        if ($discussionCommitteeMembers->isNotEmpty()) {
+            foreach ($allProjects as $project) {
+                // Assign 2 members per project
+                $committeeMembers = $discussionCommitteeMembers->take(2); 
+                // Since we only have 3 members, taking 2 is fine. 
+                // To vary it slightly, we can random shuffle if needed, but 'take(2)' is consistent.
+                // Let's shuffle strictly for distribution if we care, or just take random.
+                $committeeMembers = $discussionCommitteeMembers->random(min(2, $discussionCommitteeMembers->count()));
+                
+                $project->committeeMembers()->syncWithoutDetaching($committeeMembers->pluck('id'));
             }
         }
 
-        $this->command->info('Created ' . $projects->count() . ' new projects (Total: ' . $allProjects->count() . ')');
+        $this->command->info('Created ' . $allProjects->count() . ' projects with consistent student assignments.');
     }
 }

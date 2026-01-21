@@ -18,11 +18,9 @@ class DatabaseSeeder extends Seeder
             ProjectsSeeder::class,
             GroupsSeeder::class,
             ProposalsSeeder::class,
-            TimePeriodsSeeder::class,
             DocumentsSeeder::class,
             GradesSeeder::class,
             RequestsSeeder::class,
-            NotificationsSeeder::class,
         ]);
     }
 }

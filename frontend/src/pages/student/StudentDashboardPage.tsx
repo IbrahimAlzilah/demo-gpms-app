@@ -1,9 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { MainLayout } from '../../layouts/MainLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
-import { LoadingSpinner, BlockContent, DashboardHeader } from '../../components/common'
+import { LoadingSpinner, BlockContent } from '../../components/common'
 import { useStudentDashboard } from './hooks/useStudentDashboard'
-import { useAuthStore } from '../../pages/auth/login'
 import { ROUTES } from '../../lib/constants'
 import { Link } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
@@ -20,12 +19,10 @@ import {
   AlertCircle,
   RefreshCw,
   MoreHorizontal,
-  ChevronRight,
   type LucideIcon,
   BookOpen,
   Calendar,
   Target,
-  Bell
 } from 'lucide-react'
 import { StatusBadge, StatsCard as StatsCardComponent } from '@/components/common'
 import { formatRelativeTime } from '../../lib/utils/format'
@@ -34,7 +31,6 @@ import { cn } from '@/lib/utils'
 export function StudentDashboardPage() {
   const { t, i18n } = useTranslation()
   const isRTL = i18n.dir() === 'rtl'
-  const { user } = useAuthStore()
   const { data, isLoading, error, refetch } = useStudentDashboard()
 
   const ArrowIcon = isRTL ? ArrowLeft : ArrowRight

@@ -23,7 +23,6 @@ class ProposalFactory extends Factory
         return [
             'title' => YemeniDataHelper::yemeniProposalTitle(),
             'description' => YemeniDataHelper::yemeniProposalDescription(),
-            'requirements' => YemeniDataHelper::yemeniProposalRequirements(),
             'submitter_id' => User::factory()->student(),
             'proposed_supervisor_id' => User::factory()->supervisor(),
             'team_members' => [],

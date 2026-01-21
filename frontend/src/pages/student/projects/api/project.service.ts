@@ -60,7 +60,7 @@ export const projectService = {
 
   getStudentRegistrations: async (_studentId: string): Promise<ProjectRegistration[]> => {
     const response = await apiClient.get<ProjectRegistration[]>('/student/projects/registrations')
-    // The axios interceptor already extracts response.data.data, so response.data is the array
+    // Axios interceptor already extracts data, so response.data is the array
     return Array.isArray(response.data) ? response.data : []
   },
 
@@ -83,7 +83,7 @@ export const projectService = {
       `/student/projects/${projectId}/register`,
       { student_group_id: studentGroupId }
     )
-    // The axios interceptor already extracts response.data.data, so response.data is the registration
+    // Axios interceptor already extracts data, so response.data is the registration
     return response.data
   },
 

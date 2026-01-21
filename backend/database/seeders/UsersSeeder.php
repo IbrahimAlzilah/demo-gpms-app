@@ -8,6 +8,7 @@ use App\Models\User;
 use Database\Seeders\helpers\YemeniDataHelper;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UsersSeeder extends Seeder
 {
@@ -16,49 +17,63 @@ class UsersSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create or get admin user
-        $admin = User::firstOrCreate(
-            ['email' => 'admin@gpms.local'],
-            [
+        // Ensure exactly 1 admin user
+        $existingAdmins = User::where('role', 'admin')->get();
+        if ($existingAdmins->isEmpty()) {
+            // Create admin user
+            $admin = User::create([
                 'name' => 'أحمد الأحد',
+                'email' => 'admin@gpms.local',
                 'username' => 'admin',
                 'password' => Hash::make('password'),
                 'role' => 'admin',
                 'status' => 'active',
                 'phone' => YemeniDataHelper::yemeniPhoneNumber(),
-            ]
-        );
-        // Ensure admin has username set (in case user already existed or has temp username)
-        if (!$admin->username || str_starts_with($admin->username, 'temp_')) {
-            // Check if 'admin' username is already taken by another user
-            $adminCount = User::where('role', 'admin')
-                ->where('id', '!=', $admin->id)
-                ->where('username', 'admin')
-                ->count();
-            $username = $adminCount === 0 ? 'admin' : 'admin' . ($adminCount + 1);
-            $admin->update(['username' => $username]);
+                'email_verified_at' => now(),
+            ]);
+        } else {
+            // Keep only the first admin, delete extras
+            $admin = $existingAdmins->first();
+            if ($existingAdmins->count() > 1) {
+                $existingAdmins->skip(1)->each(function ($extraAdmin) {
+                    $extraAdmin->delete();
+                });
+            }
+            // Ensure admin has correct username
+            if (!$admin->username || str_starts_with($admin->username, 'temp_')) {
+                $admin->update(['username' => 'admin']);
+            }
         }
 
-        // Create supervisors (only if we don't have enough)
-        $existingSupervisorsCount = User::where('role', 'supervisor')->count();
-        $supervisorsToCreate = max(0, 5 - $existingSupervisorsCount);
-        $supervisors = collect();
+        // Ensure exactly 5 supervisors
+        $existingSupervisors = User::where('role', 'supervisor')->get();
+        $supervisorsToCreate = max(0, 5 - $existingSupervisors->count());
+
+        // Delete extras if we have more than 5
+        if ($existingSupervisors->count() > 5) {
+            $existingSupervisors->skip(5)->each(function ($extra) {
+                $extra->delete();
+            });
+            $existingSupervisors = $existingSupervisors->take(5);
+        }
+
+        // Create missing supervisors
+        $newSupervisors = collect();
         if ($supervisorsToCreate > 0) {
-            $supervisors = User::factory()
+            $newSupervisors = User::factory()
                 ->count($supervisorsToCreate)
                 ->supervisor()
                 ->create();
-        } else {
-            $supervisors = User::where('role', 'supervisor')->take(5)->get();
         }
 
-        // Create supervisor profiles (only if they don't exist)
+        $supervisors = $existingSupervisors->merge($newSupervisors);
+
+        // Create/update supervisor profiles
         foreach ($supervisors as $supervisor) {
-            $empId = 'EMP' . str_pad((string) fake()->unique()->numberBetween(1000, 9999), 4, '0', STR_PAD_LEFT);
             $profile = Supervisor::firstOrCreate(
                 ['user_id' => $supervisor->id],
                 [
-                    'emp_id' => $empId,
+                    'emp_id' => 'EMP' . str_pad((string) fake()->unique()->numberBetween(1000, 9999), 4, '0', STR_PAD_LEFT),
                     'department' => YemeniDataHelper::yemeniDepartment(),
                 ]
             );
@@ -68,26 +83,48 @@ class UsersSeeder extends Seeder
             }
         }
 
-        // Create students (only if we don't have enough)
-        $existingStudentsCount = User::where('role', 'student')->count();
-        $studentsToCreate = max(0, 20 - $existingStudentsCount);
-        $students = collect();
-        if ($studentsToCreate > 0) {
-            $students = User::factory()
-                ->count($studentsToCreate)
-                ->student()
-                ->create();
-        } else {
-            $students = User::where('role', 'student')->take(20)->get();
+        // Ensure exactly 10 students with male names
+        $existingStudents = User::where('role', 'student')->get();
+        $studentsToCreate = max(0, 10 - $existingStudents->count());
+
+        // Delete extras if we have more than 10
+        if ($existingStudents->count() > 10) {
+            $existingStudents->skip(10)->each(function ($extra) {
+                $extra->delete();
+            });
+            $existingStudents = $existingStudents->take(10);
         }
 
-        // Create student profiles (only if they don't exist)
+        // Create missing students with male names
+        $newStudents = collect();
+        if ($studentsToCreate > 0) {
+            for ($i = 0; $i < $studentsToCreate; $i++) {
+                $maleName = YemeniDataHelper::yemeniMaleName();
+                $emailDomain = YemeniDataHelper::yemeniEmailDomain();
+                $emailUsername = Str::slug(explode(' ', $maleName)[0]) . '.' . fake()->unique()->numberBetween(100, 9999);
+
+                $student = User::create([
+                    'name' => $maleName,
+                    'email' => $emailUsername . '@' . $emailDomain,
+                    'username' => 'temp_' . Str::random(10) . '_' . time(),
+                    'email_verified_at' => now(),
+                    'password' => Hash::make('password'),
+                    'role' => 'student',
+                    'status' => 'active',
+                    'phone' => YemeniDataHelper::yemeniPhoneNumber(),
+                ]);
+                $newStudents->push($student);
+            }
+        }
+
+        $students = $existingStudents->merge($newStudents);
+
+        // Create/update student profiles
         foreach ($students as $student) {
-            $studentId = 'STU' . str_pad((string) fake()->unique()->numberBetween(1000, 9999), 4, '0', STR_PAD_LEFT);
             $profile = Student::firstOrCreate(
                 ['user_id' => $student->id],
                 [
-                    'student_id' => $studentId,
+                    'student_id' => 'STU' . str_pad((string) fake()->unique()->numberBetween(1000, 9999), 4, '0', STR_PAD_LEFT),
                     'major' => YemeniDataHelper::yemeniDepartment(),
                     'academic_level' => YemeniDataHelper::yemeniAcademicLevel(),
                 ]
@@ -98,26 +135,35 @@ class UsersSeeder extends Seeder
             }
         }
 
-        // Create discussion committee members (only if we don't have enough)
-        $existingDiscussionCount = User::where('role', 'discussion_committee')->count();
-        $discussionToCreate = max(0, 6 - $existingDiscussionCount);
-        $discussionCommitteeMembers = collect();
+        // Ensure exactly 3 discussion committee members
+        $existingDiscussion = User::where('role', 'discussion_committee')->get();
+        $discussionToCreate = max(0, 3 - $existingDiscussion->count());
+
+        // Delete extras if we have more than 3
+        if ($existingDiscussion->count() > 3) {
+            $existingDiscussion->skip(3)->each(function ($extra) {
+                $extra->delete();
+            });
+            $existingDiscussion = $existingDiscussion->take(3);
+        }
+
+        // Create missing discussion committee members
+        $newDiscussion = collect();
         if ($discussionToCreate > 0) {
-            $discussionCommitteeMembers = User::factory()
+            $newDiscussion = User::factory()
                 ->count($discussionToCreate)
                 ->discussionCommittee()
                 ->create();
-        } else {
-            $discussionCommitteeMembers = User::where('role', 'discussion_committee')->take(6)->get();
         }
 
-        // Create supervisor profiles for discussion committee members (so they have emp_id for login)
+        $discussionCommitteeMembers = $existingDiscussion->merge($newDiscussion);
+
+        // Create/update supervisor profiles for discussion committee members
         foreach ($discussionCommitteeMembers as $member) {
-            $empId = 'EMP' . str_pad((string) fake()->unique()->numberBetween(1000, 9999), 4, '0', STR_PAD_LEFT);
             $profile = Supervisor::firstOrCreate(
                 ['user_id' => $member->id],
                 [
-                    'emp_id' => $empId,
+                    'emp_id' => 'EMP' . str_pad((string) fake()->unique()->numberBetween(1000, 9999), 4, '0', STR_PAD_LEFT),
                     'department' => YemeniDataHelper::yemeniDepartment(),
                 ]
             );
@@ -127,26 +173,35 @@ class UsersSeeder extends Seeder
             }
         }
 
-        // Create projects committee members (only if we don't have enough)
-        $existingProjectsCount = User::where('role', 'projects_committee')->count();
-        $projectsToCreate = max(0, 4 - $existingProjectsCount);
-        $projectsCommitteeMembers = collect();
+        // Ensure exactly 2 projects committee members
+        $existingProjects = User::where('role', 'projects_committee')->get();
+        $projectsToCreate = max(0, 2 - $existingProjects->count());
+
+        // Delete extras if we have more than 2
+        if ($existingProjects->count() > 2) {
+            $existingProjects->skip(2)->each(function ($extra) {
+                $extra->delete();
+            });
+            $existingProjects = $existingProjects->take(2);
+        }
+
+        // Create missing projects committee members
+        $newProjects = collect();
         if ($projectsToCreate > 0) {
-            $projectsCommitteeMembers = User::factory()
+            $newProjects = User::factory()
                 ->count($projectsToCreate)
                 ->projectsCommittee()
                 ->create();
-        } else {
-            $projectsCommitteeMembers = User::where('role', 'projects_committee')->take(4)->get();
         }
 
-        // Create supervisor profiles for projects committee members (so they have emp_id for login)
+        $projectsCommitteeMembers = $existingProjects->merge($newProjects);
+
+        // Create/update supervisor profiles for projects committee members
         foreach ($projectsCommitteeMembers as $member) {
-            $empId = 'EMP' . str_pad((string) fake()->unique()->numberBetween(1000, 9999), 4, '0', STR_PAD_LEFT);
             $profile = Supervisor::firstOrCreate(
                 ['user_id' => $member->id],
                 [
-                    'emp_id' => $empId,
+                    'emp_id' => 'EMP' . str_pad((string) fake()->unique()->numberBetween(1000, 9999), 4, '0', STR_PAD_LEFT),
                     'department' => YemeniDataHelper::yemeniDepartment(),
                 ]
             );
@@ -158,9 +213,9 @@ class UsersSeeder extends Seeder
 
         $this->command->info('تم إنشاء المستخدمين / Created users:');
         $this->command->info('- 1 مدير / admin');
-        $this->command->info('- ' . count($supervisors) . ' مشرف / supervisors');
-        $this->command->info('- ' . count($students) . ' طالب / students');
-        $this->command->info('- ' . count($discussionCommitteeMembers) . ' عضو لجنة مناقشة / discussion committee members');
-        $this->command->info('- ' . count($projectsCommitteeMembers) . ' عضو لجنة المشاريع / projects committee members');
+        $this->command->info('- ' . $supervisors->count() . ' مشرف / supervisors');
+        $this->command->info('- ' . $students->count() . ' طالب / students (male names only)');
+        $this->command->info('- ' . $discussionCommitteeMembers->count() . ' عضو لجنة مناقشة / discussion committee members');
+        $this->command->info('- ' . $projectsCommitteeMembers->count() . ' عضو لجنة المشاريع / projects committee members');
     }
 }

@@ -18,11 +18,10 @@ export interface UpdateMilestoneData {
 
 export const milestoneService = {
   getAll: async (projectId: string): Promise<ProjectMilestone[]> => {
-    const response = await apiClient.get<{
-      success: boolean;
-      data: ProjectMilestone[];
-    }>(`/supervisor/projects/${projectId}/milestones`);
-    return response.data?.data || response.data || [];
+    const response = await apiClient.get<ProjectMilestone[]>(
+      `/supervisor/projects/${projectId}/milestones`
+    );
+    return response.data || [];
   },
 
   create: async (

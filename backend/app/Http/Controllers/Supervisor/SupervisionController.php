@@ -88,5 +88,150 @@ class SupervisionController extends Controller
             ], 400);
         }
     }
+
+    /**
+     * Get list of pending supervisor assignment requests
+     */
+    public function listAssignmentRequests(Request $request): JsonResponse
+    {
+        $supervisor = $request->user();
+
+        $requests = \App\Models\SupervisorAssignmentRequest::where('supervisor_id', $supervisor->id)
+            ->where('status', 'pending')
+            ->with(['project', 'requestedBy'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => \App\Http\Resources\SupervisorAssignmentRequestResource::collection($requests),
+        ]);
+    }
+
+    /**
+     * Approve a supervisor assignment request
+     */
+    public function approveAssignmentRequest(Request $request, \App\Models\SupervisorAssignmentRequest $assignmentRequest): JsonResponse
+    {
+        $supervisor = $request->user();
+
+        if ($assignmentRequest->supervisor_id !== $supervisor->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        if (!$assignmentRequest->isPending()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Request has already been processed',
+            ], 400);
+        }
+
+        $validated = $request->validate([
+            'response' => 'nullable|string|max:1000',
+        ]);
+
+        try {
+            // Update the request status
+            $assignmentRequest->update([
+                'status' => 'approved',
+                'responded_by' => $supervisor->id,
+                'supervisor_response' => $validated['response'] ?? 'Approved',
+                'responded_at' => now(),
+            ]);
+
+            // Assign the supervisor to the project AND mark approval as approved immediately
+            // (since the supervisor is approving right now)
+            $project = $assignmentRequest->project;
+            $project->update([
+                'supervisor_id' => $supervisor->id,
+                'supervisor_approval_status' => 'approved',
+                'supervisor_approval_comments' => $validated['response'] ?? null,
+                'supervisor_approval_at' => now(),
+            ]);
+
+            // Notify projects committee
+            $requester = $assignmentRequest->requestedBy;
+            $notificationService = app(\App\Services\NotificationService::class);
+            $notificationService->create(
+                $requester,
+                "قبل المشرف {$supervisor->name} الإشراف على المشروع: {$project->title}",
+                'supervisor_assignment_approved',
+                'project',
+                $project->id
+            );
+
+            return response()->json([
+                'success' => true,
+                'data' => new \App\Http\Resources\SupervisorAssignmentRequestResource($assignmentRequest->fresh()->load(['project', 'supervisor', 'requestedBy', 'respondedBy'])),
+                'message' => 'Assignment request approved successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Reject a supervisor assignment request
+     */
+    public function rejectAssignmentRequest(Request $request, \App\Models\SupervisorAssignmentRequest $assignmentRequest): JsonResponse
+    {
+        $supervisor = $request->user();
+
+        if ($assignmentRequest->supervisor_id !== $supervisor->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        if (!$assignmentRequest->isPending()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Request has already been processed',
+            ], 400);
+        }
+
+        $validated = $request->validate([
+            'response' => 'required|string|max:1000',
+        ]);
+
+        try {
+            // Update the request status
+            $assignmentRequest->update([
+                'status' => 'rejected',
+                'responded_by' => $supervisor->id,
+                'supervisor_response' => $validated['response'],
+                'responded_at' => now(),
+            ]);
+
+            // Notify projects committee
+            $requester = $assignmentRequest->requestedBy;
+            $notificationService = app(\App\Services\NotificationService::class);
+            $notificationService->create(
+                $requester,
+                "رفض المشرف {$supervisor->name} الإشراف على المشروع: {$assignmentRequest->project->title}\nالسبب: {$validated['response']}",
+                'supervisor_assignment_rejected',
+                'project',
+                $assignmentRequest->project_id
+            );
+
+            return response()->json([
+                'success' => true,
+                'data' => new \App\Http\Resources\SupervisorAssignmentRequestResource($assignmentRequest->fresh()->load(['project', 'supervisor', 'requestedBy', 'respondedBy'])),
+                'message' => 'Assignment request rejected',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
 }
 

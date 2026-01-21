@@ -58,7 +58,7 @@ export const proposalService = {
   create: async (
     data: ProposalFormData & { submitterId: string }
   ): Promise<Proposal> => {
-    const response = await apiClient.post<{ success: boolean; data: Proposal }>("/student/proposals", {
+    const response = await apiClient.post<Proposal>("/student/proposals", {
       title: data.title,
       description: data.description,
       proposed_supervisor_id: data.proposedSupervisorId || null,
@@ -66,11 +66,11 @@ export const proposalService = {
       target_project_id: data.targetProjectId || null,
       team_members: data.teamMembers || [],
     });
-    return response.data?.data || response.data;
+    return response.data;
   },
 
   update: async (id: string, data: Partial<ProposalFormData>): Promise<Proposal> => {
-    const response = await apiClient.put<{ success: boolean; data: Proposal; message?: string }>(
+    const response = await apiClient.put<Proposal>(
       `/student/proposals/${id}`,
       {
         title: data.title,
@@ -81,7 +81,6 @@ export const proposalService = {
         team_members: data.teamMembers || [],
       }
     );
-    // Handle both response structures (wrapped or unwrapped)
-    return response.data?.data || response.data;
+    return response.data;
   },
 };
