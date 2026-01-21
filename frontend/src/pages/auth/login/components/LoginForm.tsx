@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useLocation, Link } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -8,7 +8,7 @@ import { authService } from '../api/auth.service'
 import { Button, Input, Label } from '@/components/ui'
 import { ROUTES } from '@/lib/constants'
 import { useToast } from '@/components/common'
-import { AlertCircle, Eye, EyeOff, Loader2, LogIn } from 'lucide-react'
+import { AlertCircle, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { loginSchema, type LoginSchema } from '../schema/login.schema'
 import logo from '@/assets/logo2.png'
 
@@ -140,14 +140,14 @@ export function LoginForm() {
           )}
         </div>
 
-        <div className="flex items-center justify-between">
+        {/* <div className="flex items-center justify-between">
           <Link
             to="/recover-password"
             className="text-sm text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
           >
             {t('auth.forgotPassword')}
           </Link>
-        </div>
+        </div> */}
 
         <Button
           type="submit"
@@ -161,7 +161,6 @@ export function LoginForm() {
             </>
           ) : (
             <>
-              <LogIn className="mr-2 h-4 w-4" />
               {t('auth.login')}
             </>
           )}
