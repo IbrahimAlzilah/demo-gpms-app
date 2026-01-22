@@ -51,7 +51,7 @@ export function ProposalForm({
     }
   }, [studentGroup, form])
 
-  if (periodLoading) {
+  if (periodLoading || groupLoading) {
     return <LoadingSpinner />
   }
 
@@ -67,6 +67,20 @@ export function ProposalForm({
           </p>
           <p className="text-xs text-muted-foreground mt-1">
             {t('proposal.periodClosedDescription')}
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // During registration window, group is required - prevent form submission if no group
+  if (isRegistrationWindow && !studentGroup) {
+    return (
+      <div className="flex items-start gap-3 p-4 bg-warning/10 border border-warning/20 rounded-lg">
+        <AlertCircle className="h-5 w-5 text-warning mt-0.5 shrink-0" />
+        <div>
+          <p className="text-sm font-medium text-warning-foreground">
+            {t('proposal.noGroupRequired')}
           </p>
         </div>
       </div>
