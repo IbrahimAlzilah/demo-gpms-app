@@ -1,8 +1,7 @@
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button, Textarea, Label } from '@/components/ui'
+import { Button } from '@/components/ui'
 import { ModalDialog, LoadingSpinner, StatusBadge } from '@/components/common'
-import { CheckCircle2, AlertCircle } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 import { useProjectsView } from './ProjectsView.hook'
 import { useMyGroup } from '@/pages/student/groups/hooks/useGroups'
 
@@ -17,7 +16,6 @@ export function ProjectsView({ projectId, open, onClose, onRegister }: ProjectsV
   const { t } = useTranslation()
   const { project, isLoading, error } = useProjectsView(projectId)
   const { data: studentGroup, isLoading: groupLoading } = useMyGroup()
-  const [reason, setReason] = useState('')
 
   if (isLoading) {
     return (
@@ -42,12 +40,6 @@ export function ProjectsView({ projectId, open, onClose, onRegister }: ProjectsV
   const title = onRegister
     ? `التسجيل في مشروع: ${project.title}`
     : project.title
-
-  // If viewing only (no registration function), we might want to hide the reason input and eligibility check?
-  // The user asked to "Refactor ... to use a single shared ModalDialog component".
-  // If the component is "ProjectsView", it implies viewing.
-  // But strictly speaking, the Registration form IS the view + extra fields.
-  // Let's hide the registration specific fields if onRegister is undefined.
 
   const isRegistrationMode = !!onRegister;
 
@@ -104,19 +96,6 @@ export function ProjectsView({ projectId, open, onClose, onRegister }: ProjectsV
           </div>
         </div>
 
-        {/* Reason for Choosing - Only in Registration Mode */}
-        {isRegistrationMode && (
-          <div className="space-y-2">
-            <Label htmlFor="reason" className="text-foreground">سبب اختيار المشروع (اختياري)</Label>
-            <Textarea
-              id="reason"
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              placeholder={t('project.registerDescription')}
-              className="min-h-[100px] resize-none bg-background"
-            />
-          </div>
-        )}
 
         {/* Note: Eligibility is determined by backend - no hardcoded checks */}
 
@@ -150,8 +129,8 @@ export function ProjectsView({ projectId, open, onClose, onRegister }: ProjectsV
               <Button variant="outline" onClick={onClose} className="min-w-[100px]">
                 إلغاء
               </Button>
-              <Button 
-                onClick={onRegister} 
+              <Button
+                onClick={onRegister}
                 disabled={!studentGroup || groupLoading}
                 className="min-w-[140px] bg-[#1e293b] hover:bg-[#0f172a]"
               >

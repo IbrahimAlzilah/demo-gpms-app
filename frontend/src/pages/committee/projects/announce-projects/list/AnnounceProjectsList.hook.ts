@@ -9,7 +9,7 @@ export function useAnnounceProjectsList() {
   
   const [state, setState] = useState<AnnounceProjectsListState>({
     selectedProjects: new Set(),
-    viewStatus: 'draft',
+    viewStatus: 'all',
     projectToViewId: null,
     projectToRemove: null,
     showRemoveConfirm: false,
@@ -31,7 +31,10 @@ export function useAnnounceProjectsList() {
     setPagination,
   } = useDataTable({
     queryKey: ['committee-projects-announce', state.viewStatus],
-    queryFn: (params) => committeeProjectService.getTableData(params, state.viewStatus),
+    queryFn: (params) => committeeProjectService.getTableData(
+      params, 
+      state.viewStatus === 'all' ? undefined : state.viewStatus
+    ),
     initialPageSize: 10,
     enableServerSide: true,
   })
@@ -55,7 +58,7 @@ export function useAnnounceProjectsList() {
     pageCount,
   }
 
-  const setViewStatus = useCallback((viewStatus: 'draft' | 'available_for_registration') => {
+  const setViewStatus = useCallback((viewStatus: 'all' | 'draft' | 'available_for_registration') => {
     setState((prev) => ({ ...prev, viewStatus, selectedProjects: new Set() }))
   }, [])
 

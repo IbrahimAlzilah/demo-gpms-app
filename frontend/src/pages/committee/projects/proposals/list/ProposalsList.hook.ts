@@ -10,7 +10,7 @@ export function useProposalsList() {
   const [state, setState] = useState<ProposalsListState>({
     selectedProposal: null,
     action: null,
-    statusFilter: 'pending_review',
+    statusFilter: 'all',
     proposalToEditId: null,
     proposalToDelete: null,
     proposalToViewId: null,

@@ -122,21 +122,20 @@ export function AnnounceProjectsList() {
 
   return (
     <>
-      <BlockContent
-        title={title}
-        actions={headerActions}
-      >
-
+      <BlockContent title={title} actions={headerActions} variant="data-table">
         <DataTable
           toolbarContent={
             <Select
               value={viewStatus}
-              onValueChange={(value) => setViewStatus(value as 'draft' | 'available_for_registration')}
+              onValueChange={(value) => setViewStatus(value as 'all' | 'draft' | 'available_for_registration')}
             >
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder={t('common.filterByStatus')} />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="all">
+                  {t('common.all')}
+                </SelectItem>
                 <SelectItem value="draft">
                   {t('committee.announce.approvedProjects')}
                 </SelectItem>
