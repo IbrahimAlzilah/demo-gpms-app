@@ -101,7 +101,7 @@ export function UsersList() {
 
   return (
     <>
-      <BlockContent title={t('user.userList')} actions={actions}>
+      <BlockContent title={t('user.userList')} actions={actions} variant="data-table">
         <DataTable
           columns={columns}
           data={data.users}
