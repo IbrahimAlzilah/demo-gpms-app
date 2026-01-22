@@ -560,12 +560,22 @@ class StudentGroupService
 
         // If leader is leaving and no registrations, delete the group
         // This will cascade delete all members and related data
-        $group->delete();
+        // Also delete pending review proposals associated with the group
+        DB::transaction(function () use ($group) {
+            // Delete all proposals with status 'Pending Review' associated with this group
+            \App\Models\Proposal::where('student_group_id', $group->id)
+                ->where('status', \App\Enums\ProposalStatus::PENDING_REVIEW->value)
+                ->delete();
+
+            // Delete the group (will cascade delete members, invitations, join requests)
+            $group->delete();
+        });
     }
 
     /**
      * Delete group (leader only)
      * Can only delete if group has no project registrations
+     * Automatically deletes associated proposals with status 'Pending Review'
      */
     public function deleteGroup(StudentGroup $group, User $user): void
     {
@@ -579,7 +589,14 @@ class StudentGroupService
             throw new \Exception('Cannot delete group. The group has project registrations. Please cancel all registrations first.');
         }
 
-        // Delete the group (will cascade delete members, invitations, join requests)
-        $group->delete();
+        DB::transaction(function () use ($group) {
+            // Delete all proposals with status 'Pending Review' associated with this group
+            \App\Models\Proposal::where('student_group_id', $group->id)
+                ->where('status', \App\Enums\ProposalStatus::PENDING_REVIEW->value)
+                ->delete();
+
+            // Delete the group (will cascade delete members, invitations, join requests)
+            $group->delete();
+        });
     }
 }

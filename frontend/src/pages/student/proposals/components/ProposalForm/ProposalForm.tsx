@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Input, Textarea, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { LoadingSpinner, FileUpload } from '@/components/common'
-import { AlertCircle, Loader2, Calendar, PlusCircle , X, Save } from 'lucide-react'
+import { AlertCircle, Loader2, Calendar, PlusCircle, X, Save } from 'lucide-react'
 import type { UseProposalFormReturn } from '../../hooks/useProposalForm'
 import { useSupervisors } from '../../hooks/useSupervisors'
 import { useMyGroup } from '@/pages/student/groups/hooks/useGroups'
@@ -235,7 +235,7 @@ export function ProposalForm({
               onClick={handleAddMember}
               className="mb-4"
             >
-              <PlusCircle  className="size-4" />
+              <PlusCircle className="size-4" />
               {t('proposal.addMember')}
             </Button>
           )}
@@ -251,8 +251,8 @@ export function ProposalForm({
                   {studentGroup.leader.name} <span className="text-xs text-muted-foreground">({t('common.leader') || 'Leader'})</span>
                 </li>
               )}
-              {/* Display Members */}
-              {studentGroup.members?.map((member) => (
+              {/* Display Members (excluding leader to avoid duplication) */}
+              {studentGroup.members?.filter((member) => member.id !== studentGroup.leaderId).map((member) => (
                 <li key={member.id} className="text-sm">
                   {member.name}
                 </li>
