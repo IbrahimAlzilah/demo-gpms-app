@@ -378,7 +378,7 @@ function QuickActionButton({ to, icon: Icon, label }: any) {
   return (
     <Button asChild variant="outline" className="w-full justify-start h-11 px-4 bg-card hover:bg-accent hover:text-accent-foreground border-border shadow-none transition-all duration-200">
       <Link to={to} className="flex items-center">
-        <Icon className="h-4 w-4 mr-3 text-muted-foreground group-hover:text-primary transition-colors" />
+        <Icon className="h-4 w-4 me-0 text-muted-foreground group-hover:text-primary transition-colors" />
         <span className="font-medium">{label}</span>
       </Link>
     </Button>

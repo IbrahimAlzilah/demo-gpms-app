@@ -34,7 +34,7 @@ export function Header({ className }: HeaderProps) {
   return (
     <header
       className={cn(
-        'sticky top-0 z-50 flex items-center border-b border-border bg-background backdrop-blur-md transition-all',
+        'sticky top-0 z-50 flex items-center border-b border-border bg-card backdrop-blur-md transition-all',
         LAYOUT_CONSTANTS.headerHeight,
         className
       )}
@@ -60,7 +60,7 @@ export function Header({ className }: HeaderProps) {
           <div className="relative">
             <Button
               variant="ghost"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 px-1!"
               onClick={() => setShowUserMenu(!showUserMenu)}
             >
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
