@@ -11,7 +11,7 @@ import type { DocumentsListState, DocumentsListData } from './DocumentsList.type
 export function useDocumentsList() {
   const { t } = useTranslation()
   const { user } = useAuthStore()
-  const { data: projects } = useProjects()
+  const { data: projects, isLoading: projectsLoading } = useProjects()
   const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('deliverable_submission')
 
   const [state, setState] = useState<DocumentsListState>({
@@ -77,6 +77,7 @@ export function useDocumentsList() {
     state,
     setState,
     userProject,
+    projectsLoading,
     isPeriodActive,
     periodLoading,
     // Table controls

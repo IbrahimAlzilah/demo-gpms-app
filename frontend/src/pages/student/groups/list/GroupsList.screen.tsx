@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Tool
 import { useState } from 'react'
 import React from 'react'
 import { useToast } from '@/components/common'
-import { BlockContent, ModalDialog, ConfirmDialog } from '@/components/common'
+import { BlockContent, ModalDialog, ConfirmDialog, LoadingSpinner } from '@/components/common'
 import { Users, Mail, Crown, Loader2, CheckCircle2, XCircle, PlusCircle, UserPlus, LogOut, Trash2 } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
 import { useAuthStore } from '@/pages/auth/login'
@@ -74,8 +74,18 @@ export function GroupsList() {
     }
   }
 
-  // ... (loading state check)
+  // Show loading spinner while data is being fetched
+  if (data.isLoading) {
+    return (
+      <BlockContent title={t('groups.management')} className="bg-white">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <LoadingSpinner />
+        </div>
+      </BlockContent>
+    )
+  }
 
+  // Show empty state only after loading is complete and no group exists
   if (!data.group) {
     const headerActions = (
       <div className="flex items-center gap-3">

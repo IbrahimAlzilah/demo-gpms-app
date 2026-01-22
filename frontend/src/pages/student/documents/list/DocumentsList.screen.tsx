@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DataTable, Button } from '@/components/ui'
-import { BlockContent } from '@/components/common'
+import { BlockContent, LoadingSpinner } from '@/components/common'
 import { PlusCircle, FolderOpen, AlertCircle, Calendar } from 'lucide-react'
 import { createDocumentColumns } from '../components/table'
 import { StatisticsCards } from '../components/StatisticsCards'
@@ -16,6 +16,7 @@ export function DocumentsList() {
     state,
     setState,
     userProject,
+    projectsLoading,
     isPeriodActive,
     periodLoading,
     totalCount,
@@ -56,6 +57,18 @@ export function DocumentsList() {
     [t, isPeriodActive, state.selectedProjectId, setState]
   )
 
+  // Show loading spinner while projects are being fetched
+  if (projectsLoading) {
+    return (
+      <BlockContent title={t('nav.documents')}>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <LoadingSpinner />
+        </div>
+      </BlockContent>
+    )
+  }
+
+  // Show empty state only after loading is complete and no project exists
   if (!userProject) {
     return (
       <div className="flex items-center justify-center p-8">

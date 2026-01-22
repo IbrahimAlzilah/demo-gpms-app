@@ -222,9 +222,9 @@ export function ProposalForm({
       </div>
 
       {/* Team Members Section */}
-      <div className="space-y-4">
+      <div className="space-y-2">
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2">
             <h3 className="text-base font-semibold">{t('proposal.teamMembers')}</h3>
           </div>
 
