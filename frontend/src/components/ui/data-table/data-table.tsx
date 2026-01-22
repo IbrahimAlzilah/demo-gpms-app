@@ -204,7 +204,7 @@ export function DataTable<TData, TValue>({
                       key={`skeleton-cell-${index}-${colIndex}`}
                       className="whitespace-nowrap py-1.5 px-2"
                     >
-                      <Skeleton className="h-7 w-full max-w-full rounded-[.375rem]" />
+                      <Skeleton className="h-6 w-full max-w-full rounded-[.375rem]" />
                     </TableCell>
                   ))}
                 </TableRow>

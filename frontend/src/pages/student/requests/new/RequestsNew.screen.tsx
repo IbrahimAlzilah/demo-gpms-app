@@ -141,7 +141,7 @@ export function RequestsNew({ open, onClose, onSuccess }: RequestsNewProps) {
               </>
             ) : (
               <>
-                <FileCheck className="mr-2 h-4 w-4" />
+                <FileCheck className="size-4" />
                 {t('request.submit')}
               </>
             )}

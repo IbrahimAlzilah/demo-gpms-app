@@ -183,7 +183,7 @@ export function ProjectRegistrationForm({
                 </>
               ) : (
                 <>
-                  <XCircle className="mr-2 h-4 w-4" />
+                  <XCircle className="size-4" />
                   {t('project.cancelRegistration')}
                 </>
               )}

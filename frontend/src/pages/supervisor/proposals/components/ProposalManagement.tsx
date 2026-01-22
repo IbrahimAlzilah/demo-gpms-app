@@ -4,7 +4,7 @@ import { useSupervisorProposals } from '../hooks/useProposals'
 import { ProposalForm } from './ProposalForm'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
 import { LoadingSpinner, StatusBadge } from '@/components/common'
-import { Plus, Edit, FileText } from 'lucide-react'
+import { PlusCircle , Edit, FileText } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
 
 export function ProposalManagement() {
@@ -26,7 +26,7 @@ export function ProposalManagement() {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">{t('supervisor.proposalManagement')}</h2>
         <Button onClick={() => setShowForm(true)}>
-          <Plus className="mr-2 h-4 w-4" />
+          <PlusCircle  className="size-4" />
           {t('supervisor.createProposal')}
         </Button>
       </div>
@@ -69,7 +69,7 @@ export function ProposalManagement() {
                         size="sm"
                         onClick={() => setEditingId(proposal.id)}
                       >
-                        <Edit className="mr-2 h-4 w-4" />
+                        <Edit className="size-4" />
                         {t('common.edit')}
                       </Button>
                     )}

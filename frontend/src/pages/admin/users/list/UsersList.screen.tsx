@@ -92,7 +92,7 @@ export function UsersList() {
           setState((prev) => ({ ...prev, selectedUser: null, showForm: true }))
         }}
       >
-        <PlusCircle className="mr-2 h-4 w-4" />
+        <PlusCircle className="size-4" />
         {t('common.add')}
       </Button>
     ),

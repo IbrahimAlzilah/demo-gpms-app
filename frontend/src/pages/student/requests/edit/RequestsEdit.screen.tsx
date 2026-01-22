@@ -126,7 +126,7 @@ export function RequestsEdit({ open, onClose, onSuccess, request }: RequestsEdit
               </>
             ) : (
               <>
-                <Edit className="mr-2 h-4 w-4" />
+                <Edit className="size-4" />
                 {t('request.update')}
               </>
             )}

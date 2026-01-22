@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Input, Textarea, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { LoadingSpinner, FileUpload } from '@/components/common'
-import { AlertCircle, Loader2, Calendar, Plus, X, Save } from 'lucide-react'
+import { AlertCircle, Loader2, Calendar, PlusCircle , X, Save } from 'lucide-react'
 import type { UseProposalFormReturn } from '../../hooks/useProposalForm'
 import { useSupervisors } from '../../hooks/useSupervisors'
 import { useMyGroup } from '@/pages/student/groups/hooks/useGroups'
@@ -235,7 +235,7 @@ export function ProposalForm({
               onClick={handleAddMember}
               className="mb-4"
             >
-              <Plus className="size-4" />
+              <PlusCircle  className="size-4" />
               {t('proposal.addMember')}
             </Button>
           )}
@@ -361,7 +361,7 @@ export function ProposalForm({
             </>
           ) : (
             <>
-              <Save className="mr-2 h-4 w-4" />
+              <Save className="size-4" />
               {isEditMode ? t('proposal.update') : t('proposal.save')}
             </>
           )}

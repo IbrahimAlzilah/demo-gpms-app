@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Tool
 import { useState } from 'react'
 import { useToast } from '@/components/common'
 import { BlockContent, ModalDialog } from '@/components/common'
-import { Users, Mail, Crown, Loader2, CheckCircle2, XCircle, Plus, UserPlus } from 'lucide-react'
+import { Users, Mail, Crown, Loader2, CheckCircle2, XCircle, PlusCircle , UserPlus } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
 import { useAuthStore } from '@/pages/auth/login'
 import { useAcceptInvitation, useRejectInvitation, useCreateGroup } from '../hooks/useGroupOperations'
@@ -74,7 +74,7 @@ export function GroupsList() {
           }}
           className="bg-primary text-white hover:bg-primary/90"
         >
-          <Plus className="h-4 w-4 ml-2" />
+          <PlusCircle className="h-4 w-4 ml-2" />
           {t('groups.createGroup')}
         </Button>
       </div>
@@ -175,7 +175,7 @@ export function GroupsList() {
                   }}
                   className="bg-primary text-white hover:bg-primary/90"
                 >
-                  <Plus className="h-4 w-4 ml-2" />
+                  <PlusCircle className="h-4 w-4 ml-2" />
                   {t('groups.createGroup')}
                 </Button>
               </div>
@@ -233,7 +233,7 @@ export function GroupsList() {
                   </>
                 ) : (
                   <>
-                    <Plus className="mr-2 h-4 w-4" />
+                    <PlusCircle className="size-4" />
                     {t('groups.create')}
                   </>
                 )}
@@ -258,7 +258,7 @@ export function GroupsList() {
       }}
       className="bg-primary text-white hover:bg-primary/90"
     >
-      <Plus className="h-4 w-4 ml-2" />
+      <PlusCircle className="h-4 w-4 ml-2" />
       {t('groups.inviteMember')}
     </Button>
   ) : null

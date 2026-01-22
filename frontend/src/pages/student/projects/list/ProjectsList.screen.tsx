@@ -115,7 +115,7 @@ export function ProjectsList() {
 
   return (
     <>
-      <BlockContent title={t('nav.projects')}>
+      <BlockContent title={t('nav.projects')} variant="data-table">
         {periodLoading ? (
           <Card>
             <CardContent className="pt-6">

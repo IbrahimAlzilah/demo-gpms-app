@@ -95,7 +95,7 @@ export function GroupJoinForm({ onSuccess, onError }: GroupJoinFormProps) {
           </>
         ) : (
           <>
-            <Users className="mr-2 h-4 w-4" />
+            <Users className="size-4" />
             {t('groups.submitJoinRequest')}
           </>
         )}

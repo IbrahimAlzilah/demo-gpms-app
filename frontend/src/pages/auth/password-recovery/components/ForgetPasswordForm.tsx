@@ -170,7 +170,7 @@ export function ForgetPasswordForm() {
             </>
           ) : (
             <>
-              <Mail className="mr-2 h-4 w-4" />
+              <Mail className="size-4" />
               {t('auth.forgetPassword.sendLink')}
             </>
           )}

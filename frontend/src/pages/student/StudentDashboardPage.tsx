@@ -12,7 +12,7 @@ import {
   FileCheck,
   ArrowLeft,
   ArrowRight,
-  Plus,
+  PlusCircle ,
   Search,
   Clock,
   Folder,
@@ -203,13 +203,13 @@ export function StudentDashboardPage() {
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Button asChild size="lg" className="shadow-md">
                     <Link to={ROUTES.STUDENT.PROPOSALS}>
-                      <Plus className="mr-2 h-4 w-4" />
+                      <PlusCircle  className="size-4" />
                       {t('dashboard.student.submitProposal')}
                     </Link>
                   </Button>
                   <Button asChild variant="outline" size="lg" className="bg-background">
                     <Link to={ROUTES.STUDENT.PROJECTS}>
-                      <Search className="mr-2 h-4 w-4" />
+                      <Search className="size-4" />
                       {t('dashboard.student.browseProjects')}
                     </Link>
                   </Button>
@@ -302,7 +302,7 @@ export function StudentDashboardPage() {
               <div className="grid grid-cols-1 gap-3">
                 <QuickActionButton
                   to={ROUTES.STUDENT.PROPOSALS}
-                  icon={Plus}
+                  icon={PlusCircle }
                   label={t('dashboard.student.submitNewProposal')}
                   description={t('dashboard.student.proposalDesc', { defaultValue: 'Start a new project proposal' })}
                   color="blue"

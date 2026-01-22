@@ -128,7 +128,7 @@ export function PeriodsList() {
 
   const actions = useMemo(() => (
     <Button onClick={() => setState((prev) => ({ ...prev, showForm: true }))}>
-      <PlusCircle className="mr-2 h-4 w-4" />
+      <PlusCircle className="size-4" />
       {t('committee.periods.createNew')}
     </Button>
   ), [t, setState])
@@ -137,7 +137,7 @@ export function PeriodsList() {
 
   return (
     <div className="space-y-6">
-      <BlockContent title={t('committee.periods.currentPeriods')} actions={actions}>
+      <BlockContent title={t('committee.periods.currentPeriods')} actions={actions} variant="data-table">
         <DataTable
           columns={columns}
           data={data.periods}

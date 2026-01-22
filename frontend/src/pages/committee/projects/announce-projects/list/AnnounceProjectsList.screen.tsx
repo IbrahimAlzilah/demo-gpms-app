@@ -108,7 +108,7 @@ export function AnnounceProjectsList() {
           </>
         ) : (
           <>
-            <Megaphone className="mr-2 h-4 w-4" />
+            <Megaphone className="size-4" />
             {t('committee.announce.announceSelected')}
           </>
         )}

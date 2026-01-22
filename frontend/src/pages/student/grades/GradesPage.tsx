@@ -24,11 +24,11 @@ export function GradesPage() {
   const actions = (
     <div className="flex gap-2">
       <Button onClick={onPrint} variant="outline">
-        <Printer className="mr-2 h-4 w-4" />
+        <Printer className="size-4" />
         {t('grades.print')}
       </Button>
       <Button onClick={onExport} variant="outline">
-        <Download className="mr-2 h-4 w-4" />
+        <Download className="size-4" />
         {t('grades.export')}
       </Button>
     </div>

@@ -198,7 +198,7 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
           </>
         ) : (
           <>
-            <Upload className="mr-2 h-4 w-4" />
+            <Upload className="size-4" />
             {t('document.upload')}
           </>
         )}

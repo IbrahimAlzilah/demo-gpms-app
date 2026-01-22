@@ -88,7 +88,7 @@ export function DocumentsView({ documentId, open, onClose }: DocumentsViewProps)
               }}
               className="flex-1"
             >
-              <Download className="mr-2 h-4 w-4" />
+              <Download className="size-4" />
               {t('document.download')}
             </Button>
             <Button variant="outline" onClick={onClose}>

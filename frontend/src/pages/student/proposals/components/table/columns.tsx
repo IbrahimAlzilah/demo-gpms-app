@@ -50,6 +50,15 @@ export function createProposalColumns({
       ),
     },
     {
+      accessorKey: 'submitter',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('proposal.submitterName')} />
+      ),
+      cell: ({ row }) => (
+        <div>{t(`roles.${row.original.submitter?.role}`) || row.original.submitter?.role}</div>
+      ),
+    },
+    {
       accessorKey: 'status',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('common.status')} />
@@ -58,6 +67,7 @@ export function createProposalColumns({
       filterFn: (row, id, value) => {
         return value.includes(row.getValue(id))
       },
+      enableSorting: false,
     },
     {
       accessorKey: 'createdAt',
@@ -80,6 +90,7 @@ export function createProposalColumns({
           {row.original.reviewedAt ? formatRelativeTime(row.original.reviewedAt) : '-'}
         </div>
       ),
+      enableSorting: false,
     },
     {
       id: 'actions',

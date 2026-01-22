@@ -7,7 +7,7 @@ import { useAuthStore } from '@/pages/auth/login'
 import { usePeriodCheck } from '@/hooks/usePeriodCheck'
 import { Button, Input, Textarea, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { LoadingSpinner, FileUpload } from '@/components/common'
-import { AlertCircle, Loader2, Calendar, Plus, X, Save } from 'lucide-react'
+import { AlertCircle, Loader2, Calendar, PlusCircle , X, Save } from 'lucide-react'
 import { proposalFormSchema, type ProposalFormSchema } from '../../schema'
 import { useSupervisors } from '../../hooks/useSupervisors'
 
@@ -219,7 +219,7 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
             onClick={handleAddMember}
             className="mb-4"
           >
-            <Plus className="size-4" />
+            <PlusCircle  className="size-4" />
             {t('proposal.addMember')}
           </Button>
         </div>

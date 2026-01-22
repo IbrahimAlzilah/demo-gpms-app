@@ -84,7 +84,7 @@ export function ProposalsList() {
   const actions = useMemo(
     () => (
       <Button onClick={() => setState((prev) => ({ ...prev, showForm: true }))}>
-        <PlusCircle className="mr-2 h-4 w-4" />
+        <PlusCircle className="size-4" />
         {t('proposal.submitNew')}
       </Button>
     ),
@@ -207,7 +207,7 @@ export function ProposalsList() {
                 </>
               ) : (
                 <>
-                  <RotateCcw className="mr-2 h-4 w-4" />
+                  <RotateCcw className="size-4" />
                   {t('proposal.resubmit')}
                 </>
               )}

@@ -11,7 +11,7 @@ export function Footer() {
         responsiveSpacing.footer
       )}>
         <p className="text-center text-xs sm:text-sm text-muted-foreground px-2">
-          © {new Date().getFullYear()} نظام إدارة تقييم مشاريع التخرج. جميع الحقوق محفوظة.
+          © {new Date().getFullYear()}  University GPMS جميع الحقوق محفوظة.
         </p>
       </div>
     </footer>

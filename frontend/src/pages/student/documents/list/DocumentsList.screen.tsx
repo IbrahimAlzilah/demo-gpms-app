@@ -49,7 +49,7 @@ export function DocumentsList() {
     () =>
       isPeriodActive && state.selectedProjectId ? (
         <Button onClick={() => setState((prev) => ({ ...prev, showUploadForm: true }))}>
-          <PlusCircle className="mr-2 h-4 w-4" />
+          <PlusCircle className="size-4" />
           {t('document.uploadNew')}
         </Button>
       ) : null,
