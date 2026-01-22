@@ -120,26 +120,23 @@ class ProposalController extends Controller
                 ], 403);
             }
 
-            // During registration window (and not proposal_submission), enforce group size requirements
-            if ($groupRequired) {
-                // Validate group meets minimum and maximum member requirements
-                $minMembers = app(\App\Services\SettingsService::class)->getGroupMinMembers();
-                $maxMembers = app(\App\Services\SettingsService::class)->getGroupMaxMembers();
-                $totalMembers = $studentGroup->getTotalMemberCount();
-                
-                if ($totalMembers < $minMembers) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => "Group must have at least {$minMembers} members to submit a proposal during registration window",
-                    ], 422);
-                }
-                
-                if ($totalMembers > $maxMembers) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => "Group cannot have more than {$maxMembers} members",
-                    ], 422);
-                }
+            // Always enforce group size requirements (minimum 2 and maximum 5 members)
+            $minMembers = app(\App\Services\SettingsService::class)->getGroupMinMembers();
+            $maxMembers = app(\App\Services\SettingsService::class)->getGroupMaxMembers();
+            $totalMembers = $studentGroup->getTotalMemberCount();
+            
+            if ($totalMembers < $minMembers) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Group must have at least {$minMembers} members to submit a proposal",
+                ], 422);
+            }
+            
+            if ($totalMembers > $maxMembers) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Group cannot have more than {$maxMembers} members",
+                ], 422);
             }
         }
 

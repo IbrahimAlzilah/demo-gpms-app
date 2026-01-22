@@ -451,7 +451,7 @@
     }
   },
   "proposal": {
-    "submitNew": "New Proposal - Student",
+    "submitNew": "New Proposal",
     "submitDescription": "Fill out the form below to submit a graduation project proposal",
     "basicInfo": "Basic Information",
     "title": "Proposal Title",

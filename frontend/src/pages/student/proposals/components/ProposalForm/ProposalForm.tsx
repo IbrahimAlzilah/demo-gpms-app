@@ -47,7 +47,7 @@ export function ProposalForm({
   // Auto-select group if student is a member of one
   useEffect(() => {
     if (studentGroup) {
-      form.setValue('studentGroupId', String(studentGroup.id))
+      form.setValue('studentGroupId', String(studentGroup.id), { shouldValidate: true })
     }
   }, [studentGroup, form])
 
@@ -126,54 +126,6 @@ export function ProposalForm({
           )}
         </div>
 
-        {/* Group Selection - Required during registration window OR if user is in a group */}
-        {(isRegistrationWindow || studentGroup) && (
-          <div className="space-y-2">
-            <Label htmlFor="studentGroupId">
-              {t('proposal.group')} <span className="text-destructive">*</span>
-            </Label>
-            {groupLoading ? (
-              <LoadingSpinner />
-            ) : !studentGroup ? (
-              <div className="flex items-start gap-2 p-3 text-sm text-warning bg-warning/10 border border-warning/20 rounded-md">
-                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                <span>{t('proposal.noGroupRequired')}</span>
-              </div>
-            ) : (
-              <Select
-                value={selectedGroupId ? String(selectedGroupId) : ''}
-                onValueChange={(value) => form.setValue('studentGroupId', value)}
-                disabled={!!studentGroup} // Disable selection if user is already in a group
-              >
-                <SelectTrigger className={errors.studentGroupId ? 'border-destructive' : ''}>
-                  <SelectValue placeholder={t('proposal.selectGroupPlaceholder')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={String(studentGroup.id)}>
-                    {studentGroup.name || `${t('proposal.group')} #${studentGroup.id}`}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-            {errors.studentGroupId && (
-              <p className="text-xs text-destructive flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
-                {errors.studentGroupId.message}
-              </p>
-            )}
-            {studentGroup && (
-              <p className="text-xs text-muted-foreground">
-                {t('proposal.groupSubmissionAutoSelected') || 'You are submitting on behalf of your group.'}
-              </p>
-            )}
-            {!studentGroup && isRegistrationWindow && (
-              <p className="text-xs text-muted-foreground">
-                {t('proposal.groupSubmissionNote')}
-              </p>
-            )}
-          </div>
-        )}
-
         {/* Proposed Supervisor Section */}
         <div className="space-y-2">
           <Label htmlFor="proposedSupervisorId">
@@ -219,6 +171,70 @@ export function ProposalForm({
             </p>
           )}
         </div>
+
+        {/* Group Selection - Required during registration window OR if user is in a group */}
+        {(isRegistrationWindow || studentGroup) && (
+          <div className="space-y-2">
+            <Label htmlFor="studentGroupId">
+              {t('proposal.group')} <span className="text-destructive">*</span>
+            </Label>
+            {groupLoading ? (
+              <LoadingSpinner />
+            ) : !studentGroup ? (
+              <div className="flex items-start gap-2 p-3 text-sm text-warning bg-warning/10 border border-warning/20 rounded-md">
+                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                <span>{t('proposal.noGroupRequired')}</span>
+              </div>
+            ) : (
+              <Select
+                value={selectedGroupId ? String(selectedGroupId) : ''}
+                onValueChange={(value) => form.setValue('studentGroupId', value)}
+                disabled={!!studentGroup} // Disable selection if user is already in a group
+              >
+                <SelectTrigger className={errors.studentGroupId && !(studentGroup && selectedGroupId) ? 'border-destructive' : ''}>
+                  <SelectValue placeholder={t('proposal.selectGroupPlaceholder')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={String(studentGroup.id)}>
+                    {studentGroup.name || `${t('proposal.group')} #${studentGroup.id}`}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+            {errors.studentGroupId && !(studentGroup && selectedGroupId) && (
+              <p className="text-xs text-destructive flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors.studentGroupId.message}
+              </p>
+            )}
+            {studentGroup && (() => {
+              // Calculate total member count (members + leader)
+              const totalMembers = (studentGroup.members?.length || 0) + 1
+              const minMembers = studentGroup.minMembers ?? 2
+              const maxMembers = studentGroup.maxMembers ?? 5
+              const isValidSize = totalMembers >= minMembers && totalMembers <= maxMembers
+
+              return (
+                <>
+                  {!isValidSize && (
+                    <p className="text-xs text-destructive flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {t('proposal.validation.groupSizeInvalid')}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    {t('proposal.groupSubmissionAutoSelected') || 'You are submitting on behalf of your group.'}
+                  </p>
+                </>
+              )
+            })()}
+            {!studentGroup && isRegistrationWindow && (
+              <p className="text-xs text-muted-foreground">
+                {t('proposal.groupSubmissionNote')}
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Team Members Section */}
@@ -258,9 +274,6 @@ export function ProposalForm({
                 </li>
               ))}
             </ul>
-            <p className="text-xs text-muted-foreground mt-3">
-              {t('proposal.groupSubmissionMessage') || 'This proposal will be submitted on behalf of all group members.'}
-            </p>
           </div>
         ) : (
           <div className="space-y-3">

@@ -531,6 +531,9 @@
     "validation": {
       "titleRequired": "عنوان المقترح مطلوب",
       "groupRequired": "المجموعة مطلوبة خلال فترة التسجيل",
+      "groupRequiredDuringRegistration": "المجموعة مطلوبة خلال فترة التسجيل",
+      "groupRequiredWhenInGroup": "يجب تقديم المقترح باسم المجموعة",
+      "groupSizeInvalid": "يجب أن تكون المجموعة مكونة من عضوين على الأقل و5 أعضاء كحد أقصى",
       "titleMinLength": "العنوان يجب أن يكون 5 أحرف على الأقل",
       "titleMaxLength": "العنوان يجب أن يكون أقل من 200 حرف",
       "titleMaxLength255": "العنوان يجب أن يكون أقل من 255 حرف",

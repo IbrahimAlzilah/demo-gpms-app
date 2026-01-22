@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/components/common";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -39,17 +39,35 @@ export function useProposalForm(options: UseProposalFormOptions = {}) {
   const { toastError } = useToast()
 
   const form = useForm<ProposalFormSchema>({
-    resolver: zodResolver(proposalFormSchema(t, requireGroup)),
+    resolver: zodResolver(proposalFormSchema(t, requireGroup, isRegistrationWindow, !!studentGroup)),
     defaultValues: {
       title: "",
       description: "",
       proposedSupervisorId: "",
-      studentGroupId: "",
+      studentGroupId: studentGroup ? String(studentGroup.id) : "",
       targetProjectId: "",
       teamMembers: [],
       ...options.defaultValues,
     },
   });
+
+  // Update form when studentGroup loads to auto-select and clear errors
+  useEffect(() => {
+    if (studentGroup) {
+      const groupId = String(studentGroup.id);
+      const currentValue = form.getValues('studentGroupId');
+      
+      // Set the group ID if it's not already set, and clear errors
+      if (currentValue !== groupId) {
+        form.setValue('studentGroupId', groupId, { 
+          shouldValidate: false, // Don't validate to avoid showing wrong message
+          shouldDirty: false 
+        });
+      }
+      // Always clear errors when group is available
+      form.clearErrors('studentGroupId');
+    }
+  }, [studentGroup, form]);
 
   const handleSubmit = async (data: ProposalFormSchema) => {
     if (!user) {
