@@ -140,4 +140,16 @@ class StudentGroup extends Model
     {
         return $this->members()->count() + 1; // +1 for leader
     }
+
+    /**
+     * Check if any member of the group has a project registration
+     */
+    public function hasProjectRegistrations(): bool
+    {
+        // Get all member IDs (including leader)
+        $memberIds = $this->members()->pluck('users.id')->push($this->leader_id)->unique();
+
+        // Check if any member has a project registration (any status)
+        return \App\Models\ProjectRegistration::whereIn('student_id', $memberIds)->exists();
+    }
 }

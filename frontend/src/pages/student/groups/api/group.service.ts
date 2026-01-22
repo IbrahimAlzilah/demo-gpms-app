@@ -223,4 +223,20 @@ export const groupService = {
       throw new Error(getErrorMessage(error))
     }
   },
+
+  leave: async (groupId: string): Promise<void> => {
+    try {
+      await apiClient.delete(`/student/groups/${groupId}/leave`)
+    } catch (error) {
+      throw new Error(getErrorMessage(error))
+    }
+  },
+
+  delete: async (groupId: string): Promise<void> => {
+    try {
+      await apiClient.delete(`/student/groups/${groupId}`)
+    } catch (error) {
+      throw new Error(getErrorMessage(error))
+    }
+  },
 }

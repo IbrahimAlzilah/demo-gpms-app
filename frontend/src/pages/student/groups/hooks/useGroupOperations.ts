@@ -238,3 +238,39 @@ export function useRejectJoinRequest() {
     },
   })
 }
+
+export function useLeaveGroup() {
+  const queryClient = useQueryClient()
+  const { user } = useAuthStore()
+
+  return useMutation({
+    mutationFn: (groupId: string) => {
+      return groupService.leave(groupId)
+    },
+    onSuccess: () => {
+      // Invalidate all group queries
+      queryClient.invalidateQueries({ queryKey: ['groups'] })
+      if (user) {
+        queryClient.invalidateQueries({ queryKey: ['groups', 'student', user.id] })
+      }
+    },
+  })
+}
+
+export function useDeleteGroup() {
+  const queryClient = useQueryClient()
+  const { user } = useAuthStore()
+
+  return useMutation({
+    mutationFn: (groupId: string) => {
+      return groupService.delete(groupId)
+    },
+    onSuccess: () => {
+      // Invalidate all group queries
+      queryClient.invalidateQueries({ queryKey: ['groups'] })
+      if (user) {
+        queryClient.invalidateQueries({ queryKey: ['groups', 'student', user.id] })
+      }
+    },
+  })
+}

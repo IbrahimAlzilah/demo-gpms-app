@@ -534,4 +534,52 @@ class StudentGroupService
             throw new \Exception('Group is already assigned to a project. Member changes must be requested via the Project Committee.');
         }
     }
+
+    /**
+     * Leave group (for leader or member)
+     * Leader can leave only if group has no project registrations
+     */
+    public function leaveGroup(StudentGroup $group, User $user): void
+    {
+        if (!$group->hasMember($user->id)) {
+            throw new \Exception('You are not a member of this group');
+        }
+
+        // If user is the leader, check for project registrations
+        if ($group->leader_id === $user->id) {
+            if ($group->hasProjectRegistrations()) {
+                throw new \Exception('Cannot leave group. The group has project registrations. You must delete the group instead, which will remove all members.');
+            }
+        }
+
+        // If user is a member (not leader), just remove them
+        if ($group->leader_id !== $user->id) {
+            $group->members()->detach($user->id);
+            return;
+        }
+
+        // If leader is leaving and no registrations, delete the group
+        // This will cascade delete all members and related data
+        $group->delete();
+    }
+
+    /**
+     * Delete group (leader only)
+     * Can only delete if group has no project registrations
+     */
+    public function deleteGroup(StudentGroup $group, User $user): void
+    {
+        // Only leader can delete the group
+        if ($group->leader_id !== $user->id) {
+            throw new \Exception('Only the group leader can delete the group');
+        }
+
+        // Check if group has any project registrations
+        if ($group->hasProjectRegistrations()) {
+            throw new \Exception('Cannot delete group. The group has project registrations. Please cancel all registrations first.');
+        }
+
+        // Delete the group (will cascade delete members, invitations, join requests)
+        $group->delete();
+    }
 }

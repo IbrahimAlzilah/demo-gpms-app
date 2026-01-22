@@ -1,12 +1,13 @@
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui'
 import { useState } from 'react'
+import React from 'react'
 import { useToast } from '@/components/common'
-import { BlockContent, ModalDialog } from '@/components/common'
-import { Users, Mail, Crown, Loader2, CheckCircle2, XCircle, PlusCircle , UserPlus } from 'lucide-react'
+import { BlockContent, ModalDialog, ConfirmDialog } from '@/components/common'
+import { Users, Mail, Crown, Loader2, CheckCircle2, XCircle, PlusCircle, UserPlus, LogOut, Trash2 } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
 import { useAuthStore } from '@/pages/auth/login'
-import { useAcceptInvitation, useRejectInvitation, useCreateGroup } from '../hooks/useGroupOperations'
+import { useAcceptInvitation, useRejectInvitation, useCreateGroup, useLeaveGroup, useDeleteGroup } from '../hooks/useGroupOperations'
 import type { User } from '@/types/user.types'
 import { GroupInviteForm } from '../components/GroupInviteForm'
 import { GroupJoinForm } from '../components/GroupJoinForm'
@@ -22,12 +23,31 @@ export function GroupsList() {
     data,
     state,
     setState,
+    registrations,
   } = useGroupsList()
 
   const acceptInvitation = useAcceptInvitation()
   const rejectInvitation = useRejectInvitation()
   const createGroup = useCreateGroup()
+  const leaveGroup = useLeaveGroup()
+  const deleteGroup = useDeleteGroup()
   const [isCopied, setIsCopied] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false)
+
+  // Check if group has any project registrations - MUST be called before any early returns
+  const hasProjectRegistrations = React.useMemo(() => {
+    if (!data.group || !registrations || registrations.length === 0) {
+      return false
+    }
+    // Get all member IDs (including leader)
+    const memberIds = new Set([
+      data.group.leaderId,
+      ...data.group.members.map(m => m.id)
+    ])
+    // Check if any registration belongs to a group member
+    return registrations.some(reg => memberIds.has(reg.studentId))
+  }, [data.group, registrations])
 
   const handleCreateGroup = async (name?: string, members: User[] = []) => {
     try {
@@ -356,11 +376,39 @@ export function GroupsList() {
           {isLeader && (
             <Card className="border-primary">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Crown className="h-5 w-5 text-primary" />
-                  {t('groups.groupId')}
-                </CardTitle>
-                <CardDescription>{t('groups.groupIdDescription')}</CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Crown className="h-5 w-5 text-primary" />
+                      {t('groups.groupId')}
+                    </CardTitle>
+                    <CardDescription>{t('groups.groupIdDescription')}</CardDescription>
+                  </div>
+                  {/* Delete Button - Only show if no project registrations */}
+                  {!hasProjectRegistrations && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => {
+                        if (!data.group) return
+                        setShowDeleteDialog(true)
+                      }}
+                      disabled={deleteGroup.isPending}
+                    >
+                      {deleteGroup.isPending ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          {t('groups.deleting')}
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          {t('groups.deleteGroup')}
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-3 p-4 bg-primary/10 border border-primary/20 rounded-lg">
@@ -434,6 +482,33 @@ export function GroupsList() {
                 onError={(error) => toastError(error)}
                 onSuccess={(message) => toastSuccess(message)}
               />
+
+              {/* Leave Group Button for Members - Only show if no project registrations */}
+              {!isLeader && !hasProjectRegistrations && (
+                <div className="pt-4 border-t">
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => {
+                      if (!data.group) return
+                      setShowLeaveDialog(true)
+                    }}
+                    disabled={leaveGroup.isPending}
+                  >
+                    {leaveGroup.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {t('groups.leaving')}
+                      </>
+                    ) : (
+                      <>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        {t('groups.leaveGroup')}
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -461,6 +536,48 @@ export function GroupsList() {
           />
         </ModalDialog>
       )}
+
+      {/* Delete Group Confirmation Dialog */}
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onConfirm={() => {
+          if (!data.group) return
+          deleteGroup.mutate(data.group.id, {
+            onSuccess: () => {
+              toastSuccess(t('groups.deleteSuccess'))
+            },
+            onError: (err) => {
+              toastError(err instanceof Error ? err.message : t('groups.deleteError'))
+            },
+          })
+        }}
+        title={t('groups.deleteGroup')}
+        description={t('groups.confirmDeleteGroup')}
+        variant="destructive"
+        confirmLabel={t('groups.deleteGroup')}
+      />
+
+      {/* Leave Group Confirmation Dialog */}
+      <ConfirmDialog
+        open={showLeaveDialog}
+        onOpenChange={setShowLeaveDialog}
+        onConfirm={() => {
+          if (!data.group) return
+          leaveGroup.mutate(data.group.id, {
+            onSuccess: () => {
+              toastSuccess(t('groups.leaveSuccess'))
+            },
+            onError: (err) => {
+              toastError(err instanceof Error ? err.message : t('groups.leaveError'))
+            },
+          })
+        }}
+        title={t('groups.leaveGroup')}
+        description={t('groups.confirmLeaveGroup')}
+        variant="default"
+        confirmLabel={t('groups.leaveGroup')}
+      />
     </>
   )
 }

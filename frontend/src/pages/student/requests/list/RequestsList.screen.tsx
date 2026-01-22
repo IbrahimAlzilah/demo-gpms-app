@@ -120,8 +120,7 @@ export function RequestsList() {
     <>
       {/* Statistics Cards */}
       <StatisticsCards statistics={data.statistics} t={t} />
-
-      <BlockContent title={t('nav.requests')} actions={actions}>
+      <BlockContent title={t('nav.requests')} actions={actions} variant="data-table">
         <DataTable
           toolbarContent={
             <Select

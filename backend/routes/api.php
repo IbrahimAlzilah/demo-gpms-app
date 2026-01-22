@@ -85,6 +85,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('groups/{group}/leader', [App\Http\Controllers\Student\StudentGroupController::class, 'updateLeader']);
         Route::post('groups/{group}/members', [App\Http\Controllers\Student\StudentGroupController::class, 'addMember']);
         Route::delete('groups/{group}/members/{member}', [App\Http\Controllers\Student\StudentGroupController::class, 'removeMember']);
+        Route::delete('groups/{group}/leave', [App\Http\Controllers\Student\StudentGroupController::class, 'leave']);
+        Route::delete('groups/{group}', [App\Http\Controllers\Student\StudentGroupController::class, 'destroy']);
         // Join requests routes
         Route::post('groups/join-request', [App\Http\Controllers\Student\StudentGroupController::class, 'createJoinRequest']);
         Route::get('groups/{group}/join-requests', [App\Http\Controllers\Student\StudentGroupController::class, 'getJoinRequests']);

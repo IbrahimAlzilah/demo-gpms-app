@@ -375,4 +375,46 @@ class StudentGroupController extends Controller
             ], 400);
         }
     }
+
+    /**
+     * Leave group (leader or member)
+     * DELETE /student/groups/{group}/leave
+     */
+    public function leave(Request $request, StudentGroup $group): JsonResponse
+    {
+        try {
+            $this->groupService->leaveGroup($group, $request->user());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Left group successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Delete group (leader only)
+     * DELETE /student/groups/{group}
+     */
+    public function destroy(Request $request, StudentGroup $group): JsonResponse
+    {
+        try {
+            $this->groupService->deleteGroup($group, $request->user());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Group deleted successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
 }
