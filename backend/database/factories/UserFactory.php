@@ -58,6 +58,7 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => 'student',
+            'status' => 'active',
         ]);
     }
 
@@ -68,6 +69,7 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => 'supervisor',
+            'status' => 'active',
         ]);
     }
 
@@ -78,6 +80,7 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => 'discussion_committee',
+            'status' => 'active',
         ]);
     }
 
@@ -88,6 +91,7 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => 'projects_committee',
+            'status' => 'active',
         ]);
     }
 
@@ -98,6 +102,7 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => 'admin',
+            'status' => 'active',
             'username' => 'admin' . fake()->unique()->numberBetween(1, 9999), // Will be set to 'admin' for first admin in seeder
         ]);
     }

@@ -10,6 +10,9 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Proposal>
+ * 
+ * Note: This factory creates users automatically for testing purposes.
+ * In seeders, prefer passing existing user IDs to avoid creating extra users.
  */
 class ProposalFactory extends Factory
 {
@@ -25,12 +28,14 @@ class ProposalFactory extends Factory
             'description' => YemeniDataHelper::yemeniProposalDescription(),
             'submitter_id' => User::factory()->student(),
             'proposed_supervisor_id' => User::factory()->supervisor(),
-            'team_members' => [],
+            'team_members' => null,
             'status' => fake()->randomElement(ProposalStatus::cases()),
             'review_notes' => fake()->optional()->paragraph(),
             'reviewed_by' => null,
             'reviewed_at' => null,
             'project_id' => null,
+            'student_group_id' => null,
+            'target_project_id' => null,
         ];
     }
 

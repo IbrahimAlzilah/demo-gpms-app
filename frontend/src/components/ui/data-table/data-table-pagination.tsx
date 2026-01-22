@@ -38,7 +38,7 @@ export function DataTablePagination<TData>({
     const end = totalRows > 0 ? Math.min((pageIndex + 1) * pageSize, totalRows) : 0
 
     return (
-        <div className="flex items-center justify-between px-2">
+        <div className="flex items-center justify-between px-3 py-3">
             <div className="flex-1 text-sm text-muted-foreground">
                 {totalRows > 0 ? (
                     t('dataTable.rowsInfo', { start, end, total: totalRows })

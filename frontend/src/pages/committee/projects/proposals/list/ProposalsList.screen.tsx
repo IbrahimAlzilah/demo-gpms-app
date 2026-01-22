@@ -114,6 +114,7 @@ export function ProposalsList() {
     <>
 
       <BlockContent
+        variant="data-table"
         title={t('committee.proposal.reviewPanel')}
         actions={
           <Button onClick={() => setShowCreateDialog(true)}>

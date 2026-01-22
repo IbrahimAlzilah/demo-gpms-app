@@ -149,7 +149,7 @@ export function ProjectsCommitteeDashboardPage() {
           <div className="lg:col-span-2 space-y-8">
 
             {/* Current Phase Card - Hero Element */}
-            <Card className="overflow-hidden border-border bg-gradient-to-br from-card to-card/50 shadow-sm relative">
+            <Card className="overflow-hidden relative">
               <div className="absolute top-0 right-0 p-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
               <CardHeader className="border-b border-border/40 bg-muted/10 !pb-2">
                 <div className="flex items-center justify-between">
@@ -166,12 +166,12 @@ export function ProjectsCommitteeDashboardPage() {
                   )}
                 </div>
               </CardHeader>
-              <CardContent className="p-0 relative z-10">
+              <CardContent className="relative z-10">
                 {currentPhase.period ? (
                   <div className="space-y-8">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div>
-                        <h3 className="text-2xl font-bold tracking-tight mb-1">
+                        <h3 className="text-xl font-bold tracking-tight mb-1">
                           {currentPhase.period.name || getPeriodTypeLabel(currentPhase.period.type)}
                         </h3>
                         <p className="text-muted-foreground">

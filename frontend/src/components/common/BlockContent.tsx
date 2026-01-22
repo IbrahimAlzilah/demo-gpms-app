@@ -46,7 +46,7 @@ export const BlockContent = ({
           {subtitle && <CardDescription className='text-sm text-muted-foreground'>{subtitle}</CardDescription>}
         </CardHeader>
         <Separator />
-        <CardContent className='p-4'>{children}</CardContent>
+        <CardContent className={cn(variant === "data-table" ? "p-0" : "p-4")}>{children}</CardContent>
       </Card>
     );
   }

@@ -62,13 +62,17 @@ export function LoginForm() {
   }
 
   return (
-    <div className="w-full space-y-6">
-      <div className="text-center">
-        <div className="flex justify-center mb-4">
-          <img src={logo} alt="GPMS Logo" className="h-16 w-16 object-contain" />
+    <div className="w-full space-y-8">
+      <div className="text-center space-y-2">
+        <div className="flex justify-center mb-6">
+          <div className="p-4 bg-primary/5 rounded-2xl ring-1 ring-primary/10 shadow-sm backdrop-blur-sm">
+            <img src={logo} alt="GPMS Logo" className="h-16 w-16 object-contain" />
+          </div>
         </div>
-        <h2 className="text-2xl font-bold">{t('auth.login')}</h2>
-        <p className="text-sm text-muted-foreground mt-2">
+        <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+          {t('auth.login')}
+        </h2>
+        <p className="text-sm text-muted-foreground font-medium">
           {t('auth.loginSubtitle')}
         </p>
       </div>

@@ -147,9 +147,9 @@ export function DataTable<TData, TValue>({
     }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-0">
             {(enableFiltering || enableViews || toolbarContent) && (
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center justify-between gap-4 p-3">
                     <div className="flex items-center flex-1 gap-2">
                         {enableFiltering && (
                             <DataTableToolbar
@@ -168,7 +168,7 @@ export function DataTable<TData, TValue>({
                     </div>
                 </div>
             )}
-            <div className="rounded-md border overflow-hidden">
+            <div className="border-t border-b overflow-hidden">
                 <div className="overflow-x-auto">
                     <Table>
                         <TableHeader>

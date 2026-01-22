@@ -6,8 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @method static \Database\Factories\SupervisorFactory factory($count = null, $state = [])
+ */
 class Supervisor extends Model
 {
+    /** @use HasFactory<\Database\Factories\SupervisorFactory> */
     use HasFactory;
 
     protected $fillable = [
