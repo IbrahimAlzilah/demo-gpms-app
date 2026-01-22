@@ -63,6 +63,14 @@ class SupervisorController extends Controller
                 ], 400);
             }
 
+            // Check if project already has a supervisor
+            if ($project->supervisor_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Project already has a supervisor assigned',
+                ], 400);
+            }
+
             // Check if there's already a pending request for this project
             $existingRequest = SupervisorAssignmentRequest::where('project_id', $project->id)
                 ->where('status', 'pending')
@@ -128,7 +136,16 @@ class SupervisorController extends Controller
                 ], 400);
             }
 
-            $updated = $this->projectService->assignSupervisor($project, $supervisor);
+            // Check if project already has a supervisor
+            if ($project->supervisor_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Project already has a supervisor assigned',
+                ], 400);
+            }
+
+            // Direct assignment - no approval required
+            $updated = $this->projectService->assignSupervisor($project, $supervisor, false);
 
             // Notify the supervisor
             $this->notificationService->create(

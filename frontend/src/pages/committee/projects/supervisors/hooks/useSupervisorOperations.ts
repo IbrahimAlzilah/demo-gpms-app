@@ -14,6 +14,7 @@ export function useAssignSupervisor() {
       queryClient.invalidateQueries({ queryKey: ['projects-without-supervisor'] })
       queryClient.invalidateQueries({ queryKey: ['projects'] })
       queryClient.invalidateQueries({ queryKey: ['available-supervisors'] })
+      queryClient.invalidateQueries({ queryKey: ['supervisor-assignment-requests'] })
     },
   })
 }

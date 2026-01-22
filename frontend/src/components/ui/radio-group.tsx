@@ -28,7 +28,8 @@ export function RadioGroup({
   ...props
 }: RadioGroupProps) {
   const [internalValue, setInternalValue] = React.useState(defaultValue)
-  const groupName = React.useMemo(() => name ?? React.useId(), [name])
+  const generatedId = React.useId()
+  const groupName = React.useMemo(() => name ?? generatedId, [name, generatedId])
 
   const currentValue = value !== undefined ? value : internalValue
 
@@ -60,7 +61,8 @@ interface RadioGroupItemProps
 export const RadioGroupItem = React.forwardRef<HTMLInputElement, RadioGroupItemProps>(
   ({ value, id, className, disabled, children, ...props }, ref) => {
     const ctx = React.useContext(RadioGroupContext)
-    const inputId = id ?? React.useId()
+    const generatedId = React.useId()
+    const inputId = id ?? generatedId
 
     if (!ctx) {
       throw new Error("RadioGroupItem must be used within a RadioGroup")

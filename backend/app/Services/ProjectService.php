@@ -204,16 +204,22 @@ class ProjectService
 
     /**
      * Assign supervisor to project
+     * @param bool $requiresApproval If false, supervisor is directly assigned and approval status is set to 'approved'
      */
-    public function assignSupervisor(Project $project, User $supervisor): Project
+    public function assignSupervisor(Project $project, User $supervisor, bool $requiresApproval = false): Project
     {
         if (!$supervisor->isSupervisor()) {
             throw new \Exception('User is not a supervisor');
         }
 
+        if ($project->supervisor_id && $project->supervisor_id !== $supervisor->id) {
+            throw new \Exception('Project already has a supervisor assigned');
+        }
+
         $project->update([
             'supervisor_id' => $supervisor->id,
-            'supervisor_approval_status' => 'pending',
+            'supervisor_approval_status' => $requiresApproval ? 'pending' : 'approved',
+            'supervisor_approval_at' => $requiresApproval ? null : now(),
         ]);
 
         return $project->fresh();

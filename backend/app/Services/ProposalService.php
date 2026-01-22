@@ -88,7 +88,8 @@ class ProposalService
             if ($proposal->proposed_supervisor_id && !$project->supervisor_id) {
                 $supervisor = User::find($proposal->proposed_supervisor_id);
                 if ($supervisor && $supervisor->isSupervisor()) {
-                    $this->projectService->assignSupervisor($project, $supervisor);
+                    // Require approval when assigning from proposal
+                    $this->projectService->assignSupervisor($project, $supervisor, true);
                 }
             }
 

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAssignSupervisor } from '../hooks/useSupervisorOperations'
 import { Card, CardContent, Button, Badge, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui'
 import { LoadingSpinner, EmptyState } from '@/components/common'
@@ -13,6 +14,7 @@ import { supervisorAssignmentService } from '../api/supervisor.service'
 export function SupervisorsList() {
   const { t } = useTranslation()
   const { toastSuccess, toastError } = useToast()
+  const queryClient = useQueryClient()
   const assignSupervisor = useAssignSupervisor()
   const [tab, setTab] = useState<'projects' | 'requests'>('projects')
 
@@ -33,6 +35,9 @@ export function SupervisorsList() {
       if (requiresApproval) {
         // Send request for approval
         await supervisorAssignmentService.requestAssignment(projectId, supervisorId, notes)
+        // Invalidate queries to refresh the lists
+        queryClient.invalidateQueries({ queryKey: ['supervisor-assignment-requests'] })
+        queryClient.invalidateQueries({ queryKey: ['projects-without-supervisor'] })
         toastSuccess('supervisor.requestSent')
       } else {
         // Direct assignment
@@ -43,8 +48,9 @@ export function SupervisorsList() {
         toastSuccess('committee.supervisors.assignmentSuccess')
       }
       setState((prev) => ({ ...prev, selectedProject: null, selectedSupervisor: '' }))
-    } catch (err) {
-      toastError(err instanceof Error ? err.message : 'committee.supervisors.assignmentError')
+    } catch (err: any) {
+      const errorMessage = err?.response?.data?.message || err?.message || 'committee.supervisors.assignmentError'
+      toastError(errorMessage)
     }
   }
 

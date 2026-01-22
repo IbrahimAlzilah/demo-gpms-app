@@ -82,12 +82,22 @@ export const supervisorAssignmentService = {
     const params = new URLSearchParams()
     if (status) params.append('status', status)
 
-    const response = await apiClient.get<SupervisorAssignmentRequest[]>(
+    const response = await apiClient.get<any>(
       `/projects-committee/supervisors/assignment-requests?${params.toString()}`
     )
 
-    // Axios interceptor already extracts data, so response.data is the array
-    return Array.isArray(response.data) ? response.data : []
+    // Handle paginated response - data might be wrapped in pagination structure
+    if (response.pagination && Array.isArray(response.data)) {
+      return response.data
+    }
+    
+    // If it's a direct array
+    if (Array.isArray(response.data)) {
+      return response.data
+    }
+    
+    // Fallback
+    return []
   },
 
   // Cancel assignment request

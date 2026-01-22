@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Dialog,
@@ -44,17 +44,24 @@ export function SupervisorAssignmentDialog({
   const [assignmentType, setAssignmentType] = useState<'direct' | 'request'>('request')
   const [notes, setNotes] = useState('')
 
+  // Reset form when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setSelectedSupervisor('')
+      setNotes('')
+      setAssignmentType('request')
+    }
+  }, [open])
+
   const handleSubmit = async () => {
     if (!project || !selectedSupervisor) return
 
     try {
       await onAssign(project.id, selectedSupervisor, assignmentType === 'request', notes)
       onOpenChange(false)
-      setSelectedSupervisor('')
-      setNotes('')
-      setAssignmentType('request')
     } catch (error) {
       console.error('Failed to assign supervisor:', error)
+      // Don't close dialog on error so user can retry
     }
   }
 
