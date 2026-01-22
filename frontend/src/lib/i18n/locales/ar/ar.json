@@ -83,7 +83,6 @@
     "leader": "قائد المجموعة",
     "fillRequiredFields": "يرجى ملء جميع الحقول المطلوبة",
     "register": "تسجيل",
-    "next": "التالي",
     "endsToday": "ينتهي اليوم",
     "endsTomorrow": "ينتهي غداً",
     "endsInDays": "ينتهي خلال {{count}} يوم",
@@ -482,8 +481,6 @@
     "role": "الدور",
     "rolePlaceholder": "اختر الدور",
     "save": "حفظ",
-    "update": "تحديث",
-    "updating": "جاري التحديث...",
     "attachments": "المرفقات",
     "fileUploadHint": "يمكن رفع ملفات PDF, Word, أو نص. الحد الأقصى 10MB لكل ملف",
     "supervisorsLoadError": "فشل تحميل قائمة المشرفين",
@@ -595,9 +592,7 @@
     "registrationPendingMessage": "طلب التسجيل قيد المراجعة. يرجى انتظار الموافقة من لجنة المشاريع.",
     "registrationNotApprovedMessage": "يجب أن يكون لديك تسجيل معتمد في هذا المشروع قبل إدارة المجموعة.",
     "selectGroup": "اختر مجموعة الطلاب",
-    "code": "الرمز",
-    "leader": "القائد",
-    "members": "الأعضاء"
+    "code": "الرمز"
   },
   "request": {
     "pageDescription": "تقديم طلب رسمي (تغيير مشرف، مجموعة، أو مشروع، إلخ)",
@@ -1289,7 +1284,6 @@
       "projectsCount": "عدد المشاريع",
       "studentsCount": "عدد الطلاب",
       "totalSupervisors": "إجمالي المشرفين",
-      "totalProjects": "إجمالي المشاريع",
       "totalStudents": "إجمالي الطلاب",
       "inGroup": "في مجموعة",
       "inGroups": "في مجموعات",
@@ -1402,14 +1396,8 @@
     "cannotReRegisterRejected": "سبق وتم رفض طلبك لهذا المشروع من قبل لجنة المشاريع، لا يمكنك إعادة التسجيل.",
     "cannotReRegisterRejectedDescription": "يمكنك التسجيل في مشروع آخر متاح",
     "canRegisterInDifferentProject": "يمكنك تقديم طلب تسجيل جديد في مشروع آخر (إذا كانت فترة التسجيل لا تزال مفتوحة)",
-    "selectGroup": "اختر المجموعة",
-    "selectGroupPlaceholder": "اختر مجموعة للتسجيل",
-    "noGroupRequired": "يجب أن تكون عضوًا في مجموعة للتسجيل في المشروع",
-    "createGroupFirst": "يجب إنشاء مجموعة أولاً قبل التسجيل في المشروع",
-    "members": "أعضاء",
     "selectProject": "اختر المشروع",
-    "activeProjects": "المشاريع النشطة",
-    "supervisor": "المشرف"
+    "activeProjects": "المشاريع النشطة"
   },
   "registration": {
     "management": "إدارة طلبات التسجيل",

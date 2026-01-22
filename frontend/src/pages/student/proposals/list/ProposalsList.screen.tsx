@@ -102,7 +102,7 @@ export function ProposalsList() {
       {/* Statistics Cards - Only show for "My Proposals" */}
       {isMyProposals && <StatisticsCards statistics={data.statistics} t={t} />}
 
-      <BlockContent title={pageTitle} actions={actions}>
+      <BlockContent title={pageTitle} actions={actions} variant="data-table">
         <DataTable
           columns={columns}
           data={data.proposals}

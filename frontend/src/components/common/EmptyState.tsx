@@ -5,7 +5,8 @@ import { cn } from '@/lib/utils'
 
 interface EmptyStateProps {
   icon?: ComponentType<SVGProps<SVGSVGElement>>
-  title: string
+  image?: string
+  title?: string
   description?: string
   action?: {
     label: string
@@ -17,6 +18,7 @@ interface EmptyStateProps {
 
 export function EmptyState({
   icon: Icon,
+  image,
   title,
   description,
   action,
@@ -35,7 +37,12 @@ export function EmptyState({
           <Icon className="h-6 w-6 text-muted-foreground" />
         </div>
       )}
-      <h3 className="mb-2 text-lg font-semibold">{title}</h3>
+      {image && (
+        <div className="mb-3">
+          <img src={image} alt="Empty State" className="object-cover h-14 w-auto opacity-90" />
+        </div>
+      )}
+      {title && <h3 className="mb-2 text-base font-semibold text-muted-foreground">{title}</h3>}
       {description && (
         <p className="mb-6 max-w-sm text-sm text-muted-foreground">{description}</p>
       )}
