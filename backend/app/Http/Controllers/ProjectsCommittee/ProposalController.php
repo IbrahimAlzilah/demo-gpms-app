@@ -4,8 +4,10 @@ namespace App\Http\Controllers\ProjectsCommittee;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProposalResource;
+use App\Http\Resources\ProposalSubmissionResource;
 use App\Http\Traits\HasTableQuery;
 use App\Models\Proposal;
+use App\Models\ProposalSubmission;
 use App\Services\ProposalService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -43,9 +45,12 @@ class ProposalController extends Controller
         ]);
     }
 
+    /**
+     * List proposal submissions (not individual proposals)
+     */
     public function index(Request $request): JsonResponse
     {
-        $query = Proposal::with(['submitter', 'reviewer', 'project', 'studentGroup', 'targetProject']);
+        $query = ProposalSubmission::with(['submitter', 'reviewer', 'studentGroup', 'proposals']);
 
         if ($request->has('status')) {
             $query->where('status', $request->status);
@@ -53,7 +58,260 @@ class ProposalController extends Controller
 
         $query = $this->applyTableQuery($query, $request);
 
-        return response()->json($this->getPaginatedResponse($query, $request, ProposalResource::class));
+        return response()->json($this->getPaginatedResponse($query, $request, ProposalSubmissionResource::class));
+    }
+
+    /**
+     * Show a proposal submission with all proposals
+     */
+    public function show(ProposalSubmission $proposalSubmission): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => new ProposalSubmissionResource($proposalSubmission->load(['submitter', 'reviewer', 'studentGroup', 'proposals'])),
+        ]);
+    }
+
+    /**
+     * Approve a proposal submission
+     */
+    public function approve(Request $request, ProposalSubmission $proposalSubmission): JsonResponse
+    {
+        $validated = $request->validate([
+            'project_id' => 'nullable|exists:projects,id',
+        ]);
+
+        try {
+            $approved = $this->proposalService->approveSubmission(
+                $proposalSubmission,
+                $request->user(),
+                $validated['project_id'] ?? null
+            );
+
+            return response()->json([
+                'success' => true,
+                'data' => new ProposalSubmissionResource($approved->load(['submitter', 'reviewer', 'proposals'])),
+                'message' => 'Proposal submission approved successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Reject a proposal submission
+     */
+    public function reject(Request $request, ProposalSubmission $proposalSubmission): JsonResponse
+    {
+        $validated = $request->validate([
+            'review_notes' => 'nullable|string',
+        ]);
+
+        try {
+            $rejected = $this->proposalService->rejectSubmission(
+                $proposalSubmission,
+                $request->user(),
+                $validated['review_notes'] ?? null
+            );
+
+            return response()->json([
+                'success' => true,
+                'data' => new ProposalSubmissionResource($rejected->load(['submitter', 'reviewer', 'proposals'])),
+                'message' => 'Proposal submission rejected',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Request modification for a proposal submission
+     */
+    public function requestModification(Request $request, ProposalSubmission $proposalSubmission): JsonResponse
+    {
+        $validated = $request->validate([
+            'review_notes' => 'required|string',
+        ]);
+
+        try {
+            $updated = $this->proposalService->requestSubmissionModification(
+                $proposalSubmission,
+                $request->user(),
+                $validated['review_notes']
+            );
+
+            return response()->json([
+                'success' => true,
+                'data' => new ProposalSubmissionResource($updated->load(['submitter', 'reviewer', 'proposals'])),
+                'message' => 'Modification requested',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Update a proposal submission (edit proposals within submission)
+     */
+    public function update(Request $request, ProposalSubmission $proposalSubmission): JsonResponse
+    {
+        // Validate proposals array
+        $validated = $request->validate([
+            'proposals' => 'required|array|min:1',
+            'proposals.*.id' => 'required|exists:proposals,id',
+            'proposals.*.title' => 'required|string|max:255',
+            'proposals.*.description' => 'required|string',
+        ]);
+
+        try {
+            // Update each proposal in the submission
+            foreach ($validated['proposals'] as $proposalData) {
+                $proposal = Proposal::findOrFail($proposalData['id']);
+                
+                // Verify proposal belongs to this submission
+                if ($proposal->submission_id !== $proposalSubmission->id) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Proposal does not belong to this submission',
+                    ], 422);
+                }
+
+                // Update proposal (committee can only edit title and description)
+                $this->proposalService->update($proposal, [
+                    'title' => $proposalData['title'],
+                    'description' => $proposalData['description'],
+                ], $request->user());
+            }
+
+            $proposalSubmission = $proposalSubmission->fresh()->load(['submitter', 'reviewer', 'proposals']);
+
+            return response()->json([
+                'success' => true,
+                'data' => new ProposalSubmissionResource($proposalSubmission),
+                'message' => 'Proposal submission updated successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Delete a proposal submission
+     */
+    public function destroy(Request $request, ProposalSubmission $proposalSubmission): JsonResponse
+    {
+        try {
+            // Delete all proposals in the submission
+            foreach ($proposalSubmission->proposals as $proposal) {
+                $this->proposalService->delete($proposal);
+            }
+
+            // Delete the submission
+            $proposalSubmission->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Proposal submission deleted successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Legacy methods for backward compatibility with individual proposals
+     */
+    public function approveProposal(Request $request, Proposal $proposal): JsonResponse
+    {
+        $validated = $request->validate([
+            'project_id' => 'nullable|exists:projects,id',
+        ]);
+
+        try {
+            $approved = $this->proposalService->approve(
+                $proposal,
+                $request->user(),
+                $validated['project_id'] ?? null
+            );
+
+            return response()->json([
+                'success' => true,
+                'data' => new ProposalResource($approved->load(['submitter', 'reviewer'])),
+                'message' => 'Proposal approved successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    public function rejectProposal(Request $request, Proposal $proposal): JsonResponse
+    {
+        $validated = $request->validate([
+            'review_notes' => 'nullable|string',
+        ]);
+
+        try {
+            $rejected = $this->proposalService->reject(
+                $proposal,
+                $request->user(),
+                $validated['review_notes'] ?? null
+            );
+
+            return response()->json([
+                'success' => true,
+                'data' => new ProposalResource($rejected->load(['submitter', 'reviewer'])),
+                'message' => 'Proposal rejected',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    public function requestProposalModification(Request $request, Proposal $proposal): JsonResponse
+    {
+        $validated = $request->validate([
+            'review_notes' => 'required|string',
+        ]);
+
+        try {
+            $updated = $this->proposalService->requestModification(
+                $proposal,
+                $request->user(),
+                $validated['review_notes']
+            );
+
+            return response()->json([
+                'success' => true,
+                'data' => new ProposalResource($updated->load(['submitter', 'reviewer'])),
+                'message' => 'Modification requested',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
     }
 
     /**
@@ -120,140 +378,4 @@ class ProposalController extends Controller
             ], 400);
         }
     }
-
-    public function show(Proposal $proposal): JsonResponse
-    {
-        return response()->json([
-            'success' => true,
-            'data' => new ProposalResource($proposal->load(['submitter', 'reviewer', 'project'])),
-        ]);
-    }
-
-    public function approve(Request $request, Proposal $proposal): JsonResponse
-    {
-        $validated = $request->validate([
-            'project_id' => 'nullable|exists:projects,id',
-        ]);
-
-        try {
-            $approved = $this->proposalService->approve(
-                $proposal,
-                $request->user(),
-                $validated['project_id'] ?? null
-            );
-
-            return response()->json([
-                'success' => true,
-                'data' => new ProposalResource($approved->load(['submitter', 'reviewer'])),
-                'message' => 'Proposal approved successfully',
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 400);
-        }
-    }
-
-    public function reject(Request $request, Proposal $proposal): JsonResponse
-    {
-        $validated = $request->validate([
-            'review_notes' => 'nullable|string',
-        ]);
-
-        try {
-            $rejected = $this->proposalService->reject(
-                $proposal,
-                $request->user(),
-                $validated['review_notes'] ?? null
-            );
-
-            return response()->json([
-                'success' => true,
-                'data' => new ProposalResource($rejected->load(['submitter', 'reviewer'])),
-                'message' => 'Proposal rejected',
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 400);
-        }
-    }
-
-    public function requestModification(Request $request, Proposal $proposal): JsonResponse
-    {
-        $validated = $request->validate([
-            'review_notes' => 'required|string',
-        ]);
-
-        try {
-            $updated = $this->proposalService->requestModification(
-                $proposal,
-                $request->user(),
-                $validated['review_notes']
-            );
-
-            return response()->json([
-                'success' => true,
-                'data' => new ProposalResource($updated->load(['submitter', 'reviewer'])),
-                'message' => 'Modification requested',
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 400);
-        }
-    }
-
-    public function update(Request $request, Proposal $proposal): JsonResponse
-    {
-        $this->authorize('update', $proposal);
-
-        // Projects Committee can only edit title and description
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-        ]);
-
-        try {
-            $updated = $this->proposalService->update(
-                $proposal,
-                $validated,
-                $request->user()
-            );
-
-            return response()->json([
-                'success' => true,
-                'data' => new ProposalResource($updated->load(['submitter', 'reviewer', 'project'])),
-                'message' => 'Proposal updated successfully',
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 400);
-        }
-    }
-
-    public function destroy(Request $request, Proposal $proposal): JsonResponse
-    {
-        $this->authorize('delete', $proposal);
-
-        try {
-            $this->proposalService->delete($proposal);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Proposal deleted successfully',
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 400);
-        }
-    }
 }
-

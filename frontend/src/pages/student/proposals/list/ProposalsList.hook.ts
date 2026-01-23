@@ -3,7 +3,9 @@ import { useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/pages/auth/login'
 import { useDataTable } from '@/hooks/useDataTable'
+import { useQuery } from '@tanstack/react-query'
 import { proposalService } from '../api/proposal.service'
+import { submissionService } from '../api/submission.service'
 import { buildProposalFilters } from '../components/table/filter'
 import type { Proposal } from '@/types/project.types'
 import type { ProposalStatistics } from '../types/Proposals.types'
@@ -16,7 +18,9 @@ export function useProposalsList() {
   
   const [state, setState] = useState<ProposalsListState>({
     selectedProposal: null,
+    selectedSubmission: null,
     showForm: false,
+    showSubmissionForm: false,
     showResubmitDialog: false,
     proposalToResubmit: null,
     editingProposalId: null,
@@ -78,12 +82,20 @@ export function useProposalsList() {
   const isMyProposals = location.pathname.includes('/my')
   const isApprovedProposals = location.pathname.includes('/approved')
 
+  // Fetch submission for "My Proposals" view
+  const { data: submission } = useQuery({
+    queryKey: ['proposal-submission'],
+    queryFn: () => submissionService.getSubmission(),
+    enabled: isMyProposals,
+  })
+
   return {
     data,
     state,
     setState,
     isMyProposals,
     isApprovedProposals,
+    submission,
     // Table controls
     totalCount,
     pageCount,

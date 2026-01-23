@@ -24,6 +24,7 @@ class Proposal extends Model
         'project_id',
         'student_group_id',
         'target_project_id',
+        'submission_id',
     ];
 
     protected $casts = [
@@ -78,6 +79,14 @@ class Proposal extends Model
     public function targetProject(): BelongsTo
     {
         return $this->belongsTo(Project::class, 'target_project_id');
+    }
+
+    /**
+     * Get the proposal submission this proposal belongs to
+     */
+    public function submission(): BelongsTo
+    {
+        return $this->belongsTo(ProposalSubmission::class, 'submission_id');
     }
 
     /**

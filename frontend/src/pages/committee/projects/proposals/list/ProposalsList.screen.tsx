@@ -1,28 +1,71 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useApproveProposal, useRejectProposal, useRequestModification, useDeleteProposal } from '../hooks/useProposalOperations'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { DataTable, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Button } from '@/components/ui'
 import { BlockContent, ConfirmDialog } from '@/components/common'
-import { createProposalColumns } from '../components/table'
-import { ProposalReviewDialog } from '../components/ProposalReviewDialog'
-import { ProposalsNew } from '../new/ProposalsNew.screen'
-import { ProposalsEdit } from '../edit/ProposalsEdit.screen'
-import { ProposalsView } from '../view/ProposalsView.screen'
+import { createSubmissionColumns } from '../components/table/submission-columns'
+import { SubmissionReviewDialog } from '../components/SubmissionReviewDialog'
+import { SubmissionDetailsView } from '../components/SubmissionDetailsView/SubmissionDetailsView'
 import { useProposalsList } from './ProposalsList.hook'
-import { AlertCircle, Plus } from 'lucide-react'
+import { committeeSubmissionService } from '../api/submission.service'
+import { AlertCircle } from 'lucide-react'
 import { useToast } from '@/components/common'
 
 export function ProposalsList() {
   const { t } = useTranslation()
   const { toastSuccess, toastError } = useToast()
+  const queryClient = useQueryClient()
 
-  const approveProposal = useApproveProposal()
-  const rejectProposal = useRejectProposal()
-  const requestModification = useRequestModification()
-  const deleteProposal = useDeleteProposal()
+  const approveSubmission = useMutation({
+    mutationFn: ({ id, projectId }: { id: string; projectId?: string }) =>
+      committeeSubmissionService.approve(id, projectId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['committee-submissions-table'] })
+      toastSuccess('committee.proposal.approveSuccess')
+      setState((prev) => ({ ...prev, selectedSubmission: null, action: null }))
+    },
+    onError: (error: any) => {
+      toastError(error?.response?.data?.message || 'committee.proposal.processError')
+    },
+  })
 
-  const [showCreateDialog, setShowCreateDialog] = useState(false)
-  const [editingProposalId, setEditingProposalId] = useState<string | null>(null)
+  const rejectSubmission = useMutation({
+    mutationFn: ({ id, reviewNotes }: { id: string; reviewNotes?: string }) =>
+      committeeSubmissionService.reject(id, reviewNotes),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['committee-submissions-table'] })
+      toastSuccess('committee.proposal.rejectSuccess')
+      setState((prev) => ({ ...prev, selectedSubmission: null, action: null }))
+    },
+    onError: (error: any) => {
+      toastError(error?.response?.data?.message || 'committee.proposal.processError')
+    },
+  })
+
+  const requestModification = useMutation({
+    mutationFn: ({ id, reviewNotes }: { id: string; reviewNotes: string }) =>
+      committeeSubmissionService.requestModification(id, reviewNotes),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['committee-submissions-table'] })
+      toastSuccess('committee.proposal.modifySuccess')
+      setState((prev) => ({ ...prev, selectedSubmission: null, action: null }))
+    },
+    onError: (error: any) => {
+      toastError(error?.response?.data?.message || 'committee.proposal.processError')
+    },
+  })
+
+  const deleteSubmission = useMutation({
+    mutationFn: (id: string) => committeeSubmissionService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['committee-submissions-table'] })
+      toastSuccess('committee.proposal.deleteSuccess')
+      setState((prev) => ({ ...prev, submissionToDelete: null }))
+    },
+    onError: (error: any) => {
+      toastError(error?.response?.data?.message || 'committee.proposal.deleteError')
+    },
+  })
 
   const {
     data,
@@ -42,73 +85,63 @@ export function ProposalsList() {
 
   const columns = useMemo(
     () =>
-      createProposalColumns({
-        onView: (proposal) => {
-          setState((prev) => ({ ...prev, proposalToViewId: proposal.id }))
+      createSubmissionColumns({
+        onView: (submission) => {
+          setState((prev) => ({ ...prev, submissionToViewId: submission.id }))
         },
-        onApprove: (proposal) => {
-          setState((prev) => ({ ...prev, selectedProposal: proposal, action: 'approve' }))
+        onApprove: (submission) => {
+          setState((prev) => ({ ...prev, selectedSubmission: submission, action: 'approve' }))
         },
-        onReject: (proposal) => {
-          setState((prev) => ({ ...prev, selectedProposal: proposal, action: 'reject' }))
+        onReject: (submission) => {
+          setState((prev) => ({ ...prev, selectedSubmission: submission, action: 'reject' }))
         },
-        onRequestModification: (proposal) => {
-          setState((prev) => ({ ...prev, selectedProposal: proposal, action: 'modify' }))
+        onRequestModification: (submission) => {
+          setState((prev) => ({ ...prev, selectedSubmission: submission, action: 'modify' }))
         },
-        onEdit: (proposal) => {
-          setEditingProposalId(proposal.id)
+        onEdit: (submission) => {
+          // TODO: Implement edit submission
+          toastError('committee.proposal.editNotImplemented')
         },
-        onDelete: (proposal) => {
-          setState((prev) => ({ ...prev, proposalToDelete: proposal }))
+        onDelete: (submission) => {
+          setState((prev) => ({ ...prev, submissionToDelete: submission }))
         },
         t,
       }),
-    [setState, t]
+    [setState, t, toastError]
   )
 
   const handleConfirm = async (
-    proposalId: string,
+    submissionId: string,
     actionType: 'approve' | 'reject' | 'modify',
-    notes?: string
+    notes?: string,
+    projectId?: string
   ) => {
     try {
       if (actionType === 'approve') {
-        await approveProposal.mutateAsync({ id: proposalId })
-        toastSuccess('committee.proposal.approveSuccess')
+        await approveSubmission.mutateAsync({ id: submissionId, projectId })
       } else if (actionType === 'reject') {
-        await rejectProposal.mutateAsync({ id: proposalId, reviewNotes: notes })
-        toastSuccess('committee.proposal.rejectSuccess')
+        await rejectSubmission.mutateAsync({ id: submissionId, reviewNotes: notes })
       } else if (actionType === 'modify') {
         if (!notes) {
           toastError('committee.proposal.modificationsRequired')
           return
         }
-        await requestModification.mutateAsync({ id: proposalId, reviewNotes: notes })
-        toastSuccess('committee.proposal.modifySuccess')
+        await requestModification.mutateAsync({ id: submissionId, reviewNotes: notes })
       }
-      setState((prev) => ({ ...prev, selectedProposal: null, action: null }))
     } catch (err) {
-      toastError(err instanceof Error ? err.message : 'committee.proposal.processError')
+      // Error handling is done in mutation onError
     }
   }
 
-  const handleEditSuccess = () => {
-    setEditingProposalId(null)
-  }
-
   const handleDelete = async () => {
-    if (!state.proposalToDelete) return
-    try {
-      await deleteProposal.mutateAsync(state.proposalToDelete.id)
-      toastSuccess('committee.proposal.deleteSuccess')
-      setState((prev) => ({ ...prev, proposalToDelete: null }))
-    } catch (err) {
-      toastError(err instanceof Error ? err.message : 'committee.proposal.deleteError')
+    if (!state.submissionToDelete) return
+    if (state.submissionToDelete.id) {
+      await deleteSubmission.mutateAsync(state.submissionToDelete.id)
     }
   }
 
   const isLoadingAction =
-    approveProposal.isPending || rejectProposal.isPending || requestModification.isPending
+    approveSubmission.isPending || rejectSubmission.isPending || requestModification.isPending
 
   return (
     <>
@@ -116,12 +149,6 @@ export function ProposalsList() {
       <BlockContent
         variant="data-table"
         title={t('committee.proposal.reviewPanel')}
-        actions={
-          <Button onClick={() => setShowCreateDialog(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            {t('committee.proposal.create', { defaultValue: 'New Proposal' })}
-          </Button>
-        }
       >
 
         <DataTable
@@ -134,8 +161,10 @@ export function ProposalsList() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t('committee.proposal.allProposals')}</SelectItem>
-                <SelectItem value="pending_review">{t('proposal.status.pendingReview')}</SelectItem>
+                <SelectItem value="all">{t('committee.proposal.allSubmissions')}</SelectItem>
+                <SelectItem value="draft">{t('proposal.status.draft')}</SelectItem>
+                <SelectItem value="submitted">{t('proposal.status.submitted')}</SelectItem>
+                <SelectItem value="under_review">{t('proposal.status.underReview')}</SelectItem>
                 <SelectItem value="approved">{t('proposal.status.approved')}</SelectItem>
                 <SelectItem value="rejected">{t('proposal.status.rejected')}</SelectItem>
                 <SelectItem value="requires_modification">{t('proposal.status.requiresModification')}</SelectItem>
@@ -143,7 +172,7 @@ export function ProposalsList() {
             </Select>
           }
           columns={columns}
-          data={data.proposals}
+          data={data.submissions}
           isLoading={data.isLoading}
           error={data.error}
           pageCount={pageCount}
@@ -162,15 +191,9 @@ export function ProposalsList() {
           searchPlaceholder={t('committee.proposal.searchPlaceholder')}
           enableFiltering={true}
           enableViews={true}
-          emptyMessage={t('committee.proposal.noProposals')}
+          emptyMessage={t('committee.proposal.noSubmissions')}
         />
       </BlockContent>
-
-      <ProposalsNew
-        open={showCreateDialog}
-        onClose={() => setShowCreateDialog(false)}
-        onSuccess={() => setShowCreateDialog(false)}
-      />
 
       {data.error && (
         <BlockContent variant="container" className="border-destructive">
@@ -181,48 +204,39 @@ export function ProposalsList() {
         </BlockContent>
       )}
 
-      <ProposalReviewDialog
-        proposal={state.selectedProposal}
+      <SubmissionReviewDialog
+        submission={state.selectedSubmission}
         action={state.action}
         onClose={() => {
-          setState((prev) => ({ ...prev, selectedProposal: null, action: null }))
+          setState((prev) => ({ ...prev, selectedSubmission: null, action: null }))
         }}
         onConfirm={handleConfirm}
         isLoading={isLoadingAction}
       />
 
-      {editingProposalId && (
-        <ProposalsEdit
-          proposalId={editingProposalId}
-          open={!!editingProposalId}
-          onClose={() => setEditingProposalId(null)}
-          onSuccess={handleEditSuccess}
-        />
-      )}
+      <SubmissionDetailsView
+        submissionId={state.submissionToViewId || ''}
+        open={!!state.submissionToViewId}
+        onClose={() => {
+          setState((prev) => ({ ...prev, submissionToViewId: null }))
+        }}
+      />
 
       <ConfirmDialog
-        open={!!state.proposalToDelete}
+        open={!!state.submissionToDelete}
         onClose={() => {
-          setState((prev) => ({ ...prev, proposalToDelete: null }))
+          setState((prev) => ({ ...prev, submissionToDelete: null }))
         }}
         onConfirm={handleDelete}
         title={t('committee.proposal.confirmDelete')}
         description={
-          state.proposalToDelete
-            ? t('committee.proposal.confirmDeleteDescription', { title: state.proposalToDelete.title })
+          state.submissionToDelete
+            ? t('committee.proposal.confirmDeleteSubmissionDescription')
             : ''
         }
         confirmLabel={t('common.delete')}
         cancelLabel={t('common.cancel')}
         variant="destructive"
-      />
-
-      <ProposalsView
-        proposalId={state.proposalToViewId}
-        open={!!state.proposalToViewId}
-        onClose={() => {
-          setState((prev) => ({ ...prev, proposalToViewId: null }))
-        }}
       />
     </>
   )

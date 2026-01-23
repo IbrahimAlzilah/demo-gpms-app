@@ -54,7 +54,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Student routes
     Route::prefix('student')->middleware('role:student')->group(function () {
         Route::get('dashboard', [App\Http\Controllers\Student\DashboardController::class, 'index']);
-        // Proposals routes - time window check is handled in controller (allows proposal_submission OR project_registration)
+        // Proposal submission routes - new submission workflow
+        Route::get('proposal-submission', [App\Http\Controllers\Student\ProposalController::class, 'getSubmission']);
+        Route::post('proposal-submission', [App\Http\Controllers\Student\ProposalController::class, 'submitProposals']);
+        Route::put('proposal-submission', [App\Http\Controllers\Student\ProposalController::class, 'updateSubmission']);
+        // Legacy proposals routes - kept for backward compatibility
         Route::get('proposals', [App\Http\Controllers\Student\ProposalController::class, 'index']);
         Route::get('proposals/{proposal}', [App\Http\Controllers\Student\ProposalController::class, 'show']);
         Route::post('proposals', [App\Http\Controllers\Student\ProposalController::class, 'store']);
@@ -107,7 +111,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Supervisor routes
     Route::prefix('supervisor')->middleware('role:supervisor')->group(function () {
         Route::get('dashboard', [App\Http\Controllers\Supervisor\DashboardController::class, 'index']);
-        // Proposals with time window check
+        // Proposal submission routes - new submission workflow
+        Route::get('proposal-submission', [App\Http\Controllers\Supervisor\ProposalController::class, 'getSubmission']);
+        Route::post('proposal-submission', [App\Http\Controllers\Supervisor\ProposalController::class, 'submitProposals']);
+        Route::put('proposal-submission', [App\Http\Controllers\Supervisor\ProposalController::class, 'updateSubmission']);
+        // Legacy proposals routes - kept for backward compatibility
         Route::get('proposals', [App\Http\Controllers\Supervisor\ProposalController::class, 'index']);
         Route::get('proposals/{proposal}', [App\Http\Controllers\Supervisor\ProposalController::class, 'show']);
         Route::post('proposals', [App\Http\Controllers\Supervisor\ProposalController::class, 'store'])
@@ -155,10 +163,18 @@ Route::middleware('auth:sanctum')->group(function () {
     // Projects Committee routes
     Route::prefix('projects-committee')->middleware('role:projects_committee')->group(function () {
         Route::get('dashboard', [App\Http\Controllers\ProjectsCommittee\DashboardController::class, 'index']);
-        // Custom proposal routes (must be before apiResource to match correctly)
-        Route::post('proposals/{proposal}/approve', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'approve']);
-        Route::post('proposals/{proposal}/reject', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'reject']);
-        Route::post('proposals/{proposal}/request-modification', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'requestModification']);
+        // Proposal submission routes - new submission workflow
+        Route::get('proposal-submissions', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'index']);
+        Route::get('proposal-submissions/{proposalSubmission}', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'show']);
+        Route::post('proposal-submissions/{proposalSubmission}/approve', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'approve']);
+        Route::post('proposal-submissions/{proposalSubmission}/reject', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'reject']);
+        Route::post('proposal-submissions/{proposalSubmission}/request-modification', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'requestModification']);
+        Route::put('proposal-submissions/{proposalSubmission}', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'update']);
+        Route::delete('proposal-submissions/{proposalSubmission}', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'destroy']);
+        // Legacy proposal routes - kept for backward compatibility
+        Route::post('proposals/{proposal}/approve', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'approveProposal']);
+        Route::post('proposals/{proposal}/reject', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'rejectProposal']);
+        Route::post('proposals/{proposal}/request-modification', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'requestProposalModification']);
         Route::get('proposals/students/search', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'searchStudents']);
         // apiResource automatically includes POST /proposals for store() method
         Route::apiResource('proposals', App\Http\Controllers\ProjectsCommittee\ProposalController::class);

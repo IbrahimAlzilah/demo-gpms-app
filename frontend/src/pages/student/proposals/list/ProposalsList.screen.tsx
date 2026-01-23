@@ -3,18 +3,24 @@ import { useTranslation } from 'react-i18next'
 import { DataTable, Button } from '@/components/ui'
 import { BlockContent, ModalDialog } from '@/components/common'
 import { useToast } from '@/components/common'
-import { AlertCircle, PlusCircle, RotateCcw, Loader2 } from 'lucide-react'
+import { AlertCircle, PlusCircle, RotateCcw, Loader2, Eye } from 'lucide-react'
 import { createProposalColumns } from '../components/table'
 import { StatisticsCards } from '../components/StatisticsCards'
-import { ProposalsNew } from '../new/ProposalsNew.screen'
+import { ProposalSubmissionForm } from '../components/ProposalSubmissionForm/ProposalSubmissionForm'
+import { ProposalSubmissionView } from '../components/ProposalSubmissionView/ProposalSubmissionView'
 import { ProposalsView } from '../view/ProposalsView.screen'
 import { ProposalsEdit } from '../edit/ProposalsEdit.screen'
 import { useProposalsList } from './ProposalsList.hook'
+import { useMyGroup } from '@/pages/student/groups/hooks/useGroups'
+import { useAuthStore } from '@/pages/auth/login'
 import { useResubmitProposal } from '../hooks/useProposalOperations'
+import { usePeriodCheck } from '@/hooks/usePeriodCheck'
 
 export function ProposalsList() {
   const { t } = useTranslation()
   const { toastSuccess, toastError } = useToast()
+  const { user } = useAuthStore()
+  const { data: studentGroup, isLoading: groupLoading } = useMyGroup()
 
   const resubmitProposal = useResubmitProposal()
   const {
@@ -23,6 +29,7 @@ export function ProposalsList() {
     setState,
     isMyProposals,
     isApprovedProposals,
+    submission,
     totalCount,
     pageCount,
     sorting,
@@ -34,6 +41,21 @@ export function ProposalsList() {
     pagination,
     setPagination,
   } = useProposalsList()
+
+  // Check if user is a group leader
+  const isGroupLeader = useMemo(() => {
+    if (!studentGroup || !user) return false
+    return studentGroup.leaderId === user.id
+  }, [studentGroup, user])
+
+  // Check which period is active
+  const { isPeriodActive: isProposalSubmissionActive } = usePeriodCheck('proposal_submission')
+  const { isPeriodActive: isRegistrationActive } = usePeriodCheck('project_registration')
+
+  // During Project Registration: groups are required (only group leaders)
+  // During Proposal Submission: groups are optional (any student can submit)
+  const groupRequired = isRegistrationActive && !isProposalSubmissionActive
+  const canSubmit = isProposalSubmissionActive || (isRegistrationActive && isGroupLeader)
 
   const columns = useMemo(
     () =>
@@ -51,11 +73,11 @@ export function ProposalsList() {
         },
         t,
       }),
-    [t, setState]
+    [t, setState, toastError]
   )
 
   const handleFormSuccess = () => {
-    setState((prev) => ({ ...prev, showForm: false }))
+    setState((prev) => ({ ...prev, showSubmissionForm: false }))
     toastSuccess('proposal.submitSuccess')
   }
 
@@ -83,12 +105,26 @@ export function ProposalsList() {
 
   const actions = useMemo(
     () => (
-      <Button onClick={() => setState((prev) => ({ ...prev, showForm: true }))}>
-        <PlusCircle className="size-4" />
-        {t('proposal.submitNew')}
-      </Button>
+      <div className="flex gap-2">
+        {isMyProposals && submission && (
+          <Button
+            variant="outline"
+            onClick={() => setState((prev) => ({ ...prev, selectedSubmission: submission }))}
+          >
+            <Eye className="size-4 mr-2" />
+            {t('proposal.viewSubmission')}
+          </Button>
+        )}
+        <Button
+          onClick={() => setState((prev) => ({ ...prev, showSubmissionForm: true }))}
+          disabled={!canSubmit && !submission}
+        >
+          <PlusCircle className="size-4" />
+          {submission ? t('proposal.editSubmission') : t('proposal.submitNew')}
+        </Button>
+      </div>
     ),
-    [t, setState]
+    [t, setState, canSubmit, isMyProposals, submission]
   )
 
   const pageTitle = isMyProposals
@@ -96,6 +132,25 @@ export function ProposalsList() {
     : isApprovedProposals
       ? t('nav.approvedProposals')
       : t('nav.proposals')
+
+  // Show message for non-leaders during Project Registration period
+  if (isMyProposals && !groupLoading && groupRequired && !isGroupLeader) {
+    return (
+      <BlockContent title={pageTitle} variant="container">
+        <div className="flex items-start gap-3 p-4 bg-warning/10 border border-warning/20 rounded-lg">
+          <AlertCircle className="h-5 w-5 text-warning mt-0.5 shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-warning-foreground">
+              {t('proposal.onlyGroupLeaderCanSubmit')}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {t('proposal.onlyGroupLeaderCanSubmitDescription')}
+            </p>
+          </div>
+        </div>
+      </BlockContent>
+    )
+  }
 
   return (
     <>
@@ -136,14 +191,23 @@ export function ProposalsList() {
         </BlockContent>
       )}
 
-      {/* New Proposal Modal */}
-      <ProposalsNew
-        open={state.showForm}
-        onClose={() => setState((prev) => ({ ...prev, showForm: false }))}
+      {/* Proposal Submission Form Modal */}
+      <ProposalSubmissionForm
+        open={state.showSubmissionForm}
+        onClose={() => setState((prev) => ({ ...prev, showSubmissionForm: false }))}
         onSuccess={handleFormSuccess}
       />
 
-      {/* View Proposal Modal */}
+      {/* Proposal Submission View Modal */}
+      {state.selectedSubmission && (
+        <ProposalSubmissionView
+          submission={state.selectedSubmission}
+          open={!!state.selectedSubmission}
+          onClose={() => setState((prev) => ({ ...prev, selectedSubmission: null }))}
+        />
+      )}
+
+      {/* View Proposal Modal (for individual proposals) */}
       {state.selectedProposal && (
         <ProposalsView
           proposalId={state.selectedProposal.id}

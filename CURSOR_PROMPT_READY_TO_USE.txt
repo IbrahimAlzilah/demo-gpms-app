@@ -1,0 +1,61 @@
+Refactor the Proposal Workflow system with the following requirements:
+
+REQUIREMENTS:
+1. Group leaders can submit one or more proposals in a single request
+2. Only group leaders can submit - other group members cannot see or submit proposals
+3. Each student and supervisor can submit only once
+4. Allow editing of submitted proposals but prevent adding new ones after submission
+5. For Project Committee: display each submission as a single request with detailed view page
+6. Committee can Approve, Reject, Edit, Delete proposals, and Request Modifications
+
+IMPLEMENTATION:
+
+1. Create database migration for `proposal_submissions` table:
+   - Fields: id, submitter_id, student_group_id, status, review_notes, reviewed_by, reviewed_at, submitted_at
+   - Status enum: draft, submitted, under_review, approved, rejected, requires_modification
+   - Add submission_id foreign key to proposals table
+
+2. Create ProposalSubmission model with relationships to User (submitter, reviewer), StudentGroup, and Proposals
+
+3. Create ProposalSubmissionStatus enum
+
+4. Update Student\ProposalController:
+   - Add submitProposals() method: verify user is group leader, check if already submitted, accept array of proposals, create submission
+   - Update index(): only group leaders can view, return existing submission or null
+   - Add updateSubmission(): allow editing proposals within submission, prevent adding new ones
+
+5. Update Supervisor\ProposalController: similar to Student controller but no group leader check
+
+6. Update ProjectsCommittee\ProposalController:
+   - Update index() to query ProposalSubmission instead of Proposal
+   - Update show() to display submission with all proposals
+   - Update approve/reject/requestModification to work with submissions
+   - Update update() and destroy() for submissions
+
+7. Update ProposalService: add createSubmission() and hasSubmitted() methods
+
+8. Update ProposalPolicy: only group leaders can view/create/update submissions
+
+9. Update API routes:
+   - Student: GET/POST/PUT /proposal-submission
+   - Supervisor: GET/POST/PUT /proposal-submission  
+   - Committee: GET /proposal-submissions, GET/POST/PUT/DELETE /proposal-submissions/{id}
+
+10. Frontend - Student pages:
+    - Update ProposalsList: check if group leader, show message for non-leaders
+    - Create ProposalSubmissionForm: dynamic form for multiple proposals
+    - Create ProposalSubmissionView: display all proposals in submission
+
+11. Frontend - Committee pages:
+    - Update to SubmissionsList: show submissions (not individual proposals)
+    - Create SubmissionDetailsView: detailed view with all proposals and actions
+
+12. Create data migration to convert existing proposals to submissions
+
+VALIDATION:
+- User must be group leader (for students)
+- User cannot have existing submission with status submitted/under_review/requires_modification
+- At least 1 proposal per submission, max 5
+- Proposal title and description required
+
+Follow the existing code patterns and maintain backward compatibility.

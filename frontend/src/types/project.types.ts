@@ -57,6 +57,30 @@ export interface Proposal extends BaseEntity {
   studentGroup?: StudentGroup;
   targetProjectId?: string;
   targetProject?: Project;
+  submissionId?: string;
+  submission?: ProposalSubmission;
+}
+
+export type ProposalSubmissionStatus =
+  | "draft"
+  | "submitted"
+  | "under_review"
+  | "approved"
+  | "rejected"
+  | "requires_modification";
+
+export interface ProposalSubmission extends BaseEntity {
+  submitterId: string;
+  submitter?: User;
+  studentGroupId?: string;
+  studentGroup?: StudentGroup;
+  status: ProposalSubmissionStatus;
+  reviewNotes?: string;
+  reviewedBy?: string;
+  reviewer?: User;
+  reviewedAt?: string;
+  submittedAt?: string;
+  proposals?: Proposal[];
 }
 
 export interface ProjectGroup extends BaseEntity {

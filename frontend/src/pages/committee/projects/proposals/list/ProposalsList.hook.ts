@@ -1,23 +1,26 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDataTable } from '@/hooks/useDataTable'
-import { committeeProposalService } from '../api/proposal.service'
+import { committeeSubmissionService } from '../api/submission.service'
 import type { ProposalsListState, ProposalsListData } from './ProposalsList.types'
+import type { ProposalSubmission } from '@/types/project.types'
 
 export function useProposalsList() {
   const { t } = useTranslation()
   
   const [state, setState] = useState<ProposalsListState>({
     selectedProposal: null,
+    selectedSubmission: null,
     action: null,
     statusFilter: 'all',
     proposalToEditId: null,
-    proposalToDelete: null,
+    submissionToDelete: null,
     proposalToViewId: null,
+    submissionToViewId: null,
   })
 
   const {
-    data: proposals,
+    data: submissions,
     totalCount,
     pageCount,
     isLoading,
@@ -31,8 +34,8 @@ export function useProposalsList() {
     pagination,
     setPagination,
   } = useDataTable({
-    queryKey: ['committee-proposals-table', state.statusFilter],
-    queryFn: (params) => committeeProposalService.getTableData(
+    queryKey: ['committee-submissions-table', state.statusFilter],
+    queryFn: (params) => committeeSubmissionService.getTableData(
       params, 
       state.statusFilter === 'all' ? undefined : state.statusFilter
     ),
@@ -41,7 +44,8 @@ export function useProposalsList() {
   })
 
   const data: ProposalsListData = {
-    proposals: proposals || [],
+    proposals: [], // Legacy - kept for compatibility
+    submissions: (submissions || []) as ProposalSubmission[],
     isLoading,
     error: error as Error | null,
     pageCount,

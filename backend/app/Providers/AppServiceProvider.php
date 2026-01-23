@@ -6,12 +6,14 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Gate;
 use App\Models\Proposal;
+use App\Models\ProposalSubmission;
 use App\Models\Document;
 use App\Models\Project;
 use App\Models\Grade;
 use App\Models\ProjectRequest;
 use App\Models\ProjectRegistration;
 use App\Policies\ProposalPolicy;
+use App\Policies\ProposalSubmissionPolicy;
 use App\Policies\DocumentPolicy;
 use App\Policies\ProjectPolicy;
 use App\Policies\GradePolicy;
@@ -27,6 +29,7 @@ class AppServiceProvider extends ServiceProvider
      */
     protected $policies = [
         Proposal::class => ProposalPolicy::class,
+        ProposalSubmission::class => ProposalSubmissionPolicy::class,
         Document::class => DocumentPolicy::class,
         Project::class => ProjectPolicy::class,
         Grade::class => GradePolicy::class,
@@ -78,6 +81,10 @@ class AppServiceProvider extends ServiceProvider
 
         \Illuminate\Support\Facades\Route::bind('meeting', function ($value) {
             return \App\Models\ProjectMeeting::findOrFail($value);
+        });
+
+        \Illuminate\Support\Facades\Route::bind('proposalSubmission', function ($value) {
+            return \App\Models\ProposalSubmission::findOrFail($value);
         });
     }
 }

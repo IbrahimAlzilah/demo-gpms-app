@@ -3,9 +3,11 @@
 namespace App\Services;
 
 use App\Models\Proposal;
+use App\Models\ProposalSubmission;
 use App\Models\User;
 use App\Models\Project;
 use App\Enums\ProposalStatus;
+use App\Enums\ProposalSubmissionStatus;
 use Illuminate\Support\Facades\DB;
 
 class ProposalService
@@ -281,6 +283,275 @@ class ProposalService
     public function delete(Proposal $proposal): bool
     {
         return $proposal->delete();
+    }
+
+    /**
+     * Create a proposal submission with multiple proposals
+     */
+    public function createSubmission(array $proposalsData, User $submitter, ?int $studentGroupId = null): ProposalSubmission
+    {
+        return DB::transaction(function () use ($proposalsData, $submitter, $studentGroupId) {
+            // Validate at least 1 proposal, max 5
+            if (count($proposalsData) < 1 || count($proposalsData) > 5) {
+                throw new \Exception('A submission must contain between 1 and 5 proposals');
+            }
+
+            // Create the submission
+            $submission = ProposalSubmission::create([
+                'submitter_id' => $submitter->id,
+                'student_group_id' => $studentGroupId,
+                'status' => ProposalSubmissionStatus::DRAFT,
+            ]);
+
+            // Create all proposals linked to this submission
+            foreach ($proposalsData as $proposalData) {
+                Proposal::create([
+                    'title' => $proposalData['title'],
+                    'description' => $proposalData['description'],
+                    'proposed_supervisor_id' => $proposalData['proposed_supervisor_id'] ?? null,
+                    'team_members' => $proposalData['team_members'] ?? null,
+                    'submitter_id' => $submitter->id,
+                    'student_group_id' => $studentGroupId,
+                    'target_project_id' => $proposalData['target_project_id'] ?? null,
+                    'submission_id' => $submission->id,
+                    'status' => ProposalStatus::PENDING_REVIEW,
+                ]);
+            }
+
+            return $submission->fresh()->load('proposals');
+        });
+    }
+
+    /**
+     * Submit a proposal submission (change status from draft to submitted)
+     */
+    public function submitSubmission(ProposalSubmission $submission): ProposalSubmission
+    {
+        if ($submission->status !== ProposalSubmissionStatus::DRAFT) {
+            throw new \Exception('Only draft submissions can be submitted');
+        }
+
+        $submission->markAsSubmitted();
+
+        // Notify projects committee members about new submission
+        $committeeMembers = User::where('role', 'projects_committee')
+            ->where('status', 'active')
+            ->pluck('id')
+            ->toArray();
+
+        if (!empty($committeeMembers)) {
+            $submitterName = $submission->studentGroup ? $submission->studentGroup->name : $submission->submitter->name;
+            $proposalCount = $submission->proposals()->count();
+            $this->notificationService->createForUsers(
+                $committeeMembers,
+                "تم تقديم طلب مقترحات جديد يحتوي على {$proposalCount} مقترح من قبل {$submitterName}",
+                'proposal_submission_submitted',
+                'proposal_submission',
+                $submission->id
+            );
+        }
+
+        return $submission->fresh();
+    }
+
+    /**
+     * Check if a user has already submitted a proposal submission
+     */
+    public function hasSubmitted(User $user, ?int $studentGroupId = null): bool
+    {
+        $query = ProposalSubmission::where('submitter_id', $user->id);
+
+        if ($studentGroupId) {
+            $query->where('student_group_id', $studentGroupId);
+        }
+
+        return $query->whereIn('status', [
+            ProposalSubmissionStatus::SUBMITTED,
+            ProposalSubmissionStatus::UNDER_REVIEW,
+            ProposalSubmissionStatus::REQUIRES_MODIFICATION,
+        ])->exists();
+    }
+
+    /**
+     * Get existing submission for a user
+     */
+    public function getExistingSubmission(User $user, ?int $studentGroupId = null): ?ProposalSubmission
+    {
+        $query = ProposalSubmission::with('proposals')
+            ->where('submitter_id', $user->id);
+
+        if ($studentGroupId) {
+            $query->where('student_group_id', $studentGroupId);
+        }
+
+        return $query->first();
+    }
+
+    /**
+     * Update a proposal submission (allow editing proposals and adding new ones while editing)
+     */
+    public function updateSubmission(ProposalSubmission $submission, array $proposalsData, User $user): ProposalSubmission
+    {
+        return DB::transaction(function () use ($submission, $proposalsData, $user) {
+            // Check if trying to add new proposals when not allowed
+            $existingCount = $submission->proposals()->count();
+            $newCount = count($proposalsData);
+            
+            if (!$submission->allowsNewProposals() && $newCount > $existingCount) {
+                throw new \Exception('Cannot add new proposals. Submission status does not allow modifications.');
+            }
+            
+            // Validate max proposals limit (max 5)
+            if ($newCount > 5) {
+                throw new \Exception('Cannot have more than 5 proposals in a submission');
+            }
+
+            // Update existing proposals or create new ones (if allowed)
+            $existingProposals = $submission->proposals()->get()->keyBy('id');
+            $processedIds = [];
+            
+            foreach ($proposalsData as $index => $proposalData) {
+                if (isset($proposalData['id']) && $existingProposals->has($proposalData['id'])) {
+                    // Update existing proposal
+                    $proposal = $existingProposals->get($proposalData['id']);
+                    $proposal->update([
+                        'title' => $proposalData['title'],
+                        'description' => $proposalData['description'],
+                        'proposed_supervisor_id' => $proposalData['proposed_supervisor_id'] ?? null,
+                        'team_members' => $proposalData['team_members'] ?? null,
+                        'target_project_id' => $proposalData['target_project_id'] ?? null,
+                    ]);
+                    $processedIds[] = $proposal->id;
+                } elseif ($submission->allowsNewProposals()) {
+                    // Create new proposal (allowed when editing)
+                    Proposal::create([
+                        'title' => $proposalData['title'],
+                        'description' => $proposalData['description'],
+                        'proposed_supervisor_id' => $proposalData['proposed_supervisor_id'] ?? null,
+                        'team_members' => $proposalData['team_members'] ?? null,
+                        'submitter_id' => $user->id,
+                        'student_group_id' => $submission->student_group_id,
+                        'target_project_id' => $proposalData['target_project_id'] ?? null,
+                        'submission_id' => $submission->id,
+                        'status' => ProposalStatus::PENDING_REVIEW,
+                    ]);
+                }
+            }
+            
+            // Delete proposals that were removed (not in the new data)
+            $submission->proposals()
+                ->whereNotIn('id', $processedIds)
+                ->delete();
+
+            // If submission requires modification and is being updated, change status to draft
+            if ($submission->status === ProposalSubmissionStatus::REQUIRES_MODIFICATION) {
+                $submission->update(['status' => ProposalSubmissionStatus::DRAFT]);
+            }
+
+            return $submission->fresh()->load('proposals');
+        });
+    }
+
+    /**
+     * Approve a proposal submission
+     */
+    public function approveSubmission(ProposalSubmission $submission, User $reviewer, ?int $projectId = null): ProposalSubmission
+    {
+        return DB::transaction(function () use ($submission, $reviewer, $projectId) {
+            // Approve all proposals in the submission
+            foreach ($submission->proposals as $proposal) {
+                $this->approve($proposal, $reviewer, $projectId);
+            }
+
+            // Update submission status
+            $submission->update([
+                'status' => ProposalSubmissionStatus::APPROVED,
+                'reviewed_by' => $reviewer->id,
+                'reviewed_at' => now(),
+            ]);
+
+            // Notify submitter
+            if ($submission->submitter) {
+                $this->notificationService->create(
+                    $submission->submitter,
+                    "تم قبول طلب المقترحات الخاص بك",
+                    'proposal_submission_approved',
+                    'proposal_submission',
+                    $submission->id
+                );
+            }
+
+            return $submission->fresh();
+        });
+    }
+
+    /**
+     * Reject a proposal submission
+     */
+    public function rejectSubmission(ProposalSubmission $submission, User $reviewer, ?string $reviewNotes = null): ProposalSubmission
+    {
+        // Reject all proposals in the submission
+        foreach ($submission->proposals as $proposal) {
+            $this->reject($proposal, $reviewer, $reviewNotes);
+        }
+
+        // Update submission status
+        $submission->update([
+            'status' => ProposalSubmissionStatus::REJECTED,
+            'reviewed_by' => $reviewer->id,
+            'reviewed_at' => now(),
+            'review_notes' => $reviewNotes,
+        ]);
+
+        // Notify submitter
+        if ($submission->submitter) {
+            $message = "تم رفض طلب المقترحات الخاص بك";
+            if ($reviewNotes) {
+                $message .= "\nملاحظات المراجعة: {$reviewNotes}";
+            }
+            $this->notificationService->create(
+                $submission->submitter,
+                $message,
+                'proposal_submission_rejected',
+                'proposal_submission',
+                $submission->id
+            );
+        }
+
+        return $submission->fresh();
+    }
+
+    /**
+     * Request modification for a proposal submission
+     */
+    public function requestSubmissionModification(ProposalSubmission $submission, User $reviewer, string $reviewNotes): ProposalSubmission
+    {
+        // Mark all proposals as requiring modification
+        foreach ($submission->proposals as $proposal) {
+            $this->requestModification($proposal, $reviewer, $reviewNotes);
+        }
+
+        // Update submission status
+        $submission->update([
+            'status' => ProposalSubmissionStatus::REQUIRES_MODIFICATION,
+            'reviewed_by' => $reviewer->id,
+            'reviewed_at' => now(),
+            'review_notes' => $reviewNotes,
+        ]);
+
+        // Notify submitter
+        if ($submission->submitter) {
+            $message = "يتطلب طلب المقترحات الخاص بك تعديلات\nملاحظات المراجعة: {$reviewNotes}";
+            $this->notificationService->create(
+                $submission->submitter,
+                $message,
+                'proposal_submission_modification_required',
+                'proposal_submission',
+                $submission->id
+            );
+        }
+
+        return $submission->fresh();
     }
 }
 
