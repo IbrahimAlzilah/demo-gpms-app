@@ -69,9 +69,6 @@ class ProposalController extends Controller
             'submitter_id' => 'required|exists:users,id',
             'student_group_id' => 'nullable|exists:student_groups,id',
             'target_project_id' => 'nullable|exists:projects,id',
-            'team_members' => 'nullable|array',
-            'team_members.*.name' => 'required_with:team_members|string|max:255',
-            'team_members.*.role' => 'required_with:team_members|string|max:255',
         ]);
 
         // Validate that submitter_id is a student

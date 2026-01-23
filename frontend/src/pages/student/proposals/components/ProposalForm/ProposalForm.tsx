@@ -2,11 +2,10 @@ import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Input, Textarea, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { LoadingSpinner, FileUpload } from '@/components/common'
-import { AlertCircle, Loader2, Calendar, PlusCircle, X, Save } from 'lucide-react'
+import { AlertCircle, Loader2, Calendar, X, Save } from 'lucide-react'
 import type { UseProposalFormReturn } from '../../hooks/useProposalForm'
 import { useSupervisors } from '../../hooks/useSupervisors'
 import { useMyGroup } from '@/pages/student/groups/hooks/useGroups'
-import { useFieldArray } from 'react-hook-form'
 
 interface ProposalFormProps {
   form: UseProposalFormReturn['form']
@@ -34,15 +33,11 @@ export function ProposalForm({
   onCancel,
 }: ProposalFormProps) {
   const { t } = useTranslation()
-  const { register, formState: { errors }, control, watch } = form
+  const { register, formState: { errors }, watch } = form
   const { data: supervisors = [], isLoading: supervisorsLoading, error: supervisorsError } = useSupervisors()
   const { data: studentGroup, isLoading: groupLoading } = useMyGroup()
   const selectedGroupId = watch('studentGroupId')
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'teamMembers',
-  })
 
   // Auto-select group if student is a member of one
   useEffect(() => {
@@ -85,10 +80,6 @@ export function ProposalForm({
         </div>
       </div>
     )
-  }
-
-  const handleAddMember = () => {
-    append({ name: '', role: '' })
   }
 
   return (
@@ -251,101 +242,6 @@ export function ProposalForm({
         )}
       </div>
 
-      {/* Team Members Section */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <h3 className="text-base font-semibold">{t('proposal.teamMembers')}</h3>
-          </div>
-
-          {!studentGroup && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleAddMember}
-              className="mb-4"
-            >
-              <PlusCircle className="size-4" />
-              {t('proposal.addMember')}
-            </Button>
-          )}
-        </div>
-
-        {studentGroup ? (
-          <div className="p-4 border rounded-md bg-muted/20">
-            <p className="text-sm font-medium mb-2">{t('proposal.groupMembers') || 'Group Members'}:</p>
-            <ul className="list-disc list-inside space-y-1">
-              {/* Display Leader */}
-              {studentGroup.leader && (
-                <li className="text-sm">
-                  {studentGroup.leader.name} <span className="text-xs text-muted-foreground">({t('common.leader') || 'Leader'})</span>
-                </li>
-              )}
-              {/* Display Members (excluding leader to avoid duplication) */}
-              {studentGroup.members?.filter((member) => member.id !== studentGroup.leaderId).map((member) => (
-                <li key={member.id} className="text-sm">
-                  {member.name}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {fields.map((field, index) => (
-              <div key={field.id} className="flex gap-3 items-end">
-                <div className="flex-1 space-y-2">
-                  <Label htmlFor={`teamMembers.${index}.name`}>
-                    {t('proposal.memberName')}
-                  </Label>
-                  <Input
-                    id={`teamMembers.${index}.name`}
-                    {...register(`teamMembers.${index}.name`)}
-                    placeholder={t('proposal.memberNamePlaceholder')}
-                    className={errors.teamMembers?.[index]?.name ? 'border-destructive' : ''}
-                  />
-                  {errors.teamMembers?.[index]?.name && (
-                    <p className="text-xs text-destructive flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {errors.teamMembers[index]?.name?.message}
-                    </p>
-                  )}
-                </div>
-                <div className="flex-1 space-y-2">
-                  <Label htmlFor={`teamMembers.${index}.role`}>
-                    {t('proposal.role')}
-                  </Label>
-                  <Input
-                    id={`teamMembers.${index}.role`}
-                    {...register(`teamMembers.${index}.role`)}
-                    placeholder={t('proposal.rolePlaceholder')}
-                    className={errors.teamMembers?.[index]?.role ? 'border-destructive' : ''}
-                  />
-                  {errors.teamMembers?.[index]?.role && (
-                    <p className="text-xs text-destructive flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      {errors.teamMembers[index]?.role?.message}
-                    </p>
-                  )}
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => remove(index)}
-                  className='text-destructive hover:text-destructive/80'
-                >
-                  <X className="size-4" />
-                </Button>
-              </div>
-            ))}
-            {fields.length === 0 && (
-              <p className="text-sm text-muted-foreground italic">
-                {t('proposal.noMembersAdded') || 'No team members added. You can add members if you are proposing a project individually.'}
-              </p>
-            )}
-          </div>
-        )}
-      </div>
 
       {/* Attachments Section */}
       <div className="space-y-4">

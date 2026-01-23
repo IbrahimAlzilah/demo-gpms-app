@@ -68,9 +68,6 @@ class ProposalController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'proposed_supervisor_id' => 'nullable|exists:users,id',
-            'team_members' => 'nullable|array',
-            'team_members.*.name' => 'required_with:team_members|string|max:255',
-            'team_members.*.role' => 'required_with:team_members|string|max:255',
             'student_group_id' => $groupRequired ? 'required|exists:student_groups,id' : 'nullable|exists:student_groups,id',
             'target_project_id' => 'nullable|exists:projects,id',
         ]);
@@ -194,9 +191,6 @@ class ProposalController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'proposed_supervisor_id' => 'nullable|exists:users,id',
-            'team_members' => 'nullable|array',
-            'team_members.*.name' => 'required_with:team_members|string|max:255',
-            'team_members.*.role' => 'required_with:team_members|string|max:255',
         ]);
 
         // Validate that proposed_supervisor_id is actually a supervisor

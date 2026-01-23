@@ -18,7 +18,7 @@ export function ProposalsNew({ open, onClose, onSuccess }: ProposalsNewProps) {
   })
 
   return (
-    <ModalDialog open={open} onOpenChange={onClose} title={t('proposal.submitNew')}>
+    <ModalDialog open={open} onOpenChange={onClose} title={t('proposal.submitNew')} className="lg:max-w-3xl">
       <ProposalForm
         form={form.form}
         attachedFiles={form.attachedFiles}

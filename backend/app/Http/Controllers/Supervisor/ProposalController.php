@@ -58,9 +58,6 @@ class ProposalController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'proposed_supervisor_id' => 'nullable|exists:users,id',
-            'team_members' => 'nullable|array',
-            'team_members.*.name' => 'required_with:team_members|string|max:255',
-            'team_members.*.role' => 'required_with:team_members|string|max:255',
         ]);
 
         $proposal = $this->proposalService->create($validated, $request->user());
@@ -90,9 +87,6 @@ class ProposalController extends Controller
             'title' => 'sometimes|string|max:255',
             'description' => 'sometimes|string',
             'proposed_supervisor_id' => 'nullable|exists:users,id',
-            'team_members' => 'nullable|array',
-            'team_members.*.name' => 'required_with:team_members|string|max:255',
-            'team_members.*.role' => 'required_with:team_members|string|max:255',
         ]);
 
         // If proposal requires modification, allow resubmission by changing status to pending_review

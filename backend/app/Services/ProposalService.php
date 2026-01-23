@@ -24,7 +24,6 @@ class ProposalService
             'title' => $data['title'],
             'description' => $data['description'],
             'proposed_supervisor_id' => $data['proposed_supervisor_id'] ?? null,
-            'team_members' => $data['team_members'] ?? null,
             'submitter_id' => $submitter->id,
             'student_group_id' => $data['student_group_id'] ?? null,
             'target_project_id' => $data['target_project_id'] ?? null,
@@ -267,7 +266,6 @@ class ProposalService
         // Only update other fields if user is not a committee member (for backward compatibility with other roles)
         if ($user && !$user->isProjectsCommittee()) {
             $updateData['proposed_supervisor_id'] = $data['proposed_supervisor_id'] ?? $proposal->proposed_supervisor_id;
-            $updateData['team_members'] = $data['team_members'] ?? $proposal->team_members;
         }
         
         $proposal->update(array_merge($updateData, $statusUpdate));
