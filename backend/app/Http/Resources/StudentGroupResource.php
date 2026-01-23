@@ -34,6 +34,7 @@ class StudentGroupResource extends JsonResource
             'createdAt' => $this->created_at,
             'updatedAt' => $this->updated_at,
             'projectId' => $this->assignedProjects->first()?->id,
+            'proposalsInitialSubmittedAt' => $this->proposals_initial_submitted_at,
         ];
     }
 }

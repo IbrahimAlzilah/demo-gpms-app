@@ -12,7 +12,7 @@ import {
   FileCheck,
   ArrowLeft,
   ArrowRight,
-  PlusCircle ,
+  PlusCircle,
   Search,
   Clock,
   Folder,
@@ -48,25 +48,25 @@ export function StudentDashboardPage() {
   if (error) {
     return (
       <MainLayout>
-        <div className="space-y-8 animate-in fade-in duration-500 pb-10">
-          <BlockContent variant="container" className="border-destructive">
-            <div className="flex flex-col items-center justify-center gap-4 p-8">
-              <div className="bg-destructive/10 p-3 rounded-full">
-                <AlertCircle className="h-6 w-6 text-destructive" />
-              </div>
-              <div className="text-center space-y-2">
-                <h3 className="font-semibold text-destructive">{t('common.error', { defaultValue: 'Error' })}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {error.message || t('dashboard.student.loadError', { defaultValue: 'Failed to load dashboard data.' })}
-                </p>
-              </div>
-              <Button onClick={() => refetch()} variant="outline" className="mt-2">
-                <RefreshCw className="h-4 w-4 me-2" />
-                {t('common.retry', { defaultValue: 'Retry' })}
-              </Button>
+        {/* <div className="space-y-8 animate-in fade-in duration-500"> */}
+        <BlockContent variant="container" className="border-destructive">
+          <div className="flex flex-col items-center justify-center gap-4 p-8">
+            <div className="bg-destructive/10 p-3 rounded-full">
+              <AlertCircle className="h-6 w-6 text-destructive" />
             </div>
-          </BlockContent>
-        </div>
+            <div className="text-center space-y-2">
+              <h3 className="font-semibold text-destructive">{t('common.error', { defaultValue: 'Error' })}</h3>
+              <p className="text-sm text-muted-foreground">
+                {error.message || t('dashboard.student.loadError', { defaultValue: 'Failed to load dashboard data.' })}
+              </p>
+            </div>
+            <Button onClick={() => refetch()} variant="outline" className="mt-2">
+              <RefreshCw className="h-4 w-4 me-2" />
+              {t('common.retry', { defaultValue: 'Retry' })}
+            </Button>
+          </div>
+        </BlockContent>
+        {/* </div> */}
       </MainLayout>
     )
   }
@@ -122,7 +122,7 @@ export function StudentDashboardPage() {
         {/* Active Time Windows Alert */}
         {activeTimeWindows.length > 0 && (
           <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
-            <CardContent className="pt-6">
+            <CardContent className="px-4">
               <div className="flex items-start gap-4">
                 <div className="p-2 rounded-lg bg-primary/20">
                   <Clock className="h-5 w-5 text-primary" />
@@ -203,7 +203,7 @@ export function StudentDashboardPage() {
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Button asChild size="lg" className="shadow-md">
                     <Link to={ROUTES.STUDENT.PROPOSALS}>
-                      <PlusCircle  className="size-4" />
+                      <PlusCircle className="size-4" />
                       {t('dashboard.student.submitProposal')}
                     </Link>
                   </Button>
@@ -292,17 +292,14 @@ export function StudentDashboardPage() {
           {/* Sidebar Area (1/3) */}
           <div className="space-y-8">
             {/* Quick Actions */}
-            <Card className="border-none shadow-none bg-transparent">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="p-1 rounded bg-primary/10">
-                  <MoreHorizontal className="h-4 w-4 text-primary" />
-                </div>
+            <Card className="border-none shadow-none bg-transparent gap-0 p-0">
+              <div className="flex items-center gap-2 mb-3">
                 <h3 className="text-base font-semibold tracking-tight">{t('dashboard.student.quickActions')}</h3>
               </div>
               <div className="grid grid-cols-1 gap-3">
                 <QuickActionButton
                   to={ROUTES.STUDENT.PROPOSALS}
-                  icon={PlusCircle }
+                  icon={PlusCircle}
                   label={t('dashboard.student.submitNewProposal')}
                   description={t('dashboard.student.proposalDesc', { defaultValue: 'Start a new project proposal' })}
                   color="blue"

@@ -31,6 +31,7 @@ export interface ProposalTableColumnsProps {
   onView: (proposal: Proposal) => void
   onEdit?: (proposal: Proposal) => void
   t: (key: string) => string
+  readOnly?: boolean
 }
 
 /**

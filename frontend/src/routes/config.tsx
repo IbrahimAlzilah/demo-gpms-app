@@ -8,6 +8,9 @@ import {
   // Student
   LazyStudentDashboardPage,
   LazyStudentProposalsPage,
+  LazyStudentProposalsSubmitPage,
+  LazyStudentProposalsEditPage,
+  LazyStudentProposalsViewPage,
   LazyStudentProjectsPage,
   LazyGroupsPage,
   LazyRequestsPage,
@@ -64,12 +67,24 @@ export const studentRoutes: RouteConfig[] = [
     element: LazyStudentDashboardPage,
   },
   {
-    path: 'proposals/my',
+    path: 'my-proposals',
     element: LazyStudentProposalsPage,
   },
   {
-    path: 'proposals/approved',
+    path: 'approved-proposals',
     element: LazyStudentProposalsPage,
+  },
+  {
+    path: 'proposals/submit',
+    element: LazyStudentProposalsSubmitPage,
+  },
+  {
+    path: 'proposals/edit',
+    element: LazyStudentProposalsEditPage,
+  },
+  {
+    path: 'proposals/:id',
+    element: LazyStudentProposalsViewPage,
   },
   {
     path: 'proposals',

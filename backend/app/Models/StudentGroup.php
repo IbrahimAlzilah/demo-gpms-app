@@ -17,6 +17,11 @@ class StudentGroup extends Model
         'group_code',
         'leader_id',
         'status',
+        'proposals_initial_submitted_at',
+    ];
+
+    protected $casts = [
+        'proposals_initial_submitted_at' => 'datetime',
     ];
 
     /**

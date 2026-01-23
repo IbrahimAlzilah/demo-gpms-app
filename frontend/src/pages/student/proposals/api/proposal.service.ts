@@ -83,4 +83,61 @@ export const proposalService = {
     );
     return response.data;
   },
+
+  createBatch: async (
+    proposals: ProposalFormData[],
+    studentGroupId?: string
+  ): Promise<Proposal[]> => {
+    const response = await apiClient.post<{ data: Proposal[] }>("/student/proposals/batch", {
+      student_group_id: studentGroupId || null,
+      proposals: proposals.map(p => ({
+        title: p.title,
+        description: p.description,
+        proposed_supervisor_id: p.proposedSupervisorId || null,
+        target_project_id: p.targetProjectId || null,
+      })),
+    });
+    return response.data.data || [];
+  },
+
+  updateBatch: async (
+    updates: Array<{ id: string } & Partial<ProposalFormData>>,
+    newProposals: ProposalFormData[],
+    studentGroupId?: string
+  ): Promise<{ updated: Proposal[]; created: Proposal[] }> => {
+    const response = await apiClient.put<{ data: Proposal[] }>("/student/proposals/batch", {
+      student_group_id: studentGroupId || null,
+      updates: updates.map(u => ({
+        id: u.id,
+        title: u.title,
+        description: u.description,
+        proposed_supervisor_id: u.proposedSupervisorId || null,
+      })),
+      new_proposals: newProposals.map(p => ({
+        title: p.title,
+        description: p.description,
+        proposed_supervisor_id: p.proposedSupervisorId || null,
+        target_project_id: p.targetProjectId || null,
+      })),
+    });
+    const allProposals = response.data.data || [];
+    // Separate updated and created (we'll need to track this better, but for now assume all are returned)
+    return {
+      updated: allProposals.filter((_, i) => i < updates.length),
+      created: allProposals.filter((_, i) => i >= updates.length),
+    };
+  },
+
+  getSubmissionContext: async (): Promise<{
+    group: any;
+    proposals: Proposal[];
+  }> => {
+    const response = await apiClient.get<{
+      group: any;
+      proposals: Proposal[];
+    }>("/student/proposals/submission");
+    // Axios interceptor already extracts data from { success: true, data: {...} }
+    // So response.data is already the nested data object
+    return response.data;
+  },
 };

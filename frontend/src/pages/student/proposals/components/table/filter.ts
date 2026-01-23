@@ -15,9 +15,9 @@ export function buildProposalFilters(
 ): ProposalFilters {
   const filters: ProposalFilters = {}
 
-  if (routePath.includes('/my')) {
+  if (routePath.includes('/my-proposals') || routePath.includes('/proposals/my')) {
     filters.submitterId = userId
-  } else if (routePath.includes('/approved')) {
+  } else if (routePath.includes('/approved-proposals') || routePath.includes('/proposals/approved')) {
     filters.status = 'approved'
   }
 

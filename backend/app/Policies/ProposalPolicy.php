@@ -23,7 +23,25 @@ class ProposalPolicy
             return true;
         }
 
-        // All students and supervisors can view approved proposals
+        // Group members can view proposals from their own group
+        if ($proposal->student_group_id) {
+            $studentGroup = \App\Models\StudentGroup::where('status', 'active')
+                ->find($proposal->student_group_id);
+            
+            if ($studentGroup) {
+                // Check if user is the leader
+                if ($studentGroup->leader_id === $user->id) {
+                    return true;
+                }
+                
+                // Check if user is a member of the group
+                if ($studentGroup->hasMember($user->id)) {
+                    return true;
+                }
+            }
+        }
+
+        // All students and supervisors can view approved proposals (from any group)
         if ($proposal->status === ProposalStatus::APPROVED) {
             if ($user->isStudent() || $user->isSupervisor()) {
                 return true;
@@ -43,9 +61,24 @@ class ProposalPolicy
             return true;
         }
 
-        // Submitter can update their own proposal if it can be modified
-        return $proposal->submitter_id === $user->id 
-            && $proposal->status->canBeModified();
+        // For students: must be submitter AND proposal must be modifiable
+        if ($proposal->submitter_id !== $user->id || !$proposal->status->canBeModified()) {
+            return false;
+        }
+
+        // ENFORCE: If proposal belongs to a group, user must be the group leader
+        if ($proposal->student_group_id) {
+            $studentGroup = \App\Models\StudentGroup::where('status', 'active')
+                ->find($proposal->student_group_id);
+            if (!$studentGroup || $studentGroup->leader_id !== $user->id) {
+                return false;
+            }
+        } else {
+            // ENFORCE: Solo proposals are not allowed - must be in a group
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -58,8 +91,23 @@ class ProposalPolicy
             return true;
         }
 
-        // Submitter can delete their own proposal if it can be modified
-        return $proposal->submitter_id === $user->id 
-            && $proposal->status->canBeModified();
+        // For students: must be submitter AND proposal must be modifiable
+        if ($proposal->submitter_id !== $user->id || !$proposal->status->canBeModified()) {
+            return false;
+        }
+
+        // ENFORCE: If proposal belongs to a group, user must be the group leader
+        if ($proposal->student_group_id) {
+            $studentGroup = \App\Models\StudentGroup::where('status', 'active')
+                ->find($proposal->student_group_id);
+            if (!$studentGroup || $studentGroup->leader_id !== $user->id) {
+                return false;
+            }
+        } else {
+            // ENFORCE: Solo proposals are not allowed - must be in a group
+            return false;
+        }
+
+        return true;
     }
 }

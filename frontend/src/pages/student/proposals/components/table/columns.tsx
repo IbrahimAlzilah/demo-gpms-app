@@ -1,7 +1,7 @@
 import type { ColumnDef } from '@tanstack/react-table'
 import { DataTableColumnHeader } from '@/components/ui/data-table/data-table-column-header'
 import { StatusBadge } from '@/components/common/StatusBadge'
-import { ActionsDropdown } from '@/components/common/ActionsDropdown'
+import { ActionsDropdown, type TableAction } from '@/components/common/ActionsDropdown'
 import type { Proposal } from '@/types/project.types'
 import { Eye, Edit, CheckCircle2, XCircle, Clock, AlertCircle } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
@@ -11,6 +11,7 @@ export function createProposalColumns({
   onView,
   onEdit,
   t,
+  readOnly = false,
 }: ProposalTableColumnsProps): ColumnDef<Proposal>[] {
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -100,22 +101,27 @@ export function createProposalColumns({
       cell: ({ row }) => {
         const proposal = row.original
 
-        const actions = [
+        // Explicitly type the actions array to include all TableAction properties
+        const actions: TableAction<Proposal>[] = [
           {
             id: 'view',
             label: t('common.view'),
             icon: Eye,
             onClick: () => onView(proposal),
           },
-          {
+        ]
+
+        // Only show edit action if not read-only and edit handler is provided
+        if (!readOnly && onEdit) {
+          actions.push({
             id: 'edit',
             label: t('common.edit'),
             icon: Edit,
-            onClick: () => onEdit?.(proposal),
+            onClick: () => onEdit(proposal),
             // UC-ST-01: Allow edit for pending_review or requires_modification
-            hidden: (row: Proposal) => (row.status !== 'pending_review' && row.status !== 'requires_modification') || !onEdit,
-          },
-        ]
+            hidden: (row: Proposal) => (row.status !== 'pending_review' && row.status !== 'requires_modification'),
+          })
+        }
 
         return <ActionsDropdown row={proposal} actions={actions} />
       },

@@ -280,5 +280,167 @@ class ProposalService
     {
         return $proposal->delete();
     }
+
+    /**
+     * Create multiple proposals in a batch
+     * 
+     * @param array $proposalsData Array of proposal data arrays
+     * @param User $submitter The user submitting the proposals
+     * @param int|null $studentGroupId The student group ID (null for solo students)
+     * @return array Array of created Proposal models
+     */
+    public function createBatch(array $proposalsData, User $submitter, ?int $studentGroupId = null): array
+    {
+        return DB::transaction(function () use ($proposalsData, $submitter, $studentGroupId) {
+            $createdProposals = [];
+            
+            foreach ($proposalsData as $data) {
+                $proposal = Proposal::create([
+                    'title' => $data['title'],
+                    'description' => $data['description'],
+                    'proposed_supervisor_id' => $data['proposed_supervisor_id'] ?? null,
+                    'submitter_id' => $submitter->id,
+                    'student_group_id' => $studentGroupId,
+                    'target_project_id' => $data['target_project_id'] ?? null,
+                    'status' => 'pending_review',
+                ]);
+                
+                $createdProposals[] = $proposal;
+            }
+
+            // Mark group as having submitted initial proposals (lock future submissions)
+            if ($studentGroupId) {
+                $studentGroup = \App\Models\StudentGroup::find($studentGroupId);
+                if ($studentGroup && !$studentGroup->proposals_initial_submitted_at) {
+                    $studentGroup->update([
+                        'proposals_initial_submitted_at' => now(),
+                    ]);
+                }
+            }
+
+            // Notify projects committee members about new proposals (single notification for batch)
+            $committeeMembers = User::where('role', 'projects_committee')
+                ->where('status', 'active')
+                ->pluck('id')
+                ->toArray();
+
+            if (!empty($committeeMembers) && !empty($createdProposals)) {
+                $submitterName = $studentGroupId 
+                    ? ($createdProposals[0]->studentGroup?->name ?? $submitter->name)
+                    : $submitter->name;
+                $count = count($createdProposals);
+                $message = $count === 1 
+                    ? "تم تقديم مقترح جديد: {$createdProposals[0]->title} من قبل {$submitterName}"
+                    : "تم تقديم {$count} مقترحات جديدة من قبل {$submitterName}";
+                
+                $this->notificationService->createForUsers(
+                    $committeeMembers,
+                    $message,
+                    'proposal_submitted',
+                    'proposal',
+                    $createdProposals[0]->id
+                );
+            }
+
+            return $createdProposals;
+        });
+    }
+
+    /**
+     * Update multiple proposals and optionally add new ones in a batch
+     * 
+     * @param array $updates Array of updates: ['id' => proposal_id, ...data] for existing proposals
+     * @param array $newProposals Array of new proposal data arrays
+     * @param User $user The user performing the update
+     * @param int|null $studentGroupId The student group ID (null for solo students)
+     * @return array Array with 'updated' and 'created' Proposal models
+     */
+    public function updateBatch(array $updates, array $newProposals, User $user, ?int $studentGroupId = null): array
+    {
+        return DB::transaction(function () use ($updates, $newProposals, $user, $studentGroupId) {
+            $updatedProposals = [];
+            $createdProposals = [];
+
+            // Update existing proposals
+            foreach ($updates as $updateData) {
+                $proposalId = $updateData['id'];
+                unset($updateData['id']);
+                
+                $proposal = Proposal::findOrFail($proposalId);
+                
+                // Enforce status check for non-committee members
+                if (!$user->isProjectsCommittee() && !$proposal->canBeModified()) {
+                    throw new \Illuminate\Http\Exceptions\HttpResponseException(
+                        response()->json([
+                            'success' => false,
+                            'message' => "Proposal #{$proposalId} can only be edited when status is pending_review or requires_modification",
+                        ], 403)
+                    );
+                }
+
+                // If proposal requires modification and is being updated, change status to pending_review
+                $statusUpdate = [];
+                if ($proposal->status === ProposalStatus::REQUIRES_MODIFICATION) {
+                    $statusUpdate['status'] = ProposalStatus::PENDING_REVIEW;
+                }
+
+                $updateFields = [
+                    'title' => $updateData['title'] ?? $proposal->title,
+                    'description' => $updateData['description'] ?? $proposal->description,
+                ];
+                
+                if (!$user->isProjectsCommittee()) {
+                    $updateFields['proposed_supervisor_id'] = $updateData['proposed_supervisor_id'] ?? $proposal->proposed_supervisor_id;
+                }
+                
+                $proposal->update(array_merge($updateFields, $statusUpdate));
+                $updatedProposals[] = $proposal->fresh();
+            }
+
+            // Create new proposals (allowed during edit)
+            if (!empty($newProposals)) {
+                foreach ($newProposals as $data) {
+                    $proposal = Proposal::create([
+                        'title' => $data['title'],
+                        'description' => $data['description'],
+                        'proposed_supervisor_id' => $data['proposed_supervisor_id'] ?? null,
+                        'submitter_id' => $user->id,
+                        'student_group_id' => $studentGroupId,
+                        'target_project_id' => $data['target_project_id'] ?? null,
+                        'status' => 'pending_review',
+                    ]);
+                    
+                    $createdProposals[] = $proposal;
+                }
+            }
+
+            return [
+                'updated' => $updatedProposals,
+                'created' => $createdProposals,
+            ];
+        });
+    }
+
+    /**
+     * Check if a group is locked from submitting new proposals
+     * 
+     * @param int|null $studentGroupId The student group ID (null for solo students)
+     * @return bool True if locked, false otherwise
+     */
+    public function isGroupLocked(?int $studentGroupId): bool
+    {
+        if (!$studentGroupId) {
+            // Solo students are never locked (they can always submit)
+            return false;
+        }
+
+        $studentGroup = \App\Models\StudentGroup::find($studentGroupId);
+        if (!$studentGroup) {
+            return false;
+        }
+
+        // Group is locked if it has submitted initial proposals
+        return $studentGroup->proposals_initial_submitted_at !== null;
+    }
 }
 

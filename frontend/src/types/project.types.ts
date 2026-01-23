@@ -81,6 +81,8 @@ export interface StudentGroup extends BaseEntity {
   maxMembers: number;
   minMembers: number;
   projectId?: string;
+  proposalsInitialSubmittedAt?: string;
+  proposals_initial_submitted_at?: string; // Backend snake_case format
 }
 
 export type ProjectRegistrationStatus =

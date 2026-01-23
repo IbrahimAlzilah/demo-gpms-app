@@ -55,6 +55,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('student')->middleware('role:student')->group(function () {
         Route::get('dashboard', [App\Http\Controllers\Student\DashboardController::class, 'index']);
         // Proposals routes - time window check is handled in controller (allows proposal_submission OR project_registration)
+        // Batch routes must be defined before individual routes to avoid conflicts
+        Route::post('proposals/batch', [App\Http\Controllers\Student\ProposalController::class, 'batchSubmit']);
+        Route::put('proposals/batch', [App\Http\Controllers\Student\ProposalController::class, 'batchUpdate']);
+        Route::get('proposals/submission', [App\Http\Controllers\Student\ProposalController::class, 'getSubmissionContext']);
         Route::get('proposals', [App\Http\Controllers\Student\ProposalController::class, 'index']);
         Route::get('proposals/{proposal}', [App\Http\Controllers\Student\ProposalController::class, 'show']);
         Route::post('proposals', [App\Http\Controllers\Student\ProposalController::class, 'store']);
