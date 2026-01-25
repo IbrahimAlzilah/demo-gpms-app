@@ -166,8 +166,8 @@ function getProjectsRoute(role: string): string {
     case 'discussion_committee':
       return ROUTES.DISCUSSION_COMMITTEE.PROJECTS
     case 'projects_committee':
-      // They manage projects via announce or other means, usually they don't browse "available projects" like students
-      return ROUTES.PROJECTS_COMMITTEE.ANNOUNCE_PROJECTS
+      // Projects Committee can view all projects
+      return ROUTES.PROJECTS_COMMITTEE.PROJECTS
     default:
       return getDashboardRoute(role)
   }

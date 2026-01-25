@@ -38,6 +38,7 @@ export const LazyDiscussionProjectsPage = lazy(() => import('../pages/committee/
 export const LazyProjectsCommitteeDashboardPage = lazy(() => import('../pages/committee/projects/ProjectsCommitteeDashboardPage').then(m => ({ default: m.ProjectsCommitteeDashboardPage })))
 export const LazyPeriodsPage = lazy(() => import('../pages/committee/projects/periods/PeriodsPage').then(m => ({ default: m.PeriodsPage })))
 export const LazyCommitteeProposalsPage = lazy(() => import('../pages/committee/projects/proposals/ProposalsPage').then(m => ({ default: m.ProposalsPage })))
+export const LazyProjectsPage = lazy(() => import('../pages/committee/projects/projects/ProjectsPage').then(m => ({ default: m.ProjectsPage })))
 export const LazyAnnounceProjectsPage = lazy(() => import('../pages/committee/projects/announce-projects/AnnounceProjectsPage').then(m => ({ default: m.AnnounceProjectsPage })))
 export const LazySupervisorsPage = lazy(() => import('../pages/committee/projects/supervisors/SupervisorsPage').then(m => ({ default: m.SupervisorsPage })))
 export const LazyCommitteeRequestsPage = lazy(() => import('../pages/committee/projects/requests/RequestsPage').then(m => ({ default: m.CommitteeRequestsPage })))

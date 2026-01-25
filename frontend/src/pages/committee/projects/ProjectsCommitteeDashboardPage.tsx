@@ -180,7 +180,11 @@ export function ProjectsCommitteeDashboardPage() {
                       </div>
                       <div className="text-right">
                         <div className="text-3xl font-bold text-primary">
-                          {currentPhase.endsInDays !== null ? currentPhase.endsInDays : '-'} <span className="text-sm font-normal text-muted-foreground">{t('dashboard.committee.daysLeft')}</span>
+                          {currentPhase.endsInDays !== null ? (
+                            currentPhase.endsInDays < 1 
+                              ? currentPhase.endsInDays.toFixed(2) 
+                              : Math.round(currentPhase.endsInDays)
+                          ) : '-'} <span className="text-sm font-normal text-muted-foreground">{t('dashboard.committee.daysLeft')}</span>
                         </div>
                       </div>
                     </div>

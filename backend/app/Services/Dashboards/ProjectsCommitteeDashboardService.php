@@ -68,7 +68,9 @@ class ProjectsCommitteeDashboardService
                 $progressPercent = min(100, max(0, round(($elapsed / $total) * 100)));
             }
 
-            $endsInDays = max(0, $now->diffInDays($end, false));
+            // Calculate days remaining: use diffInHours for precision, then convert to days and round to 1 decimal place
+            $hoursRemaining = max(0, $now->diffInHours($end, false));
+            $endsInDays = round($hoursRemaining / 24, 1);
         }
 
         // Next upcoming period

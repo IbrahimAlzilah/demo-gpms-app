@@ -57,6 +57,7 @@ export const ROUTES = {
     DASHBOARD: "/dashboard",
     PERIODS: "/periods",
     PROPOSALS: "/proposals",
+    PROJECTS: "/projects",
     ANNOUNCE_PROJECTS: "/announce",
     ASSIGN_SUPERVISORS: "/supervisors",
     REQUESTS: "/requests",
@@ -196,9 +197,9 @@ export const NAV_MENU: Record<string, NavMenuItem[]> = {
       icon: "FileText",
     },
     {
-      labelKey: "nav.announceProjects",
-      path: ROUTES.PROJECTS_COMMITTEE.ANNOUNCE_PROJECTS,
-      icon: "Megaphone",
+      labelKey: "nav.projects",
+      path: ROUTES.PROJECTS_COMMITTEE.PROJECTS,
+      icon: "Briefcase",
     },
     {
       labelKey: "nav.assignSupervisors",

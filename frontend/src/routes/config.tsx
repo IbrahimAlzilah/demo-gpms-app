@@ -34,6 +34,7 @@ import {
   LazyProjectsCommitteeDashboardPage,
   LazyPeriodsPage,
   LazyCommitteeProposalsPage,
+  LazyProjectsPage,
   LazyAnnounceProjectsPage,
   LazySupervisorsPage,
   LazyCommitteeRequestsPage,
@@ -192,6 +193,10 @@ export const projectsCommitteeRoutes: RouteConfig[] = [
   {
     path: 'proposals',
     element: LazyCommitteeProposalsPage,
+  },
+  {
+    path: 'projects',
+    element: LazyProjectsPage,
   },
   {
     path: 'announce',
