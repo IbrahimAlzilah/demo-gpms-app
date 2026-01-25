@@ -9,7 +9,7 @@ import { ProposalsNew } from '../new/ProposalsNew.screen'
 import { ProposalsEdit } from '../edit/ProposalsEdit.screen'
 import { ProposalsView } from '../view/ProposalsView.screen'
 import { useProposalsList } from './ProposalsList.hook'
-import { AlertCircle, Plus } from 'lucide-react'
+import { AlertCircle, PlusCircle } from 'lucide-react'
 import { useToast } from '@/components/common'
 
 export function ProposalsList() {
@@ -118,7 +118,7 @@ export function ProposalsList() {
         title={t('committee.proposal.reviewPanel')}
         actions={
           <Button onClick={() => setShowCreateDialog(true)}>
-            <Plus className="h-4 w-4 mr-2" />
+            <PlusCircle className="size-4" />
             {t('committee.proposal.create', { defaultValue: 'New Proposal' })}
           </Button>
         }

@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
 import { LoadingSpinner, ConfirmDialog } from '@/components/common'
 import { useToast } from '@/components/common'
-import { CheckCircle2, Calendar, Edit, Trash2, Plus, Flag } from 'lucide-react'
+import { CheckCircle2, Calendar, Edit, Trash2, PlusCircle, Flag } from 'lucide-react'
 import { formatDate } from '@/lib/utils/format'
 import { milestoneService } from '../api/milestone.service'
 import { MilestoneForm } from './MilestoneForm'
@@ -119,7 +119,7 @@ export function MilestonesManager({ projectId }: MilestonesManagerProps) {
                 setShowForm(true)
               }}
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <PlusCircle className="size-4" />
               {t('milestone.createMilestone')}
             </Button>
           </div>

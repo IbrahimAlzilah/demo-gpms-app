@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
 import { LoadingSpinner, ConfirmDialog } from '@/components/common'
 import { useToast } from '@/components/common'
-import { Calendar, Edit, Trash2, Plus, Users, MapPin, Clock } from 'lucide-react'
+import { Calendar, Edit, Trash2, PlusCircle, Users, MapPin, Clock } from 'lucide-react'
 import { formatDate } from '@/lib/utils/format'
 import { meetingService } from '../api/meeting.service'
 import { MeetingForm } from './MeetingForm'
@@ -111,7 +111,7 @@ export function MeetingsManager({ projectId, project }: MeetingsManagerProps) {
                 setShowForm(true)
               }}
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <PlusCircle className="size-4" />
               {t('meeting.scheduleMeeting')}
             </Button>
           </div>

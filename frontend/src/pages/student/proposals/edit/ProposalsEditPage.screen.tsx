@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { BlockContent, LoadingSpinner } from '@/components/common'
 import { Button } from '@/components/ui'
-import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
+import { ArrowLeft, PlusCircle, Trash2 } from 'lucide-react'
 import { ROUTES } from '@/lib/constants'
 import { useMyGroup } from '@/pages/student/groups/hooks/useGroups'
 import { useAuthStore } from '@/pages/auth/login'
@@ -95,7 +95,7 @@ export function ProposalsEdit() {
             onClick={() => addNewProposal()}
             disabled={isSubmitting}
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <PlusCircle className="size-4" />
             {t('proposal.addNewProposal')}
           </Button>
         </div>

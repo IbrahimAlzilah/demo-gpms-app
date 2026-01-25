@@ -153,7 +153,7 @@ export function StudentDashboardPage() {
           <div className="lg:col-span-2 space-y-8">
             {/* Project Status / Journey */}
             {myProject ? (
-              <Card className="overflow-hidden border-border bg-gradient-to-br from-card to-card/50 shadow-sm">
+              <Card className="overflow-hidden border-border bg-gradient-to-br from-card to-card/50 shadow-none">
                 <CardHeader className="border-b border-border/40 bg-muted/10 pb-4">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg font-semibold flex items-center gap-2">
@@ -168,7 +168,7 @@ export function StudentDashboardPage() {
                     <div className="grid md:grid-cols-3 gap-4">
                       <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
                         <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">{t('project.role')}</p>
-                        <p className="font-medium mt-1">{t('user.role.student')}</p>
+                        <p className="font-medium mt-1">{t('roles.student')}</p>
                       </div>
                       <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
                         <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">{t('project.supervisor')}</p>

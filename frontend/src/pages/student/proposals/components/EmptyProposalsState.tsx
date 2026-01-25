@@ -16,7 +16,7 @@ export function EmptyProposalsState({
     onSubmit
 }: EmptyProposalsStateProps) {
     return (
-        <div className="relative flex flex-col items-center justify-center py-16 px-6">
+        <div className="relative flex flex-col items-center justify-center py-12 px-6">
             {/* Background decoration */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
@@ -24,14 +24,14 @@ export function EmptyProposalsState({
             </div>
 
             {/* Icon container with animated ring */}
-            <div className="relative mb-8">
+            <div className="relative mb-6">
                 <div className="absolute inset-0 animate-ping bg-primary/10 rounded-full" style={{ animationDuration: '3s' }} />
                 <div className={cn(
-                    'relative flex items-center justify-center w-20 h-20 rounded-full',
+                    'relative flex items-center justify-center w-16 h-16 rounded-full',
                     'bg-gradient-to-br from-primary/10 to-primary/5',
                     'ring-1 ring-primary/20'
                 )}>
-                    <FileText className="h-10 w-10 text-primary/60" />
+                    <FileText className="h-8 w-8 text-primary/60" />
                 </div>
             </div>
 
@@ -39,7 +39,7 @@ export function EmptyProposalsState({
             <h3 className="text-xl font-semibold text-foreground mb-2 text-center">
                 {t('proposal.noProposals')}
             </h3>
-            <p className="text-sm text-muted-foreground max-w-md text-center mb-8">
+            <p className="text-sm text-muted-foreground max-w-md text-center mb-5">
                 {isReadOnly
                     ? t('proposal.readOnlyDescription')
                     : t('proposal.noProposalsDescription')
@@ -61,7 +61,7 @@ export function EmptyProposalsState({
 
             {/* Tips section */}
             {canSubmit && !isReadOnly && (
-                <div className="mt-12 grid gap-4 md:grid-cols-3 w-full max-w-2xl">
+                <div className="mt-8 grid gap-4 md:grid-cols-3 w-full max-w-2xl">
                     {[
                         {
                             icon: FileText,
