@@ -91,8 +91,8 @@ export function useDeleteProposal() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: string) => {
-      return committeeProposalService.delete(id)
+    mutationFn: ({ id, force = false }: { id: string; force?: boolean }) => {
+      return committeeProposalService.delete(id, force)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['committee-proposals'] })

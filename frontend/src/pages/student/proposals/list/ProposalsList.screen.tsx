@@ -67,19 +67,37 @@ export function ProposalsList() {
         onView: (proposal) => {
           navigate(`${ROUTES.STUDENT.PROPOSALS_VIEW}/${proposal.id}`)
         },
-        onEdit: (proposal) => {
+        onEdit: async (proposal) => {
+          // First check if student has a group at all
+          if (!studentGroup) {
+            setShowNoGroupModal(true)
+            return
+          }
+
           // Only allow edit if user is leader and status allows editing
           if (!canSubmit) {
-            // Show read-only modal for non-leaders
+            // Show read-only modal ONLY for group members (non-leaders who are in a group)
+            // Note: We already checked !studentGroup above, so at this point studentGroup exists
             setShowReadOnlyModal(true)
             return
           }
-          if (proposal.status === 'pending_review' || proposal.status === 'requires_modification') {
-            // Navigate to edit page - it will load all proposals for the group
-            navigate(ROUTES.STUDENT.PROPOSALS_EDIT)
-          } else {
+
+          // Check if proposal status allows editing
+          if (proposal.status !== 'pending_review' && proposal.status !== 'requires_modification') {
             toastError('proposal.cannotEdit')
+            return
           }
+
+          // Check if any proposal in the group is approved before allowing edit
+          // This will be checked on the backend, but we can also check here for better UX
+          const hasApprovedProposal = data.proposals?.some(p => p.status === 'approved')
+          if (hasApprovedProposal) {
+            toastError('proposal.cannotEditApproved')
+            return
+          }
+
+          // Navigate to edit page - it will load all proposals for the group and check statuses
+          navigate(ROUTES.STUDENT.PROPOSALS_EDIT)
         },
         t,
         readOnly: isReadOnly,
@@ -87,7 +105,15 @@ export function ProposalsList() {
     [t, navigate, canSubmit, toastError, isReadOnly, setShowReadOnlyModal]
   )
 
+  const [showNoGroupModal, setShowNoGroupModal] = useState(false)
+
   const handleSubmitClick = async () => {
+    // First check if student has a group at all
+    if (!studentGroup) {
+      setShowNoGroupModal(true)
+      return
+    }
+
     if (!canSubmit) {
       toastError('proposal.onlyLeaderCanSubmit')
       return
@@ -160,7 +186,7 @@ export function ProposalsList() {
       return (
         <Button
           variant="default"
-          onClick={handleButtonClick}
+          onClick={handleSubmitClick}
         >
           <PlusCircle className="size-4" />
           {t('proposal.submitNew')}
@@ -331,10 +357,12 @@ export function ProposalsList() {
         </div>
       </ModalDialog>
 
-      {/* Read-Only Access Modal - For non-leader group members */}
+      {/* Read-Only Access Modal - ONLY for non-leader group members (not for students without a group) */}
       <ModalDialog
-        open={showReadOnlyModal}
-        onOpenChange={setShowReadOnlyModal}
+        open={showReadOnlyModal && !!studentGroup}
+        onOpenChange={(open) => {
+          if (!open) setShowReadOnlyModal(false)
+        }}
         title={t('proposal.readOnlyAccess') || 'Read-Only Access'}
       >
         <div className="space-y-6">
@@ -363,6 +391,50 @@ export function ProposalsList() {
               onClick={() => setShowReadOnlyModal(false)}
             >
               {t('common.close')}
+            </Button>
+          </div>
+        </div>
+      </ModalDialog>
+
+      {/* No Group Modal - For students without a group */}
+      <ModalDialog
+        open={showNoGroupModal}
+        onOpenChange={setShowNoGroupModal}
+        title={t('proposal.groupRequired')}
+      >
+        <div className="space-y-6">
+          <div className="flex items-center gap-4 p-4 rounded-lg bg-warning/10 border border-warning/20">
+            <div className="p-2 rounded-full bg-warning/20">
+              <AlertCircle className="h-5 w-5 text-warning" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-warning-foreground">
+                {t('proposal.groupRequiredTitle')}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {t('proposal.groupRequiredMessage')}
+              </p>
+            </div>
+          </div>
+
+          <p className="text-sm text-muted-foreground">
+            {t('proposal.groupRequiredDescription')}
+          </p>
+
+          <div className="flex gap-3 justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setShowNoGroupModal(false)}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              onClick={() => {
+                setShowNoGroupModal(false)
+                navigate(ROUTES.STUDENT.GROUPS)
+              }}
+            >
+              {t('groups.management') || t('groups.title') || t('groups.createGroup')}
             </Button>
           </div>
         </div>

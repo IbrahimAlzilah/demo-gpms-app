@@ -1,9 +1,8 @@
 import { useTranslation } from 'react-i18next'
-import { Input, Textarea, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
-import { AlertCircle, FileText, MessageSquare, Sparkles, User, Loader2 } from 'lucide-react'
+import { Input, Textarea, Label } from '@/components/ui'
+import { AlertCircle, FileText, MessageSquare, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ProposalFormData } from '../../types/Proposals.types'
-import { useSupervisors } from '../../hooks/useSupervisors'
 
 interface ProposalFieldsProps {
   proposal: ProposalFormData & { id: string; errors?: Record<string, string> }
@@ -14,7 +13,7 @@ interface ProposalFieldsProps {
 
 export function ProposalFields({ proposal, onChange, errors = {}, disabled = false }: ProposalFieldsProps) {
   const { t } = useTranslation()
-  const { data: supervisors = [], isLoading: supervisorsLoading, error: supervisorsError } = useSupervisors()
+
   const fieldErrors = proposal.errors || errors
 
   // Character counters
@@ -144,91 +143,6 @@ export function ProposalFields({ proposal, onChange, errors = {}, disabled = fal
               ? t('proposal.tipDesc2')
               : 'Describe your project objectives, methodology, and expected outcomes in detail'
             }
-          </p>
-        )}
-      </div>
-
-      {/* Supervisor Selection */}
-      <div className="space-y-2">
-        <Label
-          htmlFor={`proposedSupervisorId-${proposal.id}`}
-          className="flex items-center gap-2 text-sm font-medium"
-        >
-          <div className="p-1 rounded bg-primary/10">
-            <User className="h-3.5 w-3.5 text-primary" />
-          </div>
-          {t('proposal.proposedSupervisor')}
-          <span className="text-xs text-muted-foreground font-normal ms-1">
-            ({t('common.optional') || 'Optional'})
-          </span>
-        </Label>
-
-        {supervisorsLoading ? (
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span>{t('common.loading')}</span>
-          </div>
-        ) : supervisorsError ? (
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-sm text-destructive">
-            <AlertCircle className="h-4 w-4" />
-            <span>{t('proposal.supervisorsLoadError') || 'Failed to load supervisors'}</span>
-          </div>
-        ) : (
-          <Select
-            value={proposal.proposedSupervisorId ? String(proposal.proposedSupervisorId) : ''}
-            onValueChange={(value) => onChange({ proposedSupervisorId: value || undefined })}
-            disabled={disabled}
-          >
-            <SelectTrigger
-              id={`proposedSupervisorId-${proposal.id}`}
-              className={cn(
-                'transition-all duration-200',
-                'focus:ring-2 focus:ring-primary/20',
-                fieldErrors.proposedSupervisorId
-                  ? 'border-destructive'
-                  : 'hover:border-primary/50'
-              )}
-            >
-              <SelectValue placeholder={t('proposal.selectSupervisor')} />
-            </SelectTrigger>
-            <SelectContent>
-              {supervisors.length === 0 ? (
-                <div className="px-2 py-4 text-center">
-                  <User className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
-                  <p className="text-sm text-muted-foreground">
-                    {t('proposal.noSupervisorsAvailable') || 'No supervisors available'}
-                  </p>
-                </div>
-              ) : (
-                supervisors.map((supervisor) => (
-                  <SelectItem
-                    key={supervisor.id}
-                    value={String(supervisor.id)}
-                    className="cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                        <span className="text-xs font-medium text-primary">
-                          {supervisor.name?.charAt(0).toUpperCase() || '?'}
-                        </span>
-                      </div>
-                      <span>{supervisor.name}</span>
-                    </div>
-                  </SelectItem>
-                ))
-              )}
-            </SelectContent>
-          </Select>
-        )}
-
-        {fieldErrors.proposedSupervisorId ? (
-          <p className="text-xs text-destructive flex items-center gap-1.5">
-            <AlertCircle className="h-3 w-3 shrink-0" />
-            {fieldErrors.proposedSupervisorId}
-          </p>
-        ) : (
-          <p className="text-xs text-muted-foreground">
-            Optionally suggest a supervisor for your project
           </p>
         )}
       </div>

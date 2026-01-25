@@ -38,16 +38,27 @@ export function ProposalsSubmit() {
     navigate(ROUTES.STUDENT.MY_PROPOSALS)
   })
 
+  const [showNoGroupModal, setShowNoGroupModal] = useState(false)
+
   // ENFORCE: Only group leaders can submit (block solo students and non-leaders)
   const isLeader = studentGroup ? studentGroup.leaderId === user?.id : false
   const canSubmit = studentGroup && isLeader
 
   useEffect(() => {
-    if (!groupLoading && !canSubmit) {
-      // Non-leader group member or solo student - redirect to list
+    if (groupLoading) return
+
+    // First check if student has a group at all
+    if (!studentGroup) {
+      setShowNoGroupModal(true)
+      return
+    }
+
+    // Then check if they're a leader
+    if (!canSubmit) {
+      // Non-leader group member - redirect to list
       navigate(ROUTES.STUDENT.MY_PROPOSALS)
     }
-  }, [groupLoading, canSubmit, navigate])
+  }, [groupLoading, studentGroup, canSubmit, navigate])
 
   // Check lock status when component mounts
   useEffect(() => {
@@ -235,6 +246,53 @@ export function ProposalsSubmit() {
             >
               <Edit className="h-4 w-4" />
               {t('proposal.editProposals')}
+            </Button>
+          </div>
+        </div>
+      </ModalDialog>
+
+      {/* No Group Modal - For students without a group */}
+      <ModalDialog
+        open={showNoGroupModal}
+        onOpenChange={setShowNoGroupModal}
+        title={t('proposal.groupRequired')}
+      >
+        <div className="space-y-6">
+          <div className="flex items-center gap-4 p-4 rounded-lg bg-warning/10 border border-warning/20">
+            <div className="p-2 rounded-full bg-warning/20">
+              <AlertCircle className="h-5 w-5 text-warning" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-warning-foreground">
+                {t('proposal.groupRequiredTitle')}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {t('proposal.groupRequiredMessage')}
+              </p>
+            </div>
+          </div>
+
+          <p className="text-sm text-muted-foreground">
+            {t('proposal.groupRequiredDescription')}
+          </p>
+
+          <div className="flex gap-3 justify-end">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowNoGroupModal(false)
+                navigate(ROUTES.STUDENT.MY_PROPOSALS)
+              }}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              onClick={() => {
+                setShowNoGroupModal(false)
+                navigate(ROUTES.STUDENT.GROUPS)
+              }}
+            >
+              {t('groups.management') || t('groups.title') || t('groups.createGroup')}
             </Button>
           </div>
         </div>

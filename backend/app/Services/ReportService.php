@@ -450,14 +450,14 @@ class ReportService
             $isRegistered = $projectRow !== null;
 
             // Check if in a group
-            $groupQuery = DB::table('project_group_member')
-                ->where('member_id', $student->id)
-                ->join('project_groups', 'project_group_member.group_id', '=', 'project_groups.id')
-                ->join('projects', 'project_groups.project_id', '=', 'projects.id')
-                ->select('projects.id', 'projects.title', 'project_groups.id as group_id');
+            $groupQuery = DB::table('student_group_members')
+                ->where('student_id', $student->id)
+                ->join('student_groups', 'student_group_members.group_id', '=', 'student_groups.id')
+                ->join('projects', 'projects.assigned_group_id', '=', 'student_groups.id')
+                ->select('projects.id', 'projects.title', 'student_groups.id as group_id');
 
             if ($dateRange) {
-                $groupQuery->whereBetween('project_group_member.created_at', [$dateRange['from'], $dateRange['to']]);
+                $groupQuery->whereBetween('student_group_members.created_at', [$dateRange['from'], $dateRange['to']]);
             }
 
             $groupRow = $groupQuery->first();

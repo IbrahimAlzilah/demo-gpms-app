@@ -61,12 +61,17 @@ class ProposalPolicy
             return true;
         }
 
-        // For students: must be submitter AND proposal must be modifiable
+        // Must be submitter AND proposal must be modifiable
         if ($proposal->submitter_id !== $user->id || !$proposal->status->canBeModified()) {
             return false;
         }
 
-        // ENFORCE: If proposal belongs to a group, user must be the group leader
+        // For supervisors: allow update if they're the submitter (no group restriction)
+        if ($user->isSupervisor()) {
+            return true;
+        }
+
+        // For students: must be group leader if proposal belongs to a group
         if ($proposal->student_group_id) {
             $studentGroup = \App\Models\StudentGroup::where('status', 'active')
                 ->find($proposal->student_group_id);

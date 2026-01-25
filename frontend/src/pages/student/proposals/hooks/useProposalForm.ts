@@ -43,10 +43,8 @@ export function useProposalForm(options: UseProposalFormOptions = {}) {
     defaultValues: {
       title: "",
       description: "",
-      proposedSupervisorId: "",
       studentGroupId: studentGroup ? String(studentGroup.id) : "",
       targetProjectId: "",
-      teamMembers: [],
       ...options.defaultValues,
     },
   });
@@ -84,10 +82,8 @@ export function useProposalForm(options: UseProposalFormOptions = {}) {
       const formData: ProposalFormData = {
         title: data.title.trim(),
         description: data.description.trim(),
-        proposedSupervisorId: data.proposedSupervisorId || undefined,
         studentGroupId: data.studentGroupId || undefined,
         targetProjectId: data.targetProjectId || undefined,
-        teamMembers: data.teamMembers?.filter(m => m.name.trim() && m.role.trim()) || [],
       };
 
       await options.onSubmit?.(formData);

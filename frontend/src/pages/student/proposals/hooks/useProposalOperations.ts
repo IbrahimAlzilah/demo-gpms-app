@@ -54,8 +54,6 @@ export function useResubmitProposal() {
         data: {
           title: proposal.title,
           description: proposal.description,
-          proposedSupervisorId: proposal.proposedSupervisorId,
-          teamMembers: proposal.teamMembers,
         },
       }),
     onSuccess: (_, proposal) => {

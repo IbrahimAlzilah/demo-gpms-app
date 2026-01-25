@@ -14,13 +14,6 @@ export const proposalFormSchema = (t: (key: string) => string) => {
       .string()
       .min(1, t('proposal.validation.descriptionRequired'))
       .min(50, t('proposal.validation.descriptionMinLength')),
-    proposedSupervisorId: z.string().optional(),
-    teamMembers: z.array(
-      z.object({
-        name: z.string().min(1, 'Member name is required'),
-        role: z.string().min(1, 'Role is required'),
-      })
-    ).optional(),
   })
 }
 

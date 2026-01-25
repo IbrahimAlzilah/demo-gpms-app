@@ -24,10 +24,14 @@ class Proposal extends Model
         'project_id',
         'student_group_id',
         'target_project_id',
+        'assigned_to_group_id',
+        'assignment_type',
+        'assigned_at',
     ];
 
     protected $casts = [
         'reviewed_at' => 'datetime',
+        'assigned_at' => 'datetime',
         'status' => ProposalStatus::class,
         'team_members' => 'array',
     ];
@@ -78,6 +82,14 @@ class Proposal extends Model
     public function targetProject(): BelongsTo
     {
         return $this->belongsTo(Project::class, 'target_project_id');
+    }
+
+    /**
+     * Get the student group this proposal is assigned to
+     */
+    public function assignedToGroup(): BelongsTo
+    {
+        return $this->belongsTo(StudentGroup::class, 'assigned_to_group_id');
     }
 
     /**

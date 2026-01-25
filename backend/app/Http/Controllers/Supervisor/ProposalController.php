@@ -57,7 +57,6 @@ class ProposalController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'proposed_supervisor_id' => 'nullable|exists:users,id',
         ]);
 
         $proposal = $this->proposalService->create($validated, $request->user());
@@ -79,14 +78,54 @@ class ProposalController extends Controller
         ]);
     }
 
+    /**
+     * Submit multiple proposals in a batch (supervisor only)
+     */
+    public function batchSubmit(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $timeWindowService = app(\App\Services\TimeWindowService::class);
+
+        if (!$timeWindowService->isWindowActive(\App\Enums\TimePeriodType::PROPOSAL_SUBMISSION)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Proposal submission is only allowed during the proposal submission window',
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'proposals' => 'required|array|min:1',
+            'proposals.*.title' => 'required|string|max:255',
+            'proposals.*.description' => 'required|string',
+        ]);
+
+        // Supervisors don't have student_group_id, so pass null
+        $proposals = $this->proposalService->createBatch($validated['proposals'], $user, null);
+
+        return response()->json([
+            'success' => true,
+            'data' => ProposalResource::collection(Proposal::whereIn('id', collect($proposals)->pluck('id'))->with(['submitter', 'proposedSupervisor'])->get()),
+            'message' => count($proposals) === 1 ? 'Proposal created successfully' : count($proposals) . ' proposals created successfully',
+        ], 201);
+    }
+
     public function update(Request $request, Proposal $proposal): JsonResponse
     {
         $this->authorize('update', $proposal);
 
+        // Ensure proposal can be modified (status must be pending_review or requires_modification)
+        if (!$proposal->canBeModified()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Proposal can only be edited when status is pending_review or requires_modification',
+            ], 403);
+        }
+
+        // Only allow updating title and description in edit mode
+        // proposed_supervisor_id and team_members are not editable
         $validated = $request->validate([
             'title' => 'sometimes|string|max:255',
             'description' => 'sometimes|string',
-            'proposed_supervisor_id' => 'nullable|exists:users,id',
         ]);
 
         // If proposal requires modification, allow resubmission by changing status to pending_review

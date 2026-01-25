@@ -60,10 +60,6 @@ class AppServiceProvider extends ServiceProvider
             return \App\Models\ProjectRegistration::findOrFail($value);
         });
 
-        \Illuminate\Support\Facades\Route::bind('invitation', function ($value) {
-            return \App\Models\GroupInvitation::findOrFail($value);
-        });
-
         \Illuminate\Support\Facades\Route::bind('request', function ($value) {
             return \App\Models\ProjectRequest::findOrFail($value);
         });

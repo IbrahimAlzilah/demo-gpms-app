@@ -1,4 +1,4 @@
-import { Component } from 'react'
+import React from 'react'
 import type { ReactNode, ErrorInfo } from 'react'
 import i18n from '@/lib/i18n/i18n'
 
@@ -12,10 +12,7 @@ interface ErrorBoundaryState {
   error?: Error
 }
 
-export class ErrorBoundary extends Component<
-  ErrorBoundaryProps,
-  ErrorBoundaryState
-> {
+export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props)
     this.state = { hasError: false }

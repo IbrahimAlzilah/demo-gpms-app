@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useToast } from '@/components/common'
-import { useMyGroup } from '@/pages/student/groups/hooks/useGroups'
 import { useAuthStore } from '@/pages/auth/login'
 import { proposalService } from '../api/proposal.service'
 import { usePeriodCheck } from '@/hooks/usePeriodCheck'
@@ -16,30 +15,15 @@ export function useProposalsSubmit(onSuccess?: () => void) {
   const { t } = useTranslation()
   const { toastSuccess, toastError } = useToast()
   const { user } = useAuthStore()
-  const { data: studentGroup } = useMyGroup()
-  const { isPeriodActive: isSubmissionPeriod } = usePeriodCheck('proposal_submission')
-  const { isPeriodActive: isRegistrationPeriod } = usePeriodCheck('project_registration')
-  const isPeriodActive = isSubmissionPeriod || isRegistrationPeriod
+  const { isPeriodActive } = usePeriodCheck('proposal_submission')
 
   const [proposals, setProposals] = useState<ProposalItem[]>([
-    { id: '1', title: '', description: '' }
+    { id: '1', title: '', description: '', proposedSupervisorId: user?.id }
   ])
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLocked, setIsLocked] = useState(false)
-
-  // Check lock status from group data
-  useEffect(() => {
-    if (studentGroup && studentGroup.leaderId === user?.id) {
-      // Check if group has proposals_initial_submitted_at set (lock indicator)
-      const locked = !!(studentGroup.proposalsInitialSubmittedAt || studentGroup.proposals_initial_submitted_at)
-      setIsLocked(locked)
-    } else {
-      setIsLocked(false)
-    }
-  }, [studentGroup, user])
 
   const addProposal = () => {
-    setProposals([...proposals, { id: Date.now().toString(), title: '', description: '' }])
+    setProposals([...proposals, { id: Date.now().toString(), title: '', description: '', proposedSupervisorId: user?.id }])
   }
 
   const removeProposal = (id: string) => {
@@ -92,26 +76,17 @@ export function useProposalsSubmit(onSuccess?: () => void) {
 
     setIsSubmitting(true)
     try {
-      const proposalsData: ProposalFormData[] = proposals.map(p => ({
+      const proposalsData = proposals.map(p => ({
         title: p.title.trim(),
         description: p.description.trim(),
-        targetProjectId: p.targetProjectId,
+        proposedSupervisorId: p.proposedSupervisorId || user.id,
       }))
 
-      const studentGroupId = studentGroup ? String(studentGroup.id) : undefined
-      await proposalService.createBatch(proposalsData, studentGroupId)
+      await proposalService.createBatch(proposalsData)
       
       toastSuccess(t('proposal.submitSuccess'))
       onSuccess?.()
     } catch (error: any) {
-      // Check if error is due to missing group
-      if (error.response?.data?.code === 'NO_GROUP') {
-        const message = error.response?.data?.message || t('proposal.groupRequiredMessage')
-        toastError(message)
-        // Don't show generic error for this case, the modal will handle it
-        return
-      }
-      
       const message = error.response?.data?.message || error.message || t('proposal.submitError')
       toastError(message)
     } finally {
@@ -126,7 +101,6 @@ export function useProposalsSubmit(onSuccess?: () => void) {
     updateProposal,
     handleSubmit,
     isSubmitting,
-    isLocked,
-    isLoadingLock: false, // No longer needed, but keep for backward compatibility
+    isPeriodActive,
   }
 }

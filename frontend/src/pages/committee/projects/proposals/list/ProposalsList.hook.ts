@@ -19,6 +19,8 @@ export function useProposalsList() {
     proposalToDelete: null,
     proposalToViewId: null,
     viewMode: 'grouped', // Default to grouped view
+    registrationDetails: [],
+    showRegistrationWarning: false,
   })
 
   // Shared pagination and filter state for grouped view

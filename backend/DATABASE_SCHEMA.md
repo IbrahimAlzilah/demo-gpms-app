@@ -91,7 +91,6 @@ Main projects table.
 - `belongsTo(User)` - supervisor
 - `belongsToMany(User)` - students (via `project_student`) - **All group members when group is registered**
 - `belongsTo(StudentGroup)` - assigned group (via `assigned_group_id`)
-- `hasOne(ProjectGroup)` - legacy project-bound groups (deprecated)
 - `belongsToMany(User)` - committee members (via `committee_assignments`)
 - `belongsTo(ProjectCommittee)`
 - `belongsTo(DiscussionCommittee)`
@@ -469,22 +468,27 @@ The system also includes these supporting tables:
 
 ## Seeders
 
-The database includes comprehensive seeders for demo data:
+The database includes essential seeders for system initialization and testing:
 
-1. **UsersSeeder** - Creates users for all roles with profiles
-2. **CommitteesSeeder** - Creates committees and assigns members
-3. **ProjectsSeeder** - Creates projects with various statuses
-4. **GroupsSeeder** - Creates project groups
+1. **UsersSeeder** - Creates users for all roles with profiles (students, supervisors, committees, admin)
+2. **SettingsSeeder** - Creates system settings (group min/max members, etc.)
+3. **TimePeriodsSeeder** - Creates time periods for various activities
+4. **CommitteesSeeder** - Creates committees and assigns members
 5. **ProposalsSeeder** - Creates proposals with various statuses
-6. **TimePeriodsSeeder** - Creates time periods
-7. **DocumentsSeeder** - Creates documents for projects
-8. **GradesSeeder** - Creates grades for students
-9. **RequestsSeeder** - Creates project requests
-10. **NotificationsSeeder** - Creates notifications
+6. **ProjectCommitteeWorkflowSeeder** - Creates test data for Project Committee workflow testing
 
-Run seeders:
+**Note:** The `DatabaseSeeder` class orchestrates the seeding process and calls the essential seeders in the correct order. Additional seeders can be run individually for specific testing scenarios. Demo data seeders (ProjectsSeeder, DocumentsSeeder, GradesSeeder, RequestsSeeder) have been removed as they are no longer needed for production/testing.
+
+Run all seeders:
 ```bash
 php artisan migrate:fresh --seed
+```
+
+Run individual seeders:
+```bash
+php artisan db:seed --class=UsersSeeder
+php artisan db:seed --class=SettingsSeeder
+# etc.
 ```
 
 ## Factories
@@ -493,7 +497,6 @@ All models have corresponding factories for testing and seeding:
 - `UserFactory` - With role states (student, supervisor, committee, admin)
 - `ProjectFactory` - With status states
 - `ProposalFactory` - With status states
-- `ProjectGroupFactory`
 - `TimePeriodFactory` - With active/inactive states
 - `DocumentFactory` - With approval states
 - `GradeFactory` - With complete/partial states

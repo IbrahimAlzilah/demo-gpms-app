@@ -6,13 +6,8 @@ import type { Proposal } from '@/types/project.types'
 export interface ProposalFormData {
   title: string
   description: string
-  proposedSupervisorId?: string
   studentGroupId?: string
   targetProjectId?: string
-  teamMembers?: Array<{
-    name: string
-    role: string
-  }>
 }
 
 /**

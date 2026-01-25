@@ -88,14 +88,53 @@ class ProposalController extends Controller
             ], 403);
         }
 
-        // Get only editable proposals for this group submitted by the leader
-        // Only proposals with status 'pending_review' or 'requires_modification' can be edited
-        $proposals = Proposal::where('student_group_id', $userGroup->id)
+        // Get ALL proposals for this group submitted by the leader (to check statuses)
+        $allProposals = Proposal::where('student_group_id', $userGroup->id)
             ->where('submitter_id', $user->id)
-            ->whereIn('status', ['pending_review', 'requires_modification'])
             ->with(['submitter', 'reviewer', 'proposedSupervisor', 'studentGroup', 'targetProject', 'project'])
             ->orderBy('created_at', 'asc')
             ->get();
+
+        // Check if ANY proposal is approved - if so, editing is not allowed
+        $hasApprovedProposal = $allProposals->contains(function ($proposal) {
+            return $proposal->status === \App\Enums\ProposalStatus::APPROVED;
+        });
+
+        if ($hasApprovedProposal) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Editing is not allowed. One or more proposals have already been approved by the Project Committee.',
+                'can_edit' => false,
+                'has_approved_proposal' => true,
+            ], 403);
+        }
+
+        // Check if ALL proposals are in pending_review status
+        // Only allow editing if ALL proposals are pending_review (or requires_modification)
+        $allPendingReview = $allProposals->every(function ($proposal) {
+            return in_array($proposal->status, [
+                \App\Enums\ProposalStatus::PENDING_REVIEW->value,
+                \App\Enums\ProposalStatus::REQUIRES_MODIFICATION->value
+            ]);
+        });
+
+        if (!$allPendingReview) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Editing is only allowed when all proposals are in pending review status.',
+                'can_edit' => false,
+                'has_approved_proposal' => false,
+            ], 403);
+        }
+
+        // Get only editable proposals for this group submitted by the leader
+        // Only proposals with status 'pending_review' or 'requires_modification' can be edited
+        $proposals = $allProposals->filter(function ($proposal) {
+            return in_array($proposal->status, [
+                \App\Enums\ProposalStatus::PENDING_REVIEW->value,
+                \App\Enums\ProposalStatus::REQUIRES_MODIFICATION->value
+            ]);
+        });
 
         return response()->json([
             'success' => true,
@@ -103,6 +142,7 @@ class ProposalController extends Controller
                 'group' => new \App\Http\Resources\StudentGroupResource($userGroup),
                 'proposals' => ProposalResource::collection($proposals),
             ],
+            'can_edit' => true,
         ]);
     }
 
@@ -126,27 +166,50 @@ class ProposalController extends Controller
             ], 403);
         }
         
+        // Dynamic validation: target_project_id is required during registration window, optional during proposal submission
+        $targetProjectRule = $isRegistrationWindow 
+            ? 'required|exists:projects,id' 
+            : 'nullable|exists:projects,id';
+        
         $validated = $request->validate([
             'student_group_id' => 'required|exists:student_groups,id',
             'proposals' => 'required|array|min:1',
             'proposals.*.title' => 'required|string|max:255',
             'proposals.*.description' => 'required|string',
-            'proposals.*.proposed_supervisor_id' => 'nullable|exists:users,id',
-            'proposals.*.target_project_id' => 'nullable|exists:projects,id',
+            'proposals.*.target_project_id' => $targetProjectRule,
         ]);
 
         $studentGroupId = $validated['student_group_id'];
+
+        // CRITICAL: First check if student belongs to ANY group (as member or leader)
+        $userGroupAsMember = \App\Models\StudentGroup::where('status', 'active')
+            ->where(function ($query) use ($user) {
+                $query->where('leader_id', $user->id)
+                    ->orWhereHas('members', function ($q) use ($user) {
+                        $q->where('users.id', $user->id);
+                    });
+            })
+            ->first();
+
+        if (!$userGroupAsMember) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You must join a group before submitting proposals. Please create or join a student group first.',
+                'code' => 'NO_GROUP',
+            ], 403);
+        }
 
         // Get user's active group where they are the leader
         $userGroup = \App\Models\StudentGroup::where('status', 'active')
             ->where('leader_id', $user->id)
             ->first();
 
-        // ENFORCE: Only group leaders can submit proposals (block solo students)
+        // ENFORCE: Only group leaders can submit proposals (block solo students and non-leaders)
         if (!$userGroup) {
             return response()->json([
                 'success' => false,
                 'message' => 'Only group leaders can submit proposals. You must be the leader of an active student group.',
+                'code' => 'NOT_LEADER',
             ], 403);
         }
 
@@ -168,17 +231,23 @@ class ProposalController extends Controller
         }
 
         // Validate group size requirements
-        $minMembers = app(\App\Services\SettingsService::class)->getGroupMinMembers();
+        // During proposal submission window: allow group leader to submit regardless of group size
+        // During registration window: enforce minimum member requirement
         $maxMembers = app(\App\Services\SettingsService::class)->getGroupMaxMembers();
         $totalMembers = $userGroup->getTotalMemberCount();
         
-        if ($totalMembers < $minMembers) {
-            return response()->json([
-                'success' => false,
-                'message' => "Group must have at least {$minMembers} members to submit proposals",
-            ], 422);
+        // Only enforce minimum members during registration window (not during proposal submission)
+        if ($isRegistrationWindow) {
+            $minMembers = app(\App\Services\SettingsService::class)->getGroupMinMembers();
+            if ($totalMembers < $minMembers) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Group must have at least {$minMembers} members to submit proposals during registration window",
+                ], 422);
+            }
         }
         
+        // Always enforce maximum members
         if ($totalMembers > $maxMembers) {
             return response()->json([
                 'success' => false,
@@ -186,18 +255,6 @@ class ProposalController extends Controller
             ], 422);
         }
 
-        // Validate supervisors
-        foreach ($validated['proposals'] as $proposalData) {
-            if (isset($proposalData['proposed_supervisor_id'])) {
-                $supervisor = \App\Models\User::find($proposalData['proposed_supervisor_id']);
-                if (!$supervisor || !$supervisor->isSupervisor()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'The selected user is not a supervisor',
-                    ], 422);
-                }
-            }
-        }
 
         // Create batch
         $proposals = $this->proposalService->createBatch($validated['proposals'], $user, $studentGroupId);
@@ -243,18 +300,21 @@ class ProposalController extends Controller
             }
         }
 
+        // Dynamic validation: target_project_id is required during registration window, optional during proposal submission
+        $targetProjectRule = $isRegistrationWindow 
+            ? 'required|exists:projects,id' 
+            : 'nullable|exists:projects,id';
+        
         $validated = $request->validate([
             'student_group_id' => 'nullable|exists:student_groups,id',
             'updates' => 'required|array',
             'updates.*.id' => 'required|exists:proposals,id',
             'updates.*.title' => 'required|string|max:255',
             'updates.*.description' => 'required|string',
-            'updates.*.proposed_supervisor_id' => 'nullable|exists:users,id',
             'new_proposals' => 'nullable|array',
             'new_proposals.*.title' => 'required|string|max:255',
             'new_proposals.*.description' => 'required|string',
-            'new_proposals.*.proposed_supervisor_id' => 'nullable|exists:users,id',
-            'new_proposals.*.target_project_id' => 'nullable|exists:projects,id',
+            'new_proposals.*.target_project_id' => $targetProjectRule,
         ]);
 
         $studentGroupId = $validated['student_group_id'] ?? null;
@@ -277,6 +337,38 @@ class ProposalController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'You can only update proposals for your own group.',
+            ], 403);
+        }
+
+        // CRITICAL: Check if ALL proposals in the group are in pending_review status
+        // If ANY proposal is approved, editing is not allowed
+        $allGroupProposals = Proposal::where('student_group_id', $userGroup->id)
+            ->where('submitter_id', $user->id)
+            ->get();
+
+        $hasApprovedProposal = $allGroupProposals->contains(function ($proposal) {
+            return $proposal->status === \App\Enums\ProposalStatus::APPROVED;
+        });
+
+        if ($hasApprovedProposal) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Editing is not allowed. One or more proposals have already been approved by the Project Committee.',
+            ], 403);
+        }
+
+        // Check if ALL proposals are in pending_review or requires_modification status
+        $allPendingReview = $allGroupProposals->every(function ($proposal) {
+            return in_array($proposal->status, [
+                \App\Enums\ProposalStatus::PENDING_REVIEW->value,
+                \App\Enums\ProposalStatus::REQUIRES_MODIFICATION->value
+            ]);
+        });
+
+        if (!$allPendingReview) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Editing is only allowed when all proposals are in pending review status.',
             ], 403);
         }
 
@@ -309,6 +401,17 @@ class ProposalController extends Controller
                     'message' => "You can only update proposals you submitted.",
                 ], 403);
             }
+
+            // Ensure proposal is in editable status
+            if (!in_array($proposal->status, [
+                \App\Enums\ProposalStatus::PENDING_REVIEW->value,
+                \App\Enums\ProposalStatus::REQUIRES_MODIFICATION->value
+            ])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Proposal #{$proposal->id} cannot be edited. Only proposals in pending review or requiring modification can be edited.",
+                ], 403);
+            }
         }
 
         // If adding new proposals, must be leader and use correct group
@@ -328,32 +431,6 @@ class ProposalController extends Controller
             }
         }
 
-        // Validate supervisors
-        foreach ($validated['updates'] as $updateData) {
-            if (isset($updateData['proposed_supervisor_id'])) {
-                $supervisor = \App\Models\User::find($updateData['proposed_supervisor_id']);
-                if (!$supervisor || !$supervisor->isSupervisor()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'The selected user is not a supervisor',
-                    ], 422);
-                }
-            }
-        }
-
-        if (!empty($validated['new_proposals'])) {
-            foreach ($validated['new_proposals'] as $proposalData) {
-                if (isset($proposalData['proposed_supervisor_id'])) {
-                    $supervisor = \App\Models\User::find($proposalData['proposed_supervisor_id']);
-                    if (!$supervisor || !$supervisor->isSupervisor()) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'The selected user is not a supervisor',
-                        ], 422);
-                    }
-                }
-            }
-        }
 
         // Perform batch update
         $result = $this->proposalService->updateBatch(
@@ -394,24 +471,47 @@ class ProposalController extends Controller
             ], 403);
         }
         
+        // Dynamic validation: target_project_id is required during registration window, optional during proposal submission
+        $targetProjectRule = $isRegistrationWindow 
+            ? 'required|exists:projects,id' 
+            : 'nullable|exists:projects,id';
+        
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'proposed_supervisor_id' => 'nullable|exists:users,id',
             'student_group_id' => 'required|exists:student_groups,id',
-            'target_project_id' => 'nullable|exists:projects,id',
+            'target_project_id' => $targetProjectRule,
         ]);
+
+        // CRITICAL: First check if student belongs to ANY group (as member or leader)
+        $userGroupAsMember = \App\Models\StudentGroup::where('status', 'active')
+            ->where(function ($query) use ($user) {
+                $query->where('leader_id', $user->id)
+                    ->orWhereHas('members', function ($q) use ($user) {
+                        $q->where('users.id', $user->id);
+                    });
+            })
+            ->first();
+
+        if (!$userGroupAsMember) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You must join a group before submitting proposals. Please create or join a student group first.',
+                'code' => 'NO_GROUP',
+            ], 403);
+        }
 
         // Get user's active group where they are the leader
         $userGroup = \App\Models\StudentGroup::where('status', 'active')
             ->where('leader_id', $user->id)
             ->first();
 
-        // ENFORCE: Only group leaders can submit proposals (block solo students)
+        // ENFORCE: Only group leaders can submit proposals (block solo students and non-leaders)
         if (!$userGroup) {
             return response()->json([
                 'success' => false,
                 'message' => 'Only group leaders can submit proposals. You must be the leader of an active student group.',
+                'code' => 'NOT_LEADER',
             ], 403);
         }
 
@@ -435,18 +535,24 @@ class ProposalController extends Controller
 
         $studentGroup = \App\Models\StudentGroup::findOrFail($validated['student_group_id']);
 
-        // Always enforce group size requirements
-        $minMembers = app(\App\Services\SettingsService::class)->getGroupMinMembers();
+        // Validate group size requirements
+        // During proposal submission window: allow group leader to submit regardless of group size
+        // During registration window: enforce minimum member requirement
         $maxMembers = app(\App\Services\SettingsService::class)->getGroupMaxMembers();
         $totalMembers = $studentGroup->getTotalMemberCount();
         
-        if ($totalMembers < $minMembers) {
-            return response()->json([
-                'success' => false,
-                'message' => "Group must have at least {$minMembers} members to submit a proposal",
-            ], 422);
+        // Only enforce minimum members during registration window (not during proposal submission)
+        if ($isRegistrationWindow) {
+            $minMembers = app(\App\Services\SettingsService::class)->getGroupMinMembers();
+            if ($totalMembers < $minMembers) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Group must have at least {$minMembers} members to submit a proposal during registration window",
+                ], 422);
+            }
         }
         
+        // Always enforce maximum members
         if ($totalMembers > $maxMembers) {
             return response()->json([
                 'success' => false,
@@ -515,19 +621,7 @@ class ProposalController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'proposed_supervisor_id' => 'nullable|exists:users,id',
         ]);
-
-        // Validate that proposed_supervisor_id is actually a supervisor
-        if (isset($validated['proposed_supervisor_id'])) {
-            $supervisor = \App\Models\User::find($validated['proposed_supervisor_id']);
-            if (!$supervisor || !$supervisor->isSupervisor()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'The selected user is not a supervisor',
-                ], 422);
-            }
-        }
 
         // Use service to update proposal (enforces status check)
         $proposal = $this->proposalService->update($proposal, $validated, $request->user());

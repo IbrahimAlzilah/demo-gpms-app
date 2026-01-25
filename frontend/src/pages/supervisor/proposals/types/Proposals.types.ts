@@ -28,6 +28,7 @@ export interface ProposalFilters {
 export interface ProposalTableColumnsProps {
   onView: (proposal: Proposal) => void
   onEdit?: (proposal: Proposal) => void
+  onAssign?: (proposal: Proposal) => void
   t: (key: string) => string
 }
 

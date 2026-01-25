@@ -12,6 +12,15 @@ export interface ProposalsListState {
   proposalToDelete: Proposal | null
   proposalToViewId: string | null
   viewMode: ViewMode
+  registrationDetails?: Array<{
+    type: string
+    project_id?: number
+    project_title?: string
+    group_id?: number
+    group_name?: string
+    count?: number
+  }>
+  showRegistrationWarning?: boolean
 }
 
 export interface ProposalsListData {

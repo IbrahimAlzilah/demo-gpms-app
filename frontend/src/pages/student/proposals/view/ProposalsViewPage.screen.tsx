@@ -155,66 +155,7 @@ export function ProposalsView() {
             </div>
           </div>
 
-          {/* Proposed Supervisor Field - Matching ProposalFields design */}
-          {proposal.proposedSupervisor && (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <div className="p-1 rounded bg-primary/10">
-                  <User className="h-3.5 w-3.5 text-primary" />
-                </div>
-                {t('proposal.proposedSupervisor')}
-              </div>
-              <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <span className="text-xs font-medium text-primary">
-                      {proposal.proposedSupervisor.name?.charAt(0).toUpperCase() || '?'}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">
-                      {proposal.proposedSupervisor.name || proposal.proposedSupervisor.email}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{t('roles.supervisor')}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
-          {/* Team Members Field */}
-          {proposal.teamMembers && Array.isArray(proposal.teamMembers) && proposal.teamMembers.length > 0 && (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <div className="p-1 rounded bg-primary/10">
-                  <Users className="h-3.5 w-3.5 text-primary" />
-                </div>
-                {t('proposal.teamMembers')}
-              </div>
-              <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {proposal.teamMembers.map((member, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-3 p-2 rounded-md bg-background/50"
-                    >
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                        <span className="text-xs font-medium text-primary">
-                          {member.name?.charAt(0).toUpperCase() || '?'}
-                        </span>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium truncate">{member.name}</p>
-                        {member.role && (
-                          <p className="text-xs text-muted-foreground truncate">{member.role}</p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Date Details Section - Comprehensive date information */}
           <div className="space-y-2">

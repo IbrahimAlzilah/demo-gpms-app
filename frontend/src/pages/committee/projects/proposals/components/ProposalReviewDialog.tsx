@@ -12,7 +12,10 @@ import {
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { AlertCircle } from "lucide-react"
+import { StatusBadge } from "@/components/common"
+import { AlertCircle, FileText, User, Users, Calendar, Loader2, CheckCircle, XCircle, FileEdit } from "lucide-react"
+import { formatDate } from "@/lib/utils/format"
+import { cn } from "@/lib/utils"
 import type { Proposal } from "@/types/project.types"
 import { proposalReviewSchema, type ProposalReviewSchema } from "../schema"
 
@@ -65,22 +68,112 @@ export function ProposalReviewDialog({
     modify: t('committee.proposal.modifyDescription'),
   }
 
+  const getActionIcon = () => {
+    switch (action) {
+      case "approve":
+        return <CheckCircle className="h-5 w-5 text-emerald-600" />
+      case "reject":
+        return <XCircle className="h-5 w-5 text-rose-600" />
+      case "modify":
+        return <FileEdit className="h-5 w-5 text-amber-600" />
+      default:
+        return <FileText className="h-5 w-5" />
+    }
+  }
+
+  const getActionColor = () => {
+    switch (action) {
+      case "approve":
+        return "border-emerald-200 dark:border-emerald-800"
+      case "reject":
+        return "border-rose-200 dark:border-rose-800"
+      case "modify":
+        return "border-amber-200 dark:border-amber-800"
+      default:
+        return ""
+    }
+  }
+
   return (
     <Dialog open={!!proposal && !!action} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{actionLabels[action]}</DialogTitle>
-          <DialogDescription>{actionDescriptions[action]}</DialogDescription>
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              "p-2 rounded-lg",
+              action === "approve" && "bg-emerald-100 dark:bg-emerald-900/30",
+              action === "reject" && "bg-rose-100 dark:bg-rose-900/30",
+              action === "modify" && "bg-amber-100 dark:bg-amber-900/30"
+            )}>
+              {getActionIcon()}
+            </div>
+            <div className="flex-1">
+              <DialogTitle className="text-lg">{actionLabels[action]}</DialogTitle>
+              <DialogDescription className="mt-1">{actionDescriptions[action]}</DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-semibold mb-2">{proposal.title}</h4>
-              <p className="text-sm text-muted-foreground">{proposal.description}</p>
+          <div className="space-y-6">
+            {/* Proposal Details */}
+            <div className={cn(
+              "p-4 rounded-lg border bg-muted/30",
+              getActionColor()
+            )}>
+              <div className="flex items-start gap-3 mb-3">
+                <div className="p-2 rounded-lg bg-primary/10 shrink-0">
+                  <FileText className="h-4 w-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    <h4 className="font-semibold text-base">{proposal.title}</h4>
+                    <StatusBadge status={proposal.status} />
+                  </div>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                    {proposal.description}
+                  </p>
+                </div>
+              </div>
+
+              {/* Proposal Metadata */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 pt-3 border-t border-border/50">
+                {proposal.submitter && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <User className="h-3.5 w-3.5" />
+                    <span>
+                      <span className="font-medium">{t('proposal.submittedBy')}:</span> {proposal.submitter.name || proposal.submitter.email}
+                    </span>
+                  </div>
+                )}
+                {proposal.studentGroup && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Users className="h-3.5 w-3.5" />
+                    <span>
+                      <span className="font-medium">{t('proposal.group')}:</span> {proposal.studentGroup.name || proposal.studentGroup.groupCode}
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Calendar className="h-3.5 w-3.5" />
+                  <span>
+                    <span className="font-medium">{t('proposal.submittedAt')}:</span> {formatDate(proposal.createdAt)}
+                  </span>
+                </div>
+                {proposal.reviewedAt && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Calendar className="h-3.5 w-3.5" />
+                    <span>
+                      <span className="font-medium">{t('proposal.reviewedAt')}:</span> {formatDate(proposal.reviewedAt)}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
+
+            {/* Review Notes Section */}
             {(action === "reject" || action === "modify") && (
               <div className="space-y-2">
-                <Label htmlFor="notes">
+                <Label htmlFor="notes" className="text-sm font-medium">
                   {action === "modify"
                     ? t('committee.proposal.modificationsRequired')
                     : t('committee.proposal.notesOptional')
@@ -95,20 +188,29 @@ export function ProposalReviewDialog({
                       ? t('committee.proposal.modificationsPlaceholder')
                       : t('committee.proposal.notesPlaceholder')
                   }
-                  rows={4}
-                  className={errors.notes ? "border-destructive" : ""}
+                  rows={5}
+                  className={cn(
+                    "resize-none transition-all",
+                    errors.notes ? "border-destructive focus:ring-destructive/20" : "focus:ring-primary/20"
+                  )}
                   aria-invalid={!!errors.notes}
                 />
                 {errors.notes && (
-                  <p className="text-xs text-destructive flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
+                  <p className="text-xs text-destructive flex items-center gap-1.5 animate-in slide-in-from-top-1">
+                    <AlertCircle className="h-3 w-3 shrink-0" />
                     {errors.notes.message}
                   </p>
                 )}
+                <p className="text-xs text-muted-foreground">
+                  {action === "modify"
+                    ? t('committee.proposal.modifyHint') || "Please provide clear instructions on what modifications are needed."
+                    : t('committee.proposal.rejectHint') || "Optional: Provide feedback on why this proposal was rejected."
+                  }
+                </p>
               </div>
             )}
           </div>
-          <DialogFooter className="mt-4">
+          <DialogFooter className="mt-6 gap-2">
             <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
               {t('common.cancel')}
             </Button>
@@ -116,8 +218,16 @@ export function ProposalReviewDialog({
               type="submit"
               disabled={isLoading}
               variant={action === "reject" ? "destructive" : "default"}
+              className="min-w-[100px]"
             >
-              {isLoading ? t('common.processing') : t('common.confirm')}
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t('common.processing')}
+                </>
+              ) : (
+                t('common.confirm')
+              )}
             </Button>
           </DialogFooter>
         </form>

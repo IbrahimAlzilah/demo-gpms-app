@@ -47,7 +47,8 @@ export function EmptyProposalsState({
             </p>
 
             {/* Action button for leaders */}
-            {canSubmit && !isReadOnly && onSubmit && (
+            {/* {canSubmit && !isReadOnly && onSubmit && ( */}
+            {!isReadOnly && onSubmit && (
                 <Button
                     onClick={onSubmit}
                     size="lg"
@@ -60,7 +61,8 @@ export function EmptyProposalsState({
             )}
 
             {/* Tips section */}
-            {canSubmit && !isReadOnly && (
+            {/* {!canSubmit && !isReadOnly && ( */}
+            {!isReadOnly && (
                 <div className="mt-8 grid gap-4 md:grid-cols-3 w-full max-w-2xl">
                     {[
                         {

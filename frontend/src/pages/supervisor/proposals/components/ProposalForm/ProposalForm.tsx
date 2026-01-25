@@ -1,26 +1,28 @@
-import { useState } from 'react'
-import { useForm, useFieldArray } from 'react-hook-form'
+import { useState, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
-import { useCreateProposal } from '../../hooks/useProposalOperations'
+import { useCreateProposal, useUpdateProposal } from '../../hooks/useProposalOperations'
 import { useAuthStore } from '@/pages/auth/login'
 import { usePeriodCheck } from '@/hooks/usePeriodCheck'
-import { Button, Input, Textarea, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
+import { Button, Input, Textarea, Label } from '@/components/ui'
 import { LoadingSpinner, FileUpload } from '@/components/common'
-import { AlertCircle, Loader2, Calendar, PlusCircle , X, Save } from 'lucide-react'
+import { AlertCircle, Loader2, Calendar, X, Save } from 'lucide-react'
 import { proposalFormSchema, type ProposalFormSchema } from '../../schema'
-import { useSupervisors } from '../../hooks/useSupervisors'
+import { useToast } from '@/components/common'
+import type { Proposal } from '@/types/project.types'
 
 interface ProposalFormProps {
+  proposal?: Proposal | null
   onSuccess?: () => void
 }
 
-import { useToast } from '@/components/common'
-
-export function ProposalForm({ onSuccess }: ProposalFormProps) {
+export function ProposalForm({ proposal, onSuccess }: ProposalFormProps) {
   const { t } = useTranslation()
   const { user } = useAuthStore()
   const createProposal = useCreateProposal()
+  const updateProposal = useUpdateProposal()
+  const isEditMode = !!proposal
   const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('proposal_submission')
   const [attachedFiles, setAttachedFiles] = useState<File[]>([])
   const { toastSuccess, toastError } = useToast()
@@ -30,29 +32,23 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
     handleSubmit,
     formState: { errors },
     reset,
-    watch,
-    control,
-    setValue,
-  } = useForm({
+  } = useForm<ProposalFormSchema>({
     resolver: zodResolver(proposalFormSchema(t)),
     defaultValues: {
       title: '',
       description: '',
-      proposedSupervisorId: '',
-      teamMembers: [],
     },
   })
 
-  const { data: supervisors = [], isLoading: supervisorsLoading, error: supervisorsError } = useSupervisors()
-
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'teamMembers',
-  })
-
-  const handleAddMember = () => {
-    append({ name: '', role: '' })
-  }
+  // Pre-fill form when editing
+  useEffect(() => {
+    if (proposal) {
+      reset({
+        title: proposal.title || '',
+        description: proposal.description || '',
+      })
+    }
+  }, [proposal, reset])
 
   const onSubmit = async (data: ProposalFormSchema) => {
     if (!user) {
@@ -60,24 +56,44 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
       return
     }
 
-    if (!isPeriodActive) {
-      toastError(t('proposal.periodClosed'))
-      return
+    // For edit mode, check if proposal can be modified
+    if (isEditMode && proposal) {
+      if (!proposal.canBeModified && proposal.status !== 'pending_review' && proposal.status !== 'requires_modification') {
+        toastError(t('proposal.cannotEdit'))
+        return
+      }
+    } else {
+      // For create mode, check period
+      if (!isPeriodActive) {
+        toastError(t('proposal.periodClosed'))
+        return
+      }
     }
 
     try {
-      await createProposal.mutateAsync({
-        title: data.title.trim(),
-        description: data.description.trim(),
-        proposedSupervisorId: data.proposedSupervisorId || undefined,
-        teamMembers: data.teamMembers?.filter(m => m.name.trim() && m.role.trim()) || [],
-        submitterId: user.id,
-      })
-
-      // Reset form and files
-      reset()
-      setAttachedFiles([])
-      toastSuccess('proposal.createSuccess')
+      if (isEditMode && proposal) {
+        // Update existing proposal - only title and description in edit mode
+        await updateProposal.mutateAsync({
+          id: proposal.id,
+          data: {
+            title: data.title.trim(),
+            description: data.description.trim(),
+            // proposedSupervisorId and teamMembers are not editable
+          },
+        })
+        toastSuccess('proposal.updateSuccess')
+      } else {
+        // Create new proposal
+        await createProposal.mutateAsync({
+          title: data.title.trim(),
+          description: data.description.trim(),
+          submitterId: user.id,
+        })
+        // Reset form and files
+        reset()
+        setAttachedFiles([])
+        toastSuccess('proposal.createSuccess')
+      }
       onSuccess?.()
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : t('proposal.submitError')
@@ -93,8 +109,8 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
     return (<LoadingSpinner />)
   }
 
-  if (!isPeriodActive) {
-    // ... existing period closed warning (keep it as it is structural, not transient) ...
+  // Only show period check for create mode, not edit mode
+  if (!isEditMode && !isPeriodActive) {
     return (
       <div className="flex items-start gap-3 p-4 bg-warning/10 border border-warning/20 rounded-lg">
         <Calendar className="h-5 w-5 text-warning mt-0.5" />
@@ -158,120 +174,6 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
             </p>
           )}
         </div>
-
-        {/* Proposed Supervisor Section */}
-        <div className="space-y-2">
-          <Label htmlFor="proposedSupervisorId">
-            {t('proposal.proposedSupervisor')}
-          </Label>
-          {supervisorsLoading ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>{t('common.loading')}</span>
-            </div>
-          ) : supervisorsError ? (
-            <div className="text-xs text-destructive flex items-center gap-1">
-              <AlertCircle className="h-4 w-4" />
-              <span>{t('proposal.supervisorsLoadError') || 'Failed to load supervisors'}</span>
-            </div>
-          ) : (
-            <Select
-              value={watch('proposedSupervisorId') || ''}
-              onValueChange={(value) => setValue('proposedSupervisorId', value)}
-            >
-              <SelectTrigger id="proposedSupervisorId" className={errors.proposedSupervisorId ? 'border-destructive' : ''}>
-                <SelectValue placeholder={t('proposal.selectSupervisor')} />
-              </SelectTrigger>
-              <SelectContent>
-                {supervisors.length === 0 ? (
-                  <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                    {t('proposal.noSupervisorsAvailable') || 'No supervisors available'}
-                  </div>
-                ) : (
-                  supervisors.map((supervisor) => (
-                    <SelectItem key={supervisor.id} value={supervisor.id}>
-                      {supervisor.name}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          )}
-          {errors.proposedSupervisorId && (
-            <p className="text-xs text-destructive flex items-center gap-1">
-              <AlertCircle className="h-3 w-3" />
-              {errors.proposedSupervisorId.message}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* Team Members Section */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 mb-4">
-            <h3 className="text-base font-semibold">{t('proposal.teamMembers')}</h3>
-          </div>
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleAddMember}
-            className="mb-4"
-          >
-            <PlusCircle  className="size-4" />
-            {t('proposal.addMember')}
-          </Button>
-        </div>
-        <div className="space-y-3">
-          {fields.map((field, index) => (
-            <div key={field.id} className="flex gap-3 items-end">
-              <div className="flex-1 space-y-2">
-                <Label htmlFor={`teamMembers.${index}.name`}>
-                  {t('proposal.memberName')}
-                </Label>
-                <Input
-                  id={`teamMembers.${index}.name`}
-                  {...register(`teamMembers.${index}.name`)}
-                  placeholder={t('proposal.memberNamePlaceholder')}
-                  className={errors.teamMembers?.[index]?.name ? 'border-destructive' : ''}
-                />
-                {errors.teamMembers?.[index]?.name && (
-                  <p className="text-xs text-destructive flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
-                    {errors.teamMembers[index]?.name?.message}
-                  </p>
-                )}
-              </div>
-              <div className="flex-1 space-y-2">
-                <Label htmlFor={`teamMembers.${index}.role`}>
-                  {t('proposal.role')}
-                </Label>
-                <Input
-                  id={`teamMembers.${index}.role`}
-                  {...register(`teamMembers.${index}.role`)}
-                  placeholder={t('proposal.rolePlaceholder')}
-                  className={errors.teamMembers?.[index]?.role ? 'border-destructive' : ''}
-                />
-                {errors.teamMembers?.[index]?.role && (
-                  <p className="text-xs text-destructive flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
-                    {errors.teamMembers[index]?.role?.message}
-                  </p>
-                )}
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={() => remove(index)}
-                className='text-destructive hover:text-destructive/80'
-              >
-                <X className="size-4" />
-              </Button>
-            </div>
-          ))}
-        </div>
       </div>
 
       {/* Attachments Section */}
@@ -299,9 +201,8 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
           onClick={() => {
             reset()
             setAttachedFiles([])
-            setError('')
           }}
-          disabled={createProposal.isPending}
+          disabled={createProposal.isPending || updateProposal.isPending}
           className='text-destructive hover:text-destructive/80'
         >
           <X className="size-4" />
@@ -309,17 +210,17 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
         </Button>
         <Button
           type="submit"
-          disabled={createProposal.isPending || !isPeriodActive}
+          disabled={createProposal.isPending || updateProposal.isPending || (!isEditMode && !isPeriodActive)}
         >
-          {createProposal.isPending ? (
+          {(createProposal.isPending || updateProposal.isPending) ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {t('proposal.submitting')}
+              {isEditMode ? t('proposal.updating') : t('proposal.submitting')}
             </>
           ) : (
             <>
               <Save className="size-4" />
-              {t('proposal.save')}
+              {isEditMode ? t('proposal.update') : t('proposal.save')}
             </>
           )}
         </Button>

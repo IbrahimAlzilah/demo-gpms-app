@@ -163,27 +163,6 @@ class User extends Authenticatable
         return $this->hasMany(NoteReply::class, 'author_id');
     }
 
-    public function ledGroups(): HasMany
-    {
-        return $this->hasMany(ProjectGroup::class, 'leader_id');
-    }
-
-    public function groups(): BelongsToMany
-    {
-        return $this->belongsToMany(ProjectGroup::class, 'project_group_member', 'member_id', 'group_id')
-            ->withTimestamps();
-    }
-
-    public function sentInvitations(): HasMany
-    {
-        return $this->hasMany(GroupInvitation::class, 'inviter_id');
-    }
-
-    public function receivedInvitations(): HasMany
-    {
-        return $this->hasMany(GroupInvitation::class, 'invitee_id');
-    }
-
     public function scheduledMeetings(): HasMany
     {
         return $this->hasMany(ProjectMeeting::class, 'scheduled_by');

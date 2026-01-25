@@ -52,19 +52,48 @@ export const proposalService = {
     const response = await apiClient.post<Proposal>('/supervisor/proposals', {
       title: data.title,
       description: data.description,
-      proposed_supervisor_id: data.proposedSupervisorId || null,
-      team_members: data.teamMembers || [],
     })
     return response.data
   },
 
   update: async (id: string, data: Partial<Proposal>): Promise<Proposal> => {
+    // Only send title and description for updates (proposed_supervisor_id and team_members are not editable)
     const response = await apiClient.put<Proposal>(`/supervisor/proposals/${id}`, {
       title: data.title,
       description: data.description,
-      proposed_supervisor_id: data.proposedSupervisorId || null,
-      team_members: data.teamMembers || [],
     })
     return response.data
+  },
+
+  createBatch: async (
+    proposals: Array<{ title: string; description: string }>
+  ): Promise<Proposal[]> => {
+    const response = await apiClient.post<{ data: Proposal[] }>('/supervisor/proposals/batch', {
+      proposals: proposals.map(p => ({
+        title: p.title,
+        description: p.description,
+      })),
+    })
+    return response.data.data || []
+  },
+
+  getStudentGroups: async (): Promise<Array<{ id: string; name: string; code: string; leader: { id: string; name: string; email: string } }>> => {
+    const response = await apiClient.get<{ data: Array<{ id: string; name: string; code: string; leader: { id: string; name: string; email: string } }> }>('/supervisor/proposals/student-groups')
+    return response.data.data || []
+  },
+
+  assignToGroup: async (proposalId: string, studentGroupId: string): Promise<Proposal> => {
+    const response = await apiClient.post<{ data: Proposal }>(`/supervisor/proposals/${proposalId}/assign`, {
+      student_group_id: studentGroupId,
+    })
+    return response.data.data
+  },
+
+  requestAssignment: async (proposalId: string, studentGroupId: string, notes?: string): Promise<Proposal> => {
+    const response = await apiClient.post<{ data: Proposal }>(`/supervisor/proposals/${proposalId}/request-assignment`, {
+      student_group_id: studentGroupId,
+      notes: notes || null,
+    })
+    return response.data.data
   },
 }

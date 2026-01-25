@@ -12,7 +12,9 @@ import {
   Eye,
   Check,
   X,
-  FileEdit
+  FileEdit,
+  Loader2,
+  Mail
 } from 'lucide-react'
 import { formatDate, formatRelativeTime } from '@/lib/utils/format'
 import { cn } from '@/lib/utils'
@@ -26,6 +28,7 @@ interface GroupedSubmissionCardProps {
   onApproveProposal?: (proposal: Proposal) => void
   onRejectProposal?: (proposal: Proposal) => void
   onRequestModification?: (proposal: Proposal) => void
+  isLoadingAction?: (proposalId: string) => boolean
   t: (key: string) => string
 }
 
@@ -35,6 +38,7 @@ export function GroupedSubmissionCard({
   onApproveProposal,
   onRejectProposal,
   onRequestModification,
+  isLoadingAction,
   t,
 }: GroupedSubmissionCardProps) {
   const { t: translate } = useTranslation()
@@ -61,6 +65,12 @@ export function GroupedSubmissionCard({
     }
   }
 
+  // Count proposals by status
+  const statusCounts = submission.proposals.reduce((acc, p) => {
+    acc[p.status] = (acc[p.status] || 0) + 1
+    return acc
+  }, {} as Record<string, number>)
+
   return (
     <div className={cn(
       'rounded-lg border transition-all duration-200',
@@ -68,9 +78,9 @@ export function GroupedSubmissionCard({
       isExpanded && 'shadow-md'
     )}>
       {/* Header */}
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-3 flex-1 min-w-0">
+      <div className="p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-3 sm:gap-4">
+          <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
             {/* Icon */}
             <div className={cn(
               'p-2 rounded-lg shrink-0',
@@ -87,15 +97,42 @@ export function GroupedSubmissionCard({
 
             {/* Content */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-semibold text-sm truncate">{displayName}</h3>
+              <div className="flex items-center gap-2 mb-1.5">
+                <h3 className="font-semibold text-base truncate">{displayName}</h3>
                 <StatusBadge status={submission.status === 'mixed' ? 'pending_review' : submission.status} />
               </div>
               
-              <p className="text-xs text-muted-foreground mb-2">{description}</p>
+              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{description}</p>
+              
+              {/* Status Summary */}
+              {submission.status === 'mixed' && (
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  {Object.entries(statusCounts).map(([status, count]) => (
+                    <span
+                      key={status}
+                      className={cn(
+                        'text-xs px-2 py-0.5 rounded-full font-medium',
+                        status === 'approved' && 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+                        status === 'rejected' && 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300',
+                        status === 'requires_modification' && 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+                        status === 'pending_review' && 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                      )}
+                    >
+                      {count} {t(`proposal.status.${status}`) || status}
+                    </span>
+                  ))}
+                </div>
+              )}
 
               {/* Metadata */}
-              <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                  <FileText className="h-3.5 w-3.5" />
+                  <span className="font-medium">
+                    {submission.totalProposals} {submission.totalProposals === 1 ? t('proposal.proposal') : t('proposal.proposals')}
+                  </span>
+                </div>
+                
                 {isStudentGroup && studentGroupSubmission.studentGroup && (
                   <div className="flex items-center gap-1.5">
                     <Users className="h-3.5 w-3.5" />
@@ -117,7 +154,7 @@ export function GroupedSubmissionCard({
 
                 {!isStudentGroup && supervisorSubmission.supervisor && (
                   <div className="flex items-center gap-1.5">
-                    <User className="h-3.5 w-3.5" />
+                    <Mail className="h-3.5 w-3.5" />
                     <span className="truncate">
                       {supervisorSubmission.supervisor.name || supervisorSubmission.supervisor.email || 'Unknown'}
                     </span>
@@ -159,10 +196,13 @@ export function GroupedSubmissionCard({
 
       {/* Expanded Content - Proposals List */}
       {isExpanded && (
-        <div className="border-t border-current/10 p-4 space-y-3">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-medium">
-              {t('committee.proposal.proposalsInSubmission') || 'Proposals in this submission'} ({submission.proposals.length} / {submission.totalProposals})
+        <div className="border-t border-border/50 bg-background/30 dark:bg-background/10 p-4 sm:p-5 space-y-3">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-semibold">
+              {t('committee.proposal.proposalsInSubmission') || 'Proposals in this submission'} 
+              <span className="text-muted-foreground font-normal ms-1">
+                ({submission.proposals.length} / {submission.totalProposals})
+              </span>
             </h4>
           </div>
 
@@ -172,86 +212,113 @@ export function GroupedSubmissionCard({
             </div>
           ) : (
             <div className="space-y-2">
-              {submission.proposals.map((proposal, index) => (
-              <div
-                key={proposal.id}
-                className={cn(
-                  'p-3 rounded-lg border bg-background/50',
-                  'hover:bg-background/80 transition-colors'
-                )}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3 flex-1 min-w-0">
-                    <div className="p-1.5 rounded bg-primary/10 shrink-0 mt-0.5">
-                      <FileText className="h-3.5 w-3.5 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-medium text-muted-foreground">
-                          #{index + 1}
-                        </span>
-                        <h5 className="text-sm font-medium truncate">{proposal.title}</h5>
-                        <StatusBadge status={proposal.status} />
+              {submission.proposals.map((proposal, index) => {
+                const isLoading = isLoadingAction?.(proposal.id) || false
+                return (
+                <div
+                  key={proposal.id}
+                  className={cn(
+                    'p-3 sm:p-4 rounded-lg border bg-background',
+                    'hover:bg-muted/50 transition-all duration-200',
+                    'hover:shadow-sm',
+                    isLoading && 'opacity-60 pointer-events-none'
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-2 sm:gap-3">
+                    <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
+                      <div className={cn(
+                        'p-2 rounded-lg bg-primary/10 shrink-0 mt-0.5',
+                        'border border-primary/20'
+                      )}>
+                        <FileText className="h-4 w-4 text-primary" />
                       </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
-                        {proposal.description}
-                      </p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Calendar className="h-3 w-3" />
-                        <span>{formatDate(proposal.createdAt)}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                          <span className="text-xs font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                            #{index + 1}
+                          </span>
+                          <h5 className="text-sm font-semibold truncate flex-1 min-w-[200px]">{proposal.title}</h5>
+                          <StatusBadge status={proposal.status} />
+                        </div>
+                        <p className="text-xs text-muted-foreground line-clamp-2 mb-2.5 leading-relaxed">
+                          {proposal.description}
+                        </p>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1.5">
+                            <Calendar className="h-3 w-3" />
+                            <span>{formatDate(proposal.createdAt)}</span>
+                          </div>
+                          {proposal.reviewedAt && (
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-muted-foreground/70">
+                                {t('proposal.reviewedAt')}: {formatDate(proposal.reviewedAt)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Proposal Actions */}
-                  <div className="flex items-center gap-1 shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onViewProposal(proposal)}
-                      className="h-7 px-2"
-                    >
-                      <Eye className="h-3.5 w-3.5" />
-                    </Button>
-                    
-                    {(proposal.status === 'pending_review' || proposal.status === 'requires_modification') && (
-                      <>
-                        {onApproveProposal && (
+                    {/* Proposal Actions */}
+                    <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
+                      {isLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      ) : (
+                        <>
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => onApproveProposal(proposal)}
-                            className="h-7 px-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
+                            onClick={() => onViewProposal(proposal)}
+                            className="h-8 px-2.5 hover:bg-primary/10"
+                            title={t('common.view')}
                           >
-                            <Check className="h-3.5 w-3.5" />
+                            <Eye className="h-4 w-4" />
                           </Button>
-                        )}
-                        {onRequestModification && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => onRequestModification(proposal)}
-                            className="h-7 px-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/20"
-                          >
-                            <FileEdit className="h-3.5 w-3.5" />
-                          </Button>
-                        )}
-                        {onRejectProposal && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => onRejectProposal(proposal)}
-                            className="h-7 px-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/20"
-                          >
-                            <X className="h-3.5 w-3.5" />
-                          </Button>
-                        )}
-                      </>
-                    )}
+                          
+                          {(proposal.status === 'pending_review' || proposal.status === 'requires_modification') && (
+                            <>
+                              {onApproveProposal && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => onApproveProposal(proposal)}
+                                  className="h-8 px-2.5 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
+                                  title={t('committee.proposal.approve')}
+                                >
+                                  <Check className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {onRequestModification && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => onRequestModification(proposal)}
+                                  className="h-8 px-2.5 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/20"
+                                  title={t('committee.proposal.requestModification')}
+                                >
+                                  <FileEdit className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {onRejectProposal && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => onRejectProposal(proposal)}
+                                  className="h-8 px-2.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/20"
+                                  title={t('committee.proposal.reject')}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>

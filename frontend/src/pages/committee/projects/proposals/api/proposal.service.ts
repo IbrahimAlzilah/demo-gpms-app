@@ -121,8 +121,24 @@ export const committeeProposalService = {
     return response.data
   },
 
-  delete: async (id: string): Promise<void> => {
-    await apiClient.delete(`/projects-committee/proposals/${id}`)
+  delete: async (id: string, force = false): Promise<{ requiresConfirmation?: boolean; registrationDetails?: any[] }> => {
+    const url = `/projects-committee/proposals/${id}${force ? '?force=1' : ''}`
+    const response = await apiClient.delete<{
+      success: boolean
+      requires_confirmation?: boolean
+      has_registrations?: boolean
+      registration_details?: any[]
+      message?: string
+    }>(url)
+    
+    if (response.data.requires_confirmation) {
+      return {
+        requiresConfirmation: true,
+        registrationDetails: response.data.registration_details || []
+      }
+    }
+    
+    return {}
   },
 
   /**

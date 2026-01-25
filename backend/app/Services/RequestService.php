@@ -28,9 +28,15 @@ class RequestService
         if ($data['type'] === 'change_supervisor') {
             // If project_id not provided, try to get it from student's group
             if (!$projectId) {
-                $studentGroup = \App\Models\ProjectGroup::where('leader_id', $student->id)->first();
+                $studentGroup = \App\Models\StudentGroup::where('leader_id', $student->id)
+                    ->where('status', 'active')
+                    ->first();
                 if ($studentGroup) {
-                    $projectId = $studentGroup->project_id;
+                    // Find project that has this group assigned
+                    $project = \App\Models\Project::where('assigned_group_id', $studentGroup->id)->first();
+                    if ($project) {
+                        $projectId = $project->id;
+                    }
                 }
             }
             
@@ -38,16 +44,16 @@ class RequestService
                 throw new \Exception('Project ID is required for change supervisor requests. You must be a group leader of a project.');
             }
 
-            $project = \App\Models\Project::with('group')->find($projectId);
+            $project = \App\Models\Project::with('assignedGroup')->find($projectId);
             if (!$project) {
                 throw new \Exception('Project not found');
             }
 
-            if (!$project->group) {
+            if (!$project->assignedGroup) {
                 throw new \Exception('Project does not have a group. Change supervisor requests can only be submitted by group leaders.');
             }
 
-            if ($project->group->leader_id !== $student->id) {
+            if ($project->assignedGroup->leader_id !== $student->id) {
                 throw new \Exception('Only the group leader can submit change supervisor requests');
             }
         }

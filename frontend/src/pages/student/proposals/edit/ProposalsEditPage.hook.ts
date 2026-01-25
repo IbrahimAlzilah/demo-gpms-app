@@ -49,6 +49,14 @@ export function useProposalsEditBatch(onSuccess?: () => void) {
       try {
         const context = await proposalService.getSubmissionContext()
         
+        // Check if editing is not allowed due to approved proposals
+        if (context && 'can_edit' in context && context.can_edit === false) {
+          const errorMessage = context.message || t('proposal.cannotEditApproved')
+          toastError(errorMessage)
+          setExistingProposals([])
+          return
+        }
+        
         // Ensure context and proposals exist
         if (!context || !context.proposals) {
           console.warn('Submission context is empty or invalid:', context)
@@ -62,13 +70,13 @@ export function useProposalsEditBatch(onSuccess?: () => void) {
           id: String(p.id),
           title: p.title || '',
           description: p.description || '',
-          proposedSupervisorId: p.proposedSupervisorId ? String(p.proposedSupervisorId) : undefined,
           targetProjectId: p.targetProjectId ? String(p.targetProjectId) : undefined,
           isNew: false,
         })))
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to load submission context:', error)
-        toastError(t('proposal.loadError'))
+        const errorMessage = error.response?.data?.message || error.message || t('proposal.loadError')
+        toastError(errorMessage)
         setExistingProposals([])
       } finally {
         setIsLoading(false)
@@ -84,7 +92,6 @@ export function useProposalsEditBatch(onSuccess?: () => void) {
       id: `new-${Date.now()}`, 
       title: '', 
       description: '', 
-      proposedSupervisorId: undefined,
       isNew: true,
     }])
   }
@@ -162,13 +169,11 @@ export function useProposalsEditBatch(onSuccess?: () => void) {
         id: p.id,
         title: p.title.trim(),
         description: p.description.trim(),
-        proposedSupervisorId: p.proposedSupervisorId,
       }))
 
       const newProposalsData: ProposalFormData[] = newProposals.map(p => ({
         title: p.title.trim(),
         description: p.description.trim(),
-        proposedSupervisorId: p.proposedSupervisorId,
         targetProjectId: p.targetProjectId,
       }))
 

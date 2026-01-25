@@ -383,6 +383,20 @@ class ProposalController extends Controller
     {
         $this->authorize('delete', $proposal);
 
+        // Check if proposal has associated group registrations
+        $registrationCheck = $this->proposalService->checkForRegistrations($proposal);
+
+        // If force parameter is not set and registrations exist, return warning
+        if (!$request->boolean('force') && $registrationCheck['has_registrations']) {
+            return response()->json([
+                'success' => false,
+                'requires_confirmation' => true,
+                'has_registrations' => true,
+                'registration_details' => $registrationCheck['details'],
+                'message' => 'This proposal has associated group registrations. Deleting it may affect related projects and registrations.',
+            ], 422);
+        }
+
         try {
             $this->proposalService->delete($proposal);
 

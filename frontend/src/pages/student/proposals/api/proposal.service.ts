@@ -61,10 +61,8 @@ export const proposalService = {
     const response = await apiClient.post<Proposal>("/student/proposals", {
       title: data.title,
       description: data.description,
-      proposed_supervisor_id: data.proposedSupervisorId || null,
       student_group_id: data.studentGroupId || null,
       target_project_id: data.targetProjectId || null,
-      team_members: data.teamMembers || [],
     });
     return response.data;
   },
@@ -75,10 +73,8 @@ export const proposalService = {
       {
         title: data.title,
         description: data.description,
-        proposed_supervisor_id: data.proposedSupervisorId || null,
         student_group_id: data.studentGroupId || null,
         target_project_id: data.targetProjectId || null,
-        team_members: data.teamMembers || [],
       }
     );
     return response.data;
@@ -93,7 +89,6 @@ export const proposalService = {
       proposals: proposals.map(p => ({
         title: p.title,
         description: p.description,
-        proposed_supervisor_id: p.proposedSupervisorId || null,
         target_project_id: p.targetProjectId || null,
       })),
     });
@@ -111,12 +106,10 @@ export const proposalService = {
         id: u.id,
         title: u.title,
         description: u.description,
-        proposed_supervisor_id: u.proposedSupervisorId || null,
       })),
       new_proposals: newProposals.map(p => ({
         title: p.title,
         description: p.description,
-        proposed_supervisor_id: p.proposedSupervisorId || null,
         target_project_id: p.targetProjectId || null,
       })),
     });
@@ -131,10 +124,16 @@ export const proposalService = {
   getSubmissionContext: async (): Promise<{
     group: any;
     proposals: Proposal[];
+    can_edit?: boolean;
+    message?: string;
+    has_approved_proposal?: boolean;
   }> => {
     const response = await apiClient.get<{
       group: any;
       proposals: Proposal[];
+      can_edit?: boolean;
+      message?: string;
+      has_approved_proposal?: boolean;
     }>("/student/proposals/submission");
     // Axios interceptor already extracts data from { success: true, data: {...} }
     // So response.data is already the nested data object

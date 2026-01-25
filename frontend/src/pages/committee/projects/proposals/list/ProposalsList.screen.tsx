@@ -97,15 +97,44 @@ export function ProposalsList() {
     setEditingProposalId(null)
   }
 
-  const handleDelete = async () => {
+  const handleDelete = async (force = false) => {
     if (!state.proposalToDelete) return
     try {
-      await deleteProposal.mutateAsync(state.proposalToDelete.id)
-      toastSuccess('committee.proposal.deleteSuccess')
-      setState((prev) => ({ ...prev, proposalToDelete: null }))
-    } catch (err) {
-      toastError(err instanceof Error ? err.message : 'committee.proposal.deleteError')
+      const result = await deleteProposal.mutateAsync({ id: state.proposalToDelete.id, force })
+      
+      // Check if deletion requires confirmation due to registrations
+      if (result.requiresConfirmation && !force) {
+        setState((prev) => ({
+          ...prev,
+          registrationDetails: result.registrationDetails || [],
+          showRegistrationWarning: true,
+        }))
+        return
+      }
+      
+      toastSuccess(t('committee.proposal.deleteSuccess'))
+      setState((prev) => ({ 
+        ...prev, 
+        proposalToDelete: null,
+        registrationDetails: [],
+        showRegistrationWarning: false,
+      }))
+    } catch (err: any) {
+      // Check if error is due to registration requirement
+      if (err?.response?.data?.requires_confirmation && !force) {
+        setState((prev) => ({
+          ...prev,
+          registrationDetails: err.response.data.registration_details || [],
+          showRegistrationWarning: true,
+        }))
+        return
+      }
+      toastError(err instanceof Error ? err.message : t('committee.proposal.deleteError'))
     }
+  }
+
+  const handleForceDelete = () => {
+    handleDelete(true)
   }
 
   const isLoadingAction =
@@ -185,12 +214,24 @@ export function ProposalsList() {
           <>
             <div className="space-y-4">
               {data.isLoading ? (
-                <div className="flex items-center justify-center py-12">
+                <div className="flex flex-col items-center justify-center py-16">
                   <LoadingSpinner />
+                  <p className="mt-4 text-sm text-muted-foreground">{t('common.loading')}</p>
                 </div>
               ) : data.submissions.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <p>{t('committee.proposal.noSubmissions') || 'No submissions found'}</p>
+                <div className="text-center py-16">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
+                    <FileText className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <p className="text-base font-medium text-foreground mb-1">
+                    {t('committee.proposal.noSubmissions') || 'No submissions found'}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {globalFilter 
+                      ? t('committee.proposal.noResultsForSearch') || 'Try adjusting your search criteria'
+                      : t('committee.proposal.noSubmissionsDescription') || 'There are no proposal submissions to review at this time.'
+                    }
+                  </p>
                 </div>
               ) : (
                 data.submissions.map((submission) => (
@@ -208,6 +249,13 @@ export function ProposalsList() {
                     }}
                     onRequestModification={(proposal) => {
                       setState((prev) => ({ ...prev, selectedProposal: proposal, action: 'modify' }))
+                    }}
+                    isLoadingAction={(proposalId) => {
+                      return (
+                        (approveProposal.isPending && state.selectedProposal?.id === proposalId && state.action === 'approve') ||
+                        (rejectProposal.isPending && state.selectedProposal?.id === proposalId && state.action === 'reject') ||
+                        (requestModification.isPending && state.selectedProposal?.id === proposalId && state.action === 'modify')
+                      )
                     }}
                     t={t}
                   />
@@ -359,9 +407,9 @@ export function ProposalsList() {
       )}
 
       <ConfirmDialog
-        open={!!state.proposalToDelete}
+        open={!!state.proposalToDelete && !state.showRegistrationWarning}
         onClose={() => {
-          setState((prev) => ({ ...prev, proposalToDelete: null }))
+          setState((prev) => ({ ...prev, proposalToDelete: null, registrationDetails: [], showRegistrationWarning: false }))
         }}
         onConfirm={handleDelete}
         title={t('committee.proposal.confirmDelete')}
@@ -374,6 +422,55 @@ export function ProposalsList() {
         cancelLabel={t('common.cancel')}
         variant="destructive"
       />
+
+      {/* Registration Warning Dialog */}
+      <ConfirmDialog
+        open={!!state.proposalToDelete && !!state.showRegistrationWarning}
+        onClose={() => {
+          setState((prev) => ({ ...prev, proposalToDelete: null, registrationDetails: [], showRegistrationWarning: false }))
+        }}
+        onConfirm={handleForceDelete}
+        title={t('committee.proposal.deleteWithRegistrations')}
+        description={t('committee.proposal.deleteWithRegistrationsDescription')}
+        confirmLabel={t('committee.proposal.deleteAnyway')}
+        cancelLabel={t('common.cancel')}
+        variant="destructive"
+      >
+        {state.registrationDetails && state.registrationDetails.length > 0 && (
+          <div className="space-y-3 py-2">
+            <p className="text-sm font-medium">{t('committee.proposal.registrationDetails')}:</p>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              {state.registrationDetails.map((detail, index) => (
+                <li key={index} className="flex items-start gap-2">
+                  <span className="text-destructive mt-0.5">•</span>
+                  <span>
+                    {detail.type === 'assigned_group' && (
+                      <>
+                        {t('committee.proposal.projectHasAssignedGroup')}: <strong>{detail.project_title}</strong> ({t('committee.proposal.group')}: {detail.group_name})
+                      </>
+                    )}
+                    {detail.type === 'registrations' && (
+                      <>
+                        {t('committee.proposal.projectHasRegistrations')}: <strong>{detail.project_title}</strong> ({detail.count} {t('committee.proposal.registrations')})
+                      </>
+                    )}
+                    {detail.type === 'assigned_students' && (
+                      <>
+                        {t('committee.proposal.projectHasAssignedStudents')}: <strong>{detail.project_title}</strong> ({detail.count} {t('common.students')})
+                      </>
+                    )}
+                    {detail.type === 'group_registrations' && (
+                      <>
+                        {t('committee.proposal.groupHasRegistrations')}: <strong>{detail.group_name}</strong>
+                      </>
+                    )}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </ConfirmDialog>
 
       <ProposalsView
         proposalId={state.proposalToViewId}

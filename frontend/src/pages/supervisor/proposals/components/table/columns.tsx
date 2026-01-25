@@ -3,13 +3,14 @@ import { DataTableColumnHeader } from '@/components/ui/data-table/data-table-col
 import { StatusBadge } from '@/components/common/StatusBadge'
 import { ActionsDropdown } from '@/components/common/ActionsDropdown'
 import type { Proposal } from '@/types/project.types'
-import { Eye, Edit } from 'lucide-react'
+import { Eye, Edit, Users } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
 import type { ProposalTableColumnsProps } from '../../types/Proposals.types'
 
 export function createProposalColumns({
   onView,
   onEdit,
+  onAssign,
   t,
 }: ProposalTableColumnsProps): ColumnDef<Proposal>[] {
   return [
@@ -89,6 +90,14 @@ export function createProposalColumns({
             icon: Edit,
             onClick: () => onEdit?.(proposal),
             hidden: (row: Proposal) => !onEdit || (row.status !== 'pending_review' && row.status !== 'requires_modification'),
+            variant: 'default' as const,
+          },
+          {
+            id: 'assign',
+            label: t('proposal.assignToGroup'),
+            icon: Users,
+            onClick: () => onAssign?.(proposal),
+            hidden: (row: Proposal) => !onAssign || !['pending_review', 'approved'].includes(row.status) || !!row.assignedToGroupId,
             variant: 'default' as const,
             separator: true,
           },

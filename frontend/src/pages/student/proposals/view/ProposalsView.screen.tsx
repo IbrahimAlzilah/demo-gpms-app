@@ -80,34 +80,6 @@ export function ProposalsView({
           </div>
         )}
 
-        {proposal.proposedSupervisor && (
-          <div className="mb-4">
-            <div className="flex items-center gap-2 mb-2">
-              <User className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-sm font-medium">{t('proposal.proposedSupervisor')}</h4>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              {proposal.proposedSupervisor.name || proposal.proposedSupervisor.email}
-            </p>
-          </div>
-        )}
-
-        {proposal.teamMembers && Array.isArray(proposal.teamMembers) && proposal.teamMembers.length > 0 && (
-          <div className="mb-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Users className="h-4 w-4 text-muted-foreground" />
-              <h4 className="text-sm font-medium">{t('proposal.teamMembers')}</h4>
-            </div>
-            <ul className="text-sm text-muted-foreground space-y-1">
-              {proposal.teamMembers.map((member, index) => (
-                <li key={index}>
-                  {member.name} {member.role && `- ${member.role}`}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
         {proposal.project && (
           <div className="mb-4">
             <div className="flex items-center gap-2 mb-2">

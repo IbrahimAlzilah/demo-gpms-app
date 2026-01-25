@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Enums\ProjectStatus;
 
 class Project extends Model
@@ -55,14 +54,6 @@ class Project extends Model
     {
         return $this->belongsToMany(User::class, 'project_student', 'project_id', 'student_id')
             ->withTimestamps();
-    }
-
-    /**
-     * Get the group working on this project (legacy - project-bound groups)
-     */
-    public function group(): HasOne
-    {
-        return $this->hasOne(ProjectGroup::class);
     }
 
     /**

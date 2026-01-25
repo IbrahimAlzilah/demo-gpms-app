@@ -23,7 +23,6 @@ class ProposalService
         $proposal = Proposal::create([
             'title' => $data['title'],
             'description' => $data['description'],
-            'proposed_supervisor_id' => $data['proposed_supervisor_id'] ?? null,
             'submitter_id' => $submitter->id,
             'student_group_id' => $data['student_group_id'] ?? null,
             'target_project_id' => $data['target_project_id'] ?? null,
@@ -274,11 +273,139 @@ class ProposalService
     }
 
     /**
-     * Delete a proposal
+     * Check if proposal has associated group registrations
+     * Returns array with 'has_registrations' flag and details
+     */
+    public function checkForRegistrations(Proposal $proposal): array
+    {
+        $hasRegistrations = false;
+        $registrationDetails = [];
+
+        // Check project created from this proposal (project_id)
+        if ($proposal->project_id) {
+            $project = Project::find($proposal->project_id);
+            if ($project) {
+                // Check if project has assigned group
+                if ($project->assigned_group_id) {
+                    $hasRegistrations = true;
+                    $assignedGroup = $project->assignedGroup;
+                    $registrationDetails[] = [
+                        'type' => 'assigned_group',
+                        'project_id' => $project->id,
+                        'project_title' => $project->title,
+                        'group_id' => $project->assigned_group_id,
+                        'group_name' => $assignedGroup?->name ?? "Group #{$project->assigned_group_id}",
+                    ];
+                }
+
+                // Check if project has registrations
+                $registrationsCount = $project->registrations()->count();
+                if ($registrationsCount > 0) {
+                    $hasRegistrations = true;
+                    $registrationDetails[] = [
+                        'type' => 'registrations',
+                        'project_id' => $project->id,
+                        'project_title' => $project->title,
+                        'count' => $registrationsCount,
+                    ];
+                }
+
+                // Check if project has students assigned
+                $studentsCount = $project->students()->count();
+                if ($studentsCount > 0) {
+                    $hasRegistrations = true;
+                    $registrationDetails[] = [
+                        'type' => 'assigned_students',
+                        'project_id' => $project->id,
+                        'project_title' => $project->title,
+                        'count' => $studentsCount,
+                    ];
+                }
+            }
+        }
+
+        // Check target project (target_project_id)
+        if ($proposal->target_project_id) {
+            $targetProject = Project::find($proposal->target_project_id);
+            if ($targetProject) {
+                // Check if target project has assigned group
+                if ($targetProject->assigned_group_id) {
+                    $hasRegistrations = true;
+                    $assignedGroup = $targetProject->assignedGroup;
+                    $registrationDetails[] = [
+                        'type' => 'assigned_group',
+                        'project_id' => $targetProject->id,
+                        'project_title' => $targetProject->title,
+                        'group_id' => $targetProject->assigned_group_id,
+                        'group_name' => $assignedGroup?->name ?? "Group #{$targetProject->assigned_group_id}",
+                    ];
+                }
+
+                // Check if target project has registrations
+                $registrationsCount = $targetProject->registrations()->count();
+                if ($registrationsCount > 0) {
+                    $hasRegistrations = true;
+                    $registrationDetails[] = [
+                        'type' => 'registrations',
+                        'project_id' => $targetProject->id,
+                        'project_title' => $targetProject->title,
+                        'count' => $registrationsCount,
+                    ];
+                }
+
+                // Check if target project has students assigned
+                $studentsCount = $targetProject->students()->count();
+                if ($studentsCount > 0) {
+                    $hasRegistrations = true;
+                    $registrationDetails[] = [
+                        'type' => 'assigned_students',
+                        'project_id' => $targetProject->id,
+                        'project_title' => $targetProject->title,
+                        'count' => $studentsCount,
+                    ];
+                }
+            }
+        }
+
+        // Check if student group has project registrations
+        if ($proposal->student_group_id) {
+            $studentGroup = \App\Models\StudentGroup::find($proposal->student_group_id);
+            if ($studentGroup && $studentGroup->hasProjectRegistrations()) {
+                $hasRegistrations = true;
+                $registrationDetails[] = [
+                    'type' => 'group_registrations',
+                    'group_id' => $studentGroup->id,
+                    'group_name' => $studentGroup->name ?? "Group #{$studentGroup->id}",
+                ];
+            }
+        }
+
+        return [
+            'has_registrations' => $hasRegistrations,
+            'details' => $registrationDetails,
+        ];
+    }
+
+    /**
+     * Delete a proposal and all related data
+     * Note: This does NOT delete the project itself, only the proposal link
      */
     public function delete(Proposal $proposal): bool
     {
-        return $proposal->delete();
+        return DB::transaction(function () use ($proposal) {
+            // Delete related notifications
+            \App\Models\Notification::where('notifiable_type', 'proposal')
+                ->where('notifiable_id', $proposal->id)
+                ->delete();
+
+            // Note: We do NOT delete the project (project_id) as it may be used by other proposals
+            // Note: We do NOT delete the target project (target_project_id) as it's just a reference
+            // Note: We do NOT delete the student group (student_group_id) as it may have other proposals
+            // The proposal deletion will cascade via foreign keys if configured, but we're being explicit here
+
+            // Delete the proposal
+            return $proposal->delete();
+        });
     }
 
     /**
@@ -298,7 +425,6 @@ class ProposalService
                 $proposal = Proposal::create([
                     'title' => $data['title'],
                     'description' => $data['description'],
-                    'proposed_supervisor_id' => $data['proposed_supervisor_id'] ?? null,
                     'submitter_id' => $submitter->id,
                     'student_group_id' => $studentGroupId,
                     'target_project_id' => $data['target_project_id'] ?? null,

@@ -114,6 +114,11 @@ Route::middleware('auth:sanctum')->group(function () {
         // Proposals with time window check
         Route::get('proposals', [App\Http\Controllers\Supervisor\ProposalController::class, 'index']);
         Route::get('proposals/{proposal}', [App\Http\Controllers\Supervisor\ProposalController::class, 'show']);
+        Route::post('proposals/batch', [App\Http\Controllers\Supervisor\ProposalController::class, 'batchSubmit'])
+            ->middleware('window:proposal_submission');
+        Route::get('proposals/student-groups', [App\Http\Controllers\Supervisor\ProposalController::class, 'getStudentGroups']);
+        Route::post('proposals/{proposal}/assign', [App\Http\Controllers\Supervisor\ProposalController::class, 'assignToGroup']);
+        Route::post('proposals/{proposal}/request-assignment', [App\Http\Controllers\Supervisor\ProposalController::class, 'requestAssignment']);
         Route::post('proposals', [App\Http\Controllers\Supervisor\ProposalController::class, 'store'])
             ->middleware('window:proposal_submission');
         Route::put('proposals/{proposal}', [App\Http\Controllers\Supervisor\ProposalController::class, 'update'])

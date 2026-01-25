@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DataTable, Button } from '@/components/ui'
 import { BlockContent, ModalDialog, StatusBadge } from '@/components/common'
@@ -8,11 +8,15 @@ import { formatDate } from '@/lib/utils/format'
 import { createProposalColumns } from '../components/table'
 import { StatisticsCards } from '../components/StatisticsCards'
 import { ProposalForm } from '../components/ProposalForm'
+import { AssignmentDialog } from '../components/AssignmentDialog'
 import { useProposalsList } from './ProposalsList.hook'
+import type { Proposal } from '@/types/project.types'
 
 export function ProposalsList() {
   const { t } = useTranslation()
   const { toastSuccess } = useToast()
+  const [assignmentProposal, setAssignmentProposal] = useState<Proposal | null>(null)
+  const [editingProposal, setEditingProposal] = useState<Proposal | null>(null)
   const {
     data,
     state,
@@ -37,6 +41,12 @@ export function ProposalsList() {
         onView: (proposal) => {
           setState((prev) => ({ ...prev, selectedProposal: proposal }))
         },
+        onEdit: (proposal) => {
+          setEditingProposal(proposal)
+        },
+        onAssign: (proposal) => {
+          setAssignmentProposal(proposal)
+        },
         t,
       }),
     [t, setState]
@@ -44,7 +54,7 @@ export function ProposalsList() {
 
   const handleFormSuccess = () => {
     setState((prev) => ({ ...prev, showForm: false }))
-    toastSuccess('proposal.submitSuccess')
+    // Refresh will be handled by query invalidation in the hook
   }
 
   const actions = useMemo(
@@ -110,6 +120,23 @@ export function ProposalsList() {
         <ProposalForm onSuccess={handleFormSuccess} />
       </ModalDialog>
 
+      {/* Edit Proposal Dialog */}
+      {editingProposal && (
+        <ModalDialog
+          open={!!editingProposal}
+          onOpenChange={(open) => !open && setEditingProposal(null)}
+          title={t('proposal.editProposal')}
+        >
+          <ProposalForm
+            proposal={editingProposal}
+            onSuccess={() => {
+              setEditingProposal(null)
+              toastSuccess('proposal.updateSuccess')
+            }}
+          />
+        </ModalDialog>
+      )}
+
       {/* Proposal Detail Dialog */}
       {state.selectedProposal && (
         <ModalDialog
@@ -149,6 +176,18 @@ export function ProposalsList() {
           </div>
         </ModalDialog>
       )}
+
+      {/* Assignment Dialog */}
+      <AssignmentDialog
+        open={!!assignmentProposal}
+        onOpenChange={(open) => !open && setAssignmentProposal(null)}
+        proposal={assignmentProposal}
+        onSuccess={() => {
+          setAssignmentProposal(null)
+          // Refresh the list
+          window.location.reload()
+        }}
+      />
     </>
   )
 }
