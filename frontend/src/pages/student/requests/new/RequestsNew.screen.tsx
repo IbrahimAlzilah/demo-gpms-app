@@ -24,13 +24,8 @@ export function RequestsNew({ open, onClose, onSuccess }: RequestsNewProps) {
   const { data: myGroup } = useMyGroup()
   const isGroupLeader = myGroup?.leaderId === user?.id
 
+  // REMOVED: change_supervisor - Supervisor assignment is handled exclusively by Project Committee
   const requestTypes: { value: string; label: string; icon: React.ReactNode; disabled?: boolean }[] = [
-    {
-      value: 'change_supervisor',
-      label: t('requests.change_supervisor'),
-      icon: <User className="h-4 w-4" />,
-      disabled: !isGroupLeader,
-    },
     {
       value: 'change_group',
       label: t('requests.change_group'),
@@ -58,7 +53,7 @@ export function RequestsNew({ open, onClose, onSuccess }: RequestsNewProps) {
           </Label>
           <Select
             value={selectedType}
-            onValueChange={(value) => setValue('type', value as "change_supervisor" | "change_group" | "change_project" | "other")}
+            onValueChange={(value) => setValue('type', value as "change_group" | "change_project" | "other")}
           >
             <SelectTrigger
               id="type"

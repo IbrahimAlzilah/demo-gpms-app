@@ -18,45 +18,19 @@ class RequestService
 
     /**
      * Create a new request
+     * 
+     * NOTE: change_supervisor requests are BLOCKED for students.
+     * Supervisor assignment is handled exclusively by the Project Committee.
      */
     public function create(array $data, User $student): ProjectRequest
     {
-        // Validate change_supervisor requests: only group leaders can submit
-        // Get project_id from data or from student's group
-        $projectId = $data['project_id'] ?? null;
-        
+        // BLOCK: Students cannot create supervision requests
         if ($data['type'] === 'change_supervisor') {
-            // If project_id not provided, try to get it from student's group
-            if (!$projectId) {
-                $studentGroup = \App\Models\StudentGroup::where('leader_id', $student->id)
-                    ->where('status', 'active')
-                    ->first();
-                if ($studentGroup) {
-                    // Find project that has this group assigned
-                    $project = \App\Models\Project::where('assigned_group_id', $studentGroup->id)->first();
-                    if ($project) {
-                        $projectId = $project->id;
-                    }
-                }
-            }
-            
-            if (!$projectId) {
-                throw new \Exception('Project ID is required for change supervisor requests. You must be a group leader of a project.');
-            }
-
-            $project = \App\Models\Project::with('assignedGroup')->find($projectId);
-            if (!$project) {
-                throw new \Exception('Project not found');
-            }
-
-            if (!$project->assignedGroup) {
-                throw new \Exception('Project does not have a group. Change supervisor requests can only be submitted by group leaders.');
-            }
-
-            if ($project->assignedGroup->leader_id !== $student->id) {
-                throw new \Exception('Only the group leader can submit change supervisor requests');
-            }
+            throw new \Exception('Students cannot request supervisor changes. Supervisor assignment is handled by the Project Committee.');
         }
+
+        // Get project_id from data or from student's group (for other request types)
+        $projectId = $data['project_id'] ?? null;
 
         $finalProjectId = $projectId;
 

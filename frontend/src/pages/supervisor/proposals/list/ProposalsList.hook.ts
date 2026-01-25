@@ -17,6 +17,9 @@ export function useProposalsList() {
   const [state, setState] = useState<ProposalsListState>({
     selectedProposal: null,
     showForm: false,
+    showResubmitDialog: false,
+    proposalToResubmit: null,
+    editingProposalId: null,
   })
 
   // Build filters based on route
@@ -72,8 +75,8 @@ export function useProposalsList() {
     error: error as Error | null,
   }
 
-  const isMyProposals = location.pathname.includes('/my')
-  const isApprovedProposals = location.pathname.includes('/approved')
+  const isMyProposals = location.pathname.includes('/my-proposals') || location.pathname.includes('/proposals/my')
+  const isApprovedProposals = location.pathname.includes('/approved-proposals') || location.pathname.includes('/proposals/approved')
 
   return {
     data,

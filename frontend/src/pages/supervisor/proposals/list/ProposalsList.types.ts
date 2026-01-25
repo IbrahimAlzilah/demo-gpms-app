@@ -4,6 +4,9 @@ import type { ProposalStatistics } from '../types/Proposals.types'
 export interface ProposalsListState {
   selectedProposal: Proposal | null
   showForm: boolean
+  showResubmitDialog: boolean
+  proposalToResubmit: Proposal | null
+  editingProposalId: string | null
 }
 
 export interface ProposalsListData {

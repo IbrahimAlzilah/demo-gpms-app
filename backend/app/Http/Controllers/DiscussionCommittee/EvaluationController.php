@@ -63,7 +63,7 @@ class EvaluationController extends Controller
             $q->where('users.id', $userId);
         })
         ->where('status', 'in_progress')
-        ->with(['supervisor', 'students', 'group']);
+        ->with(['supervisor', 'students', 'assignedGroup']);
 
         // Apply search if provided
         if ($request->has('search') && $request->search) {

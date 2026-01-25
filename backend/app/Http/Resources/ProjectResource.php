@@ -42,14 +42,14 @@ class ProjectResource extends JsonResource
             'groups' => $this->when($this->relationLoaded('assignedGroup') && $this->assignedGroup !== null, function () {
                 return [new StudentGroupResource($this->assignedGroup)];
             }, []),
-            'groupId' => $this->when($this->relationLoaded('group') && $this->group !== null, function () {
-                return (string) $this->group->id;
+            'groupId' => $this->when($this->relationLoaded('assignedGroup') && $this->assignedGroup !== null, function () {
+                return (string) $this->assignedGroup->id;
             }),
-            'group' => $this->when($this->relationLoaded('group') && $this->group !== null, function () {
-                return new GroupResource($this->group);
+            'group' => $this->when($this->relationLoaded('assignedGroup') && $this->assignedGroup !== null, function () {
+                return new StudentGroupResource($this->assignedGroup);
             }),
-            'groupName' => $this->when($this->relationLoaded('group') && $this->group !== null, function () {
-                return $this->group->group_name;
+            'groupName' => $this->when($this->relationLoaded('assignedGroup') && $this->assignedGroup !== null, function () {
+                return $this->assignedGroup->name ?? $this->assignedGroup->group_code ?? null;
             }),
             'documents' => $this->whenLoaded('documents') ? DocumentResource::collection($this->documents) : [],
             'grades' => $this->whenLoaded('grades') ? GradeResource::collection($this->grades) : [],

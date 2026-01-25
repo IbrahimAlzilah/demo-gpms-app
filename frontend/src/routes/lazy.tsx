@@ -22,6 +22,9 @@ export const LazyGradesPage = lazy(() => import('../pages/student/grades/GradesP
 // Supervisor pages
 export const LazySupervisorDashboardPage = lazy(() => import('../pages/supervisor/SupervisorDashboardPage').then(m => ({ default: m.SupervisorDashboardPage })))
 export const LazySupervisorProposalsPage = lazy(() => import('../pages/supervisor/proposals/ProposalsPage').then(m => ({ default: m.ProposalsPage })))
+export const LazySupervisorProposalsSubmitPage = lazy(() => import('../pages/supervisor/proposals/new/ProposalsSubmitPage').then(m => ({ default: m.ProposalsSubmitPage })))
+export const LazySupervisorProposalsEditPage = lazy(() => import('../pages/supervisor/proposals/edit/ProposalsSubmitPage').then(m => ({ default: m.ProposalsEditBatchPage })))
+export const LazySupervisorProposalsViewPage = lazy(() => import('../pages/supervisor/proposals/view/ProposalsViewPage').then(m => ({ default: m.ProposalsViewPage })))
 export const LazySupervisionRequestsPage = lazy(() => import('../pages/supervisor/supervision-requests/SupervisionRequestsPage').then(m => ({ default: m.SupervisionRequestsPage })))
 export const LazySupervisorProjectsPage = lazy(() => import('../pages/supervisor/projects/ProjectsPage').then(m => ({ default: m.ProjectsPage })))
 export const LazySupervisorProjectDetailsPage = lazy(() => import('../pages/supervisor/projects/view/ProjectDetails.screen').then(m => ({ default: m.ProjectDetails })))

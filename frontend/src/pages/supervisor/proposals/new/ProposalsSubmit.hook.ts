@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useToast } from '@/components/common'
 import { useAuthStore } from '@/pages/auth/login'
@@ -21,6 +21,18 @@ export function useProposalsSubmit(onSuccess?: () => void) {
     { id: '1', title: '', description: '', proposedSupervisorId: user?.id }
   ])
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLocked, setIsLocked] = useState(false)
+
+  // Check lock status from user data
+  useEffect(() => {
+    if (user) {
+      // Check if user has proposals_initial_submitted_at set (lock indicator)
+      const locked = !!(user.proposalsInitialSubmittedAt || (user as any).proposals_initial_submitted_at)
+      setIsLocked(locked)
+    } else {
+      setIsLocked(false)
+    }
+  }, [user])
 
   const addProposal = () => {
     setProposals([...proposals, { id: Date.now().toString(), title: '', description: '', proposedSupervisorId: user?.id }])
@@ -102,5 +114,6 @@ export function useProposalsSubmit(onSuccess?: () => void) {
     handleSubmit,
     isSubmitting,
     isPeriodActive,
+    isLocked,
   }
 }

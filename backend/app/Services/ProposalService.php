@@ -442,6 +442,13 @@ class ProposalService
                         'proposals_initial_submitted_at' => now(),
                     ]);
                 }
+            } elseif ($submitter->isSupervisor()) {
+                // Mark supervisor as having submitted initial proposals (lock future submissions)
+                if (!$submitter->proposals_initial_submitted_at) {
+                    $submitter->update([
+                        'proposals_initial_submitted_at' => now(),
+                    ]);
+                }
             }
 
             // Notify projects committee members about new proposals (single notification for batch)
@@ -567,6 +574,22 @@ class ProposalService
 
         // Group is locked if it has submitted initial proposals
         return $studentGroup->proposals_initial_submitted_at !== null;
+    }
+
+    /**
+     * Check if a supervisor is locked from submitting new proposals
+     * 
+     * @param User $user The supervisor user
+     * @return bool True if locked, false otherwise
+     */
+    public function isSupervisorLocked(User $user): bool
+    {
+        if (!$user->isSupervisor()) {
+            return false;
+        }
+
+        // Supervisor is locked if they have submitted initial proposals
+        return $user->proposals_initial_submitted_at !== null;
     }
 }
 

@@ -28,3 +28,28 @@ export function useUpdateProposal() {
     },
   })
 }
+
+/**
+ * Hook for resubmitting a proposal (wrapper around update)
+ */
+export function useResubmitProposal() {
+  const queryClient = useQueryClient()
+  const updateProposal = useUpdateProposal()
+
+  return useMutation({
+    mutationFn: (proposal: Proposal) =>
+      updateProposal.mutateAsync({
+        id: proposal.id,
+        data: {
+          title: proposal.title,
+          description: proposal.description,
+        },
+      }),
+    onSuccess: (_, proposal) => {
+      // Additional invalidation to ensure UI updates
+      queryClient.invalidateQueries({ queryKey: ['supervisor-proposals'] })
+      queryClient.invalidateQueries({ queryKey: ['supervisor-proposals', proposal.id] })
+      queryClient.invalidateQueries({ queryKey: ['supervisor-proposals-table'] })
+    },
+  })
+}

@@ -36,8 +36,11 @@ export const ROUTES = {
   SUPERVISOR: {
     DASHBOARD: "/dashboard",
     PROPOSALS: "/proposals",
-    MY_PROPOSALS: "/proposals/my",
-    APPROVED_PROPOSALS: "/proposals/approved",
+    MY_PROPOSALS: "/my-proposals",
+    APPROVED_PROPOSALS: "/approved-proposals",
+    PROPOSALS_SUBMIT: "/proposals/submit",
+    PROPOSALS_EDIT: "/proposals/edit",
+    PROPOSALS_VIEW: "/proposals",
     SUPERVISION_REQUESTS: "/supervision-requests",
     PROJECTS: "/projects",
     EVALUATION: "/evaluation",

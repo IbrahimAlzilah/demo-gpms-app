@@ -28,6 +28,7 @@ class User extends Authenticatable
         'role',
         'phone',
         'status',
+        'proposals_initial_submitted_at',
     ];
 
     /**
@@ -50,6 +51,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'proposals_initial_submitted_at' => 'datetime',
         ];
     }
 

@@ -96,4 +96,61 @@ export const proposalService = {
     })
     return response.data.data
   },
+
+  getSubmissionContext: async (): Promise<{
+    proposals: Proposal[];
+    can_edit?: boolean;
+    has_approved_proposal?: boolean;
+    message?: string;
+  }> => {
+    const response = await apiClient.get<{
+      data?: {
+        proposals: Proposal[];
+        can_edit?: boolean;
+        has_approved_proposal?: boolean;
+      };
+      proposals?: Proposal[];
+      can_edit?: boolean;
+      has_approved_proposal?: boolean;
+      message?: string;
+    }>('/supervisor/proposals/submission');
+    
+    // Handle both response formats (with or without 'data' wrapper)
+    if (response.data.data) {
+      return {
+        proposals: response.data.data.proposals || [],
+        can_edit: response.data.data.can_edit,
+        has_approved_proposal: response.data.data.has_approved_proposal,
+      };
+    }
+    
+    return {
+      proposals: response.data.proposals || [],
+      can_edit: response.data.can_edit,
+      has_approved_proposal: response.data.has_approved_proposal,
+      message: response.data.message,
+    };
+  },
+
+  updateBatch: async (
+    updates: Array<{ id: string } & Partial<{ title: string; description: string }>>,
+    newProposals: Array<{ title: string; description: string }>
+  ): Promise<{ updated: Proposal[]; created: Proposal[] }> => {
+    const response = await apiClient.put<{ data: Proposal[] }>('/supervisor/proposals/batch', {
+      updates: updates.map(u => ({
+        id: u.id,
+        title: u.title,
+        description: u.description,
+      })),
+      new_proposals: newProposals.map(p => ({
+        title: p.title,
+        description: p.description,
+      })),
+    });
+    const allProposals = response.data.data || [];
+    return {
+      updated: allProposals.filter((_, i) => i < updates.length),
+      created: allProposals.filter((_, i) => i >= updates.length),
+    };
+  },
 }

@@ -20,6 +20,9 @@ import {
   // Supervisor
   LazySupervisorDashboardPage,
   LazySupervisorProposalsPage,
+  LazySupervisorProposalsSubmitPage,
+  LazySupervisorProposalsEditPage,
+  LazySupervisorProposalsViewPage,
   LazySupervisionRequestsPage,
   LazySupervisorProjectsPage,
   LazySupervisorProjectDetailsPage,
@@ -123,12 +126,24 @@ export const supervisorRoutes: RouteConfig[] = [
     element: LazySupervisorDashboardPage,
   },
   {
-    path: 'proposals/my',
+    path: 'my-proposals',
     element: LazySupervisorProposalsPage,
   },
   {
-    path: 'proposals/approved',
+    path: 'approved-proposals',
     element: LazySupervisorProposalsPage,
+  },
+  {
+    path: 'proposals/submit',
+    element: LazySupervisorProposalsSubmitPage,
+  },
+  {
+    path: 'proposals/edit',
+    element: LazySupervisorProposalsEditPage,
+  },
+  {
+    path: 'proposals/:id',
+    element: LazySupervisorProposalsViewPage,
   },
   {
     path: 'proposals',

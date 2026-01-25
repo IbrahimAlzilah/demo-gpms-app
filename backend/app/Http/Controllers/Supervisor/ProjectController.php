@@ -22,7 +22,7 @@ class ProjectController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = Project::where('supervisor_id', $request->user()->id)
-            ->with(['supervisor', 'students', 'assignedGroup.leader', 'assignedGroup.members', 'group']);
+            ->with(['supervisor', 'students', 'assignedGroup.leader', 'assignedGroup.members']);
 
         $query = $this->applyTableQuery($query, $request);
 
@@ -40,7 +40,7 @@ class ProjectController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => new ProjectResource($project->load(['supervisor', 'students', 'assignedGroup.leader', 'assignedGroup.members', 'group', 'documents', 'grades.student', 'grades.project'])),
+            'data' => new ProjectResource($project->load(['supervisor', 'students', 'assignedGroup.leader', 'assignedGroup.members', 'documents', 'grades.student', 'grades.project'])),
         ]);
     }
 

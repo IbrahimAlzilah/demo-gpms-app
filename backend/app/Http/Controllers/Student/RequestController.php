@@ -47,11 +47,20 @@ class RequestController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'type' => 'required|in:change_supervisor,change_group,change_project,other',
+            'type' => 'required|in:change_group,change_project,other',
             'project_id' => 'nullable|exists:projects,id',
             'reason' => 'required|string',
             'additional_data' => 'nullable|array',
         ]);
+
+        // BLOCK: Students cannot create supervision requests
+        // Supervisor assignment is handled exclusively by the Project Committee
+        if ($validated['type'] === 'change_supervisor') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Students cannot request supervisor changes. Supervisor assignment is handled by the Project Committee.',
+            ], 403);
+        }
 
         try {
             $projectRequest = $this->requestService->create($validated, $request->user());
@@ -80,11 +89,19 @@ class RequestController extends Controller
         }
 
         $validated = $request->validate([
-            'type' => 'sometimes|required|in:change_supervisor,change_group,change_project,other',
+            'type' => 'sometimes|required|in:change_group,change_project,other',
             'project_id' => 'nullable|exists:projects,id',
             'reason' => 'sometimes|required|string|min:20',
             'additional_data' => 'nullable|array',
         ]);
+
+        // BLOCK: Students cannot update requests to change_supervisor type
+        if (isset($validated['type']) && $validated['type'] === 'change_supervisor') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Students cannot request supervisor changes. Supervisor assignment is handled by the Project Committee.',
+            ], 403);
+        }
 
         try {
             $updated = $this->requestService->update($projectRequest, $validated, $request->user());

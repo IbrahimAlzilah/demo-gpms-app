@@ -112,11 +112,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('supervisor')->middleware('role:supervisor')->group(function () {
         Route::get('dashboard', [App\Http\Controllers\Supervisor\DashboardController::class, 'index']);
         // Proposals with time window check
+        // IMPORTANT: More specific routes must be defined BEFORE parameterized routes
         Route::get('proposals', [App\Http\Controllers\Supervisor\ProposalController::class, 'index']);
-        Route::get('proposals/{proposal}', [App\Http\Controllers\Supervisor\ProposalController::class, 'show']);
+        Route::get('proposals/submission', [App\Http\Controllers\Supervisor\ProposalController::class, 'getSubmissionContext']);
+        Route::get('proposals/student-groups', [App\Http\Controllers\Supervisor\ProposalController::class, 'getStudentGroups']);
         Route::post('proposals/batch', [App\Http\Controllers\Supervisor\ProposalController::class, 'batchSubmit'])
             ->middleware('window:proposal_submission');
-        Route::get('proposals/student-groups', [App\Http\Controllers\Supervisor\ProposalController::class, 'getStudentGroups']);
+        Route::put('proposals/batch', [App\Http\Controllers\Supervisor\ProposalController::class, 'batchUpdate']);
+        Route::get('proposals/{proposal}', [App\Http\Controllers\Supervisor\ProposalController::class, 'show']);
         Route::post('proposals/{proposal}/assign', [App\Http\Controllers\Supervisor\ProposalController::class, 'assignToGroup']);
         Route::post('proposals/{proposal}/request-assignment', [App\Http\Controllers\Supervisor\ProposalController::class, 'requestAssignment']);
         Route::post('proposals', [App\Http\Controllers\Supervisor\ProposalController::class, 'store'])
