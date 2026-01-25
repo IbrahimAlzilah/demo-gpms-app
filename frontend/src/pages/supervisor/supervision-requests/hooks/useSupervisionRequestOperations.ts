@@ -19,6 +19,8 @@ export function useApproveSupervisionRequest() {
         exact: false // Match all queries that start with this key (including statusFilter variants)
       })
       queryClient.invalidateQueries({ queryKey: ['requests'] })
+      // Invalidate dashboard to update project count
+      queryClient.invalidateQueries({ queryKey: ['supervisor-dashboard'] })
     },
   })
 }
@@ -40,6 +42,8 @@ export function useRejectSupervisionRequest() {
         exact: false // Match all queries that start with this key (including statusFilter variants)
       })
       queryClient.invalidateQueries({ queryKey: ['requests'] })
+      // Invalidate dashboard to update project count (though reject doesn't change count, keeping for consistency)
+      queryClient.invalidateQueries({ queryKey: ['supervisor-dashboard'] })
     },
   })
 }

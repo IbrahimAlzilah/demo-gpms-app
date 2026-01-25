@@ -4,7 +4,7 @@ import { cn } from "../../lib/utils";
 import { Suspense } from "react";
 
 interface BlockContentProps {
-  title?: string;
+  title?: string | ReactNode;
   subtitle?: string;
   children: ReactNode;
   actions?: ReactNode;

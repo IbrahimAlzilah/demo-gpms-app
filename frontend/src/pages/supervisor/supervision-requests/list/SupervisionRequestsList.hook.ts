@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useQuery } from '@tanstack/react-query'
 import { useDataTable } from '@/hooks/useDataTable'
 import { supervisionService } from '../api/supervision.service'
+import { dashboardService } from '@/features/dashboard/api/dashboard.service'
 import type { SupervisionRequestsListState, SupervisionRequestsListData } from './SupervisionRequestsList.types'
 
 const MAX_PROJECTS_PER_SUPERVISOR = 5 // This should come from config
@@ -16,6 +18,12 @@ export function useSupervisionRequestsList() {
     action: null,
     comments: '',
     viewingRequest: null,
+  })
+
+  // Fetch supervisor dashboard data to get actual project count
+  const { data: dashboardData, isLoading: isDashboardLoading } = useQuery({
+    queryKey: ['supervisor-dashboard'],
+    queryFn: () => dashboardService.getSupervisorDashboard(),
   })
 
   const {
@@ -45,8 +53,8 @@ export function useSupervisionRequestsList() {
     enableServerSide: true,
   })
 
-  // In real app, get current project count from API
-  const currentProjectCount = 3 // Mock value
+  // Get current project count from dashboard data
+  const currentProjectCount = dashboardData?.stats?.supervisedProjectsCount ?? 0
   const canAcceptMore = currentProjectCount < MAX_PROJECTS_PER_SUPERVISOR
 
   const data: SupervisionRequestsListData = {
