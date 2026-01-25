@@ -1,6 +1,7 @@
 import { apiClient } from '../../../../../lib/axios'
 import type { Proposal } from '../../../../../types/project.types'
 import type { TableQueryParams, TableResponse } from '../../../../../types/table.types'
+import type { Submission } from '../types/GroupedSubmissions.types'
 
 export const committeeProposalService = {
   getAll: async (): Promise<Proposal[]> => {
@@ -32,6 +33,35 @@ export const committeeProposalService = {
 
     const response = await apiClient.get<Proposal[]>(
       `/projects-committee/proposals?${queryParams.toString()}`
+    )
+    
+    return {
+      data: Array.isArray(response.data) ? response.data : [],
+      totalCount: response.pagination?.total || 0,
+      page: response.pagination?.page || 1,
+      pageSize: response.pagination?.pageSize || 10,
+      totalPages: response.pagination?.totalPages || 0,
+    }
+  },
+
+  /**
+   * Get proposals grouped by submissions (student groups or supervisors)
+   * Returns paginated submissions, each containing all proposals from that group/supervisor
+   */
+  getSubmissionsTableData: async (
+    params?: TableQueryParams,
+    status?: string,
+    search?: string
+  ): Promise<TableResponse<Submission>> => {
+    const queryParams = new URLSearchParams()
+    
+    if (status && status !== 'all') queryParams.append('status', status)
+    if (params?.page) queryParams.append('page', params.page.toString())
+    if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString())
+    if (search) queryParams.append('search', search)
+
+    const response = await apiClient.get<Submission[]>(
+      `/projects-committee/proposals/submissions?${queryParams.toString()}`
     )
     
     return {

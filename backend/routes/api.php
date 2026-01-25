@@ -160,6 +160,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('projects-committee')->middleware('role:projects_committee')->group(function () {
         Route::get('dashboard', [App\Http\Controllers\ProjectsCommittee\DashboardController::class, 'index']);
         // Custom proposal routes (must be before apiResource to match correctly)
+        Route::get('proposals/submissions', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'submissions']);
         Route::post('proposals/{proposal}/approve', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'approve']);
         Route::post('proposals/{proposal}/reject', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'reject']);
         Route::post('proposals/{proposal}/request-modification', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'requestModification']);

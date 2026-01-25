@@ -4,11 +4,13 @@ namespace App\Http\Controllers\ProjectsCommittee;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProposalResource;
+use App\Http\Resources\ProposalSubmissionResource;
 use App\Http\Traits\HasTableQuery;
 use App\Models\Proposal;
 use App\Services\ProposalService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ProposalController extends Controller
 {
@@ -54,6 +56,149 @@ class ProposalController extends Controller
         $query = $this->applyTableQuery($query, $request);
 
         return response()->json($this->getPaginatedResponse($query, $request, ProposalResource::class));
+    }
+
+    /**
+     * Get proposals grouped by submission (student groups or supervisors)
+     * Returns paginated submissions, each containing all proposals from that group/supervisor
+     */
+    public function submissions(Request $request): JsonResponse
+    {
+        $page = (int) $request->get('page', 1);
+        $pageSize = (int) $request->get('pageSize', 10);
+        $status = $request->get('status');
+        $search = $request->get('search');
+
+        // Base query for proposals
+        $proposalsQuery = Proposal::query()
+            ->with(['submitter', 'reviewer', 'project', 'studentGroup.leader', 'studentGroup.members', 'targetProject']);
+
+        // Apply status filter
+        if ($status && $status !== 'all') {
+            $proposalsQuery->where('status', $status);
+        }
+
+        // Apply search filter (search in title and description)
+        if ($search) {
+            $proposalsQuery->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        // Get all proposals matching filters (we'll group them)
+        $allProposals = $proposalsQuery->get();
+
+        // Group proposals by origin
+        $groupedSubmissions = [];
+        
+        // Group 1: Student groups (by student_group_id)
+        $studentGroupProposals = $allProposals->whereNotNull('student_group_id')
+            ->groupBy('student_group_id');
+        
+        foreach ($studentGroupProposals as $groupId => $proposals) {
+            $firstProposal = $proposals->first();
+            $statuses = $proposals->pluck('status')->unique();
+            $status = $statuses->count() === 1 ? $statuses->first() : 'mixed';
+            
+            // Get the earliest and latest dates
+            $minCreatedAt = $proposals->min('created_at');
+            $maxUpdatedAt = $proposals->max('updated_at');
+            
+            $groupedSubmissions[] = [
+                'id' => "group_{$groupId}",
+                'origin' => 'student_group',
+                'studentGroupId' => (string) $groupId,
+                'studentGroup' => $firstProposal->studentGroup ?? null,
+                'submitter' => $firstProposal->submitter ?? null,
+                'proposals' => $proposals->sortBy('created_at')->values(),
+                'status' => $status,
+                'submittedAt' => $minCreatedAt ? $minCreatedAt->toISOString() : now()->toISOString(),
+                'lastUpdatedAt' => $maxUpdatedAt ? $maxUpdatedAt->toISOString() : now()->toISOString(),
+                'totalProposals' => $proposals->count(),
+            ];
+        }
+
+        // Group 2: Supervisors (by submitter_id where role is supervisor)
+        // Exclude proposals that belong to student groups (they're already grouped above)
+        $supervisorProposals = $allProposals
+            ->filter(function ($proposal) {
+                return !$proposal->student_group_id 
+                    && $proposal->submitter 
+                    && $proposal->submitter->isSupervisor();
+            })
+            ->groupBy('submitter_id');
+        
+        foreach ($supervisorProposals as $submitterId => $proposals) {
+            $firstProposal = $proposals->first();
+            $statuses = $proposals->pluck('status')->unique();
+            $status = $statuses->count() === 1 ? $statuses->first() : 'mixed';
+            
+            // Get the earliest and latest dates
+            $minCreatedAt = $proposals->min('created_at');
+            $maxUpdatedAt = $proposals->max('updated_at');
+            
+            $groupedSubmissions[] = [
+                'id' => "supervisor_{$submitterId}",
+                'origin' => 'supervisor',
+                'supervisorId' => (string) $submitterId,
+                'supervisor' => $firstProposal->submitter ?? null,
+                'proposals' => $proposals->sortBy('created_at')->values(),
+                'status' => $status,
+                'submittedAt' => $minCreatedAt ? $minCreatedAt->toISOString() : now()->toISOString(),
+                'lastUpdatedAt' => $maxUpdatedAt ? $maxUpdatedAt->toISOString() : now()->toISOString(),
+                'totalProposals' => $proposals->count(),
+            ];
+        }
+
+        // Group 3: Individual student proposals (no group, not supervisor)
+        $individualProposals = $allProposals
+            ->filter(function ($proposal) {
+                return !$proposal->student_group_id 
+                    && (!$proposal->submitter || !$proposal->submitter->isSupervisor());
+            });
+        
+        foreach ($individualProposals as $proposal) {
+            $groupedSubmissions[] = [
+                'id' => "individual_{$proposal->id}",
+                'origin' => 'student_group',
+                'studentGroupId' => null,
+                'studentGroup' => null,
+                'submitter' => $proposal->submitter,
+                'proposals' => collect([$proposal]),
+                'status' => $proposal->status,
+                'submittedAt' => $proposal->created_at->toISOString(),
+                'lastUpdatedAt' => $proposal->updated_at->toISOString(),
+                'totalProposals' => 1,
+            ];
+        }
+
+        // Sort submissions by submittedAt (newest first)
+        usort($groupedSubmissions, function ($a, $b) {
+            return strcmp($b['submittedAt'], $a['submittedAt']);
+        });
+
+        // Paginate submissions
+        $total = count($groupedSubmissions);
+        $totalPages = ceil($total / $pageSize);
+        $offset = ($page - 1) * $pageSize;
+        $paginatedSubmissions = array_slice($groupedSubmissions, $offset, $pageSize);
+
+        // Transform to resources
+        $data = array_map(function ($submission) {
+            return new ProposalSubmissionResource($submission);
+        }, $paginatedSubmissions);
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+            'pagination' => [
+                'page' => $page,
+                'pageSize' => $pageSize,
+                'total' => $total,
+                'totalPages' => $totalPages,
+            ],
+        ]);
     }
 
     /**

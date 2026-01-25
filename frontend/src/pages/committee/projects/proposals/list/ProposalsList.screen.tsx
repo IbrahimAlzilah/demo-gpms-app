@@ -1,15 +1,16 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useApproveProposal, useRejectProposal, useRequestModification, useDeleteProposal } from '../hooks/useProposalOperations'
-import { DataTable, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Button } from '@/components/ui'
-import { BlockContent, ConfirmDialog } from '@/components/common'
+import { DataTable, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Button, Input } from '@/components/ui'
+import { BlockContent, ConfirmDialog, LoadingSpinner } from '@/components/common'
 import { createProposalColumns } from '../components/table'
 import { ProposalReviewDialog } from '../components/ProposalReviewDialog'
 import { ProposalsNew } from '../new/ProposalsNew.screen'
 import { ProposalsEdit } from '../edit/ProposalsEdit.screen'
 import { ProposalsView } from '../view/ProposalsView.screen'
+import { GroupedSubmissionCard } from '../components/GroupedSubmissionCard'
 import { useProposalsList } from './ProposalsList.hook'
-import { AlertCircle, PlusCircle } from 'lucide-react'
+import { AlertCircle, PlusCircle, LayoutGrid, List, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search } from 'lucide-react'
 import { useToast } from '@/components/common'
 
 export function ProposalsList() {
@@ -110,60 +111,217 @@ export function ProposalsList() {
   const isLoadingAction =
     approveProposal.isPending || rejectProposal.isPending || requestModification.isPending
 
+  const isGroupedView = state.viewMode === 'grouped'
+
   return (
     <>
-
       <BlockContent
         variant="data-table"
         title={t('committee.proposal.reviewPanel')}
         actions={
-          <Button onClick={() => setShowCreateDialog(true)}>
-            <PlusCircle className="size-4" />
-            {t('committee.proposal.create', { defaultValue: 'New Proposal' })}
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* View Mode Toggle */}
+            <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
+              <Button
+                variant={isGroupedView ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setState((prev) => ({ ...prev, viewMode: 'grouped' }))}
+                className="h-8 px-3"
+              >
+                <LayoutGrid className="h-3.5 w-3.5 me-1.5" />
+                {t('committee.proposal.groupedView') || 'Grouped'}
+              </Button>
+              <Button
+                variant={!isGroupedView ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setState((prev) => ({ ...prev, viewMode: 'individual' }))}
+                className="h-8 px-3"
+              >
+                <List className="h-3.5 w-3.5 me-1.5" />
+                {t('committee.proposal.individualView') || 'Individual'}
+              </Button>
+            </div>
+            <Button onClick={() => setShowCreateDialog(true)}>
+              <PlusCircle className="size-4" />
+              {t('committee.proposal.create', { defaultValue: 'New Proposal' })}
+            </Button>
+          </div>
         }
       >
+        {/* Filters */}
+        <div className="mb-4 flex items-center gap-2 flex-wrap">
+          <Select
+            value={state.statusFilter}
+            onValueChange={(value) => setState((prev) => ({ ...prev, statusFilter: value as typeof prev.statusFilter }))}
+          >
+            <SelectTrigger id="status-filter" className="w-[200px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('committee.proposal.allProposals')}</SelectItem>
+              <SelectItem value="pending_review">{t('proposal.status.pendingReview')}</SelectItem>
+              <SelectItem value="approved">{t('proposal.status.approved')}</SelectItem>
+              <SelectItem value="rejected">{t('proposal.status.rejected')}</SelectItem>
+              <SelectItem value="requires_modification">{t('proposal.status.requiresModification')}</SelectItem>
+            </SelectContent>
+          </Select>
 
-        <DataTable
-          toolbarContent={
-            <Select
-              value={state.statusFilter}
-              onValueChange={(value) => setState((prev) => ({ ...prev, statusFilter: value as typeof prev.statusFilter }))}
-            >
-              <SelectTrigger id="status-filter" className="w-[200px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('committee.proposal.allProposals')}</SelectItem>
-                <SelectItem value="pending_review">{t('proposal.status.pendingReview')}</SelectItem>
-                <SelectItem value="approved">{t('proposal.status.approved')}</SelectItem>
-                <SelectItem value="rejected">{t('proposal.status.rejected')}</SelectItem>
-                <SelectItem value="requires_modification">{t('proposal.status.requiresModification')}</SelectItem>
-              </SelectContent>
-            </Select>
-          }
-          columns={columns}
-          data={data.proposals}
-          isLoading={data.isLoading}
-          error={data.error}
-          pageCount={pageCount}
-          totalCount={totalCount}
-          pageIndex={pagination.pageIndex}
-          pageSize={pagination.pageSize}
-          onPaginationChange={(pageIndex, pageSize) => {
-            setPagination({ pageIndex, pageSize })
-          }}
-          sorting={sorting}
-          onSortingChange={setSorting}
-          columnFilters={columnFilters}
-          onColumnFiltersChange={setColumnFilters}
-          searchValue={globalFilter}
-          onSearchChange={setGlobalFilter}
-          searchPlaceholder={t('committee.proposal.searchPlaceholder')}
-          enableFiltering={true}
-          enableViews={true}
-          emptyMessage={t('committee.proposal.noProposals')}
-        />
+          {/* Search for Grouped View */}
+          {isGroupedView && (
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute start-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={t('committee.proposal.searchPlaceholder') || 'Search proposals...'}
+                value={globalFilter}
+                onChange={(e) => setGlobalFilter(e.target.value)}
+                className="h-9 ps-9"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Grouped View */}
+        {isGroupedView ? (
+          <>
+            <div className="space-y-4">
+              {data.isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <LoadingSpinner />
+                </div>
+              ) : data.submissions.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <p>{t('committee.proposal.noSubmissions') || 'No submissions found'}</p>
+                </div>
+              ) : (
+                data.submissions.map((submission) => (
+                  <GroupedSubmissionCard
+                    key={submission.id}
+                    submission={submission}
+                    onViewProposal={(proposal) => {
+                      setState((prev) => ({ ...prev, proposalToViewId: proposal.id }))
+                    }}
+                    onApproveProposal={(proposal) => {
+                      setState((prev) => ({ ...prev, selectedProposal: proposal, action: 'approve' }))
+                    }}
+                    onRejectProposal={(proposal) => {
+                      setState((prev) => ({ ...prev, selectedProposal: proposal, action: 'reject' }))
+                    }}
+                    onRequestModification={(proposal) => {
+                      setState((prev) => ({ ...prev, selectedProposal: proposal, action: 'modify' }))
+                    }}
+                    t={t}
+                  />
+                ))
+              )}
+            </div>
+
+            {/* Pagination Controls for Grouped View */}
+            {!data.isLoading && data.submissions.length > 0 && pageCount > 1 && (
+              <div className="flex items-center justify-between px-4 py-3 border-t">
+                <div className="flex-1 text-sm text-muted-foreground">
+                  {totalCount > 0 ? (
+                    <span>
+                      {t('dataTable.rowsInfo', {
+                        start: pagination.pageIndex * pagination.pageSize + 1,
+                        end: Math.min((pagination.pageIndex + 1) * pagination.pageSize, totalCount),
+                        total: totalCount,
+                      })}
+                    </span>
+                  ) : (
+                    <span>{t('dataTable.noResults')}</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    <Select
+                      value={`${pagination.pageSize}`}
+                      onValueChange={(value) => {
+                        setPagination((prev) => ({ ...prev, pageSize: Number(value), pageIndex: 0 }))
+                      }}
+                    >
+                      <SelectTrigger className="h-8 w-[70px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent side="top">
+                        {[10, 20, 30, 40, 50].map((size) => (
+                          <SelectItem key={size} value={`${size}`}>
+                            {size}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+                    {t('dataTable.pageInfo', { page: pagination.pageIndex + 1, total: pageCount || 1 })}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="outline"
+                      className="hidden h-8 w-8 p-0 lg:flex"
+                      onClick={() => setPagination((prev) => ({ ...prev, pageIndex: 0 }))}
+                      disabled={pagination.pageIndex === 0}
+                    >
+                      <span className="sr-only">{t('dataTable.goToFirstPage')}</span>
+                      <ChevronsLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="h-8 w-8 p-0"
+                      onClick={() => setPagination((prev) => ({ ...prev, pageIndex: Math.max(0, prev.pageIndex - 1) }))}
+                      disabled={pagination.pageIndex === 0}
+                    >
+                      <span className="sr-only">{t('dataTable.goToPreviousPage')}</span>
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="h-8 w-8 p-0"
+                      onClick={() => setPagination((prev) => ({ ...prev, pageIndex: Math.min(pageCount - 1, prev.pageIndex + 1) }))}
+                      disabled={pagination.pageIndex >= pageCount - 1}
+                    >
+                      <span className="sr-only">{t('dataTable.goToNextPage')}</span>
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="hidden h-8 w-8 p-0 lg:flex"
+                      onClick={() => setPagination((prev) => ({ ...prev, pageIndex: pageCount - 1 }))}
+                      disabled={pagination.pageIndex >= pageCount - 1}
+                    >
+                      <span className="sr-only">{t('dataTable.goToLastPage')}</span>
+                      <ChevronsRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          /* Individual View - Table */
+          <DataTable
+            columns={columns}
+            data={data.proposals}
+            isLoading={data.isLoading}
+            error={data.error}
+            pageCount={pageCount}
+            totalCount={totalCount}
+            pageIndex={pagination.pageIndex}
+            pageSize={pagination.pageSize}
+            onPaginationChange={(pageIndex, pageSize) => {
+              setPagination({ pageIndex, pageSize })
+            }}
+            sorting={sorting}
+            onSortingChange={setSorting}
+            columnFilters={columnFilters}
+            onColumnFiltersChange={setColumnFilters}
+            searchValue={globalFilter}
+            onSearchChange={setGlobalFilter}
+            searchPlaceholder={t('committee.proposal.searchPlaceholder')}
+            enableFiltering={true}
+            enableViews={true}
+            emptyMessage={t('committee.proposal.noProposals')}
+          />
+        )}
       </BlockContent>
 
       <ProposalsNew

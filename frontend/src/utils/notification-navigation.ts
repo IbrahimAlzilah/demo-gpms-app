@@ -39,11 +39,24 @@ export function getNotificationTarget(
   // Handle proposal-related notifications
   if (type === 'proposal_approved' || type === 'proposal_rejected' || type === 'proposal_modification_required' || type === 'proposal_submitted') {
     const baseRoute = getProposalsRoute(userRole)
-    // If we had a specific route for details, we could append relatedEntityId
-    // But currently routes are list-based mostly or handled by internal routing
+    // Navigate to specific proposal if relatedEntityId is provided
+    if (relatedEntityId) {
+      // For students, navigate to the detailed view page
+      if (userRole === 'student') {
+        return {
+          path: `${ROUTES.STUDENT.PROPOSALS}/${relatedEntityId}`,
+          label: 'عرض المقترح',
+        }
+      }
+      // For other roles, navigate to the proposals list (they use modals)
+      return {
+        path: baseRoute,
+        label: 'عرض المقترح',
+      }
+    }
     return {
       path: baseRoute,
-      label: relatedEntityId ? 'عرض المقترح' : 'عرض المقترحات',
+      label: 'عرض المقترحات',
     }
   }
 

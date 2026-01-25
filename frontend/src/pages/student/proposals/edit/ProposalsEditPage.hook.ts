@@ -6,7 +6,6 @@ import { useAuthStore } from '@/pages/auth/login'
 import { proposalService } from '../api/proposal.service'
 import { usePeriodCheck } from '@/hooks/usePeriodCheck'
 import type { ProposalFormData } from '../types/Proposals.types'
-import type { Proposal } from '@/types/project.types'
 
 interface ProposalItem extends ProposalFormData {
   id: string
