@@ -12,7 +12,11 @@ export function useDocumentsList() {
   const { t } = useTranslation()
   const { user } = useAuthStore()
   const { data: projects, isLoading: projectsLoading } = useProjects()
-  const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('deliverable_submission')
+  // Check if any document submission period is active
+  const { isPeriodActive: isPhase1Active } = usePeriodCheck('chapter_submission_phase_1')
+  const { isPeriodActive: isPhase2Active } = usePeriodCheck('chapter_submission_phase_2')
+  const { isPeriodActive: isFinalActive, isLoading: periodLoading } = usePeriodCheck('final_project_document_submission')
+  const isPeriodActive = isPhase1Active || isPhase2Active || isFinalActive
 
   const [state, setState] = useState<DocumentsListState>({
     selectedDocument: null,

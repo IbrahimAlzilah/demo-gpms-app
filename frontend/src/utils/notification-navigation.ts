@@ -29,9 +29,14 @@ export function getNotificationTarget(
         label: 'عرض المشاريع',
       }
     }
-    if (type.includes('document_submission')) {
+    if (type.includes('document_submission') || type.includes('chapter_submission') || type.includes('final_project_document_submission')) {
       if (userRole === 'student') return { path: ROUTES.STUDENT.DOCUMENTS, label: 'عرض الوثائق' }
       // Add other roles if they have document review pages, otherwise dashboard
+      return { path: getDashboardRoute(userRole), label: 'عرض التفاصيل' }
+    }
+    if (type.includes('final_defense')) {
+      if (userRole === 'student') return { path: ROUTES.STUDENT.PROJECTS, label: 'عرض المشروع' }
+      if (userRole === 'discussion_committee') return { path: ROUTES.DISCUSSION_COMMITTEE.PROJECTS, label: 'عرض المشاريع' }
       return { path: getDashboardRoute(userRole), label: 'عرض التفاصيل' }
     }
   }

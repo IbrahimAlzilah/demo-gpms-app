@@ -1124,11 +1124,12 @@
       "types": {
         "proposalSubmission": "Proposal Submission",
         "projectRegistration": "Project Registration",
-        "documentSubmission": "Document Submission",
-        "supervisorEvaluation": "Supervisor Evaluation",
-        "committeeEvaluation": "Committee Evaluation",
-        "discussionEvaluation": "Discussion Committee Evaluation",
-        "finalDiscussion": "Final Discussion",
+        "chapterSubmissionPhase1": "Chapters Submission – Phase 1",
+        "finalDefensePhase1": "Final Defense – Phase 1",
+        "chapterSubmissionPhase2": "Chapters Submission – Phase 2",
+        "finalDefensePhase2": "Final Defense – Phase 2",
+        "finalProjectDocumentSubmission": "Final Project Document Submission",
+        "gradeApproval": "Grade Approval",
         "general": "General"
       }
     },
@@ -1515,5 +1516,16 @@
       "new_announcement": "A new {{type}} period '{{name}}' has been announced",
       "activated": "The {{type}} period '{{name}}' is now open"
     }
+  },
+  "phase": {
+    "proposalSubmission": "Proposal Submission",
+    "projectRegistration": "Project Registration",
+    "chapterSubmissionPhase1": "Chapters Submission – Phase 1",
+    "finalDefensePhase1": "Final Defense – Phase 1",
+    "chapterSubmissionPhase2": "Chapters Submission – Phase 2",
+    "finalDefensePhase2": "Final Defense – Phase 2",
+    "finalProjectDocumentSubmission": "Final Project Document Submission",
+    "gradeApproval": "Grade Approval",
+    "general": "General"
   }
 }

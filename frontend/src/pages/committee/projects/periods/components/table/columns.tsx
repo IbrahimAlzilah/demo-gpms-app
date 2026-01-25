@@ -20,11 +20,11 @@ export function createPeriodColumns({
   const periodTypeLabels: Record<string, string> = {
     proposal_submission: t('committee.periods.types.proposalSubmission'),
     project_registration: t('committee.periods.types.projectRegistration'),
-    document_submission: t('committee.periods.types.documentSubmission'),
-    supervisor_evaluation: t('committee.periods.types.supervisorEvaluation'),
-    committee_evaluation: t('committee.periods.types.committeeEvaluation'),
-    discussion_evaluation: t('committee.periods.types.discussionEvaluation'),
-    final_discussion: t('committee.periods.types.finalDiscussion'),
+    chapter_submission_phase_1: t('committee.periods.types.chapterSubmissionPhase1'),
+    final_defense_phase_1: t('committee.periods.types.finalDefensePhase1'),
+    chapter_submission_phase_2: t('committee.periods.types.chapterSubmissionPhase2'),
+    final_defense_phase_2: t('committee.periods.types.finalDefensePhase2'),
+    final_project_document_submission: t('committee.periods.types.finalProjectDocumentSubmission'),
     grade_approval: t('committee.periods.types.gradeApproval'),
     general: t('committee.periods.types.general'),
   }

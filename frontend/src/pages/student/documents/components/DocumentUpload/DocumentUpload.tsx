@@ -27,7 +27,11 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
   const { t } = useTranslation()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const uploadDocument = useUploadDocument()
-  const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('deliverable_submission')
+  // Check if any document submission period is active
+  const { isPeriodActive: isPhase1Active } = usePeriodCheck('chapter_submission_phase_1')
+  const { isPeriodActive: isPhase2Active } = usePeriodCheck('chapter_submission_phase_2')
+  const { isPeriodActive: isFinalActive, isLoading: periodLoading } = usePeriodCheck('final_project_document_submission')
+  const isPeriodActive = isPhase1Active || isPhase2Active || isFinalActive
 
   const {
     control,

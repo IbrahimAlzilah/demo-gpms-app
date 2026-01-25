@@ -35,11 +35,11 @@ export function ProjectsCommitteeDashboardPage() {
     const labels: Partial<Record<PeriodType, string>> = {
       proposal_submission: t('phase.proposalSubmission', { defaultValue: 'Proposal Submission' }),
       project_registration: t('phase.projectRegistration', { defaultValue: 'Project Registration' }),
-      document_submission: t('phase.documentSubmission', { defaultValue: 'Document Submission' }),
-      supervisor_evaluation: t('phase.supervisorEvaluation', { defaultValue: 'Supervisor Evaluation' }),
-      committee_evaluation: t('phase.committeeEvaluation', { defaultValue: 'Committee Evaluation' }),
-      discussion_evaluation: t('phase.discussionEvaluation', { defaultValue: 'Discussion Evaluation' }),
-      final_discussion: t('phase.finalDiscussion', { defaultValue: 'Final Discussion' }),
+      chapter_submission_phase_1: t('phase.chapterSubmissionPhase1', { defaultValue: 'Chapters Submission – Phase 1' }),
+      final_defense_phase_1: t('phase.finalDefensePhase1', { defaultValue: 'Final Defense – Phase 1' }),
+      chapter_submission_phase_2: t('phase.chapterSubmissionPhase2', { defaultValue: 'Chapters Submission – Phase 2' }),
+      final_defense_phase_2: t('phase.finalDefensePhase2', { defaultValue: 'Final Defense – Phase 2' }),
+      final_project_document_submission: t('phase.finalProjectDocumentSubmission', { defaultValue: 'Final Project Document Submission' }),
       grade_approval: t('phase.gradeApproval', { defaultValue: 'Grade Approval' }),
       general: t('phase.general', { defaultValue: 'General' }),
     }

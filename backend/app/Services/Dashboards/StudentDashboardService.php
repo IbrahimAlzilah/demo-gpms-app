@@ -59,7 +59,11 @@ class StudentDashboardService
         $relevantTypes = [
             TimePeriodType::PROPOSAL_SUBMISSION->value,
             TimePeriodType::PROJECT_REGISTRATION->value,
-            TimePeriodType::DOCUMENT_SUBMISSION->value,
+            TimePeriodType::CHAPTER_SUBMISSION_PHASE_1->value,
+            TimePeriodType::CHAPTER_SUBMISSION_PHASE_2->value,
+            TimePeriodType::FINAL_PROJECT_DOCUMENT_SUBMISSION->value,
+            TimePeriodType::FINAL_DEFENSE_PHASE_1->value,
+            TimePeriodType::FINAL_DEFENSE_PHASE_2->value,
         ];
 
         $activeTimeWindows = TimePeriod::whereIn('type', $relevantTypes)

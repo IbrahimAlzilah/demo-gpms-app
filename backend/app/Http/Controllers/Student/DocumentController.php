@@ -65,12 +65,16 @@ class DocumentController extends Controller
                 ], 403);
             }
 
-            // Check if deliverable submission window is active (students restricted by this window)
+            // Check if document submission window is active (students restricted by this window)
             $timeWindowService = app(\App\Services\TimeWindowService::class);
-            if (!$timeWindowService->isWindowActive(\App\Enums\TimePeriodType::DELIVERABLE_SUBMISSION)) {
+            $isWindowActive = $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::FINAL_PROJECT_DOCUMENT_SUBMISSION)
+                || $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::CHAPTER_SUBMISSION_PHASE_1)
+                || $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::CHAPTER_SUBMISSION_PHASE_2);
+            
+            if (!$isWindowActive) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Document submission is only allowed during the deliverable submission window',
+                    'message' => 'Document submission is only allowed during chapters submission or final document submission periods',
                 ], 403);
             }
             

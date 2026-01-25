@@ -5,17 +5,12 @@ namespace App\Enums;
 enum TimePeriodType: string
 {
     case PROPOSAL_SUBMISSION = 'proposal_submission';
-    case PROPOSAL_REVIEW = 'proposal_review';
     case PROJECT_REGISTRATION = 'project_registration';
-    case PROJECT_EXECUTION = 'project_execution';
-    case DOCUMENT_SUBMISSION = 'document_submission';
-    case DELIVERABLE_SUBMISSION = 'deliverable_submission';
-    case SUPERVISOR_EVALUATION = 'supervisor_evaluation';
-    case COMMITTEE_EVALUATION = 'committee_evaluation';
-    case DISCUSSION_EVALUATION = 'discussion_evaluation';
-    case DISCUSSION_EVALUATION_1 = 'discussion_evaluation_1';
-    case DISCUSSION_EVALUATION_2 = 'discussion_evaluation_2';
-    case FINAL_DISCUSSION = 'final_discussion';
+    case CHAPTER_SUBMISSION_PHASE_1 = 'chapter_submission_phase_1';
+    case FINAL_DEFENSE_PHASE_1 = 'final_defense_phase_1';
+    case CHAPTER_SUBMISSION_PHASE_2 = 'chapter_submission_phase_2';
+    case FINAL_DEFENSE_PHASE_2 = 'final_defense_phase_2';
+    case FINAL_PROJECT_DOCUMENT_SUBMISSION = 'final_project_document_submission';
     case GRADE_APPROVAL = 'grade_approval';
     case GENERAL = 'general';
 
@@ -23,17 +18,12 @@ enum TimePeriodType: string
     {
         return match($this) {
             self::PROPOSAL_SUBMISSION => 'تقديم المقترحات',
-            self::PROPOSAL_REVIEW => 'مراجعة المقترحات',
             self::PROJECT_REGISTRATION => 'التسجيل في المشاريع',
-            self::PROJECT_EXECUTION => 'تنفيذ المشاريع',
-            self::DOCUMENT_SUBMISSION => 'تسليم الوثائق',
-            self::DELIVERABLE_SUBMISSION => 'تسليم المخرجات',
-            self::SUPERVISOR_EVALUATION => 'تقييم المشرف',
-            self::COMMITTEE_EVALUATION => 'تقييم اللجنة',
-            self::DISCUSSION_EVALUATION => 'تقييم لجنة المناقشة',
-            self::DISCUSSION_EVALUATION_1 => 'تقييم لجنة المناقشة - المرحلة الأولى',
-            self::DISCUSSION_EVALUATION_2 => 'تقييم لجنة المناقشة - المرحلة الثانية',
-            self::FINAL_DISCUSSION => 'المناقشة النهائية',
+            self::CHAPTER_SUBMISSION_PHASE_1 => 'تسليم الفصول - المرحلة الأولى',
+            self::FINAL_DEFENSE_PHASE_1 => 'المناقشة النهائية - المرحلة الأولى',
+            self::CHAPTER_SUBMISSION_PHASE_2 => 'تسليم الفصول - المرحلة الثانية',
+            self::FINAL_DEFENSE_PHASE_2 => 'المناقشة النهائية - المرحلة الثانية',
+            self::FINAL_PROJECT_DOCUMENT_SUBMISSION => 'تسليم وثائق المشروع النهائية',
             self::GRADE_APPROVAL => 'اعتماد الدرجات',
             self::GENERAL => 'عام',
         };
@@ -43,19 +33,14 @@ enum TimePeriodType: string
     {
         return match($this) {
             self::PROPOSAL_SUBMISSION => 'فترة تقديم مقترحات المشاريع من الطلاب والمشرفين',
-            self::PROPOSAL_REVIEW => 'فترة مراجعة المقترحات من قبل لجنة المشاريع',
             self::PROJECT_REGISTRATION => 'فترة تسجيل الطلاب في المشاريع المعتمدة',
-            self::PROJECT_EXECUTION => 'فترة تنفيذ المشاريع',
-            self::DOCUMENT_SUBMISSION => 'فترة تسليم الوثائق والتقارير',
-            self::DELIVERABLE_SUBMISSION => 'فترة تسليم المخرجات المطلوبة',
-            self::SUPERVISOR_EVALUATION => 'فترة تقييم المشرفين للمشاريع',
-            self::COMMITTEE_EVALUATION => 'فترة تقييم لجنة المشاريع',
-            self::DISCUSSION_EVALUATION => 'فترة تقييم لجنة المناقشة',
-            self::DISCUSSION_EVALUATION_1 => 'فترة تقييم لجنة المناقشة - المرحلة الأولى',
-            self::DISCUSSION_EVALUATION_2 => 'فترة تقييم لجنة المناقشة - المرحلة الثانية',
-            self::FINAL_DISCUSSION => 'فترة المناقشة النهائية للمشاريع',
+            self::CHAPTER_SUBMISSION_PHASE_1 => 'فترة تسليم الفصول - المرحلة الأولى',
+            self::FINAL_DEFENSE_PHASE_1 => 'فترة المناقشة النهائية - المرحلة الأولى',
+            self::CHAPTER_SUBMISSION_PHASE_2 => 'فترة تسليم الفصول - المرحلة الثانية',
+            self::FINAL_DEFENSE_PHASE_2 => 'فترة المناقشة النهائية - المرحلة الثانية',
+            self::FINAL_PROJECT_DOCUMENT_SUBMISSION => 'فترة تسليم وثائق المشروع النهائية',
             self::GRADE_APPROVAL => 'فترة اعتماد الدرجات النهائية',
-            self::GENERAL => 'فترة عامة',
+            self::GENERAL => 'فترة عامة - تسمح بتمكين جميع الفترات السابقة',
         };
     }
 

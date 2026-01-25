@@ -1,12 +1,13 @@
 export const TimePeriodType = {
   PROPOSAL_SUBMISSION: 'proposal_submission',
-  PROPOSAL_REVIEW: 'proposal_review',
   PROJECT_REGISTRATION: 'project_registration',
-  PROJECT_EXECUTION: 'project_execution',
-  DELIVERABLE_SUBMISSION: 'deliverable_submission',
-  SUPERVISOR_EVALUATION: 'supervisor_evaluation',
-  DISCUSSION_EVALUATION: 'discussion_evaluation',
+  CHAPTER_SUBMISSION_PHASE_1: 'chapter_submission_phase_1',
+  FINAL_DEFENSE_PHASE_1: 'final_defense_phase_1',
+  CHAPTER_SUBMISSION_PHASE_2: 'chapter_submission_phase_2',
+  FINAL_DEFENSE_PHASE_2: 'final_defense_phase_2',
+  FINAL_PROJECT_DOCUMENT_SUBMISSION: 'final_project_document_submission',
   GRADE_APPROVAL: 'grade_approval',
+  GENERAL: 'general',
 } as const;
 
 export type TimePeriodType = typeof TimePeriodType[keyof typeof TimePeriodType];

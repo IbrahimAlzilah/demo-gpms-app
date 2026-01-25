@@ -16,7 +16,10 @@ export interface UseEvaluationFormOptions {
 export function useEvaluationForm(options: UseEvaluationFormOptions = {}) {
   const { t } = useTranslation()
   const { toastError } = useToast()
-  const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('discussion_evaluation')
+  // Check if final defense period is active (check both phases)
+  const { isPeriodActive: isPhase1Active } = usePeriodCheck('final_defense_phase_1')
+  const { isPeriodActive: isPhase2Active, isLoading: periodLoading } = usePeriodCheck('final_defense_phase_2')
+  const isPeriodActive = isPhase1Active || isPhase2Active
 
   const form = useForm<FinalEvaluationSchema>({
     resolver: zodResolver(finalEvaluationSchema(t)),

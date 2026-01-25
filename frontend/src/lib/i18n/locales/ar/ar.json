@@ -1213,17 +1213,12 @@
       "duplicateTypeErrorTitle": "نوع الفترة الزمنية مكرر",
       "types": {
         "proposalSubmission": "تقديم المقترحات",
-        "proposalReview": "مراجعة المقترحات",
         "projectRegistration": "التسجيل في المشاريع",
-        "projectExecution": "تنفيذ المشاريع",
-        "documentSubmission": "تسليم الوثائق",
-        "deliverableSubmission": "تسليم المخرجات",
-        "supervisorEvaluation": "تقييم المشرف",
-        "committeeEvaluation": "تقييم اللجنة",
-        "discussionEvaluation": "تقييم لجنة المناقشة",
-        "discussionEvaluation1": "تقييم لجنة المناقشة - المرحلة الأولى",
-        "discussionEvaluation2": "تقييم لجنة المناقشة - المرحلة الثانية",
-        "finalDiscussion": "المناقشة النهائية",
+        "chapterSubmissionPhase1": "تسليم الفصول – المرحلة الأولى",
+        "finalDefensePhase1": "المناقشة النهائية – المرحلة الأولى",
+        "chapterSubmissionPhase2": "تسليم الفصول – المرحلة الثانية",
+        "finalDefensePhase2": "المناقشة النهائية – المرحلة الثانية",
+        "finalProjectDocumentSubmission": "تسليم وثائق المشروع النهائية",
         "gradeApproval": "اعتماد الدرجات",
         "general": "عام"
       }
@@ -1615,5 +1610,16 @@
       "new_announcement": "تم الإعلان عن فترة {{type}} جديدة: '{{name}}'",
       "activated": "الفترة {{type}} '{{name}}' مفتوحة الآن"
     }
+  },
+  "phase": {
+    "proposalSubmission": "تقديم المقترحات",
+    "projectRegistration": "التسجيل في المشاريع",
+    "chapterSubmissionPhase1": "تسليم الفصول – المرحلة الأولى",
+    "finalDefensePhase1": "المناقشة النهائية – المرحلة الأولى",
+    "chapterSubmissionPhase2": "تسليم الفصول – المرحلة الثانية",
+    "finalDefensePhase2": "المناقشة النهائية – المرحلة الثانية",
+    "finalProjectDocumentSubmission": "تسليم وثائق المشروع النهائية",
+    "gradeApproval": "اعتماد الدرجات",
+    "general": "عام"
   }
 }

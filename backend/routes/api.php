@@ -98,7 +98,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('groups/join-requests/{joinRequest}/reject', [App\Http\Controllers\Student\StudentGroupController::class, 'rejectJoinRequest']);
         Route::get('documents/{document}/download', [App\Http\Controllers\Student\DocumentController::class, 'download']);
         Route::post('documents', [App\Http\Controllers\Student\DocumentController::class, 'store'])
-            ->middleware('window:deliverable_submission');
+            ->middleware('window:chapter_submission_phase_1,chapter_submission_phase_2,final_project_document_submission');
         Route::get('documents', [App\Http\Controllers\Student\DocumentController::class, 'index']);
         Route::get('documents/{document}', [App\Http\Controllers\Student\DocumentController::class, 'show']);
         Route::delete('documents/{document}', [App\Http\Controllers\Student\DocumentController::class, 'destroy']);
@@ -221,7 +221,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Custom evaluation routes (before apiResource to match frontend expectations)
         Route::get('evaluations', [App\Http\Controllers\DiscussionCommittee\EvaluationController::class, 'index']);
         Route::post('evaluations', [App\Http\Controllers\DiscussionCommittee\EvaluationController::class, 'store'])
-            ->middleware('window:discussion_evaluation');
+            ->middleware('window:final_defense_phase_1,final_defense_phase_2');
     });
 
     // Admin routes

@@ -4,7 +4,10 @@ import type { EvaluationListState, EvaluationListData } from './EvaluationList.t
 
 export function useEvaluationList() {
   const { t } = useTranslation()
-  const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('supervisor_evaluation')
+  // Supervisor evaluation can happen during final defense periods
+  const { isPeriodActive: isPhase1Active } = usePeriodCheck('final_defense_phase_1')
+  const { isPeriodActive: isPhase2Active, isLoading: periodLoading } = usePeriodCheck('final_defense_phase_2')
+  const isPeriodActive = isPhase1Active || isPhase2Active
 
   const state: EvaluationListState = {}
 

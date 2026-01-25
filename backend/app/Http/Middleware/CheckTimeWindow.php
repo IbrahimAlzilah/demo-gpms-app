@@ -13,29 +13,33 @@ class CheckTimeWindow
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     * @param  string  $windowType  The type of time period to check
+     * @param  string  $windowTypes  The type(s) of time period to check (comma-separated for multiple types)
      */
-    public function handle(Request $request, Closure $next, string $windowType): Response
+    public function handle(Request $request, Closure $next, string $windowTypes): Response
     {
         // Projects committee bypasses time window checks
         if ($request->user() && $request->user()->isProjectsCommittee()) {
             return $next($request);
         }
 
-        // Check if there's an active time period of the specified type
-        $activeWindow = TimePeriod::where('type', $windowType)
+        // Support multiple window types (comma-separated)
+        $types = array_map('trim', explode(',', $windowTypes));
+
+        // Check if there's an active time period for any of the specified types
+        $activeWindow = TimePeriod::whereIn('type', $types)
             ->where('is_active', true)
             ->where('start_date', '<=', now())
             ->where('end_date', '>=', now())
             ->first();
 
         if (!$activeWindow) {
+            $typesList = implode(', ', $types);
             return response()->json([
                 'success' => false,
-                'message' => "لا توجد نافذة زمنية نشطة لهذا الإجراء. النوع المطلوب: {$windowType}",
+                'message' => "لا توجد نافذة زمنية نشطة لهذا الإجراء. الأنواع المطلوبة: {$typesList}",
                 'error' => 'TIME_WINDOW_CLOSED',
                 'data' => [
-                    'window_type' => $windowType,
+                    'window_types' => $types,
                 ],
             ], 403);
         }

@@ -42,11 +42,13 @@ export interface Grade extends BaseEntity {
 export type EvaluationPeriodType =
   | 'proposal_submission'
   | 'project_registration'
-  | 'document_submission'
-  | 'supervisor_evaluation'
-  | 'committee_evaluation'
-  | 'discussion_evaluation'
-  | 'final_discussion'
+  | 'chapter_submission_phase_1'
+  | 'final_defense_phase_1'
+  | 'chapter_submission_phase_2'
+  | 'final_defense_phase_2'
+  | 'final_project_document_submission'
+  | 'grade_approval'
+  | 'general'
 
 export interface EvaluationPeriod extends BaseEntity {
   type: EvaluationPeriodType
