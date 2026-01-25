@@ -536,8 +536,11 @@ class StudentGroupService
     }
 
     /**
-     * Leave group (for leader or member)
-     * Leader can leave only if group has no project registrations
+     * Leave group (DISABLED - members cannot leave groups)
+     * 
+     * Note: Student members are not allowed to leave groups.
+     * Only group leaders can delete the group, which removes all members.
+     * This method is kept for backward compatibility but will throw an exception for members.
      */
     public function leaveGroup(StudentGroup $group, User $user): void
     {
@@ -545,17 +548,16 @@ class StudentGroupService
             throw new \Exception('You are not a member of this group');
         }
 
+        // Prevent members (non-leaders) from leaving the group
+        if ($group->leader_id !== $user->id) {
+            throw new \Exception('Student members cannot leave groups. Only the group leader can delete the group.');
+        }
+
         // If user is the leader, check for project registrations
         if ($group->leader_id === $user->id) {
             if ($group->hasProjectRegistrations()) {
                 throw new \Exception('Cannot leave group. The group has project registrations. You must delete the group instead, which will remove all members.');
             }
-        }
-
-        // If user is a member (not leader), just remove them
-        if ($group->leader_id !== $user->id) {
-            $group->members()->detach($user->id);
-            return;
         }
 
         // If leader is leaving and no registrations, delete the group

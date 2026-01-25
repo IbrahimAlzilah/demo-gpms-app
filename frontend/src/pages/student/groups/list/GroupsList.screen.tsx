@@ -4,10 +4,10 @@ import { useState } from 'react'
 import React from 'react'
 import { useToast } from '@/components/common'
 import { BlockContent, ModalDialog, ConfirmDialog, LoadingSpinner } from '@/components/common'
-import { Users, Mail, Crown, Loader2, CheckCircle2, XCircle, PlusCircle, UserPlus, LogOut, Trash2 } from 'lucide-react'
+import { Users, Mail, Crown, Loader2, CheckCircle2, XCircle, PlusCircle, UserPlus, Trash2 } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
 import { useAuthStore } from '@/pages/auth/login'
-import { useAcceptInvitation, useRejectInvitation, useCreateGroup, useLeaveGroup, useDeleteGroup } from '../hooks/useGroupOperations'
+import { useAcceptInvitation, useRejectInvitation, useCreateGroup, useDeleteGroup } from '../hooks/useGroupOperations'
 import type { User } from '@/types/user.types'
 import { GroupInviteForm } from '../components/GroupInviteForm'
 import { GroupJoinForm } from '../components/GroupJoinForm'
@@ -29,11 +29,9 @@ export function GroupsList() {
   const acceptInvitation = useAcceptInvitation()
   const rejectInvitation = useRejectInvitation()
   const createGroup = useCreateGroup()
-  const leaveGroup = useLeaveGroup()
   const deleteGroup = useDeleteGroup()
   const [isCopied, setIsCopied] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const [showLeaveDialog, setShowLeaveDialog] = useState(false)
 
   // Check if group has any project registrations - MUST be called before any early returns
   const hasProjectRegistrations = React.useMemo(() => {
@@ -492,33 +490,6 @@ export function GroupsList() {
                 onError={(error) => toastError(error)}
                 onSuccess={(message) => toastSuccess(message)}
               />
-
-              {/* Leave Group Button for Members - Only show if no project registrations */}
-              {!isLeader && !hasProjectRegistrations && (
-                <div className="pt-4 border-t">
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => {
-                      if (!data.group) return
-                      setShowLeaveDialog(true)
-                    }}
-                    disabled={leaveGroup.isPending}
-                  >
-                    {leaveGroup.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {t('groups.leaving')}
-                      </>
-                    ) : (
-                      <>
-                        <LogOut className="mr-2 h-4 w-4" />
-                        {t('groups.leaveGroup')}
-                      </>
-                    )}
-                  </Button>
-                </div>
-              )}
             </CardContent>
           </Card>
         </div>
@@ -568,26 +539,6 @@ export function GroupsList() {
         confirmLabel={t('groups.deleteGroup')}
       />
 
-      {/* Leave Group Confirmation Dialog */}
-      <ConfirmDialog
-        open={showLeaveDialog}
-        onOpenChange={setShowLeaveDialog}
-        onConfirm={() => {
-          if (!data.group) return
-          leaveGroup.mutate(data.group.id, {
-            onSuccess: () => {
-              toastSuccess(t('groups.leaveSuccess'))
-            },
-            onError: (err) => {
-              toastError(err instanceof Error ? err.message : t('groups.leaveError'))
-            },
-          })
-        }}
-        title={t('groups.leaveGroup')}
-        description={t('groups.confirmLeaveGroup')}
-        variant="default"
-        confirmLabel={t('groups.leaveGroup')}
-      />
     </>
   )
 }

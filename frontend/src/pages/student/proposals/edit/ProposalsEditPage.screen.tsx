@@ -66,7 +66,7 @@ export function ProposalsEdit() {
             {blockReason || t('proposal.cannotEditApproved') || 'Editing is not allowed at this time.'}
           </p>
           <p className="text-sm text-muted-foreground max-w-md mb-6">
-            {t('proposal.editBlockedDescription') || 
+            {t('proposal.editBlockedDescription') ||
               'You can only edit proposals when all proposals in your group are in pending review status and no proposal has been approved.'}
           </p>
           <Button
@@ -74,7 +74,7 @@ export function ProposalsEdit() {
             className="mt-6"
             onClick={() => navigate(ROUTES.STUDENT.MY_PROPOSALS)}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-4 w-4" />
             {t('common.back')}
           </Button>
         </div>
@@ -89,7 +89,7 @@ export function ProposalsEdit() {
       title={t('proposal.edit')}
       actions={
         <Button variant="outline" onClick={() => navigate(ROUTES.STUDENT.MY_PROPOSALS)}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
+          <ArrowLeft className="h-4 w-4" />
           {t('common.back')}
         </Button>
       }

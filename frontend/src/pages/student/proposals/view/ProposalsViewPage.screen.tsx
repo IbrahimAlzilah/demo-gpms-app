@@ -155,76 +155,6 @@ export function ProposalsView() {
             </div>
           </div>
 
-
-
-          {/* Date Details Section - Comprehensive date information */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <div className="p-1 rounded bg-primary/10">
-                <Calendar className="h-3.5 w-3.5 text-primary" />
-              </div>
-              {t('proposal.dateDetails') || 'Date Details'}
-            </div>
-            <div className="p-4 rounded-lg bg-muted/30 border border-border/50 space-y-4">
-              {/* Submitted Date */}
-              <div className="flex items-start gap-3 pb-3 border-b border-border/50">
-                <div className="p-1.5 rounded-lg bg-primary/10 shrink-0">
-                  <Clock className="h-4 w-4 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-muted-foreground mb-1">{t('proposal.submittedAt')}</p>
-                  <p className="text-sm font-medium">{formatDateTime(proposal.createdAt)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {formatRelativeTime(proposal.createdAt)}
-                  </p>
-                </div>
-              </div>
-
-              {/* Reviewed Date */}
-              {proposal.reviewedAt && (
-                <div className="flex items-start gap-3 pb-3 border-b border-border/50">
-                  <div className={cn(
-                    'p-1.5 rounded-lg shrink-0',
-                    proposal.status === 'approved' ? 'bg-emerald-500/10' :
-                      proposal.status === 'rejected' ? 'bg-rose-500/10' : 'bg-amber-500/10'
-                  )}>
-                    <CheckCircle2 className={cn(
-                      'h-4 w-4',
-                      proposal.status === 'approved' ? 'text-emerald-600 dark:text-emerald-400' :
-                        proposal.status === 'rejected' ? 'text-rose-600 dark:text-rose-400' :
-                          'text-amber-600 dark:text-amber-400'
-                    )} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-muted-foreground mb-1">{t('proposal.reviewedAt')}</p>
-                    <p className="text-sm font-medium">{formatDateTime(proposal.reviewedAt)}</p>
-                    {proposal.reviewer && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {t('proposal.reviewedBy')}: {proposal.reviewer.name || proposal.reviewer.email}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Last Updated Date */}
-              {proposal.updatedAt && proposal.updatedAt !== proposal.createdAt && (
-                <div className="flex items-start gap-3">
-                  <div className="p-1.5 rounded-lg bg-muted-foreground/10 shrink-0">
-                    <Edit className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-muted-foreground mb-1">{t('common.lastUpdated')}</p>
-                    <p className="text-sm font-medium">{formatDateTime(proposal.updatedAt)}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {formatRelativeTime(proposal.updatedAt)}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
           {/* Review Notes */}
           {proposal.reviewNotes && (
             <div className="space-y-2">
@@ -338,6 +268,74 @@ export function ProposalsView() {
               </Button>
             </div>
           )}
+
+            {/* Date Details Section - Comprehensive date information */}
+            <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <div className="p-1 rounded bg-primary/10">
+                <Calendar className="h-3.5 w-3.5 text-primary" />
+              </div>
+              {t('proposal.dateDetails')}
+            </div>
+            <div className="p-4 rounded-lg bg-muted/30 border border-border/50 space-y-4">
+              {/* Submitted Date */}
+              <div className="flex items-start gap-3 pb-3 border-b border-border/50">
+                <div className="p-1.5 rounded-lg bg-primary/10 shrink-0">
+                  <Clock className="h-4 w-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-muted-foreground mb-1">{t('proposal.submittedAt')}</p>
+                  <p className="text-sm font-medium">{formatDateTime(proposal.createdAt)}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {formatRelativeTime(proposal.createdAt)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Reviewed Date */}
+              {proposal.reviewedAt && (
+                <div className="flex items-start gap-3 pb-3 border-b border-border/50">
+                  <div className={cn(
+                    'p-1.5 rounded-lg shrink-0',
+                    proposal.status === 'approved' ? 'bg-emerald-500/10' :
+                      proposal.status === 'rejected' ? 'bg-rose-500/10' : 'bg-amber-500/10'
+                  )}>
+                    <CheckCircle2 className={cn(
+                      'h-4 w-4',
+                      proposal.status === 'approved' ? 'text-emerald-600 dark:text-emerald-400' :
+                        proposal.status === 'rejected' ? 'text-rose-600 dark:text-rose-400' :
+                          'text-amber-600 dark:text-amber-400'
+                    )} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-muted-foreground mb-1">{t('proposal.reviewedAt')}</p>
+                    <p className="text-sm font-medium">{formatDateTime(proposal.reviewedAt)}</p>
+                    {proposal.reviewer && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {t('proposal.reviewedBy')}: {proposal.reviewer.name || proposal.reviewer.email}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Last Updated Date */}
+              {proposal.updatedAt && proposal.updatedAt !== proposal.createdAt && (
+                <div className="flex items-start gap-3">
+                  <div className="p-1.5 rounded-lg bg-muted-foreground/10 shrink-0">
+                    <Edit className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-muted-foreground mb-1">{t('common.lastUpdated')}</p>
+                    <p className="text-sm font-medium">{formatDateTime(proposal.updatedAt)}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {formatRelativeTime(proposal.updatedAt)}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </BlockContent>
     </div>

@@ -96,7 +96,7 @@ export function ProposalsSubmit() {
         title={t('proposal.submitNew')}
         actions={
           <Button variant="outline" onClick={() => navigate(ROUTES.STUDENT.MY_PROPOSALS)}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-4 w-4" />
             {t('common.back')}
           </Button>
         }

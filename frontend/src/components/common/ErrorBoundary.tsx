@@ -1,6 +1,7 @@
 import React from 'react'
 import type { ReactNode, ErrorInfo } from 'react'
 import i18n from '@/lib/i18n/i18n'
+import { MainLayout } from '@/layouts/MainLayout'
 
 interface ErrorBoundaryProps {
   children: ReactNode
@@ -30,14 +31,16 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     if (this.state.hasError) {
       return (
         this.props.fallback || (
-          <div className="flex flex-col items-center justify-center p-8">
-            <h2 className="text-xl font-bold text-destructive">
-              {i18n.t('error.errorBoundary.title')}
-            </h2>
-            <p className="mt-2 text-muted-foreground">
-              {this.state.error?.message || i18n.t('error.errorBoundary.message')}
-            </p>
-          </div>
+          <MainLayout>
+            <div className="flex flex-col items-center justify-center p-8">
+              <h2 className="text-xl font-bold text-destructive">
+                {i18n.t('error.errorBoundary.title')}
+              </h2>
+              <p className="mt-2 text-muted-foreground">
+                {this.state.error?.message || i18n.t('error.errorBoundary.message')}
+              </p>
+            </div>
+          </MainLayout>
         )
       )
     }

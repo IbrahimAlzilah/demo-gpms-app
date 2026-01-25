@@ -377,24 +377,29 @@ class StudentGroupController extends Controller
     }
 
     /**
-     * Leave group (leader or member)
+     * Leave group (DISABLED - members cannot leave groups)
      * DELETE /student/groups/{group}/leave
+     * 
+     * Note: Student members are not allowed to leave groups.
+     * Only group leaders can delete the group, which removes all members.
      */
     public function leave(Request $request, StudentGroup $group): JsonResponse
     {
-        try {
-            $this->groupService->leaveGroup($group, $request->user());
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Left group successfully',
-            ]);
-        } catch (\Exception $e) {
+        $user = $request->user();
+        
+        // Prevent members (non-leaders) from leaving the group
+        if ($group->leader_id !== $user->id) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage(),
-            ], 400);
+                'message' => 'Student members cannot leave groups. Only the group leader can delete the group.',
+            ], 403);
         }
+
+        // Leaders should use the delete endpoint instead
+        return response()->json([
+            'success' => false,
+            'message' => 'Group leaders cannot leave groups. Please use the delete group option instead.',
+        ], 403);
     }
 
     /**

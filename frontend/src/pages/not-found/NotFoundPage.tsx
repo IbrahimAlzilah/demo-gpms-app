@@ -67,7 +67,7 @@ export function NotFoundPage() {
                 size="lg"
                 className="w-full sm:w-auto min-w-[160px]"
               >
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <ArrowLeft className="h-4 w-4" />
                 {t('error.notFound.back')}
               </Button>
             </div>
