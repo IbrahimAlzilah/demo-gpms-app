@@ -89,7 +89,8 @@
     "endsInDays_one": "ينتهي خلال {{count}} يوم",
     "endsInDays_other": "ينتهي خلال {{count}} أيام",
     "retry": "إعادة المحاولة",
-    "notAssigned": "غير معين"
+    "notAssigned": "غير معين",
+    "members": "أعضاء"
   },
   "app": {
     "name": "نظام إدارة تقييم مشاريع التخرج",
@@ -507,6 +508,7 @@
     "total": "المجموع",
     "submitter": "معلومات مقدم المقترح",
     "submitterName": "مقدم المقترح",
+    "submittedBy": "تم التقديم بواسطة",
     "reviewer": "المراجع",
     "linkedProject": "المشروع المرتبط",
     "submittedAt": "تم الإرسال في",
@@ -1136,7 +1138,13 @@
       "createTitle": "إنشاء مقترح نيابة عن طالب",
       "studentSearch": "اختر الطالب",
       "searchStudentPlaceholder": "البحث بالاسم أو الرقم...",
-      "create": "مقترح جديد"
+      "create": "مقترح جديد",
+      "groupedView": "عرض مجمع",
+      "individualView": "عرض فردي",
+      "noSubmissions": "لا توجد تقديمات",
+      "groupId": "معرف المجموعة",
+      "proposalsInSubmission": "المقترحات في هذا التقديم",
+      "noProposalsInSubmission": "لا توجد مقترحات في هذا التقديم"
     },
     "periods": {
       "createNew": "إعلان فترة زمنية جديدة",

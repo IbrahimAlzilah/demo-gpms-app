@@ -84,7 +84,8 @@
     "endsInDays_one": "Ends in {{count}} day",
     "endsInDays_other": "Ends in {{count}} days",
     "retry": "Retry",
-    "notAssigned": "Not Assigned"
+    "notAssigned": "Not Assigned",
+    "members": "Members"
   },
   "app": {
     "name": "Graduation Project Management System",
@@ -483,6 +484,7 @@
     "noResultsDescription": "Try changing filters to find proposals",
     "total": "Total",
     "submitter": "Submitter Information",
+    "submittedBy": "Submitted by",
     "reviewer": "Reviewer",
     "linkedProject": "Linked Project",
     "submittedAt": "Submitted at",
@@ -1032,7 +1034,13 @@
       "searchStudentPlaceholder": "Search by name or ID...",
       "create": "New Proposal",
       "editingApprovedProposal": "Editing Approved/Rejected Proposal",
-      "editingApprovedProposalDesc": "You are editing a proposal that has already been reviewed. Review information (reviewer, review date, review notes) and linked project will be preserved."
+      "editingApprovedProposalDesc": "You are editing a proposal that has already been reviewed. Review information (reviewer, review date, review notes) and linked project will be preserved.",
+      "groupedView": "Grouped View",
+      "individualView": "Individual View",
+      "noSubmissions": "No submissions found",
+      "groupId": "Group ID",
+      "proposalsInSubmission": "Proposals in this submission",
+      "noProposalsInSubmission": "No proposals found in this submission"
     },
     "periods": {
       "createNew": "Announce New Time Period",

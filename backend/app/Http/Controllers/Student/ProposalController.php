@@ -49,15 +49,8 @@ class ProposalController extends Controller
                 $query->where('submitter_id', $filters['submitterId']);
             }
         } elseif (isset($filters['status']) && $filters['status'] === 'approved') {
-            // For "Approved Proposals": show approved proposals from user's group only
-            if ($userGroup) {
-                $query->where('student_group_id', $userGroup->id)
-                    ->where('status', 'approved');
-            } else {
-                // Solo student (shouldn't happen, but handle gracefully)
-                $query->where('submitter_id', $user->id)
-                    ->where('status', 'approved');
-            }
+            // For "Approved Proposals": show ALL approved proposals across the system
+            $query->where('status', 'approved');
         } else {
             // Default behavior: show proposals from user's group (if in group) or user's proposals
             if ($userGroup) {
@@ -95,9 +88,11 @@ class ProposalController extends Controller
             ], 403);
         }
 
-        // Get all proposals for this group submitted by the leader
+        // Get only editable proposals for this group submitted by the leader
+        // Only proposals with status 'pending_review' or 'requires_modification' can be edited
         $proposals = Proposal::where('student_group_id', $userGroup->id)
             ->where('submitter_id', $user->id)
+            ->whereIn('status', ['pending_review', 'requires_modification'])
             ->with(['submitter', 'reviewer', 'proposedSupervisor', 'studentGroup', 'targetProject', 'project'])
             ->orderBy('created_at', 'asc')
             ->get();
