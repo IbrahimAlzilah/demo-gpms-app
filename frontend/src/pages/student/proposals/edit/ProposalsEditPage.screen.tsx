@@ -25,6 +25,8 @@ export function ProposalsEdit() {
     handleSubmit,
     isLoading,
     isSubmitting,
+    editBlocked,
+    blockReason,
   } = useProposalsEditBatch(() => {
     navigate(ROUTES.STUDENT.MY_PROPOSALS)
   })
@@ -48,8 +50,8 @@ export function ProposalsEdit() {
     return null // Will redirect
   }
 
-  // Check if editing is not allowed (no proposals loaded means editing was blocked)
-  if (!isLoading && existingProposals.length === 0 && newProposals.length === 0) {
+  // Check if editing is blocked (either no proposals loaded or explicitly blocked)
+  if (editBlocked || (!isLoading && existingProposals.length === 0 && newProposals.length === 0)) {
     return (
       <BlockContent
         title={t('proposal.edit')}
@@ -57,9 +59,15 @@ export function ProposalsEdit() {
       >
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-          <h3 className="text-lg font-semibold mb-2">{t('proposal.cannotEditTitle')}</h3>
-          <p className="text-muted-foreground max-w-md">
-            {t('proposal.cannotEditApproved')}
+          <h3 className="text-lg font-semibold mb-2">
+            {t('proposal.cannotEditTitle') || 'Editing Not Allowed'}
+          </h3>
+          <p className="text-muted-foreground max-w-md mb-2">
+            {blockReason || t('proposal.cannotEditApproved') || 'Editing is not allowed at this time.'}
+          </p>
+          <p className="text-sm text-muted-foreground max-w-md mb-6">
+            {t('proposal.editBlockedDescription') || 
+              'You can only edit proposals when all proposals in your group are in pending review status and no proposal has been approved.'}
           </p>
           <Button
             variant="outline"

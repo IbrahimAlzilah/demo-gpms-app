@@ -525,6 +525,7 @@
     "updateSuccess": "Proposal updated successfully",
     "cannotEdit": "This proposal cannot be edited. Only proposals with pending_review or requires_modification status can be edited.",
     "cannotEditApproved": "Editing is not allowed. One or more proposals have already been approved by the Project Committee. You can only edit proposals when all proposals in your group are in pending review status.",
+    "cannotEditNotAllPending": "Editing is only allowed when all proposals in your group are in pending review or requires modification status. Please ensure all proposals are in the correct status before editing.",
     "cannotEditTitle": "Editing Not Allowed",
     "groupRequired": "Group Required",
     "groupRequiredTitle": "You must join a group",

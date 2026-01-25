@@ -78,6 +78,35 @@ class ProposalPolicy
             if (!$studentGroup || $studentGroup->leader_id !== $user->id) {
                 return false;
             }
+
+            // CRITICAL: Group-level validation - check ALL proposals in the group
+            // Editing is only allowed when:
+            // 1. ALL proposals in the group are in pending_review or requires_modification status
+            // 2. NO proposal in the group has been approved
+            $allGroupProposals = Proposal::where('student_group_id', $studentGroup->id)
+                ->where('submitter_id', $user->id)
+                ->get();
+
+            // Check if ANY proposal is approved - if so, editing is not allowed
+            $hasApprovedProposal = $allGroupProposals->contains(function ($groupProposal) {
+                return $groupProposal->status === ProposalStatus::APPROVED;
+            });
+
+            if ($hasApprovedProposal) {
+                return false;
+            }
+
+            // Check if ALL proposals are in pending_review or requires_modification status
+            $allPendingReview = $allGroupProposals->every(function ($groupProposal) {
+                return in_array($groupProposal->status, [
+                    ProposalStatus::PENDING_REVIEW,
+                    ProposalStatus::REQUIRES_MODIFICATION
+                ]);
+            });
+
+            if (!$allPendingReview) {
+                return false;
+            }
         } else {
             // ENFORCE: Solo proposals are not allowed - must be in a group
             return false;

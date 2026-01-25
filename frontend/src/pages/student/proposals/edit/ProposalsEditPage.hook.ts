@@ -26,6 +26,8 @@ export function useProposalsEditBatch(onSuccess?: () => void) {
   const [newProposals, setNewProposals] = useState<ProposalItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [editBlocked, setEditBlocked] = useState(false)
+  const [blockReason, setBlockReason] = useState<string | null>(null)
   const isLoadingRef = useRef(false)
 
   // Check if user is a leader
@@ -46,21 +48,40 @@ export function useProposalsEditBatch(onSuccess?: () => void) {
 
     const loadProposals = async () => {
       isLoadingRef.current = true
+      setIsLoading(true)
+      setEditBlocked(false)
+      setBlockReason(null)
+      
       try {
         const context = await proposalService.getSubmissionContext()
         
-        // Check if editing is not allowed due to approved proposals
+        // Check if editing is not allowed
         if (context && 'can_edit' in context && context.can_edit === false) {
-          const errorMessage = context.message || t('proposal.cannotEditApproved')
+          // Determine the specific reason for blocking
+          let errorKey = 'proposal.cannotEditNotAllPending'
+          if (context.has_approved_proposal) {
+            errorKey = 'proposal.cannotEditApproved'
+          }
+          
+          const errorMessage = context.message || t(errorKey)
+          setEditBlocked(true)
+          setBlockReason(errorMessage)
           toastError(errorMessage)
           setExistingProposals([])
+          setIsLoading(false)
+          isLoadingRef.current = false
           return
         }
         
         // Ensure context and proposals exist
         if (!context || !context.proposals) {
           console.warn('Submission context is empty or invalid:', context)
+          const errorMessage = t('proposal.loadError')
+          setEditBlocked(true)
+          setBlockReason(errorMessage)
           setExistingProposals([])
+          setIsLoading(false)
+          isLoadingRef.current = false
           return
         }
         
@@ -73,9 +94,27 @@ export function useProposalsEditBatch(onSuccess?: () => void) {
           targetProjectId: p.targetProjectId ? String(p.targetProjectId) : undefined,
           isNew: false,
         })))
+        setEditBlocked(false)
+        setBlockReason(null)
       } catch (error: any) {
         console.error('Failed to load submission context:', error)
-        const errorMessage = error.response?.data?.message || error.message || t('proposal.loadError')
+        
+        // Handle different error scenarios
+        let errorMessage = t('proposal.loadError')
+        if (error.response?.status === 403) {
+          // Permission denied - likely due to validation rules
+          errorMessage = error.response?.data?.message || 
+            (error.response?.data?.has_approved_proposal 
+              ? t('proposal.cannotEditApproved')
+              : t('proposal.cannotEditNotAllPending'))
+        } else if (error.response?.data?.message) {
+          errorMessage = error.response.data.message
+        } else if (error.message) {
+          errorMessage = error.message
+        }
+        
+        setEditBlocked(true)
+        setBlockReason(errorMessage)
         toastError(errorMessage)
         setExistingProposals([])
       } finally {
@@ -199,5 +238,7 @@ export function useProposalsEditBatch(onSuccess?: () => void) {
     handleSubmit,
     isLoading,
     isSubmitting,
+    editBlocked,
+    blockReason,
   }
 }

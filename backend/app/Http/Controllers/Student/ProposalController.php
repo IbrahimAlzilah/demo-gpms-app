@@ -113,15 +113,15 @@ class ProposalController extends Controller
         // Only allow editing if ALL proposals are pending_review (or requires_modification)
         $allPendingReview = $allProposals->every(function ($proposal) {
             return in_array($proposal->status, [
-                \App\Enums\ProposalStatus::PENDING_REVIEW->value,
-                \App\Enums\ProposalStatus::REQUIRES_MODIFICATION->value
+                \App\Enums\ProposalStatus::PENDING_REVIEW,
+                \App\Enums\ProposalStatus::REQUIRES_MODIFICATION
             ]);
         });
 
         if (!$allPendingReview) {
             return response()->json([
                 'success' => false,
-                'message' => 'Editing is only allowed when all proposals are in pending review status.',
+                'message' => 'Editing is only allowed when all proposals are in pending review or requires modification status.',
                 'can_edit' => false,
                 'has_approved_proposal' => false,
             ], 403);
@@ -131,8 +131,8 @@ class ProposalController extends Controller
         // Only proposals with status 'pending_review' or 'requires_modification' can be edited
         $proposals = $allProposals->filter(function ($proposal) {
             return in_array($proposal->status, [
-                \App\Enums\ProposalStatus::PENDING_REVIEW->value,
-                \App\Enums\ProposalStatus::REQUIRES_MODIFICATION->value
+                \App\Enums\ProposalStatus::PENDING_REVIEW,
+                \App\Enums\ProposalStatus::REQUIRES_MODIFICATION
             ]);
         });
 
@@ -141,8 +141,8 @@ class ProposalController extends Controller
             'data' => [
                 'group' => new \App\Http\Resources\StudentGroupResource($userGroup),
                 'proposals' => ProposalResource::collection($proposals),
+                'can_edit' => true,
             ],
-            'can_edit' => true,
         ]);
     }
 
@@ -360,15 +360,15 @@ class ProposalController extends Controller
         // Check if ALL proposals are in pending_review or requires_modification status
         $allPendingReview = $allGroupProposals->every(function ($proposal) {
             return in_array($proposal->status, [
-                \App\Enums\ProposalStatus::PENDING_REVIEW->value,
-                \App\Enums\ProposalStatus::REQUIRES_MODIFICATION->value
+                \App\Enums\ProposalStatus::PENDING_REVIEW,
+                \App\Enums\ProposalStatus::REQUIRES_MODIFICATION
             ]);
         });
 
         if (!$allPendingReview) {
             return response()->json([
                 'success' => false,
-                'message' => 'Editing is only allowed when all proposals are in pending review status.',
+                'message' => 'Editing is only allowed when all proposals are in pending review or requires modification status.',
             ], 403);
         }
 
@@ -404,8 +404,8 @@ class ProposalController extends Controller
 
             // Ensure proposal is in editable status
             if (!in_array($proposal->status, [
-                \App\Enums\ProposalStatus::PENDING_REVIEW->value,
-                \App\Enums\ProposalStatus::REQUIRES_MODIFICATION->value
+                \App\Enums\ProposalStatus::PENDING_REVIEW,
+                \App\Enums\ProposalStatus::REQUIRES_MODIFICATION
             ])) {
                 return response()->json([
                     'success' => false,

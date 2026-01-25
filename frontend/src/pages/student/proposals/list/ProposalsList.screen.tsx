@@ -22,6 +22,7 @@ import { useMyGroup } from '@/pages/student/groups/hooks/useGroups'
 import { useAuthStore } from '@/pages/auth/login'
 import { ROUTES } from '@/lib/constants'
 import { cn } from '@/lib/utils'
+import { proposalService } from '../api/proposal.service'
 
 export function ProposalsList() {
   const { t } = useTranslation()
@@ -82,27 +83,42 @@ export function ProposalsList() {
             return
           }
 
-          // Check if proposal status allows editing
+          // Check if proposal status allows editing (individual proposal check)
           if (proposal.status !== 'pending_review' && proposal.status !== 'requires_modification') {
             toastError('proposal.cannotEdit')
             return
           }
 
-          // Check if any proposal in the group is approved before allowing edit
-          // This will be checked on the backend, but we can also check here for better UX
-          const hasApprovedProposal = data.proposals?.some(p => p.status === 'approved')
-          if (hasApprovedProposal) {
-            toastError('proposal.cannotEditApproved')
-            return
-          }
+          // Use getSubmissionContext API to validate ALL proposals in the group
+          // This ensures we check ALL proposals, not just paginated ones
+          try {
+            const context = await proposalService.getSubmissionContext()
 
-          // Navigate to edit page - it will load all proposals for the group and check statuses
-          navigate(ROUTES.STUDENT.PROPOSALS_EDIT)
+            // Check if editing is not allowed
+            if (context.can_edit === false) {
+              const errorMessage = context.message ||
+                (context.has_approved_proposal
+                  ? 'proposal.cannotEditApproved'
+                  : 'proposal.cannotEditNotAllPending')
+              toastError(errorMessage)
+              return
+            }
+
+            // If can_edit is true or undefined (legacy support), allow navigation
+            // The edit page will also validate via getSubmissionContext
+            navigate(ROUTES.STUDENT.PROPOSALS_EDIT)
+          } catch (error: any) {
+            // Handle API errors
+            const errorMessage = error.response?.data?.message ||
+              error.message ||
+              'proposal.loadError'
+            toastError(errorMessage)
+          }
         },
         t,
         readOnly: isReadOnly,
       }),
-    [t, navigate, canSubmit, toastError, isReadOnly, setShowReadOnlyModal]
+    [t, navigate, canSubmit, toastError, isReadOnly, setShowReadOnlyModal, studentGroup]
   )
 
   const [showNoGroupModal, setShowNoGroupModal] = useState(false)
