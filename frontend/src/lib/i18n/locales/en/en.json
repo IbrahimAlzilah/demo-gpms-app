@@ -77,7 +77,6 @@
     "days": "days",
     "fillRequiredFields": "Please fill all required fields",
     "register": "Register",
-    "next": "Up Next",
     "endsToday": "Ends today",
     "endsTomorrow": "Ends tomorrow",
     "endsInDays": "Ends in {{count}} day",
@@ -297,7 +296,7 @@
       "daysLeft": "days left",
       "progress": "Progress",
       "starts": "Starts",
-      "next": "Up Next"
+      "next": "Next"
     }
   },
   "status": {
@@ -1407,7 +1406,18 @@
     "cannotReRegisterRejectedDescription": "You can register in another available project",
     "canRegisterInDifferentProject": "You can submit a new registration request for another project (if the registration period is still open)",
     "selectProject": "Select Project",
-    "activeProjects": "Active Projects"
+    "activeProjects": "Active Projects",
+    "alreadyRegistered": "Already Registered",
+    "alreadyRegisteredInProject": "You are already registered in a project, and it has been approved.",
+    "alreadyRegisteredDescription": "You cannot register for another project because your group already has an approved project registration. Once a registration is approved by the Projects Committee, you cannot submit new registration requests.",
+    "approvedProject": "Approved Project",
+    "cannotRegisterAnotherDescription": "Approved project registrations block any further registrations. You must complete your current project before registering for a new one.",
+    "projectAssignedToAnotherGroup": "⚠️ This project is already assigned to another group",
+    "projectAssignedToAnotherGroupDescription": "This project has been assigned to another student group. Please review the details below before proceeding.",
+    "assignedGroupDetails": "Assigned Group",
+    "groupLeader": "Group Leader",
+    "canStillRegister": "You can still submit a registration request",
+    "canStillRegisterDescription": "You can submit a registration request for this project. The Projects Committee will review your request and decide whether to approve or reject it, considering the current assignment."
   },
   "registration": {
     "management": "Registration Management",

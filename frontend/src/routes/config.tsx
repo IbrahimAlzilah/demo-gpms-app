@@ -12,6 +12,7 @@ import {
   LazyStudentProposalsEditPage,
   LazyStudentProposalsViewPage,
   LazyStudentProjectsPage,
+  LazyStudentProjectRegisterPage,
   LazyGroupsPage,
   LazyRequestsPage,
   LazyDocumentsPage,
@@ -97,6 +98,10 @@ export const studentRoutes: RouteConfig[] = [
   {
     path: 'projects',
     element: LazyStudentProjectsPage,
+  },
+  {
+    path: 'projects/register/:projectId',
+    element: LazyStudentProjectRegisterPage,
   },
   {
     path: 'groups',

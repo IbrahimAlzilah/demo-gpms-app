@@ -1507,7 +1507,18 @@
     "cannotReRegisterRejectedDescription": "يمكنك التسجيل في مشروع آخر متاح",
     "canRegisterInDifferentProject": "يمكنك تقديم طلب تسجيل جديد في مشروع آخر (إذا كانت فترة التسجيل لا تزال مفتوحة)",
     "selectProject": "اختر المشروع",
-    "activeProjects": "المشاريع النشطة"
+    "activeProjects": "المشاريع النشطة",
+    "alreadyRegistered": "مسجل بالفعل",
+    "alreadyRegisteredInProject": "أنت مسجل بالفعل في مشروع، وقد تمت الموافقة عليه.",
+    "alreadyRegisteredDescription": "لا يمكنك التسجيل في مشروع آخر لأن مجموعتك لديها بالفعل تسجيل مشروع معتمد. بمجرد الموافقة على التسجيل من قبل لجنة المشاريع، لا يمكنك تقديم طلبات تسجيل جديدة.",
+    "approvedProject": "المشروع المعتمد",
+    "cannotRegisterAnotherDescription": "تسجيلات المشاريع المعتمدة تمنع أي تسجيلات إضافية. يجب عليك إكمال مشروعك الحالي قبل التسجيل في مشروع جديد.",
+    "projectAssignedToAnotherGroup": "⚠️ هذا المشروع معين بالفعل لمجموعة طلاب أخرى",
+    "projectAssignedToAnotherGroupDescription": "تم تعيين هذا المشروع لمجموعة طلاب أخرى. يرجى مراجعة التفاصيل أدناه قبل المتابعة.",
+    "assignedGroupDetails": "المجموعة المعينة",
+    "groupLeader": "قائد المجموعة",
+    "canStillRegister": "لا يزال بإمكانك تقديم طلب تسجيل",
+    "canStillRegisterDescription": "يمكنك تقديم طلب تسجيل لهذا المشروع. ستراجع لجنة المشاريع طلبك وتقرر الموافقة عليه أو رفضه، مع الأخذ في الاعتبار التعيين الحالي."
   },
   "registration": {
     "management": "إدارة طلبات التسجيل",

@@ -5,12 +5,10 @@ import { useApproveRegistration, useRejectRegistration } from '../hooks/useRegis
 import { RegistrationDetailsView } from '../components/RegistrationDetailsView'
 import { ManualRegistrationDialog } from '../components/ManualRegistrationDialog'
 import { GroupedRegistrationCard } from '../components/GroupedRegistrationCard'
-import { Textarea, Label, Button } from '@/components/ui'
-import { Card, CardContent } from '@/components/ui/card'
-import { LoadingSpinner, ConfirmDialog, BlockContent } from '@/components/common'
+import { Card, CardContent, Textarea, Label, Button } from '@/components/ui'
+import { LoadingSpinner, ConfirmDialog, BlockContent, useToast } from '@/components/common'
 import type { ProjectRegistration } from '@/types/project.types'
 import { useRegistrationsList } from './RegistrationsList.hook'
-import { useToast } from '@/components/common'
 import { AlertCircle, UserPlus, Users } from 'lucide-react'
 import { apiClient } from '@/lib/axios'
 
@@ -130,7 +128,7 @@ export function RegistrationsList() {
         title={t('registration.management')}
         actions={
           <Button onClick={() => setShowManualRegistration(true)}>
-            <UserPlus className="h-4 w-4 mr-2" />
+            <UserPlus className="size-4" />
             {t('registration.manualRegistration', { defaultValue: 'Manual Registration' })}
           </Button>
         }

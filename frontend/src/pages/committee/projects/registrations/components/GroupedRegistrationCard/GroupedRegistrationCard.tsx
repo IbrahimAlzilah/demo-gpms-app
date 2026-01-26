@@ -13,8 +13,6 @@ import {
   Check,
   X,
   Loader2,
-  Mail,
-  CheckCircle2,
   AlertCircle
 } from 'lucide-react'
 import { formatDate, formatRelativeTime } from '@/lib/utils/format'
@@ -83,7 +81,8 @@ export function GroupedRegistrationCard({
   return (
     <div className={cn(
       'rounded-lg border transition-all duration-200',
-      getStatusColor(request.status),
+      // This is commented out because we don't want to show the status color in the card
+      // getStatusColor(request.status), 
       isExpanded && 'shadow-md'
     )}>
       {/* Header */}

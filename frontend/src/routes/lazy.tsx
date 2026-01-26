@@ -13,6 +13,7 @@ export const LazyStudentProposalsSubmitPage = lazy(() => import('../pages/studen
 export const LazyStudentProposalsEditPage = lazy(() => import('../pages/student/proposals/edit/ProposalsEditPage').then(m => ({ default: m.ProposalsEditPage })))
 export const LazyStudentProposalsViewPage = lazy(() => import('../pages/student/proposals/view/ProposalsViewPage').then(m => ({ default: m.ProposalsViewPage })))
 export const LazyStudentProjectsPage = lazy(() => import('../pages/student/projects/ProjectsPage').then(m => ({ default: m.ProjectsPage })))
+export const LazyStudentProjectRegisterPage = lazy(() => import('../pages/student/projects/register/ProjectRegisterPage').then(m => ({ default: m.ProjectRegisterPage })))
 export const LazyGroupsPage = lazy(() => import('../pages/student/groups/GroupsPage').then(m => ({ default: m.GroupsPage })))
 export const LazyRequestsPage = lazy(() => import('../pages/student/requests/RequestsPage').then(m => ({ default: m.RequestsPage })))
 export const LazyDocumentsPage = lazy(() => import('../pages/student/documents/DocumentsPage').then(m => ({ default: m.DocumentsPage })))

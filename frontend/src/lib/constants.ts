@@ -26,6 +26,7 @@ export const ROUTES = {
     PROPOSALS_VIEW: "/proposals",
     PROJECTS: "/projects",
     REGISTER_PROJECT: "/projects/register",
+    REGISTER_PROJECT_WITH_ID: (projectId: string) => `/projects/register/${projectId}`,
     GROUPS: "/groups",
     REQUESTS: "/requests",
     DOCUMENTS: "/documents",

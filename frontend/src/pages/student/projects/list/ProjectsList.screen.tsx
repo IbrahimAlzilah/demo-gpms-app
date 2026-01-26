@@ -1,13 +1,13 @@
 import { useTranslation } from 'react-i18next'
-import { Card, CardContent, Button } from '@/components/ui'
+import { Card, CardContent } from '@/components/ui'
 import { BlockContent, LoadingSpinner } from '@/components/common'
-import { Calendar, ArrowRight, ArrowLeft } from 'lucide-react'
+import { Calendar } from 'lucide-react'
 import { ProjectBrowser } from '../components/ProjectBrowser'
 import { ProjectsView } from '../view/ProjectsView.screen'
-import { ProjectsRegister } from '../register/ProjectsRegister.screen'
 import { RejectionDetailsModal } from '../components/RejectionDetailsModal'
 import { useProjectsList } from './ProjectsList.hook'
 import { useNavigate } from 'react-router-dom'
+import { ROUTES } from '@/lib/constants'
 
 export function ProjectsList() {
   const { t } = useTranslation()
@@ -31,7 +31,7 @@ export function ProjectsList() {
     pagination,
     setPagination,
   } = useProjectsList()
-  const navigate = useNavigate()  
+  const navigate = useNavigate()
   const handleSelectProject = (project: any) => {
     // Allow viewing project details even if rejected
     setState((prev) => ({
@@ -62,48 +62,13 @@ export function ProjectsList() {
         // Don't allow registration for rejected project
         return
       }
-      setState((prev) => ({
-        ...prev,
-        showDetails: false,
-        showRegistrationForm: true,
-      }))
+      // Navigate to dedicated registration page
+      navigate(ROUTES.STUDENT.REGISTER_PROJECT_WITH_ID(state.selectedProject.id))
     }
   }
 
-  const handleRegistrationSuccess = () => {
-    setState((prev) => ({
-      ...prev,
-      selectedProject: null,
-      showRegistrationForm: false,
-    }))
-  }
-
-  const handleRegistrationCancel = () => {
-    setState((prev) => ({
-      ...prev,
-      showRegistrationForm: false,
-    }))
-  }
-
-  // If registration form is shown, render it as full page
-  if (state.selectedProject && state.showRegistrationForm) {
-    return (
-      <BlockContent title={t('project.register')} actions={
-        <Button variant="outline" onClick={handleRegistrationCancel} className="shrink-0">
-          <ArrowLeft className="size-4 ltr:rotate-180" />
-          {t('common.back')}
-        </Button>
-      }>
-        <ProjectsRegister
-          project={state.selectedProject}
-          open={true}
-          onClose={handleRegistrationCancel}
-          onSuccess={handleRegistrationSuccess}
-          onCancel={handleRegistrationCancel}
-        />
-      </BlockContent>
-    )
-  }
+  // Note: Registration is now handled via dedicated route
+  // Navigation to /projects/register/:projectId handles the registration page
 
   return (
     <>
