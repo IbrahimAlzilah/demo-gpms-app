@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useToast } from '@/components/common'
 import { useMyGroup } from '@/pages/student/groups/hooks/useGroups'
 import { useAuthStore } from '@/pages/auth/login'
-import { proposalService } from '../api/proposal.service'
+import { useCreateBatchProposals } from '../hooks/useProposalOperations'
 import { usePeriodCheck } from '@/hooks/usePeriodCheck'
 import type { ProposalFormData } from '../types/Proposals.types'
 
@@ -20,6 +20,7 @@ export function useProposalsSubmit(onSuccess?: () => void) {
   const { isPeriodActive: isSubmissionPeriod, isLoading: isPeriodLoading } = usePeriodCheck('proposal_submission')
   // Only allow submission during proposal_submission period (not registration period)
   const isPeriodActive = isSubmissionPeriod
+  const createBatchMutation = useCreateBatchProposals()
 
   const [proposals, setProposals] = useState<ProposalItem[]>([
     { id: '1', title: '', description: '' }
@@ -99,7 +100,10 @@ export function useProposalsSubmit(onSuccess?: () => void) {
       }))
 
       const studentGroupId = studentGroup ? String(studentGroup.id) : undefined
-      await proposalService.createBatch(proposalsData, studentGroupId)
+      await createBatchMutation.mutateAsync({
+        proposals: proposalsData,
+        studentGroupId,
+      })
       
       toastSuccess(t('proposal.submitSuccess'))
       onSuccess?.()
@@ -125,7 +129,7 @@ export function useProposalsSubmit(onSuccess?: () => void) {
     removeProposal,
     updateProposal,
     handleSubmit,
-    isSubmitting,
+    isSubmitting: isSubmitting || createBatchMutation.isPending,
     isLocked,
     isPeriodActive,
     isPeriodLoading,

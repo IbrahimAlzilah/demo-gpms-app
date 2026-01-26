@@ -3,6 +3,47 @@ import { groupService } from '../api/group.service'
 import { useAuthStore } from '@/pages/auth/login'
 import type { User } from '@/types/user.types'
 
+/**
+ * Invalidate all group-related queries
+ * This ensures the UI reflects the latest backend state after any mutation
+ */
+function invalidateGroupQueries(
+  queryClient: ReturnType<typeof useQueryClient>,
+  userId?: string,
+  projectId?: string
+) {
+  // Invalidate all group queries (with predicate to catch all variations)
+  queryClient.invalidateQueries({ 
+    predicate: (query) => {
+      const key = query.queryKey
+      return (
+        Array.isArray(key) &&
+        (key[0] === 'groups' || 
+         key[0] === 'group-invitations' ||
+         key[0] === 'group-join-requests' ||
+         key[0] === 'my-join-requests')
+      )
+    }
+  })
+
+  // Also explicitly invalidate common query patterns
+  queryClient.invalidateQueries({ queryKey: ['groups'] })
+  queryClient.invalidateQueries({ queryKey: ['group-invitations'] })
+  queryClient.invalidateQueries({ queryKey: ['group-join-requests'] })
+  queryClient.invalidateQueries({ queryKey: ['my-join-requests'] })
+
+  // Invalidate user-specific queries
+  if (userId) {
+    queryClient.invalidateQueries({ queryKey: ['groups', 'student', userId] })
+    queryClient.invalidateQueries({ queryKey: ['group-invitations', userId] })
+  }
+
+  // Invalidate project-specific queries
+  if (projectId) {
+    queryClient.invalidateQueries({ queryKey: ['groups', 'project', projectId] })
+  }
+}
+
 export function useCreateGroup() {
   const queryClient = useQueryClient()
   const { user } = useAuthStore()
@@ -19,12 +60,7 @@ export function useCreateGroup() {
       return groupService.create(name || null, members)
     },
     onSuccess: () => {
-      // Invalidate all group queries
-      queryClient.invalidateQueries({ queryKey: ['groups'] })
-      // Invalidate specific student group query
-      if (user) {
-        queryClient.invalidateQueries({ queryKey: ['groups', 'student', user.id] })
-      }
+      invalidateGroupQueries(queryClient, user?.id)
     },
   })
 }
@@ -37,16 +73,7 @@ export function useAddGroupMember() {
     mutationFn: ({ groupId, member }: { groupId: string; member: User }) =>
       groupService.addMember(groupId, member),
     onSuccess: (data) => {
-      // Invalidate all group queries
-      queryClient.invalidateQueries({ queryKey: ['groups'] })
-      // Invalidate specific student group query
-      if (user) {
-        queryClient.invalidateQueries({ queryKey: ['groups', 'student', user.id] })
-      }
-      // Invalidate project-specific group query
-      if (data?.projectId) {
-        queryClient.invalidateQueries({ queryKey: ['groups', 'project', data.projectId] })
-      }
+      invalidateGroupQueries(queryClient, user?.id, data?.projectId)
     },
   })
 }
@@ -59,16 +86,7 @@ export function useRemoveGroupMember() {
     mutationFn: ({ groupId, memberId }: { groupId: string; memberId: string }) =>
       groupService.removeMember(groupId, memberId),
     onSuccess: (data) => {
-      // Invalidate all group queries
-      queryClient.invalidateQueries({ queryKey: ['groups'] })
-      // Invalidate specific student group query
-      if (user) {
-        queryClient.invalidateQueries({ queryKey: ['groups', 'student', user.id] })
-      }
-      // Invalidate project-specific group query
-      if (data?.projectId) {
-        queryClient.invalidateQueries({ queryKey: ['groups', 'project', data.projectId] })
-      }
+      invalidateGroupQueries(queryClient, user?.id, data?.projectId)
     },
   })
 }
@@ -91,12 +109,7 @@ export function useInviteGroupMember() {
       return groupService.inviteMember(groupId, user.id, inviteeId, message)
     },
     onSuccess: () => {
-      // Invalidate all group invitation queries
-      queryClient.invalidateQueries({ queryKey: ['group-invitations'] })
-      // Invalidate specific user invitations
-      if (user) {
-        queryClient.invalidateQueries({ queryKey: ['group-invitations', user.id] })
-      }
+      invalidateGroupQueries(queryClient, user?.id)
     },
   })
 }
@@ -111,21 +124,7 @@ export function useAcceptInvitation() {
       return groupService.acceptInvitation(invitationId, user.id)
     },
     onSuccess: (data) => {
-      // Invalidate all group queries
-      queryClient.invalidateQueries({ queryKey: ['groups'] })
-      // Invalidate specific student group query
-      if (user) {
-        queryClient.invalidateQueries({ queryKey: ['groups', 'student', user.id] })
-      }
-      // Invalidate project-specific group query
-      if (data?.projectId) {
-        queryClient.invalidateQueries({ queryKey: ['groups', 'project', data.projectId] })
-      }
-      // Invalidate all group invitation queries
-      queryClient.invalidateQueries({ queryKey: ['group-invitations'] })
-      if (user) {
-        queryClient.invalidateQueries({ queryKey: ['group-invitations', user.id] })
-      }
+      invalidateGroupQueries(queryClient, user?.id, data?.projectId)
     },
   })
 }
@@ -140,11 +139,7 @@ export function useRejectInvitation() {
       return groupService.rejectInvitation(invitationId, user.id)
     },
     onSuccess: () => {
-      // Invalidate all group invitation queries
-      queryClient.invalidateQueries({ queryKey: ['group-invitations'] })
-      if (user) {
-        queryClient.invalidateQueries({ queryKey: ['group-invitations', user.id] })
-      }
+      invalidateGroupQueries(queryClient, user?.id)
     },
   })
 }
@@ -159,21 +154,7 @@ export function useJoinGroup() {
       return groupService.join(groupId, user.id)
     },
     onSuccess: (data) => {
-      // Invalidate all group queries
-      queryClient.invalidateQueries({ queryKey: ['groups'] })
-      // Invalidate specific student group query
-      if (user) {
-        queryClient.invalidateQueries({ queryKey: ['groups', 'student', user.id] })
-      }
-      // Invalidate project-specific group query
-      if (data?.projectId) {
-        queryClient.invalidateQueries({ queryKey: ['groups', 'project', data.projectId] })
-      }
-      // Invalidate all group invitation queries
-      queryClient.invalidateQueries({ queryKey: ['group-invitations'] })
-      if (user) {
-        queryClient.invalidateQueries({ queryKey: ['group-invitations', user.id] })
-      }
+      invalidateGroupQueries(queryClient, user?.id, data?.projectId)
     },
   })
 }
@@ -187,16 +168,10 @@ export function useCreateJoinRequest() {
       return groupService.createJoinRequest(groupId, message)
     },
     onSuccess: (data) => {
-      // Invalidate join requests for the group
+      invalidateGroupQueries(queryClient, user?.id)
+      // Also invalidate specific group join requests if groupId is available
       if (data?.groupId) {
         queryClient.invalidateQueries({ queryKey: ['group-join-requests', data.groupId] })
-      }
-      // Invalidate my join requests (for students to see their sent requests)
-      queryClient.invalidateQueries({ queryKey: ['my-join-requests'] })
-      // Invalidate all group queries
-      queryClient.invalidateQueries({ queryKey: ['groups'] })
-      if (user) {
-        queryClient.invalidateQueries({ queryKey: ['groups', 'student', user.id] })
       }
     },
   })
@@ -211,32 +186,21 @@ export function useApproveJoinRequest() {
       return groupService.approveJoinRequest(requestId)
     },
     onSuccess: (data) => {
-      // Invalidate join requests for the group
-      if (data?.projectId) {
-        queryClient.invalidateQueries({ queryKey: ['group-join-requests'] })
-      }
-      // Invalidate all group queries
-      queryClient.invalidateQueries({ queryKey: ['groups'] })
-      if (user) {
-        queryClient.invalidateQueries({ queryKey: ['groups', 'student', user.id] })
-      }
-      if (data?.projectId) {
-        queryClient.invalidateQueries({ queryKey: ['groups', 'project', data.projectId] })
-      }
+      invalidateGroupQueries(queryClient, user?.id, data?.projectId)
     },
   })
 }
 
 export function useRejectJoinRequest() {
   const queryClient = useQueryClient()
+  const { user } = useAuthStore()
 
   return useMutation({
     mutationFn: ({ requestId, comments }: { requestId: string; comments?: string }) => {
       return groupService.rejectJoinRequest(requestId, comments)
     },
     onSuccess: () => {
-      // Invalidate join requests
-      queryClient.invalidateQueries({ queryKey: ['group-join-requests'] })
+      invalidateGroupQueries(queryClient, user?.id)
     },
   })
 }
@@ -250,11 +214,7 @@ export function useLeaveGroup() {
       return groupService.leave(groupId)
     },
     onSuccess: () => {
-      // Invalidate all group queries
-      queryClient.invalidateQueries({ queryKey: ['groups'] })
-      if (user) {
-        queryClient.invalidateQueries({ queryKey: ['groups', 'student', user.id] })
-      }
+      invalidateGroupQueries(queryClient, user?.id)
     },
   })
 }
@@ -268,11 +228,7 @@ export function useDeleteGroup() {
       return groupService.delete(groupId)
     },
     onSuccess: () => {
-      // Invalidate all group queries
-      queryClient.invalidateQueries({ queryKey: ['groups'] })
-      if (user) {
-        queryClient.invalidateQueries({ queryKey: ['groups', 'student', user.id] })
-      }
+      invalidateGroupQueries(queryClient, user?.id)
     },
   })
 }
@@ -286,18 +242,14 @@ export function useMyJoinRequests() {
 
 export function useCancelJoinRequest() {
   const queryClient = useQueryClient()
+  const { user } = useAuthStore()
 
   return useMutation({
     mutationFn: (requestId: string) => {
       return groupService.cancelJoinRequest(requestId)
     },
     onSuccess: () => {
-      // Invalidate my join requests
-      queryClient.invalidateQueries({ queryKey: ['my-join-requests'] })
-      // Invalidate group join requests (for leaders)
-      queryClient.invalidateQueries({ queryKey: ['group-join-requests'] })
-      // Invalidate all group queries
-      queryClient.invalidateQueries({ queryKey: ['groups'] })
+      invalidateGroupQueries(queryClient, user?.id)
     },
   })
 }

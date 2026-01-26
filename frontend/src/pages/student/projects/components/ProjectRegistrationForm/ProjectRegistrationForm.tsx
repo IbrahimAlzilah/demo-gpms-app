@@ -61,6 +61,16 @@ export function ProjectRegistrationForm({
     (reg) => reg.status === 'rejected' && reg.projectId !== project.id
   )
 
+  // Check if there's an approved registration for any project (blocks new registrations)
+  const approvedRegistration = allRegistrations?.find(
+    (reg) => reg.status === 'approved'
+  )
+
+  // Check if project is assigned to another group (different from current student's group)
+  const isAssignedToAnotherGroup = project.assignedGroupId &&
+    project.assignedGroupId !== studentGroup?.id &&
+    project.assignedGroup
+
   const handleSubmit = async () => {
     if (!isPeriodActive) {
       toastError(t('project.periodClosed'))
@@ -437,6 +447,73 @@ export function ProjectRegistrationForm({
     )
   }
 
+  // If there's an approved registration for another project, block registration
+  if (approvedRegistration && approvedRegistration.projectId !== project.id) {
+    return (
+      <Card className="shadow-none border-none p-2">
+        <CardHeader className='px-0'>
+          <CardTitle className="flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-success" />
+            {t('project.registrationStatus')}
+          </CardTitle>
+          <CardDescription>
+            {t('project.alreadyRegistered')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4 p-0">
+          <div>
+            <h4 className="font-semibold mb-2">{project.title}</h4>
+            <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
+          </div>
+
+          {/* Approved Registration Blocking Message */}
+          <div className="flex items-start gap-3 p-4 bg-success/10 border border-success/20 rounded-lg">
+            <CheckCircle2 className="h-5 w-5 text-success mt-0.5 shrink-0" />
+            <div className="flex-1">
+              <p className="text-success font-semibold mb-2">
+                {t('project.alreadyRegisteredInProject')}
+              </p>
+              <p className="text-sm text-muted-foreground mb-3">
+                {t('project.alreadyRegisteredDescription')}
+              </p>
+
+              {approvedRegistration.project && (
+                <div className="mt-3 p-3 bg-background rounded-lg border border-success/30">
+                  <p className="text-xs font-medium text-muted-foreground mb-1">
+                    {t('project.approvedProject')}:
+                  </p>
+                  <p className="text-sm font-semibold">
+                    {approvedRegistration.project.title}
+                  </p>
+                  {approvedRegistration.reviewedAt && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t('project.approvedAt')}: {formatDate(approvedRegistration.reviewedAt)}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div className="mt-3 p-3 bg-warning/10 border border-warning/20 rounded-md">
+                <p className="text-xs text-warning font-semibold mb-1">
+                  {t('project.cannotRegisterAnother')}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {t('project.cannotRegisterAnotherDescription')}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {onCancel && (
+            <Button onClick={onCancel} variant="outline" className="w-full">
+              {t('common.back')}
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <Card className="shadow-none border-none p-2">
       <CardHeader className='px-0'>
@@ -524,6 +601,55 @@ export function ProjectRegistrationForm({
           </div>
         )}
 
+        {/* Warning if project is assigned to another group */}
+        {isAssignedToAnotherGroup && (
+          <div className="flex items-start gap-3 p-4 text-sm bg-warning/10 border border-warning/20 rounded-lg">
+            <AlertCircle className="h-5 w-5 text-warning mt-0.5 shrink-0" />
+            <div className="flex-1">
+              <p className="font-semibold text-warning mb-2">
+                {t('project.projectAssignedToAnotherGroup')}
+              </p>
+              <p className="text-sm text-muted-foreground mb-3">
+                {t('project.projectAssignedToAnotherGroupDescription')}
+              </p>
+
+              {/* Assigned Group Details */}
+              {project.assignedGroup && (
+                <div className="mt-3 p-3 bg-background rounded-lg border border-warning/30">
+                  <p className="text-xs font-medium text-muted-foreground mb-2">
+                    {t('project.assignedGroupDetails')}:
+                  </p>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                      <p className="text-sm font-semibold">
+                        {project.assignedGroup.name || project.assignedGroup.groupCode || t('project.group')} #{project.assignedGroup.id}
+                      </p>
+                    </div>
+                    {project.assignedGroup.leader && (
+                      <div className="flex items-center gap-2">
+                        <User className="h-3.5 w-3.5 text-muted-foreground" />
+                        <p className="text-xs text-muted-foreground">
+                          {t('project.groupLeader')}: <span className="font-medium">{project.assignedGroup.leader.name || project.assignedGroup.leader.email}</span>
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-3 p-3 bg-info/10 border border-info/20 rounded-md">
+                <p className="text-xs text-info font-semibold mb-1">
+                  {t('project.canStillRegister')}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {t('project.canStillRegisterDescription')}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Show info if there's a rejected registration for another project */}
         {rejectedRegistrationForOtherProject && (
           <div className="flex items-start gap-2 p-3 text-sm text-info bg-info/10 border border-info/20 rounded-md">
@@ -555,7 +681,8 @@ export function ProjectRegistrationForm({
               !studentGroup ||
               !isGroupLeader ||
               !selectedGroupId ||
-              project.currentStudents >= project.maxStudents
+              project.currentStudents >= project.maxStudents ||
+              !!approvedRegistration
             }
             className="flex-1"
           >

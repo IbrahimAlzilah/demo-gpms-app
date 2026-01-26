@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useToast } from '@/components/common'
 import { useMyGroup } from '@/pages/student/groups/hooks/useGroups'
 import { useAuthStore } from '@/pages/auth/login'
+import { useUpdateBatchProposals } from '../hooks/useProposalOperations'
 import { proposalService } from '../api/proposal.service'
 import { usePeriodCheck } from '@/hooks/usePeriodCheck'
 import type { ProposalFormData } from '../types/Proposals.types'
@@ -21,6 +22,7 @@ export function useProposalsEditBatch(onSuccess?: () => void) {
   const { isPeriodActive: isSubmissionPeriod } = usePeriodCheck('proposal_submission')
   const { isPeriodActive: isRegistrationPeriod } = usePeriodCheck('project_registration')
   const isPeriodActive = isSubmissionPeriod || isRegistrationPeriod
+  const updateBatchMutation = useUpdateBatchProposals()
 
   const [existingProposals, setExistingProposals] = useState<ProposalItem[]>([])
   const [newProposals, setNewProposals] = useState<ProposalItem[]>([])
@@ -217,7 +219,11 @@ export function useProposalsEditBatch(onSuccess?: () => void) {
       }))
 
       const studentGroupId = studentGroup ? String(studentGroup.id) : undefined
-      await proposalService.updateBatch(updates, newProposalsData, studentGroupId)
+      await updateBatchMutation.mutateAsync({
+        updates,
+        newProposals: newProposalsData,
+        studentGroupId,
+      })
       
       toastSuccess(t('proposal.updateSuccess'))
       onSuccess?.()
@@ -237,7 +243,7 @@ export function useProposalsEditBatch(onSuccess?: () => void) {
     updateProposal,
     handleSubmit,
     isLoading,
-    isSubmitting,
+    isSubmitting: isSubmitting || updateBatchMutation.isPending,
     editBlocked,
     blockReason,
   }

@@ -89,15 +89,121 @@ class RegistrationController extends Controller
         // Order by submitted_at descending (newest first)
         $query->orderBy('submitted_at', 'desc');
 
+        $groupedRequests = $query->get();
+
+        // Get legacy registrations (without group_registration_request_id) and group them by student group
+        $legacyRegistrationsQuery = ProjectRegistration::with([
+            'project.supervisor',
+            'student',
+            'reviewer',
+        ])
+            ->whereNull('group_registration_request_id');
+
+        // Filter by status if provided
+        if ($status && $status !== 'all') {
+            $legacyRegistrationsQuery->where('status', $status);
+        }
+
+        // Apply search filter for legacy registrations
+        if ($search) {
+            $legacyRegistrationsQuery->where(function ($q) use ($search) {
+                $q->whereHas('student', function ($studentQuery) use ($search) {
+                    $studentQuery->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                })
+                ->orWhereHas('project', function ($projectQuery) use ($search) {
+                    $projectQuery->where('title', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%");
+                });
+            });
+        }
+
+        $legacyRegistrations = $legacyRegistrationsQuery->orderBy('submitted_at', 'desc')->get();
+
+        // Group legacy registrations by student group
+        $legacyGrouped = [];
+        foreach ($legacyRegistrations as $registration) {
+            // Find the student's group
+            $studentGroup = StudentGroup::with(['leader', 'members'])
+                ->where(function ($query) use ($registration) {
+                    $query->where('leader_id', $registration->student_id)
+                        ->orWhereHas('members', function ($q) use ($registration) {
+                            $q->where('users.id', $registration->student_id);
+                        });
+                })
+                ->where('status', 'active')
+                ->first();
+
+            if ($studentGroup) {
+                $groupKey = $studentGroup->id;
+                if (!isset($legacyGrouped[$groupKey])) {
+                    $legacyGrouped[$groupKey] = [
+                        'group' => $studentGroup,
+                        'registrations' => [],
+                        'leader' => $studentGroup->leader,
+                    ];
+                }
+                $legacyGrouped[$groupKey]['registrations'][] = $registration;
+            } else {
+                // Log or handle registrations where student has no active group
+                \Log::warning('Legacy registration found without active student group', [
+                    'registration_id' => $registration->id,
+                    'student_id' => $registration->student_id,
+                ]);
+            }
+        }
+
+        // Convert legacy grouped registrations to GroupRegistrationRequest-like structure
+        $legacyRequests = [];
+        foreach ($legacyGrouped as $groupData) {
+            $group = $groupData['group'];
+            $registrations = $groupData['registrations'];
+
+            // Create a virtual GroupRegistrationRequest-like object
+            $legacyRequest = new \stdClass();
+            $legacyRequest->id = 'legacy_' . $group->id;
+            $legacyRequest->student_group_id = $group->id;
+            $legacyRequest->submitted_by = $group->leader_id;
+            $legacyRequest->status = $this->determineLegacyRequestStatus($registrations);
+            $legacyRequest->submitted_at = $registrations[0]->submitted_at ?? now();
+            $legacyRequest->reviewed_at = $registrations[0]->reviewed_at;
+            $legacyRequest->reviewed_by = $registrations[0]->reviewed_by;
+            $legacyRequest->review_comments = null;
+            $legacyRequest->approved_project_id = $this->getApprovedProjectId($registrations);
+            $legacyRequest->created_at = $registrations[0]->created_at ?? now();
+            $legacyRequest->updated_at = $registrations[0]->updated_at ?? now();
+
+            // Set relationships
+            $legacyRequest->studentGroup = $group;
+            $legacyRequest->submitter = $groupData['leader'];
+            $legacyRequest->reviewer = $registrations[0]->reviewer;
+            $legacyRequest->approvedProject = $this->getApprovedProject($registrations);
+            $legacyRequest->projectRegistrations = collect($registrations);
+
+            $legacyRequests[] = $legacyRequest;
+        }
+
+        // Merge grouped requests and legacy requests
+        // Convert to arrays to avoid getKey() issues with stdClass objects
+        $groupedArray = $groupedRequests->all();
+        $allRequests = collect(array_merge($groupedArray, $legacyRequests));
+
+        // Sort by submitted_at descending (newest first)
+        $allRequests = $allRequests->sortByDesc(function ($request) {
+            return $request->submitted_at instanceof \Carbon\Carbon
+                ? $request->submitted_at->timestamp
+                : strtotime($request->submitted_at ?? '1970-01-01');
+        })->values();
+
         // Paginate
-        $total = $query->count();
+        $total = $allRequests->count();
         $totalPages = ceil($total / $pageSize);
         $offset = ($page - 1) * $pageSize;
-        $requests = $query->skip($offset)->take($pageSize)->get();
+        $paginatedRequests = $allRequests->slice($offset, $pageSize);
 
         return response()->json([
             'success' => true,
-            'data' => GroupRegistrationRequestResource::collection($requests),
+            'data' => GroupRegistrationRequestResource::collection($paginatedRequests),
             'pagination' => [
                 'page' => $page,
                 'pageSize' => $pageSize,
@@ -106,6 +212,8 @@ class RegistrationController extends Controller
             ],
         ]);
     }
+
+
 
     /**
      * Determine the status of a legacy request based on its registrations

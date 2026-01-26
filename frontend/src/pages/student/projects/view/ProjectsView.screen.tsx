@@ -102,10 +102,52 @@ export function ProjectsView({ projectId, open, onClose, onRegister }: ProjectsV
         {/* Note - Only in Registration Mode */}
         {isRegistrationMode && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="text-blue-700 font-semibold text-sm mb-1">ملاحظة:</h4>
+            <h4 className="text-blue-700 font-semibold text-sm mb-1">{t('common.note') || 'Note'}:</h4>
             <p className="text-blue-600 text-sm">
-              سيتم إرسال طلب التسجيل إلى لجنة المشاريع للمراجعة. سيتم إشعارك بالقرار عند مراجعة الطلب.
+              {t('project.registrationReviewRequest') || 'Your registration request will be sent to the Project Committee for review. You will be notified of the decision.'}
             </p>
+          </div>
+        )}
+
+        {/* Assigned Group Warning - Show if project is assigned to another group */}
+        {project.assignedGroup && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-3">
+            <div className="flex items-start gap-2 text-amber-800">
+              <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
+              <div>
+                <h4 className="font-semibold text-sm">
+                  {t('project.projectAssignedToAnotherGroup') || '⚠️ This project is already assigned to another group'}
+                </h4>
+                <p className="text-sm mt-1 opacity-90">
+                  {t('project.canStillRegisterDescription') || 'You can still submit a request. The Committee will review the conflict.'}
+                </p>
+              </div>
+            </div>
+
+            {/* Assigned Group Details */}
+            <div className="bg-white/50 rounded p-3 text-sm space-y-2 border border-amber-100">
+              <div className="font-medium text-amber-900 border-b border-amber-100 pb-1 mb-2">
+                {t('project.assignedGroupDetails') || 'Assigned Group Details'}
+              </div>
+
+              <div className="grid grid-cols-[100px_1fr] gap-2">
+                <span className="text-muted-foreground">{t('project.groupLeader') || 'Leader'}:</span>
+                <span className="font-medium">{project.assignedGroup.leader?.name}</span>
+              </div>
+
+              {project.assignedGroup.members && project.assignedGroup.members.length > 0 && (
+                <div className="grid grid-cols-[100px_1fr] gap-2">
+                  <span className="text-muted-foreground">{t('common.members') || 'Members'}:</span>
+                  <div className="flex flex-wrap gap-1">
+                    {project.assignedGroup.members.map((member) => (
+                      <span key={member.id} className="bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded text-xs border border-amber-200">
+                        {member.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -127,14 +169,14 @@ export function ProjectsView({ projectId, open, onClose, onRegister }: ProjectsV
           {isRegistrationMode ? (
             <>
               <Button variant="outline" onClick={onClose} className="min-w-[100px]">
-                إلغاء
+                {t('common.cancel')}
               </Button>
               <Button
                 onClick={onRegister}
                 disabled={!studentGroup || groupLoading}
                 className="min-w-[140px] bg-[#1e293b] hover:bg-[#0f172a]"
               >
-                إرسال طلب التسجيل
+                {t('project.submitRegistrationRequest') || 'Submit Registration Request'}
               </Button>
             </>
           ) : (
