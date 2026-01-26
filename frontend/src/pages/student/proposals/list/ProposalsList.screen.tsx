@@ -20,6 +20,7 @@ import { useProposalsList } from './ProposalsList.hook'
 import { useResubmitProposal } from '../hooks/useProposalOperations'
 import { useMyGroup } from '@/pages/student/groups/hooks/useGroups'
 import { useAuthStore } from '@/pages/auth/login'
+import { usePeriodCheck } from '@/hooks/usePeriodCheck'
 import { ROUTES } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { proposalService } from '../api/proposal.service'
@@ -30,6 +31,7 @@ export function ProposalsList() {
   const { toastSuccess, toastError } = useToast()
   const { user } = useAuthStore()
   const { data: studentGroup } = useMyGroup()
+  const { isPeriodActive: isSubmissionPeriodActive, isLoading: isPeriodLoading } = usePeriodCheck('proposal_submission')
   const [showLockModal, setShowLockModal] = useState(false)
   const [showReadOnlyModal, setShowReadOnlyModal] = useState(false)
 
@@ -135,6 +137,12 @@ export function ProposalsList() {
       return
     }
 
+    // Check if proposal submission period is active
+    if (!isSubmissionPeriodActive) {
+      toastError('proposal.submissionPeriodClosed')
+      return
+    }
+
     // Check if locked from group data
     if (studentGroup && isLeader) {
       const isLocked = !!(studentGroup.proposalsInitialSubmittedAt || studentGroup.proposals_initial_submitted_at)
@@ -203,6 +211,9 @@ export function ProposalsList() {
         <Button
           variant="default"
           onClick={handleSubmitClick}
+          // disabled={!isSubmissionPeriodActive || isPeriodLoading}
+          disabled={isPeriodLoading}
+          title={!isSubmissionPeriodActive ? t('proposal.submissionPeriodClosed') : undefined}
         >
           <PlusCircle className="size-4" />
           {t('proposal.submitNew')}
@@ -210,7 +221,7 @@ export function ProposalsList() {
         </Button>
       )
     },
-    [t, canSubmit, hasSubmittedProposals, handleSubmitClick, navigate]
+    [t, canSubmit, hasSubmittedProposals, handleSubmitClick, navigate, isSubmissionPeriodActive, isPeriodLoading]
   )
 
   const pageTitle = isMyProposals

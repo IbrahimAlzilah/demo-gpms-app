@@ -73,14 +73,19 @@ class StudentDashboardService
             ->orderBy('end_date', 'asc')
             ->get()
             ->map(function ($period) {
-                $daysRemaining = now()->diffInDays($period->end_date, false);
+                // Calculate days remaining: use diffInHours for precision, then convert to days and round to 1 decimal place
+                $now = Carbon::now();
+                $end = Carbon::parse($period->end_date);
+                $hoursRemaining = max(0, $now->diffInHours($end, false));
+                $daysRemaining = round($hoursRemaining / 24, 1);
+                
                 return [
                     'id' => $period->id,
                     'name' => $period->name,
                     'type' => $period->type,
                     'startDate' => $period->start_date->toDateString(),
                     'endDate' => $period->end_date->toDateString(),
-                    'daysRemaining' => max(0, $daysRemaining),
+                    'daysRemaining' => $daysRemaining,
                     'description' => $period->description,
                 ];
             });

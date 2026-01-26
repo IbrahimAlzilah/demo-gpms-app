@@ -80,11 +80,11 @@ class ProjectController extends Controller
 
         $studentGroup = \App\Models\StudentGroup::findOrFail($validated['student_group_id']);
 
-        // Validate student is a member of the group
-        if (!$studentGroup->hasMember($user->id) && $studentGroup->leader_id !== $user->id) {
+        // CRITICAL: Only group leader can register
+        if ($studentGroup->leader_id !== $user->id) {
             return response()->json([
                 'success' => false,
-                'message' => 'You must be a member of the selected group to register',
+                'message' => 'Only group leaders can register for projects',
             ], 403);
         }
 
@@ -193,30 +193,148 @@ class ProjectController extends Controller
         ]);
     }
 
-    public function cancelRegistration(Request $request, ProjectRegistration $registration): JsonResponse
+    /**
+     * Get student's group registration request
+     * Returns the current registration request for the student's group
+     */
+    public function getGroupRegistrationRequest(Request $request): JsonResponse
     {
-        if ($registration->student_id !== $request->user()->id) {
+        $student = $request->user();
+        
+        // Find student's active group
+        $studentGroup = \App\Models\StudentGroup::where(function ($query) use ($student) {
+            $query->where('leader_id', $student->id)
+                ->orWhereHas('members', function ($q) use ($student) {
+                    $q->where('users.id', $student->id);
+                });
+        })
+            ->where('status', 'active')
+            ->first();
+
+        if (!$studentGroup) {
+            return response()->json([
+                'success' => true,
+                'data' => null,
+                'message' => 'No active group found',
+            ]);
+        }
+
+        // Get the most recent group registration request
+        $groupRequest = \App\Models\GroupRegistrationRequest::where('student_group_id', $studentGroup->id)
+            ->with([
+                'studentGroup.leader',
+                'studentGroup.members',
+                'submitter',
+                'reviewer',
+                'approvedProject.supervisor',
+                'projectRegistrations.project.supervisor',
+            ])
+            ->orderBy('submitted_at', 'desc')
+            ->first();
+
+        if (!$groupRequest) {
+            return response()->json([
+                'success' => true,
+                'data' => null,
+                'message' => 'No registration request found',
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => new \App\Http\Resources\GroupRegistrationRequestResource($groupRequest),
+        ]);
+    }
+
+    /**
+     * Batch register group for multiple projects
+     */
+    public function batchRegister(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        // Check authorization
+        if (!$user->isStudent()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized to cancel this registration',
+                'message' => 'Only students can register for projects',
             ], 403);
         }
 
-        // Only allow cancelling pending registrations to avoid partially cancelling
-        // group-based approved registrations (which would create inconsistent state)
-        if ($registration->status !== 'pending') {
+        $validated = $request->validate([
+            'project_ids' => 'required|array|min:1',
+            'project_ids.*' => 'required|exists:projects,id',
+            'student_group_id' => 'required|exists:student_groups,id',
+        ]);
+
+        $studentGroup = \App\Models\StudentGroup::findOrFail($validated['student_group_id']);
+
+        // CRITICAL: Only group leader can register
+        if ($studentGroup->leader_id !== $user->id) {
             return response()->json([
                 'success' => false,
-                'message' => 'Only pending registrations can be cancelled. Approved registrations cannot be cancelled.',
-            ], 400);
+                'message' => 'Only group leaders can register for projects',
+            ], 403);
         }
 
         try {
-            $registration->update(['status' => 'cancelled']);
+            $request = $this->projectService->registerGroupBatch(
+                $validated['project_ids'],
+                $studentGroup,
+                $user
+            );
 
             return response()->json([
                 'success' => true,
-                'message' => 'Registration cancelled successfully',
+                'data' => new \App\Http\Resources\GroupRegistrationRequestResource($request),
+                'message' => 'Registration request submitted successfully',
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    public function cancelRegistration(Request $request, ProjectRegistration $registration): JsonResponse
+    {
+        $user = $request->user();
+
+        // Only support group registration cancellation
+        if (!$registration->group_registration_request_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Individual registrations are not supported. All registrations must be part of a group request.',
+            ], 400);
+        }
+
+        $groupRequest = $registration->groupRegistrationRequest;
+        
+        // Only group leader can cancel
+        if ($groupRequest->submitted_by !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only group leaders can cancel registration requests',
+            ], 403);
+        }
+        
+        // Only allow cancellation if request is pending
+        if (!$groupRequest->isPending()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only pending registration requests can be cancelled',
+            ], 403);
+        }
+        
+        try {
+            // Cancel the entire request (all registrations)
+            $groupRequest->update(['status' => 'cancelled']);
+            $groupRequest->projectRegistrations()->update(['status' => 'cancelled']);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Registration request cancelled successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([

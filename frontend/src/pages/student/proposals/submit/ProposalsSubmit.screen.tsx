@@ -34,6 +34,8 @@ export function ProposalsSubmit() {
     handleSubmit,
     isSubmitting,
     isLocked,
+    isPeriodActive,
+    isPeriodLoading,
   } = useProposalsSubmit(() => {
     navigate(ROUTES.STUDENT.MY_PROPOSALS)
   })
@@ -102,6 +104,26 @@ export function ProposalsSubmit() {
         }
       >
         <div className="space-y-6">
+          {/* Period Not Active Warning */}
+          {!isPeriodLoading && !isPeriodActive && (
+            <div className={cn(
+              'flex items-start gap-3 p-4 rounded-lg border',
+              'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800'
+            )}>
+              <div className="p-2 rounded-lg bg-rose-500/10 shrink-0">
+                <AlertCircle className="h-5 w-5 text-rose-600 dark:text-rose-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-rose-900 dark:text-rose-100">
+                  {t('proposal.submissionPeriodClosed')}
+                </p>
+                <p className="text-xs text-rose-700 dark:text-rose-300 mt-1">
+                  {t('proposal.submissionPeriodClosedMessage')}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Lock Warning */}
           {isLocked && (
             <div className={cn(
@@ -163,7 +185,7 @@ export function ProposalsSubmit() {
             <Button
               variant="outline"
               onClick={() => addProposal()}
-              disabled={isSubmitting || isLocked}
+              disabled={isSubmitting || isLocked || !isPeriodActive}
             >
               <PlusCircle className="size-4" />
               {t('proposal.addNewProposal')}
@@ -180,7 +202,7 @@ export function ProposalsSubmit() {
             </Button>
             <Button
               onClick={handleSubmitClick}
-              disabled={isSubmitting || proposals.length === 0 || isLocked}
+              disabled={isSubmitting || proposals.length === 0 || isLocked || !isPeriodActive || isPeriodLoading}
               className="gap-2"
             >
               {isSubmitting ? (

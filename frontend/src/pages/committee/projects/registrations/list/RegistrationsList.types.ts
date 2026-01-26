@@ -1,6 +1,7 @@
-import type { ProjectRegistration } from '@/types/project.types'
+import type { ProjectRegistration, GroupRegistrationRequest } from '@/types/project.types'
 
 export type RegistrationStatusFilter = 'pending' | 'approved' | 'rejected' | 'all'
+export type RegistrationViewMode = 'individual' | 'grouped'
 
 export interface RegistrationsListState {
   statusFilter: RegistrationStatusFilter
@@ -9,6 +10,11 @@ export interface RegistrationsListState {
   comments: string
   showDialog: boolean
   registrationToViewId: string | null
+  viewMode: RegistrationViewMode
+  pagination?: {
+    pageIndex: number
+    pageSize: number
+  }
 }
 
 export interface RegistrationsListData {
@@ -16,4 +22,11 @@ export interface RegistrationsListData {
   isLoading: boolean
   error: Error | null
   pageCount: number
+  groupedRequests?: GroupRegistrationRequest[]
+  groupedPagination?: {
+    page: number
+    pageSize: number
+    total: number
+    totalPages: number
+  }
 }

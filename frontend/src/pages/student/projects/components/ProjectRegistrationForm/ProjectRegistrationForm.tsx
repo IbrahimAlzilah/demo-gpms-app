@@ -9,6 +9,7 @@ import {
 import { useStudentRegistrations } from '../../hooks/useProjects'
 import { usePeriodCheck } from '@/hooks/usePeriodCheck'
 import { useMyGroup } from '@/pages/student/groups/hooks/useGroups'
+import { useAuthStore } from '@/pages/auth/login'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
@@ -44,8 +45,12 @@ export function ProjectRegistrationForm({
   const { data: allRegistrations } = useStudentRegistrations()
   const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('project_registration')
   const { data: studentGroup, isLoading: groupLoading } = useMyGroup()
+  const { user } = useAuthStore()
   const [selectedGroupId, setSelectedGroupId] = useState<string>('')
   const { toastSuccess, toastError } = useToast()
+  
+  // Check if user is group leader
+  const isGroupLeader = studentGroup?.leaderId === user?.id
 
   // Update selectedGroupId when studentGroup loads
   useEffect(() => {
@@ -480,6 +485,19 @@ export function ProjectRegistrationForm({
           </div>
         </div>
 
+        {/* Leader Check */}
+        {studentGroup && !isGroupLeader && (
+          <div className="flex items-start gap-2 p-3 text-sm text-warning bg-warning/10 border border-warning/20 rounded-md">
+            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+            <div className="flex-1">
+              <p className="font-medium mb-1">{t('registration.onlyLeaderCanRegister')}</p>
+              <p className="text-xs text-muted-foreground">
+                {t('registration.onlyLeaderCanRegisterDescription')}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Group Selection */}
         {!studentGroup ? (
           <div className="flex items-start gap-2 p-3 text-sm text-warning bg-warning/10 border border-warning/20 rounded-md">
@@ -538,6 +556,7 @@ export function ProjectRegistrationForm({
               registerProject.isPending ||
               !isPeriodActive ||
               !studentGroup ||
+              !isGroupLeader ||
               !selectedGroupId ||
               project.currentStudents >= project.maxStudents
             }

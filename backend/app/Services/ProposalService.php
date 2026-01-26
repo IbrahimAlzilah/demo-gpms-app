@@ -51,6 +51,11 @@ class ProposalService
 
     /**
      * Approve a proposal and optionally create a project
+     * 
+     * Note: This method only updates the specific proposal passed to it.
+     * Each proposal in a group or submission is reviewed independently.
+     * Approving, rejecting, or requesting changes on one proposal does NOT
+     * affect the status of other proposals in the same group or submission.
      */
     public function approve(Proposal $proposal, User $reviewer, ?int $projectId = null): Proposal
     {
@@ -162,6 +167,11 @@ class ProposalService
 
     /**
      * Reject a proposal
+     * 
+     * Note: This method only updates the specific proposal passed to it.
+     * Each proposal in a group or submission is reviewed independently.
+     * Approving, rejecting, or requesting changes on one proposal does NOT
+     * affect the status of other proposals in the same group or submission.
      */
     public function reject(Proposal $proposal, User $reviewer, ?string $reviewNotes = null): Proposal
     {
@@ -194,6 +204,11 @@ class ProposalService
 
     /**
      * Request modification for a proposal
+     * 
+     * Note: This method only updates the specific proposal passed to it.
+     * Each proposal in a group or submission is reviewed independently.
+     * Approving, rejecting, or requesting changes on one proposal does NOT
+     * affect the status of other proposals in the same group or submission.
      */
     public function requestModification(Proposal $proposal, User $reviewer, string $reviewNotes): Proposal
     {

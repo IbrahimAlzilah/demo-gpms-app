@@ -224,6 +224,25 @@ export const groupService = {
     }
   },
 
+  getMyJoinRequests: async (): Promise<GroupJoinRequest[]> => {
+    try {
+      const response = await apiClient.get<GroupJoinRequest[]>(
+        '/student/groups/join-requests/my'
+      )
+      return Array.isArray(response.data) ? response.data : []
+    } catch (error) {
+      throw new Error(getErrorMessage(error))
+    }
+  },
+
+  cancelJoinRequest: async (requestId: string): Promise<void> => {
+    try {
+      await apiClient.delete(`/student/groups/join-requests/${requestId}/cancel`)
+    } catch (error) {
+      throw new Error(getErrorMessage(error))
+    }
+  },
+
   leave: async (groupId: string): Promise<void> => {
     try {
       await apiClient.delete(`/student/groups/${groupId}/leave`)

@@ -146,6 +146,85 @@ export function ProposalsView({
           </div>
         )}
 
+        {/* Student Group Information */}
+        {proposal.studentGroup && (
+          <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+            <div className="flex items-center gap-2 mb-3">
+              <Users className="h-4 w-4 text-primary" />
+              <h4 className="text-sm font-semibold">{t('proposal.studentGroup') || 'Student Group'}</h4>
+            </div>
+            <div className="space-y-3 text-sm">
+              <div>
+                <span className="font-medium text-base">{proposal.studentGroup.name || proposal.studentGroup.groupCode || `Group #${proposal.studentGroup.id}`}</span>
+              </div>
+              
+              {/* Group Leader */}
+              {proposal.studentGroup.leader && (
+                <div className="p-3 rounded-md bg-background/50 border border-border/50">
+                  <div className="flex items-center gap-2 mb-2">
+                    <User className="h-3.5 w-3.5 text-primary" />
+                    <span className="font-medium text-xs text-muted-foreground uppercase">{t('proposal.groupLeader') || 'Group Leader'}</span>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="font-medium">{proposal.studentGroup.leader.name}</div>
+                    {proposal.studentGroup.leader.email && (
+                      <div className="text-muted-foreground text-xs">{proposal.studentGroup.leader.email}</div>
+                    )}
+                    {proposal.studentGroup.leader.studentId && (
+                      <div className="text-muted-foreground text-xs">
+                        {t('common.studentId')}: {proposal.studentGroup.leader.studentId}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Group Members */}
+              {proposal.studentGroup.members && proposal.studentGroup.members.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="font-medium text-xs text-muted-foreground uppercase">
+                      {t('proposal.groupMembers') || 'Group Members'} ({proposal.studentGroup.members.length})
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    {proposal.studentGroup.members.map((member: any) => (
+                      <div key={member.id} className="p-2 rounded-md bg-background/30 border border-border/30">
+                        <div className="font-medium text-xs">{member.name}</div>
+                        {member.email && (
+                          <div className="text-muted-foreground text-xs">{member.email}</div>
+                        )}
+                        {member.studentId && (
+                          <div className="text-muted-foreground text-xs">
+                            {t('common.studentId')}: {member.studentId}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Group Metadata */}
+              <div className="flex flex-wrap gap-3 pt-2 border-t border-border/50 text-xs text-muted-foreground">
+                {proposal.studentGroup.memberCount !== undefined && (
+                  <div>
+                    <span className="font-medium">{t('common.members')}: </span>
+                    {proposal.studentGroup.memberCount}
+                  </div>
+                )}
+                {proposal.studentGroup.status && (
+                  <div>
+                    <span className="font-medium">{t('common.status')}: </span>
+                    <StatusBadge status={proposal.studentGroup.status} />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Submitter Information */}
         {proposal.submitter && (
           <div className="p-4 rounded-lg bg-muted border border-muted-foreground/20">

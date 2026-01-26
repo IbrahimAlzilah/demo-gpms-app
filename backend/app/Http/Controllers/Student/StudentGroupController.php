@@ -377,6 +377,62 @@ class StudentGroupController extends Controller
     }
 
     /**
+     * Get join requests sent by the current student
+     */
+    public function getMyJoinRequests(Request $request): JsonResponse
+    {
+        $student = $request->user();
+
+        $joinRequests = StudentGroupJoinRequest::where('student_id', $student->id)
+            ->with(['group.leader', 'reviewer'])
+            ->orderBy('requested_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $joinRequests,
+        ]);
+    }
+
+    /**
+     * Cancel a join request (only if pending)
+     */
+    public function cancelJoinRequest(Request $request, StudentGroupJoinRequest $joinRequest): JsonResponse
+    {
+        $student = $request->user();
+
+        // Verify the request belongs to the student
+        if ($joinRequest->student_id !== $student->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You can only cancel your own join requests',
+            ], 403);
+        }
+
+        // Only allow cancellation if request is pending
+        if (!$joinRequest->isPending()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only pending join requests can be cancelled',
+            ], 403);
+        }
+
+        try {
+            $joinRequest->update(['status' => 'cancelled']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Join request cancelled successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
      * Leave group (DISABLED - members cannot leave groups)
      * DELETE /student/groups/{group}/leave
      * 

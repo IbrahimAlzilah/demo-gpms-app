@@ -11,12 +11,14 @@ use App\Models\Project;
 use App\Models\Grade;
 use App\Models\ProjectRequest;
 use App\Models\ProjectRegistration;
+use App\Models\GroupRegistrationRequest;
 use App\Policies\ProposalPolicy;
 use App\Policies\DocumentPolicy;
 use App\Policies\ProjectPolicy;
 use App\Policies\GradePolicy;
 use App\Policies\ProjectRequestPolicy;
 use App\Policies\ProjectRegistrationPolicy;
+use App\Policies\GroupRegistrationRequestPolicy;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -32,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
         Grade::class => GradePolicy::class,
         ProjectRequest::class => ProjectRequestPolicy::class,
         ProjectRegistration::class => ProjectRegistrationPolicy::class,
+        GroupRegistrationRequest::class => GroupRegistrationRequestPolicy::class,
     ];
 
     /**

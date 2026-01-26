@@ -1,0 +1,1 @@
+export { BatchRegistrationForm } from './BatchRegistrationForm'

@@ -17,9 +17,9 @@ export function useProposalsSubmit(onSuccess?: () => void) {
   const { toastSuccess, toastError } = useToast()
   const { user } = useAuthStore()
   const { data: studentGroup } = useMyGroup()
-  const { isPeriodActive: isSubmissionPeriod } = usePeriodCheck('proposal_submission')
-  const { isPeriodActive: isRegistrationPeriod } = usePeriodCheck('project_registration')
-  const isPeriodActive = isSubmissionPeriod || isRegistrationPeriod
+  const { isPeriodActive: isSubmissionPeriod, isLoading: isPeriodLoading } = usePeriodCheck('proposal_submission')
+  // Only allow submission during proposal_submission period (not registration period)
+  const isPeriodActive = isSubmissionPeriod
 
   const [proposals, setProposals] = useState<ProposalItem[]>([
     { id: '1', title: '', description: '' }
@@ -127,6 +127,8 @@ export function useProposalsSubmit(onSuccess?: () => void) {
     handleSubmit,
     isSubmitting,
     isLocked,
+    isPeriodActive,
+    isPeriodLoading,
     isLoadingLock: false, // No longer needed, but keep for backward compatibility
   }
 }

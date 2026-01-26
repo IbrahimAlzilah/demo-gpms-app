@@ -73,13 +73,14 @@ export function useUpdateProposal() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Proposal> }) => {
+    mutationFn: ({ id, data }: { id: string; data: { title: string; description: string } }) => {
       return committeeProposalService.update(id, data)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['committee-proposals'] })
       queryClient.invalidateQueries({ queryKey: ['committee-proposals-table'] })
       queryClient.invalidateQueries({ queryKey: ['proposals'] })
+      queryClient.invalidateQueries({ queryKey: ['committee-proposals-submissions'] })
     },
   })
 }

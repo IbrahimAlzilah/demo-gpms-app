@@ -96,11 +96,36 @@ export interface ProjectRegistration extends BaseEntity {
   project?: Project;
   studentId: string;
   student?: User;
+  groupRegistrationRequestId?: string;
+  groupRegistrationRequest?: GroupRegistrationRequest;
   status: ProjectRegistrationStatus;
   submittedAt: string;
   reviewedAt?: string;
   reviewedBy?: string;
+  reviewer?: User;
   reviewComments?: string;
+}
+
+export type GroupRegistrationRequestStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "cancelled";
+
+export interface GroupRegistrationRequest extends BaseEntity {
+  studentGroupId: string;
+  studentGroup?: StudentGroup;
+  submittedBy: string; // User ID
+  submitter?: User; // Full user object (when loaded)
+  status: GroupRegistrationRequestStatus;
+  submittedAt: string;
+  reviewedAt?: string;
+  reviewedBy?: string | null;
+  reviewer?: User | null;
+  reviewComments?: string | null;
+  approvedProjectId?: string | null;
+  approvedProject?: Project | null;
+  projectRegistrations?: ProjectRegistration[];
 }
 
 export interface SupervisorNote extends BaseEntity {
@@ -160,11 +185,11 @@ export interface GroupInvitation extends BaseEntity {
   message?: string;
 }
 
-export type GroupJoinRequestStatus = "pending" | "approved" | "rejected";
+export type GroupJoinRequestStatus = "pending" | "approved" | "rejected" | "cancelled";
 
 export interface GroupJoinRequest extends BaseEntity {
   groupId: string;
-  group?: ProjectGroup;
+  group?: StudentGroup;
   studentId: string;
   student?: User;
   status: GroupJoinRequestStatus;

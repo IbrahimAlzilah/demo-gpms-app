@@ -10,7 +10,7 @@ import { ProposalsEdit } from '../edit/ProposalsEdit.screen'
 import { ProposalsView } from '../view/ProposalsView.screen'
 import { GroupedSubmissionCard } from '../components/GroupedSubmissionCard'
 import { useProposalsList } from './ProposalsList.hook'
-import { AlertCircle, PlusCircle, LayoutGrid, List, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search } from 'lucide-react'
+import { AlertCircle, PlusCircle, LayoutGrid, List, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, FileText } from 'lucide-react'
 import { useToast } from '@/components/common'
 
 export function ProposalsList() {
@@ -249,6 +249,12 @@ export function ProposalsList() {
                     }}
                     onRequestModification={(proposal) => {
                       setState((prev) => ({ ...prev, selectedProposal: proposal, action: 'modify' }))
+                    }}
+                    onEditProposal={(proposal) => {
+                      setEditingProposalId(proposal.id)
+                    }}
+                    onDeleteProposal={(proposal) => {
+                      setState((prev) => ({ ...prev, proposalToDelete: proposal }))
                     }}
                     isLoadingAction={(proposalId) => {
                       return (

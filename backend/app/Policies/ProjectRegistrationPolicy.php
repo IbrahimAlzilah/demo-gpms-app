@@ -61,4 +61,30 @@ class ProjectRegistrationPolicy
         // Can only reject pending registrations
         return $registration->status === 'pending';
     }
+
+    /**
+     * Determine if the user can cancel the registration.
+     */
+    public function cancel(User $user, ProjectRegistration $registration): bool
+    {
+        // Check if registration belongs to a group request
+        if ($registration->group_registration_request_id) {
+            $groupRequest = $registration->groupRegistrationRequest;
+            
+            // Only group leader can cancel
+            if ($groupRequest->submitted_by !== $user->id) {
+                return false;
+            }
+            
+            // Can only cancel if request is pending
+            return $groupRequest->isPending();
+        }
+        
+        // Legacy single registration: student can cancel their own pending registration
+        if ($user->isStudent() && $registration->student_id === $user->id) {
+            return $registration->status === 'pending';
+        }
+        
+        return false;
+    }
 }

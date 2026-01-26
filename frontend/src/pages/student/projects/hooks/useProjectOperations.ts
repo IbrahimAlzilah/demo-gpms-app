@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { projectService } from "../api/project.service";
 import { useAuthStore } from "@/pages/auth/login";
+import type { GroupRegistrationRequest } from "@/types/project.types";
 
 /**
  * Hook for fetching student registrations
@@ -70,6 +71,29 @@ export function useCancelRegistration() {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       queryClient.invalidateQueries({ queryKey: ["available-projects-table"] });
       queryClient.invalidateQueries({ queryKey: ["project-registration"] });
+      queryClient.invalidateQueries({ queryKey: ["group-registration-requests"] });
+    },
+  });
+}
+
+/**
+ * Hook for batch registering group to multiple projects
+ */
+export function useBatchRegisterProjects() {
+  const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+
+  return useMutation<GroupRegistrationRequest, Error, { projectIds: string[]; studentGroupId: string }>({
+    mutationFn: ({ projectIds, studentGroupId }) => {
+      if (!user) throw new Error("User not authenticated");
+      return projectService.batchRegister(projectIds, studentGroupId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project-registrations"] });
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: ["available-projects-table"] });
+      queryClient.invalidateQueries({ queryKey: ["project-registration"] });
+      queryClient.invalidateQueries({ queryKey: ["group-registration-requests"] });
     },
   });
 }

@@ -68,12 +68,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('supervisors', [App\Http\Controllers\Student\SupervisorController::class, 'index']);
 
         // Project registration routes must be defined before apiResource to prevent route conflicts
+        // Only batch (grouped) registration is supported
         Route::get('projects/registrations', [App\Http\Controllers\Student\ProjectController::class, 'getRegistrations']);
+        Route::get('projects/registration-request', [App\Http\Controllers\Student\ProjectController::class, 'getGroupRegistrationRequest']);
         Route::delete('projects/registrations/{registration}', [App\Http\Controllers\Student\ProjectController::class, 'cancelRegistration']);
+        Route::post('projects/batch-register', [App\Http\Controllers\Student\ProjectController::class, 'batchRegister'])
+            ->middleware('window:project_registration');
         
         Route::apiResource('projects', App\Http\Controllers\Student\ProjectController::class);
-        Route::post('projects/{project}/register', [App\Http\Controllers\Student\ProjectController::class, 'register'])
-            ->middleware('window:project_registration');
         Route::get('projects/{project}/notes', [App\Http\Controllers\Student\ProjectController::class, 'getSupervisorNotes']);
         Route::post('projects/{project}/notes/{note}/reply', [App\Http\Controllers\Student\ProjectController::class, 'replyToNote']);
         Route::get('projects/{project}/milestones', [App\Http\Controllers\Student\ProjectController::class, 'getMilestones']);
@@ -93,9 +95,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('groups/{group}', [App\Http\Controllers\Student\StudentGroupController::class, 'destroy']);
         // Join requests routes
         Route::post('groups/join-request', [App\Http\Controllers\Student\StudentGroupController::class, 'createJoinRequest']);
+        Route::get('groups/join-requests/my', [App\Http\Controllers\Student\StudentGroupController::class, 'getMyJoinRequests']);
         Route::get('groups/{group}/join-requests', [App\Http\Controllers\Student\StudentGroupController::class, 'getJoinRequests']);
         Route::post('groups/join-requests/{joinRequest}/approve', [App\Http\Controllers\Student\StudentGroupController::class, 'approveJoinRequest']);
         Route::post('groups/join-requests/{joinRequest}/reject', [App\Http\Controllers\Student\StudentGroupController::class, 'rejectJoinRequest']);
+        Route::delete('groups/join-requests/{joinRequest}/cancel', [App\Http\Controllers\Student\StudentGroupController::class, 'cancelJoinRequest']);
         Route::get('documents/{document}/download', [App\Http\Controllers\Student\DocumentController::class, 'download']);
         Route::post('documents', [App\Http\Controllers\Student\DocumentController::class, 'store'])
             ->middleware('window:chapter_submission_phase_1,chapter_submission_phase_2,final_project_document_submission');

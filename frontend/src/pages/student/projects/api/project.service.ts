@@ -2,6 +2,7 @@ import { apiClient } from '../../../../lib/axios'
 import type {
   Project,
   ProjectRegistration,
+  GroupRegistrationRequest,
 } from '../../../../types/project.types'
 import type { TableQueryParams, TableResponse } from '../../../../types/table.types'
 
@@ -84,6 +85,17 @@ export const projectService = {
       { student_group_id: studentGroupId }
     )
     // Axios interceptor already extracts data, so response.data is the registration
+    return response.data
+  },
+
+  batchRegister: async (projectIds: string[], studentGroupId: string): Promise<GroupRegistrationRequest> => {
+    const response = await apiClient.post<GroupRegistrationRequest>(
+      '/student/projects/batch-register',
+      { 
+        project_ids: projectIds,
+        student_group_id: studentGroupId
+      }
+    )
     return response.data
   },
 

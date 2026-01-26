@@ -4,9 +4,12 @@ namespace App\Http\Controllers\ProjectsCommittee;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProjectRegistrationResource;
+use App\Http\Resources\GroupRegistrationRequestResource;
 use App\Http\Traits\HasTableQuery;
 use App\Models\ProjectRegistration;
+use App\Models\GroupRegistrationRequest;
 use App\Models\StudentGroup;
+use App\Models\Project;
 use App\Services\ProjectService;
 use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
@@ -22,25 +25,131 @@ class RegistrationController extends Controller
     ) {}
 
     /**
-     * List project registrations
+     * List project registrations in grouped view only
+     * All registrations are displayed as GroupRegistrationRequests
      */
     public function index(Request $request): JsonResponse
     {
-        $query = ProjectRegistration::with(['project', 'student', 'reviewer']);
+        // Authorize: Only Projects Committee can view all registrations
+        $this->authorize('viewAny', ProjectRegistration::class);
+
+        // Always return grouped view
+        return $this->getGroupedRequests($request);
+    }
+
+    /**
+     * Get grouped registration requests
+     * Returns paginated GroupRegistrationRequest records with nested project registrations
+     */
+    public function getGroupedRequests(Request $request): JsonResponse
+    {
+        // Authorize: Only Projects Committee can view all group registration requests
+        $this->authorize('viewAny', GroupRegistrationRequest::class);
+
+        $page = (int) $request->get('page', 1);
+        $pageSize = (int) $request->get('pageSize', 10);
+        $status = $request->get('status');
+        $search = $request->get('search');
+
+        // Get GroupRegistrationRequest records with all necessary relationships
+        $query = GroupRegistrationRequest::with([
+            'studentGroup.leader',
+            'studentGroup.members',
+            'submitter',
+            'reviewer',
+            'approvedProject.supervisor',
+            'projectRegistrations.project.supervisor',
+            'projectRegistrations.student',
+            'projectRegistrations.reviewer',
+        ]);
 
         // Filter by status if provided
-        if ($request->has('status')) {
-            $query->where('status', $request->status);
+        if ($status && $status !== 'all') {
+            $query->where('status', $status);
         }
 
-        // Filter by project if provided
-        if ($request->has('project_id')) {
-            $query->where('project_id', $request->project_id);
+        // Apply search filter
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('studentGroup', function ($groupQuery) use ($search) {
+                    $groupQuery->where('name', 'like', "%{$search}%")
+                        ->orWhere('group_code', 'like', "%{$search}%");
+                })
+                ->orWhereHas('submitter', function ($submitterQuery) use ($search) {
+                    $submitterQuery->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                })
+                ->orWhereHas('projectRegistrations.project', function ($projectQuery) use ($search) {
+                    $projectQuery->where('title', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%");
+                });
+            });
         }
 
-        $query = $this->applyTableQuery($query, $request);
+        // Order by submitted_at descending (newest first)
+        $query->orderBy('submitted_at', 'desc');
 
-        return response()->json($this->getPaginatedResponse($query, $request, ProjectRegistrationResource::class));
+        // Paginate
+        $total = $query->count();
+        $totalPages = ceil($total / $pageSize);
+        $offset = ($page - 1) * $pageSize;
+        $requests = $query->skip($offset)->take($pageSize)->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => GroupRegistrationRequestResource::collection($requests),
+            'pagination' => [
+                'page' => $page,
+                'pageSize' => $pageSize,
+                'total' => $total,
+                'totalPages' => $totalPages,
+            ],
+        ]);
+    }
+
+    /**
+     * Determine the status of a legacy request based on its registrations
+     */
+    private function determineLegacyRequestStatus(array $registrations): string
+    {
+        $hasApproved = collect($registrations)->contains('status', 'approved');
+        $hasRejected = collect($registrations)->contains('status', 'rejected');
+        $hasPending = collect($registrations)->contains('status', 'pending');
+
+        if ($hasApproved) {
+            return 'approved';
+        }
+        if ($hasRejected && !$hasPending) {
+            return 'rejected';
+        }
+        return 'pending';
+    }
+
+    /**
+     * Get the approved project ID from registrations
+     */
+    private function getApprovedProjectId(array $registrations): ?int
+    {
+        $approved = collect($registrations)->firstWhere('status', 'approved');
+        return $approved ? $approved->project_id : null;
+    }
+
+    /**
+     * Get the approved project from registrations
+     */
+    private function getApprovedProject(array $registrations): ?Project
+    {
+        $approved = collect($registrations)->firstWhere('status', 'approved');
+        if ($approved) {
+            // Load project with supervisor if not already loaded
+            if (!$approved->relationLoaded('project') && $approved->project_id) {
+                $approved->load(['project.supervisor']);
+            } elseif ($approved->relationLoaded('project') && $approved->project && !$approved->project->relationLoaded('supervisor')) {
+                $approved->project->load('supervisor');
+            }
+            return $approved->project;
+        }
+        return null;
     }
 
     /**
@@ -116,7 +225,7 @@ class RegistrationController extends Controller
             $minMembers = app(\App\Services\SettingsService::class)->getGroupMinMembers();
             $maxMembers = app(\App\Services\SettingsService::class)->getGroupMaxMembers();
             $totalMembers = $studentGroup->getTotalMemberCount();
-            
+
             return response()->json([
                 'success' => false,
                 'message' => "Group must have between {$minMembers} and {$maxMembers} members (current: {$totalMembers})",
@@ -134,7 +243,7 @@ class RegistrationController extends Controller
         try {
             // Get all group members
             $groupMembers = $studentGroup->members()->pluck('users.id')->push($studentGroup->leader_id)->unique();
-            
+
             // Check if any member is already registered in this or another project
             $hasProject = \App\Models\Project::whereHas('students', function ($query) use ($groupMembers) {
                 $query->whereIn('users.id', $groupMembers);
@@ -178,6 +287,7 @@ class RegistrationController extends Controller
 
     /**
      * Approve a project registration
+     * Supports both individual registration approval and group request approval
      */
     public function approve(Request $request, ProjectRegistration $registration): JsonResponse
     {
@@ -196,16 +306,47 @@ class RegistrationController extends Controller
             // Update review comments if provided
             if (isset($validated['comments'])) {
                 $approved->update(['review_comments' => $validated['comments']]);
+
+                // If this is part of a group request, update request comments too
+                if ($approved->group_registration_request_id) {
+                    $groupRequest = $approved->groupRegistrationRequest;
+                    $groupRequest->update(['review_comments' => $validated['comments']]);
+                }
             }
 
-            // Notify student about approval
+            // Notify group leader about approval
+            $notificationTarget = $registration->student;
+            if ($approved->group_registration_request_id) {
+                $groupRequest = $approved->groupRegistrationRequest;
+                $notificationTarget = $groupRequest->submitter;
+            }
+
             $this->notificationService->create(
-                $registration->student,
+                $notificationTarget,
                 "تم قبول طلب تسجيلك في المشروع: {$registration->project->title}",
                 'registration_approved',
                 'project',
                 $registration->project_id
             );
+
+            // If this is part of a group request, return the request with all registrations
+            if ($approved->group_registration_request_id) {
+                $groupRequest = $approved->groupRegistrationRequest->fresh()->load([
+                    'studentGroup.leader',
+                    'studentGroup.members',
+                    'submitter',
+                    'reviewer',
+                    'approvedProject',
+                    'projectRegistrations.project',
+                    'projectRegistrations.student',
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'data' => new GroupRegistrationRequestResource($groupRequest),
+                    'message' => 'Registration approved successfully. Other projects in this request have been rejected.',
+                ]);
+            }
 
             return response()->json([
                 'success' => true,
@@ -222,6 +363,7 @@ class RegistrationController extends Controller
 
     /**
      * Reject a project registration
+     * If the registration belongs to a group request, this will reject the entire request
      */
     public function reject(Request $request, ProjectRegistration $registration): JsonResponse
     {
@@ -232,6 +374,54 @@ class RegistrationController extends Controller
                 'comments' => 'required|string|max:1000',
             ]);
 
+            // Check if this registration belongs to a group registration request
+            if ($registration->group_registration_request_id) {
+                $groupRequest = $registration->groupRegistrationRequest;
+                
+                // Reject all registrations in the same request
+                $allRegistrations = ProjectRegistration::where('group_registration_request_id', $groupRequest->id)
+                    ->get();
+                
+                foreach ($allRegistrations as $reg) {
+                    $reg->update([
+                        'status' => 'rejected',
+                        'reviewed_by' => $request->user()->id,
+                        'reviewed_at' => now(),
+                        'review_comments' => $validated['comments'],
+                    ]);
+                }
+                
+                // Update the group request status
+                $groupRequest->update([
+                    'status' => 'rejected',
+                    'reviewed_by' => $request->user()->id,
+                    'reviewed_at' => now(),
+                    'review_comments' => $validated['comments'],
+                ]);
+
+                // Notify group leader about rejection
+                $this->notificationService->create(
+                    $groupRequest->submitter,
+                    "تم رفض طلب التسجيل الخاص بمجموعتك\nملاحظات: {$validated['comments']}",
+                    'registration_rejected',
+                    'project',
+                    null
+                );
+
+                return response()->json([
+                    'success' => true,
+                    'data' => new GroupRegistrationRequestResource($groupRequest->fresh()->load([
+                        'studentGroup.leader',
+                        'studentGroup.members',
+                        'submitter',
+                        'reviewer',
+                        'projectRegistrations.project',
+                    ])),
+                    'message' => 'Registration request rejected',
+                ]);
+            }
+
+            // Legacy: Individual registration rejection
             $rejected = $this->projectService->rejectRegistration(
                 $registration,
                 $request->user(),

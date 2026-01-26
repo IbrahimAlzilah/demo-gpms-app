@@ -4,7 +4,7 @@ import { useState } from 'react'
 import React from 'react'
 import { useToast } from '@/components/common'
 import { BlockContent, ModalDialog, ConfirmDialog, LoadingSpinner } from '@/components/common'
-import { Users, Mail, Crown, Loader2, CheckCircle2, XCircle, PlusCircle, UserPlus, Trash2 } from 'lucide-react'
+import { Users, Mail, Crown, Loader2, CheckCircle2, XCircle, PlusCircle, UserPlus } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
 import { useAuthStore } from '@/pages/auth/login'
 import { useAcceptInvitation, useRejectInvitation, useCreateGroup, useDeleteGroup } from '../hooks/useGroupOperations'
@@ -13,6 +13,7 @@ import { GroupInviteForm } from '../components/GroupInviteForm'
 import { GroupJoinForm } from '../components/GroupJoinForm'
 import { GroupMembersList } from '../components/GroupMembersList'
 import { GroupJoinRequestsList } from '../components/GroupJoinRequestsList'
+import { MyJoinRequestsList } from '../components/MyJoinRequestsList'
 import { useGroupsList } from './GroupsList.hook'
 
 export function GroupsList() {
@@ -93,7 +94,7 @@ export function GroupsList() {
           }}
           variant="outline"
         >
-          <UserPlus className="h-4 w-4 ml-2" />
+          <UserPlus className="size-4" />
           {t('groups.joinGroup')}
         </Button>
         <Button
@@ -102,7 +103,7 @@ export function GroupsList() {
           }}
           className="bg-primary text-white hover:bg-primary/90"
         >
-          <PlusCircle className="h-4 w-4 ml-2" />
+          <PlusCircle className="size-4" />
           {t('groups.createGroup')}
         </Button>
       </div>
@@ -117,6 +118,9 @@ export function GroupsList() {
         >
           <div className="space-y-6">
             {/* Removed inline success/error blocks */}
+
+            {/* My Join Requests - Show sent requests */}
+            <MyJoinRequestsList />
 
             {data.invitations && data.invitations.length > 0 && (
               // ... (invitations rendering)
@@ -203,7 +207,7 @@ export function GroupsList() {
                   }}
                   className="bg-primary text-white hover:bg-primary/90"
                 >
-                  <PlusCircle className="h-4 w-4 ml-2" />
+                  <PlusCircle className="size-4" />
                   {t('groups.createGroup')}
                 </Button>
               </div>
@@ -224,7 +228,7 @@ export function GroupsList() {
                 ...prev,
                 showJoinGroupModal: false,
               }))
-              toastSuccess(t('groups.joinSuccess'))
+              toastSuccess(t('groups.joinRequestSent', { defaultValue: 'Join request sent successfully' }))
             }}
             onError={(error) => {
               toastError(error)
@@ -237,9 +241,10 @@ export function GroupsList() {
           open={state.showCreateGroupModal}
           onOpenChange={(open) => setState((prev) => ({ ...prev, showCreateGroupModal: open }))}
           title={t('groups.createGroup')}
-          description={t('groups.createGroupDescription')}
+        // description={t('groups.createGroupDescription')}
         >
           <div className="space-y-4">
+            <p>{t('groups.createGroupDescription')}</p>
             <div className="flex gap-3 pt-4">
               <Button
                 type="button"
@@ -286,7 +291,7 @@ export function GroupsList() {
       }}
       className="bg-primary text-white hover:bg-primary/90"
     >
-      <PlusCircle className="h-4 w-4 ml-2" />
+      <PlusCircle className="size-4" />
       {t('groups.inviteMember')}
     </Button>
   ) : null
@@ -300,6 +305,9 @@ export function GroupsList() {
       >
         <div className="space-y-6">
           {/* Removed inline success block */}
+
+          {/* My Join Requests - Show sent requests */}
+          <MyJoinRequestsList />
 
           {data.invitations && data.invitations.length > 0 && (
             <Card>
@@ -410,7 +418,6 @@ export function GroupsList() {
                         </>
                       ) : (
                         <>
-                          <Trash2 className="mr-2 h-4 w-4" />
                           {t('groups.deleteGroup')}
                         </>
                       )}

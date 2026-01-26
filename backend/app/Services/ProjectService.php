@@ -100,6 +100,125 @@ class ProjectService
     }
 
     /**
+     * Validate that group is not already registered or assigned to a project
+     */
+    public function validateGroupNotRegistered(\App\Models\StudentGroup $group): void
+    {
+        // Check if group has any approved registration
+        $hasApprovedRegistration = ProjectRegistration::whereHas('student', function ($query) use ($group) {
+            $groupMembers = $group->members()->pluck('users.id')->push($group->leader_id)->unique();
+            $query->whereIn('id', $groupMembers);
+        })->where('status', 'approved')->exists();
+
+        if ($hasApprovedRegistration) {
+            throw new \Exception('Group already has an approved project registration');
+        }
+
+        // Check if group is assigned to any project
+        $assignedProject = Project::where('assigned_group_id', $group->id)->exists();
+        if ($assignedProject) {
+            throw new \Exception('Group is already assigned to a project');
+        }
+    }
+
+    /**
+     * Register a student group to multiple projects in a batch request
+     */
+    public function registerGroupBatch(array $projectIds, \App\Models\StudentGroup $group, User $submitter): \App\Models\GroupRegistrationRequest
+    {
+        // Validate submitter is group leader
+        if ($group->leader_id !== $submitter->id) {
+            throw new \Exception('Only group leader can register for projects');
+        }
+
+        // Validate group not already registered/assigned
+        $this->validateGroupNotRegistered($group);
+
+        // Validate group size (2-5 members)
+        if (!$group->meetsRegistrationRequirements()) {
+            $minMembers = app(\App\Services\SettingsService::class)->getGroupMinMembers();
+            $maxMembers = app(\App\Services\SettingsService::class)->getGroupMaxMembers();
+            $totalMembers = $group->getTotalMemberCount();
+            
+            if ($totalMembers < $minMembers) {
+                throw new \Exception("Group must have at least {$minMembers} members to register for projects");
+            }
+            
+            if ($totalMembers > $maxMembers) {
+                throw new \Exception("Group cannot have more than {$maxMembers} members to register for projects");
+            }
+        }
+
+        // Validate all projects exist and are available
+        $projects = Project::whereIn('id', $projectIds)->get();
+        if ($projects->count() !== count($projectIds)) {
+            throw new \Exception('One or more projects not found');
+        }
+
+        foreach ($projects as $project) {
+            if (!$project->isAvailableForRegistration()) {
+                throw new \Exception("Project '{$project->title}' is not available for registration");
+            }
+
+            // Check if project is already assigned to another group
+            if ($project->assigned_group_id && $project->assigned_group_id !== $group->id) {
+                throw new \Exception("Project '{$project->title}' is already assigned to another group");
+            }
+        }
+
+        // Get all group members (including leader)
+        $groupMembers = $group->members()->pluck('users.id')->push($group->leader_id)->unique();
+
+        // Check if any member is already registered in any of the projects
+        foreach ($projects as $project) {
+            $alreadyRegistered = $project->students()->whereIn('users.id', $groupMembers)->exists();
+            if ($alreadyRegistered) {
+                throw new \Exception("One or more group members are already registered in project '{$project->title}'");
+            }
+        }
+
+        return DB::transaction(function () use ($projects, $group, $submitter, $groupMembers) {
+            // Create group registration request
+            $request = \App\Models\GroupRegistrationRequest::create([
+                'student_group_id' => $group->id,
+                'submitted_by' => $submitter->id,
+                'status' => 'pending',
+                'submitted_at' => now(),
+            ]);
+
+            // Create project registration for each project
+            foreach ($projects as $project) {
+                ProjectRegistration::create([
+                    'project_id' => $project->id,
+                    'student_id' => $submitter->id,
+                    'group_registration_request_id' => $request->id,
+                    'status' => 'pending',
+                    'submitted_at' => now(),
+                ]);
+            }
+
+            // Notify projects committee about new batch registration
+            $committeeMembers = User::where('role', 'projects_committee')
+                ->where('status', 'active')
+                ->pluck('id')
+                ->toArray();
+
+            if (!empty($committeeMembers) && $this->notificationService) {
+                $projectTitles = $projects->pluck('title')->implode(', ');
+                $this->notificationService->createForUsers(
+                    $committeeMembers,
+                    "طلب تسجيل جديد من المجموعة {$group->name} في المشاريع: {$projectTitles}",
+                    'registration_submitted',
+                    'project',
+                    $projects->first()->id
+                );
+            }
+
+            return $request->load(['projectRegistrations.project', 'studentGroup', 'submitter']);
+        });
+    }
+
+    /**
      * Approve a project registration
      */
     public function approveRegistration(ProjectRegistration $registration, User $reviewer): ProjectRegistration
@@ -109,14 +228,36 @@ class ProjectService
         }
 
         return DB::transaction(function () use ($registration, $reviewer) {
+            $project = $registration->project;
+            
+            // Check if this registration belongs to a group registration request
+            if ($registration->group_registration_request_id) {
+                $request = $registration->groupRegistrationRequest;
+                
+                // Reject/cancel all other registrations in the same request
+                $otherRegistrations = ProjectRegistration::where('group_registration_request_id', $request->id)
+                    ->where('id', '!=', $registration->id)
+                    ->get();
+                
+                foreach ($otherRegistrations as $otherReg) {
+                    $otherReg->update(['status' => 'rejected']);
+                }
+                
+                // Update the request status
+                $request->update([
+                    'status' => 'approved',
+                    'approved_project_id' => $project->id,
+                    'reviewed_by' => $reviewer->id,
+                    'reviewed_at' => now(),
+                ]);
+            }
+            
             $registration->update([
                 'status' => 'approved',
                 'reviewed_by' => $reviewer->id,
                 'reviewed_at' => now(),
             ]);
 
-            $project = $registration->project;
-            
             // Check if this registration is from a group by finding the student's active group
             $studentGroup = \App\Models\StudentGroup::where(function ($query) use ($registration) {
                 $query->where('leader_id', $registration->student_id)

@@ -1,0 +1,1 @@
+export { RegistrationRequestCard } from './RegistrationRequestCard'

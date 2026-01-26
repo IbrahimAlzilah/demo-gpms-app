@@ -108,13 +108,10 @@ class ProjectPolicy
             return false;
         }
 
-        // CRITICAL: Student must be in an active group to register
-        $userGroup = \App\Models\StudentGroup::where(function ($query) use ($user) {
-            $query->where('leader_id', $user->id)
-                ->orWhereHas('members', function ($q) use ($user) {
-                    $q->where('users.id', $user->id);
-                });
-        })->where('status', 'active')->first();
+        // CRITICAL: Only group leader can register
+        $userGroup = \App\Models\StudentGroup::where('leader_id', $user->id)
+            ->where('status', 'active')
+            ->first();
 
         if (!$userGroup) {
             return false;

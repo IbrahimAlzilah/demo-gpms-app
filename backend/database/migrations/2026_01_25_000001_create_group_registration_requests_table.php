@@ -11,21 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('student_group_join_requests', function (Blueprint $table) {
+        Schema::create('group_registration_requests', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('group_id')->constrained('student_groups')->onDelete('cascade');
-            $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('student_group_id')->constrained('student_groups')->onDelete('cascade');
+            $table->foreignId('submitted_by')->constrained('users')->onDelete('cascade');
             $table->enum('status', ['pending', 'approved', 'rejected', 'cancelled'])->default('pending');
-            $table->text('message')->nullable();
-            $table->timestamp('requested_at')->useCurrent();
+            $table->timestamp('submitted_at')->useCurrent();
             $table->timestamp('reviewed_at')->nullable();
             $table->foreignId('reviewed_by')->nullable()->constrained('users')->onDelete('set null');
             $table->text('review_comments')->nullable();
+            $table->foreignId('approved_project_id')->nullable()->constrained('projects')->onDelete('set null');
             $table->timestamps();
-
-            $table->index('group_id');
-            $table->index('student_id');
+            
+            $table->index('student_group_id');
             $table->index('status');
+            $table->index('submitted_by');
         });
     }
 
@@ -34,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('student_group_join_requests');
+        Schema::dropIfExists('group_registration_requests');
     }
 };

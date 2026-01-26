@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next'
-import { Input, Textarea, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
+import { Input, Textarea, Label } from '@/components/ui'
+// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { AlertCircle, FileText, MessageSquare, Sparkles, User, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ProposalFormData } from '../../types/Proposals.types'
-import { useSupervisors } from '../../hooks/useSupervisors'
+// import { useSupervisors } from '../../hooks/useSupervisors'
 
 interface ProposalFieldsProps {
   proposal: ProposalFormData & { id: string; errors?: Record<string, string> }
@@ -14,7 +15,7 @@ interface ProposalFieldsProps {
 
 export function ProposalFields({ proposal, onChange, errors = {}, disabled = false }: ProposalFieldsProps) {
   const { t } = useTranslation()
-  const { data: supervisors = [], isLoading: supervisorsLoading, error: supervisorsError } = useSupervisors()
+  // const { data: supervisors = [], isLoading: supervisorsLoading, error: supervisorsError } = useSupervisors()
   const fieldErrors = proposal.errors || errors
 
   // Character counters
@@ -30,7 +31,7 @@ export function ProposalFields({ proposal, onChange, errors = {}, disabled = fal
         <div className="flex items-center justify-between">
           <Label
             htmlFor={`title-${proposal.id}`}
-            className="flex items-center gap-2 text-sm font-medium"
+            className="flex items-center gap-1 text-sm font-medium"
           >
             <div className="p-1 rounded bg-primary/10">
               <FileText className="h-3.5 w-3.5 text-primary" />
@@ -86,7 +87,7 @@ export function ProposalFields({ proposal, onChange, errors = {}, disabled = fal
         <div className="flex items-center justify-between">
           <Label
             htmlFor={`description-${proposal.id}`}
-            className="flex items-center gap-2 text-sm font-medium"
+            className="flex items-center gap-1 text-sm font-medium"
           >
             <div className="p-1 rounded bg-primary/10">
               <MessageSquare className="h-3.5 w-3.5 text-primary" />
@@ -149,7 +150,7 @@ export function ProposalFields({ proposal, onChange, errors = {}, disabled = fal
       </div>
 
       {/* Supervisor Selection */}
-      <div className="space-y-2">
+      {/* <div className="space-y-2">
         <Label
           htmlFor={`proposedSupervisorId-${proposal.id}`}
           className="flex items-center gap-2 text-sm font-medium"
@@ -231,7 +232,7 @@ export function ProposalFields({ proposal, onChange, errors = {}, disabled = fal
             Optionally suggest a supervisor for your project
           </p>
         )}
-      </div>
+      </div> */}
     </div>
   )
 }

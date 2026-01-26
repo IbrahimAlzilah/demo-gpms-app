@@ -21,6 +21,14 @@ class StudentGroupJoinRequest extends Model
         'review_comments',
     ];
 
+    /**
+     * Check if request is cancelled
+     */
+    public function isCancelled(): bool
+    {
+        return $this->status === 'cancelled';
+    }
+
     protected $casts = [
         'requested_at' => 'datetime',
         'reviewed_at' => 'datetime',

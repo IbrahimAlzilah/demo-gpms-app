@@ -37,7 +37,7 @@ apiClient.interceptors.response.use(
       return response;
     }
 
-    // Backend returns { success: true, data: {...}, message?: string }
+    // Backend returns { success: true, data: {...}, message?: string, pagination?: {...} }
     // Extract the data property for easier access in services
     if (
       response.data &&
@@ -50,8 +50,8 @@ apiClient.interceptors.response.use(
       return {
         ...response,
         data: extractedData,
-        // Keep pagination if present
-        pagination: response.data.pagination,
+        // Keep pagination if present (check both response.data.pagination and root level)
+        pagination: response.data.pagination || (response as any).pagination,
         message: response.data.message,
       };
     }

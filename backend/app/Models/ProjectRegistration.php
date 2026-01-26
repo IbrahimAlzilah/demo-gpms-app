@@ -13,6 +13,7 @@ class ProjectRegistration extends Model
     protected $fillable = [
         'project_id',
         'student_id',
+        'group_registration_request_id',
         'status',
         'submitted_at',
         'reviewed_at',
@@ -47,6 +48,14 @@ class ProjectRegistration extends Model
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    /**
+     * Get the group registration request this registration belongs to
+     */
+    public function groupRegistrationRequest(): BelongsTo
+    {
+        return $this->belongsTo(GroupRegistrationRequest::class, 'group_registration_request_id');
     }
 
     /**

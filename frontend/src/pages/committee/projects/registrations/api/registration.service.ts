@@ -1,5 +1,5 @@
 import { apiClient } from '../../../../../lib/axios'
-import type { ProjectRegistration } from '../../../../../types/project.types'
+import type { ProjectRegistration, GroupRegistrationRequest } from '../../../../../types/project.types'
 import type { TableQueryParams, TableResponse } from '../../../../../types/table.types'
 
 export interface RegistrationListParams {
@@ -135,5 +135,42 @@ export const registrationService = {
       }
     )
     return response.data
+  },
+
+  /**
+   * Get grouped registration requests
+   */
+  getGroupedRequests: async (params?: {
+    status?: string
+    page?: number
+    pageSize?: number
+    search?: string
+  }): Promise<{
+    data: GroupRegistrationRequest[]
+    pagination?: {
+      page: number
+      pageSize: number
+      total: number
+      totalPages: number
+    }
+  }> => {
+    const queryParams = new URLSearchParams()
+    queryParams.append('grouped', 'true')
+    if (params?.status) queryParams.append('status', params.status)
+    if (params?.page) queryParams.append('page', params.page.toString())
+    if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString())
+    if (params?.search) queryParams.append('search', params.search)
+
+    const response = await apiClient.get(
+      `/projects-committee/registrations?${queryParams.toString()}`
+    )
+    
+    // Axios interceptor extracts response.data.data to response.data
+    // and response.data.pagination to response.pagination
+    // So response.data is the array, and response.pagination is the pagination object
+    return {
+      data: Array.isArray(response.data) ? response.data : [],
+      pagination: (response as any).pagination,
+    }
   },
 }

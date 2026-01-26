@@ -154,22 +154,20 @@ class ProposalController extends Controller
         $user = $request->user();
         $timeWindowService = app(\App\Services\TimeWindowService::class);
 
-        // Check which window is active
+        // Check if proposal submission window is active
         $isProposalSubmissionWindow = $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::PROPOSAL_SUBMISSION);
         $isRegistrationWindow = $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::PROJECT_REGISTRATION);
         
-        // Students must have at least one active window to submit proposals
-        if (!$isProposalSubmissionWindow && !$isRegistrationWindow) {
+        // Students can only submit proposals during the proposal submission window
+        if (!$isProposalSubmissionWindow) {
             return response()->json([
                 'success' => false,
-                'message' => 'Proposal submission is only allowed during proposal submission or project registration windows',
+                'message' => 'Proposal submission is only allowed during the proposal submission period. Please check the active time windows.',
             ], 403);
         }
         
-        // Dynamic validation: target_project_id is required during registration window, optional during proposal submission
-        $targetProjectRule = $isRegistrationWindow 
-            ? 'required|exists:projects,id' 
-            : 'nullable|exists:projects,id';
+        // During proposal submission window, target_project_id is optional
+        $targetProjectRule = 'nullable|exists:projects,id';
         
         $validated = $request->validate([
             'student_group_id' => 'required|exists:student_groups,id',
@@ -459,22 +457,20 @@ class ProposalController extends Controller
         $user = $request->user();
         $timeWindowService = app(\App\Services\TimeWindowService::class);
 
-        // Check which window is active
+        // Check if proposal submission window is active
         $isProposalSubmissionWindow = $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::PROPOSAL_SUBMISSION);
         $isRegistrationWindow = $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::PROJECT_REGISTRATION);
         
-        // Students must have at least one active window to submit proposals
-        if (!$isProposalSubmissionWindow && !$isRegistrationWindow) {
+        // Students can only submit proposals during the proposal submission window
+        if (!$isProposalSubmissionWindow) {
             return response()->json([
                 'success' => false,
-                'message' => 'Proposal submission is only allowed during proposal submission or project registration windows',
+                'message' => 'Proposal submission is only allowed during the proposal submission period. Please check the active time windows.',
             ], 403);
         }
         
-        // Dynamic validation: target_project_id is required during registration window, optional during proposal submission
-        $targetProjectRule = $isRegistrationWindow 
-            ? 'required|exists:projects,id' 
-            : 'nullable|exists:projects,id';
+        // During proposal submission window, target_project_id is optional
+        $targetProjectRule = 'nullable|exists:projects,id';
         
         $validated = $request->validate([
             'title' => 'required|string|max:255',

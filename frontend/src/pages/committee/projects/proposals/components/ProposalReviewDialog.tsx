@@ -136,35 +136,84 @@ export function ProposalReviewDialog({
               </div>
 
               {/* Proposal Metadata */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 pt-3 border-t border-border/50">
-                {proposal.submitter && (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <User className="h-3.5 w-3.5" />
-                    <span>
-                      <span className="font-medium">{t('proposal.submittedBy')}:</span> {proposal.submitter.name || proposal.submitter.email}
-                    </span>
-                  </div>
-                )}
-                {proposal.studentGroup && (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Users className="h-3.5 w-3.5" />
-                    <span>
-                      <span className="font-medium">{t('proposal.group')}:</span> {proposal.studentGroup.name || proposal.studentGroup.groupCode}
-                    </span>
-                  </div>
-                )}
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Calendar className="h-3.5 w-3.5" />
-                  <span>
-                    <span className="font-medium">{t('proposal.submittedAt')}:</span> {formatDate(proposal.createdAt)}
-                  </span>
-                </div>
-                {proposal.reviewedAt && (
+              <div className="space-y-3 pt-3 border-t border-border/50">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                  {proposal.submitter && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <User className="h-3.5 w-3.5" />
+                      <span>
+                        <span className="font-medium">{t('proposal.submittedBy')}:</span> {proposal.submitter.name || proposal.submitter.email}
+                      </span>
+                    </div>
+                  )}
+                  {proposal.studentGroup && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Users className="h-3.5 w-3.5" />
+                      <span>
+                        <span className="font-medium">{t('proposal.group')}:</span> {proposal.studentGroup.name || proposal.studentGroup.groupCode || `Group #${proposal.studentGroup.id}`}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Calendar className="h-3.5 w-3.5" />
                     <span>
-                      <span className="font-medium">{t('proposal.reviewedAt')}:</span> {formatDate(proposal.reviewedAt)}
+                      <span className="font-medium">{t('proposal.submittedAt')}:</span> {formatDate(proposal.createdAt)}
                     </span>
+                  </div>
+                  {proposal.reviewedAt && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Calendar className="h-3.5 w-3.5" />
+                      <span>
+                        <span className="font-medium">{t('proposal.reviewedAt')}:</span> {formatDate(proposal.reviewedAt)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Student Group Details */}
+                {proposal.studentGroup && (
+                  <div className="p-3 rounded-md bg-muted/30 border border-border/50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Users className="h-3.5 w-3.5 text-primary" />
+                      <span className="text-xs font-semibold">{t('proposal.studentGroup') || 'Student Group Details'}</span>
+                    </div>
+                    <div className="space-y-1.5 text-xs">
+                      {proposal.studentGroup.leader && (
+                        <div className="text-muted-foreground">
+                          <span className="font-medium">{t('proposal.groupLeader') || 'Leader'}:</span> {proposal.studentGroup.leader.name}
+                          {proposal.studentGroup.leader.email && ` (${proposal.studentGroup.leader.email})`}
+                        </div>
+                      )}
+                      {proposal.studentGroup.members && proposal.studentGroup.members.length > 0 && (
+                        <div className="text-muted-foreground">
+                          <span className="font-medium">{t('proposal.groupMembers') || 'Members'}:</span> {proposal.studentGroup.members.length}
+                        </div>
+                      )}
+                      {proposal.studentGroup.memberCount !== undefined && (
+                        <div className="text-muted-foreground">
+                          <span className="font-medium">{t('common.totalMembers') || 'Total'}:</span> {proposal.studentGroup.memberCount}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Supervisor Information */}
+                {proposal.proposedSupervisor && (
+                  <div className="p-3 rounded-md bg-muted/30 border border-border/50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <User className="h-3.5 w-3.5 text-primary" />
+                      <span className="text-xs font-semibold">{t('proposal.proposedSupervisor') || 'Proposed Supervisor'}</span>
+                    </div>
+                    <div className="space-y-1.5 text-xs text-muted-foreground">
+                      <div className="font-medium">{proposal.proposedSupervisor.name}</div>
+                      {proposal.proposedSupervisor.email && (
+                        <div>{proposal.proposedSupervisor.email}</div>
+                      )}
+                      {proposal.proposedSupervisor.department && (
+                        <div>{proposal.proposedSupervisor.department}</div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

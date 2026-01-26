@@ -121,7 +121,7 @@ export function StudentDashboardPage() {
 
         {/* Active Time Windows Alert */}
         {activeTimeWindows.length > 0 && (
-          <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
+          <Card>
             <CardContent className="px-4">
               <div className="flex items-start gap-4">
                 <div className="p-2 rounded-lg bg-primary/20">
@@ -130,17 +130,28 @@ export function StudentDashboardPage() {
                 <div className="flex-1">
                   <h3 className="font-semibold mb-2">{t('dashboard.student.activeWindows', { defaultValue: 'Active Time Windows' })}</h3>
                   <div className="space-y-2">
-                    {activeTimeWindows.map((window) => (
-                      <div key={window.id} className="flex items-center justify-between p-2 rounded-lg bg-background/50">
-                        <div>
-                          <p className="font-medium text-sm">{window.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {t('dashboard.student.endsIn', { count: window.daysRemaining, defaultValue: `Ends in ${window.daysRemaining} days` })}
-                          </p>
+                    {activeTimeWindows.map((window) => {
+                      // Format days remaining: show 2 decimal places if less than 1 day, otherwise round to nearest integer
+                      const formattedDays = window.daysRemaining < 1
+                        ? window.daysRemaining.toFixed(2)
+                        : Math.round(window.daysRemaining)
+                      const displayDays = window.daysRemaining !== null ? formattedDays : '-'
+
+                      return (
+                        <div key={window.id} className="flex items-center justify-between p-2 rounded-lg bg-background/50">
+                          <div>
+                            <p className="font-medium text-sm">{window.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {t('dashboard.student.endsIn', {
+                                count: Math.round(window.daysRemaining),
+                                defaultValue: `Ends in ${displayDays} days`
+                              })}
+                            </p>
+                          </div>
+                          <span className="text-xs font-medium text-primary">{displayDays}d</span>
                         </div>
-                        <span className="text-xs font-medium text-primary">{window.daysRemaining}d</span>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 </div>
               </div>

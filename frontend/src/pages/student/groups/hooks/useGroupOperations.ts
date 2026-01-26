@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { groupService } from '../api/group.service'
 import { useAuthStore } from '@/pages/auth/login'
 import type { User } from '@/types/user.types'
@@ -191,6 +191,8 @@ export function useCreateJoinRequest() {
       if (data?.groupId) {
         queryClient.invalidateQueries({ queryKey: ['group-join-requests', data.groupId] })
       }
+      // Invalidate my join requests (for students to see their sent requests)
+      queryClient.invalidateQueries({ queryKey: ['my-join-requests'] })
       // Invalidate all group queries
       queryClient.invalidateQueries({ queryKey: ['groups'] })
       if (user) {
@@ -271,6 +273,31 @@ export function useDeleteGroup() {
       if (user) {
         queryClient.invalidateQueries({ queryKey: ['groups', 'student', user.id] })
       }
+    },
+  })
+}
+
+export function useMyJoinRequests() {
+  return useQuery({
+    queryKey: ['my-join-requests'],
+    queryFn: () => groupService.getMyJoinRequests(),
+  })
+}
+
+export function useCancelJoinRequest() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (requestId: string) => {
+      return groupService.cancelJoinRequest(requestId)
+    },
+    onSuccess: () => {
+      // Invalidate my join requests
+      queryClient.invalidateQueries({ queryKey: ['my-join-requests'] })
+      // Invalidate group join requests (for leaders)
+      queryClient.invalidateQueries({ queryKey: ['group-join-requests'] })
+      // Invalidate all group queries
+      queryClient.invalidateQueries({ queryKey: ['groups'] })
     },
   })
 }

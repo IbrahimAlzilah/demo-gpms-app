@@ -1,17 +1,17 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useApproveRegistration, useRejectRegistration } from '../hooks/useRegistrationOperations'
-import { createRegistrationColumns } from '../components/table'
 import { RegistrationDetailsView } from '../components/RegistrationDetailsView'
 import { ManualRegistrationDialog } from '../components/ManualRegistrationDialog'
-import { DataTable, Textarea, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Button } from '@/components/ui'
+import { GroupedRegistrationCard } from '../components/GroupedRegistrationCard'
+import { Textarea, Label, Button } from '@/components/ui'
 import { Card, CardContent } from '@/components/ui/card'
 import { LoadingSpinner, ConfirmDialog, BlockContent } from '@/components/common'
 import type { ProjectRegistration } from '@/types/project.types'
 import { useRegistrationsList } from './RegistrationsList.hook'
 import { useToast } from '@/components/common'
-import { AlertCircle, UserPlus } from 'lucide-react'
+import { AlertCircle, UserPlus, Users } from 'lucide-react'
 import { apiClient } from '@/lib/axios'
 
 export function RegistrationsList() {
@@ -51,16 +51,7 @@ export function RegistrationsList() {
     data,
     state,
     setState,
-    totalCount,
-    pageCount,
-    sorting,
-    setSorting,
-    columnFilters,
-    setColumnFilters,
-    globalFilter,
-    setGlobalFilter,
-    pagination,
-    setPagination,
+    setGroupedPagination,
   } = useRegistrationsList()
 
   const handleApprove = async () => {
@@ -71,6 +62,9 @@ export function RegistrationsList() {
         comments: state.comments || undefined,
       })
       toastSuccess('registration.approveSuccess')
+      queryClient.invalidateQueries({ queryKey: ['committee-registrations-grouped'] })
+      queryClient.invalidateQueries({ queryKey: ['committee-registrations-table'] })
+      queryClient.invalidateQueries({ queryKey: ['committee-registrations'] })
       setState((prev) => ({
         ...prev,
         showDialog: false,
@@ -95,6 +89,9 @@ export function RegistrationsList() {
         comments: state.comments,
       })
       toastSuccess('registration.rejectSuccess')
+      queryClient.invalidateQueries({ queryKey: ['committee-registrations-grouped'] })
+      queryClient.invalidateQueries({ queryKey: ['committee-registrations-table'] })
+      queryClient.invalidateQueries({ queryKey: ['committee-registrations'] })
       setState((prev) => ({
         ...prev,
         showDialog: false,
@@ -117,19 +114,6 @@ export function RegistrationsList() {
     }))
   }
 
-  const columns = useMemo(
-    () =>
-      createRegistrationColumns({
-        onView: (registration) => {
-          setState((prev) => ({ ...prev, registrationToViewId: registration.id }))
-        },
-        onApprove: (registration) => handleActionClick(registration, 'approve'),
-        onReject: (registration) => handleActionClick(registration, 'reject'),
-        t,
-      }),
-    [setState, t]
-  )
-
   if (data.isLoading) {
     return (
       <Card>
@@ -151,55 +135,110 @@ export function RegistrationsList() {
           </Button>
         }
       >
-        <DataTable
-          toolbarContent={
-            <Select
-              value={state.statusFilter}
-              onValueChange={(value) => setState((prev) => ({ ...prev, statusFilter: value as typeof prev.statusFilter }))}
-            >
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder={t('common.filterByStatus')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('common.all')}</SelectItem>
-                <SelectItem value="pending">{t('registration.pending')}</SelectItem>
-                <SelectItem value="approved">{t('registration.approved')}</SelectItem>
-                <SelectItem value="rejected">{t('registration.rejected')}</SelectItem>
-              </SelectContent>
-            </Select>
-          }
-          columns={columns}
-          data={data.registrations}
-          isLoading={data.isLoading}
-          error={data.error}
-          pageCount={pageCount}
-          totalCount={totalCount}
-          pageIndex={pagination.pageIndex}
-          pageSize={pagination.pageSize}
-          onPaginationChange={(pageIndex, pageSize) => {
-            setPagination({ pageIndex, pageSize })
-          }}
-          sorting={sorting}
-          onSortingChange={setSorting}
-          columnFilters={columnFilters}
-          onColumnFiltersChange={setColumnFilters}
-          searchValue={globalFilter}
-          onSearchChange={setGlobalFilter}
-          enableFiltering={true}
-          enableViews={true}
-          emptyMessage={t('registration.noRegistrations')}
-        />
+        {/* Always show grouped view */}
+        <div className="space-y-4">
+          {data.isLoading ? (
+            <div className="flex justify-center py-8">
+              <LoadingSpinner />
+            </div>
+          ) : data.error ? (
+            <div className="text-center py-8">
+              <div className="flex flex-col items-center gap-2">
+                <AlertCircle className="h-8 w-8 text-destructive" />
+                <p className="text-sm font-medium text-destructive">
+                  {t('registration.loadError')}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {data.error instanceof Error ? data.error.message : String(data.error)}
+                </p>
+              </div>
+            </div>
+          ) : data.groupedRequests && Array.isArray(data.groupedRequests) && data.groupedRequests.length > 0 ? (
+            <>
+              {data.groupedRequests.map((request) => (
+                <GroupedRegistrationCard
+                  key={request.id}
+                  request={request}
+                  onViewRegistration={(registration) => {
+                    setState((prev) => ({ ...prev, registrationToViewId: registration.id }))
+                  }}
+                  onApproveProject={async (requestId, projectId) => {
+                    const registration = request.projectRegistrations?.find(r => r.projectId === projectId)
+                    if (registration) {
+                      handleActionClick(registration, 'approve')
+                    }
+                  }}
+                  onRejectRequest={async (requestId) => {
+                    const request = data.groupedRequests?.find(r => r.id === requestId)
+                    if (request?.projectRegistrations?.[0]) {
+                      handleActionClick(request.projectRegistrations[0], 'reject')
+                    }
+                  }}
+                  isLoadingAction={(requestId) => {
+                    const request = data.groupedRequests?.find(r => r.id === requestId)
+                    return request?.projectRegistrations?.some(r =>
+                      approveRegistration.isPending || rejectRegistration.isPending
+                    ) || false
+                  }}
+                />
+              ))}
+              {data.groupedPagination && (
+                <div className="flex items-center justify-between pt-4">
+                  <p className="text-sm text-muted-foreground">
+                    {(() => {
+                      const from = ((data.groupedPagination.page - 1) * data.groupedPagination.pageSize) + 1
+                      const to = Math.min(data.groupedPagination.page * data.groupedPagination.pageSize, data.groupedPagination.total)
+                      return `Showing ${from}-${to} of ${data.groupedPagination.total}`
+                    })()}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={!data.groupedPagination || data.groupedPagination.page <= 1}
+                      onClick={() => setGroupedPagination((prev) => ({
+                        ...prev,
+                        pageIndex: prev.pageIndex - 1
+                      }))}
+                    >
+                      {t('common.previous')}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={!data.groupedPagination || data.groupedPagination.page >= data.groupedPagination.totalPages}
+                      onClick={() => setGroupedPagination((prev) => ({
+                        ...prev,
+                        pageIndex: prev.pageIndex + 1
+                      }))}
+                    >
+                      {t('common.next')}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-12">
+              <div className="flex flex-col items-center gap-3">
+                <Users className="h-12 w-12 text-muted-foreground/50" />
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">
+                    {t('registration.noRegistrations')}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {state.statusFilter !== 'all'
+                      ? t('registration.noRegistrationsForStatus', { status: state.statusFilter }) ||
+                      `No ${state.statusFilter} registrations found`
+                      : t('registration.noRegistrationsDescription') ||
+                      'No registration requests have been submitted yet'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </BlockContent>
-
-
-      {data.error && (
-        <BlockContent variant="container" className="border-destructive">
-          <div className="flex items-center gap-2 text-destructive">
-            <AlertCircle className="h-5 w-5" />
-            <span>{t('registration.loadError')}</span>
-          </div>
-        </BlockContent>
-      )}
 
       <ConfirmDialog
         open={state.showDialog}
