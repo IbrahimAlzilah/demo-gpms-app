@@ -7,7 +7,7 @@ import { BlockContent, ModalDialog, ConfirmDialog, LoadingSpinner } from '@/comp
 import { Users, Mail, Crown, Loader2, CheckCircle2, XCircle, PlusCircle, UserPlus } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
 import { useAuthStore } from '@/pages/auth/login'
-import { useAcceptInvitation, useRejectInvitation, useCreateGroup, useDeleteGroup } from '../hooks/useGroupOperations'
+import { useAcceptInvitation, useRejectInvitation, useCreateGroup, useDeleteGroup, useMyJoinRequests } from '../hooks/useGroupOperations'
 import type { User } from '@/types/user.types'
 import { GroupInviteForm } from '../components/GroupInviteForm'
 import { GroupJoinForm } from '../components/GroupJoinForm'
@@ -31,8 +31,17 @@ export function GroupsList() {
   const rejectInvitation = useRejectInvitation()
   const createGroup = useCreateGroup()
   const deleteGroup = useDeleteGroup()
+  const { data: myJoinRequests } = useMyJoinRequests()
   const [isCopied, setIsCopied] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+
+  // Check if there's a pending join request
+  const hasPendingJoinRequest = React.useMemo(() => {
+    if (!myJoinRequests || myJoinRequests.length === 0) {
+      return false
+    }
+    return myJoinRequests.some((request) => request.status === 'pending')
+  }, [myJoinRequests])
 
   // Check if group has any project registrations - MUST be called before any early returns
   const hasProjectRegistrations = React.useMemo(() => {
@@ -93,6 +102,8 @@ export function GroupsList() {
             setState((prev) => ({ ...prev, showJoinGroupModal: true }))
           }}
           variant="outline"
+          disabled={hasPendingJoinRequest}
+          title={hasPendingJoinRequest ? t('groups.pendingRequestTooltip', { defaultValue: 'You have a pending join request. Please cancel it first.' }) : undefined}
         >
           <UserPlus className="size-4" />
           {t('groups.joinGroup')}
@@ -102,6 +113,8 @@ export function GroupsList() {
             setState((prev) => ({ ...prev, showCreateGroupModal: true }))
           }}
           className="bg-primary text-white hover:bg-primary/90"
+          disabled={hasPendingJoinRequest}
+          title={hasPendingJoinRequest ? t('groups.pendingRequestTooltip', { defaultValue: 'You have a pending join request. Please cancel it first.' }) : undefined}
         >
           <PlusCircle className="size-4" />
           {t('groups.createGroup')}
@@ -197,20 +210,24 @@ export function GroupsList() {
               <h2 className="text-2xl font-semibold text-gray-800 mb-3">
                 {t('groups.noGroup')}
               </h2>
-              <p className="text-sm text-gray-500 mb-8 max-w-md">
+              <p className="text-sm text-gray-500 max-w-md">
                 {t('groups.noGroupDescription')}
               </p>
-              <div className="flex items-center gap-4">
-                <Button
-                  onClick={() => {
-                    setState((prev) => ({ ...prev, showCreateGroupModal: true }))
-                  }}
-                  className="bg-primary text-white hover:bg-primary/90"
-                >
-                  <PlusCircle className="size-4" />
-                  {t('groups.createGroup')}
-                </Button>
-              </div>
+              {!hasPendingJoinRequest && (
+                <div className="flex items-center gap-4 mt-6">
+                  <Button
+                    onClick={() => {
+                      setState((prev) => ({ ...prev, showCreateGroupModal: true }))
+                    }}
+                    className="bg-primary text-white hover:bg-primary/90"
+                    disabled={hasPendingJoinRequest}
+                    title={hasPendingJoinRequest ? t('groups.pendingRequestTooltip', { defaultValue: 'You have a pending join request. Please cancel it first.' }) : undefined}
+                  >
+                    <PlusCircle className="size-4" />
+                    {t('groups.createGroup')}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </BlockContent>

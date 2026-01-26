@@ -56,7 +56,7 @@ export function EvaluationPage() {
                 onClick={() => navigate(ROUTES.SUPERVISOR.PROJECTS)}
                 variant="outline"
               >
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className="size-4 ltr:rotate-180" />
                 {t('supervisor.backToProjects')}
               </Button>
             </CardContent>

@@ -49,6 +49,14 @@ export function MyJoinRequestsList() {
         return null
     }
 
+    // Filter to show only pending requests
+    const pendingRequests = joinRequests.filter((request) => request.status === 'pending')
+
+    // Don't show the card if there are no pending requests
+    if (pendingRequests.length === 0) {
+        return null
+    }
+
     return (
         <>
             <Card>
@@ -63,31 +71,14 @@ export function MyJoinRequestsList() {
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-3">
-                        {joinRequests.map((request: GroupJoinRequest) => {
-                            const isPending = request.status === 'pending'
-                            const isApproved = request.status === 'approved'
-                            const isRejected = request.status === 'rejected'
-
+                        {pendingRequests.map((request: GroupJoinRequest) => {
+                            // All requests here are pending, so we can simplify the logic
                             return (
                                 <div
                                     key={request.id}
-                                    className={`flex items-start gap-3 p-4 rounded-lg border ${isPending
-                                            ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800'
-                                            : isApproved
-                                                ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800'
-                                                : isRejected
-                                                    ? 'bg-rose-50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800'
-                                                    : 'bg-gray-50 dark:bg-gray-950/20 border-gray-200 dark:border-gray-800'
-                                        }`}
+                                    className="flex items-start gap-3 p-4 rounded-lg border bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800"
                                 >
-                                    <UserPlus className={`h-5 w-5 mt-0.5 shrink-0 ${isPending
-                                            ? 'text-blue-600 dark:text-blue-400'
-                                            : isApproved
-                                                ? 'text-emerald-600 dark:text-emerald-400'
-                                                : isRejected
-                                                    ? 'text-rose-600 dark:text-rose-400'
-                                                    : 'text-gray-600 dark:text-gray-400'
-                                        }`} />
+                                    <UserPlus className="h-5 w-5 mt-0.5 shrink-0 text-blue-600 dark:text-blue-400" />
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
                                             <p className="font-medium text-sm">
@@ -95,6 +86,7 @@ export function MyJoinRequestsList() {
                                             </p>
                                             <StatusBadge status={request.status} />
                                         </div>
+                                        {/* Show details only for pending requests */}
                                         {request.group?.leader && (
                                             <p className="text-xs text-muted-foreground mb-1">
                                                 {t('groups.groupLeader', { defaultValue: 'Group Leader' })}: {request.group.leader.name}
@@ -110,43 +102,24 @@ export function MyJoinRequestsList() {
                                                     {t('groups.requestedAt', { defaultValue: 'Requested' })}: {formatRelativeTime(request.requestedAt)}
                                                 </span>
                                             </div>
-                                            {request.reviewedAt && (
-                                                <div className="flex items-center gap-1">
-                                                    <Clock className="h-3 w-3" />
-                                                    <span>
-                                                        {isApproved
-                                                            ? t('groups.approvedAt', { defaultValue: 'Approved' })
-                                                            : isRejected
-                                                                ? t('groups.rejectedAt', { defaultValue: 'Rejected' })
-                                                                : ''}: {formatRelativeTime(request.reviewedAt)}
-                                                    </span>
-                                                </div>
-                                            )}
                                         </div>
-                                        {request.reviewComments && (
-                                            <p className="text-xs text-muted-foreground mt-2 italic">
-                                                {t('groups.reviewComments', { defaultValue: 'Comments' })}: {request.reviewComments}
-                                            </p>
-                                        )}
                                     </div>
-                                    {isPending && (
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() => handleCancelClick(request)}
-                                            disabled={cancelRequest.isPending}
-                                            className="border-destructive text-destructive hover:bg-destructive/10 shrink-0"
-                                        >
-                                            {cancelRequest.isPending ? (
-                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                            ) : (
-                                                <>
-                                                    <X className="mr-1 h-4 w-4" />
-                                                    {t('common.cancel')}
-                                                </>
-                                            )}
-                                        </Button>
-                                    )}
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleCancelClick(request)}
+                                        disabled={cancelRequest.isPending}
+                                        className="border-destructive text-destructive hover:bg-destructive/10 shrink-0"
+                                    >
+                                        {cancelRequest.isPending ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                            <>
+                                                <X className="mr-1 h-4 w-4" />
+                                                {t('common.cancel')}
+                                            </>
+                                        )}
+                                    </Button>
                                 </div>
                             )
                         })}

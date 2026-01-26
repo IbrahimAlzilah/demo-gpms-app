@@ -59,7 +59,7 @@ export function ProposalsEditBatch() {
             className="mt-6"
             onClick={() => navigate(ROUTES.SUPERVISOR.MY_PROPOSALS)}
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="size-4 ltr:rotate-180" />
             {t('common.back')}
           </Button>
         </div>
@@ -74,7 +74,7 @@ export function ProposalsEditBatch() {
       title={t('proposal.edit')}
       actions={
         <Button variant="outline" onClick={() => navigate(ROUTES.SUPERVISOR.MY_PROPOSALS)}>
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="size-4 ltr:rotate-180" />
           {t('common.back')}
         </Button>
       }

@@ -125,7 +125,7 @@ export function ProposalEditDialog({
             But the previous implementation had DialogFooter.
             We should put actions at the bottom of the form.
         */}
-        <div className="flex justify-end space-x-2 gap-2 mt-6 border-t pt-4">
+        <div className="flex justify-end gap-2 mt-6 border-t pt-4">
           <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
             {t('common.cancel')}
           </Button>

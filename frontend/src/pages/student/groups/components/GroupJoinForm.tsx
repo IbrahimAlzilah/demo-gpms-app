@@ -3,9 +3,10 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button, Label, Input, Textarea } from '@/components/ui'
 import { AlertCircle, Users, Loader2 } from 'lucide-react'
-import { useCreateJoinRequest } from '../hooks/useGroupOperations'
+import { useCreateJoinRequest, useMyJoinRequests } from '../hooks/useGroupOperations'
 import { groupService } from '../api/group.service'
 import { groupJoinSchema, type GroupJoinSchema } from '../schema'
+import { useToast } from '@/components/common'
 
 interface GroupJoinFormProps {
   onSuccess?: () => void
@@ -15,6 +16,11 @@ interface GroupJoinFormProps {
 export function GroupJoinForm({ onSuccess, onError }: GroupJoinFormProps) {
   const { t } = useTranslation()
   const createJoinRequest = useCreateJoinRequest()
+  const { data: myJoinRequests } = useMyJoinRequests()
+  const { toastError } = useToast()
+
+  // Check if there's a pending join request
+  const hasPendingJoinRequest = myJoinRequests?.some((request) => request.status === 'pending') ?? false
 
   const {
     register,
@@ -30,6 +36,12 @@ export function GroupJoinForm({ onSuccess, onError }: GroupJoinFormProps) {
   })
 
   const onSubmit = async (data: GroupJoinSchema) => {
+    // Prevent submission if there's a pending request
+    if (hasPendingJoinRequest) {
+      toastError(t('groups.pendingRequestError', { defaultValue: 'You already have a pending join request. Please cancel it first.' }))
+      return
+    }
+
     try {
       const group = await groupService.lookupByCode(data.groupCode)
 
@@ -83,10 +95,19 @@ export function GroupJoinForm({ onSuccess, onError }: GroupJoinFormProps) {
           </p>
         )}
       </div>
+      {hasPendingJoinRequest && (
+        <div className="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+          <p className="text-sm text-amber-900 dark:text-amber-100 flex items-center gap-2">
+            <AlertCircle className="h-4 w-4" />
+            {t('groups.pendingRequestWarning', { defaultValue: 'You have a pending join request. Please cancel it before sending a new one.' })}
+          </p>
+        </div>
+      )}
       <Button
         type="submit"
-        disabled={createJoinRequest.isPending}
+        disabled={createJoinRequest.isPending || hasPendingJoinRequest}
         className="w-full bg-primary text-white hover:bg-primary/90"
+        title={hasPendingJoinRequest ? t('groups.pendingRequestTooltip', { defaultValue: 'You have a pending join request. Please cancel it first.' }) : undefined}
       >
         {createJoinRequest.isPending ? (
           <>

@@ -84,7 +84,7 @@ export function ProjectDetails() {
                 onClick={() => navigate(ROUTES.SUPERVISOR.PROJECTS)}
                 variant="outline"
               >
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className="size-4 ltr:rotate-180" />
                 {t('supervisor.backToProjects')}
               </Button>
             </CardContent>
@@ -125,7 +125,7 @@ export function ProjectDetails() {
                 onClick={() => navigate(ROUTES.SUPERVISOR.PROJECTS)}
                 variant="outline"
               >
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className="size-4 ltr:rotate-180" />
                 {t('supervisor.backToProjects')}
               </Button>
             </CardContent>
@@ -137,7 +137,7 @@ export function ProjectDetails() {
 
   const actions = (
     <Button variant="outline" size="sm" onClick={() => navigate(ROUTES.SUPERVISOR.PROJECTS)}>
-      <ArrowLeft className="h-4 w-4" />
+      <ArrowLeft className="size-4 ltr:rotate-180" />
       {t('common.back')}
     </Button>
   )

@@ -40,7 +40,7 @@ export function ProposalsView() {
           </div>
           <p className="text-muted-foreground mb-4">{t('proposal.proposalNotFound')}</p>
           <Button onClick={() => navigate(ROUTES.SUPERVISOR.MY_PROPOSALS)}>
-            <ArrowLeft className="h-4 w-4 me-2" />
+            <ArrowLeft className="size-4 ltr:rotate-180" />
             {t('common.back')}
           </Button>
         </div>
@@ -91,7 +91,7 @@ export function ProposalsView() {
           <div className="flex items-center gap-2">
             <StatusBadge status={proposal.status} />
             <Button variant="outline" onClick={() => navigate(ROUTES.SUPERVISOR.MY_PROPOSALS)}>
-              <ArrowLeft className="h-4 w-4 me-2" />
+              <ArrowLeft className="size-4 ltr:rotate-180" />
               {t('common.back')}
             </Button>
           </div>

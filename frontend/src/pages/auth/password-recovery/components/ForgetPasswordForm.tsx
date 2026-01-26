@@ -107,7 +107,7 @@ export function ForgetPasswordForm() {
               to={ROUTES.LOGIN}
               className="inline-flex items-center gap-2 text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="size-4 ltr:rotate-180" />
               {t('auth.forgetPassword.backToLogin')}
             </Link>
           </div>
@@ -182,7 +182,7 @@ export function ForgetPasswordForm() {
           to={ROUTES.LOGIN}
           className="inline-flex items-center gap-2 text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="size-4 ltr:rotate-180" />
           {t('auth.forgetPassword.backToLogin')}
         </Link>
       </div>
