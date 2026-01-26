@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useToast } from '@/components/common'
 import { useTranslation } from 'react-i18next'
 import {
   useRegisterProject,
@@ -10,10 +9,8 @@ import { useStudentRegistrations } from '../../hooks/useProjects'
 import { usePeriodCheck } from '@/hooks/usePeriodCheck'
 import { useMyGroup } from '@/pages/student/groups/hooks/useGroups'
 import { useAuthStore } from '@/pages/auth/login'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Button } from '@/components/ui'
+import { LoadingSpinner, useToast } from '@/components/common'
 import {
   AlertCircle,
   CheckCircle2,
@@ -48,7 +45,7 @@ export function ProjectRegistrationForm({
   const { user } = useAuthStore()
   const [selectedGroupId, setSelectedGroupId] = useState<string>('')
   const { toastSuccess, toastError } = useToast()
-  
+
   // Check if user is group leader
   const isGroupLeader = studentGroup?.leaderId === user?.id
 
@@ -113,7 +110,7 @@ export function ProjectRegistrationForm({
 
   if (registrationLoading || periodLoading || groupLoading) {
     return (
-      <Card>
+      <Card className="shadow-none border-none p-2">
         <CardContent className="pt-6">
           <LoadingSpinner />
         </CardContent>
@@ -124,7 +121,7 @@ export function ProjectRegistrationForm({
   // If there's a pending registration, show status
   if (registration && registration.status === 'pending') {
     return (
-      <Card>
+      <Card className="shadow-none border-none p-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5 text-warning" />
@@ -134,7 +131,7 @@ export function ProjectRegistrationForm({
             {t('project.registrationPending')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 p-0">
           <div>
             <h4 className="font-semibold mb-2">{project.title}</h4>
             <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
@@ -207,8 +204,8 @@ export function ProjectRegistrationForm({
   // If registration was approved
   if (registration && registration.status === 'approved') {
     return (
-      <Card>
-        <CardHeader>
+      <Card className="shadow-none border-none p-2">
+        <CardHeader className='px-0'>
           <CardTitle className="flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5 text-success" />
             {t('project.registrationStatus')}
@@ -217,7 +214,7 @@ export function ProjectRegistrationForm({
             {t('project.registrationApproved')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 p-0">
           <div>
             <h4 className="font-semibold mb-2">{project.title}</h4>
             <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
@@ -274,7 +271,7 @@ export function ProjectRegistrationForm({
     // Only show rejection status if this is the same project that was rejected
     if (registration.projectId === project.id) {
       return (
-        <Card>
+        <Card className="shadow-none border-none p-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <XCircle className="h-5 w-5 text-destructive" />
@@ -284,7 +281,7 @@ export function ProjectRegistrationForm({
               {t('project.registrationRejected')}
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 p-0">
             <div>
               <h4 className="font-semibold mb-2">{project.title}</h4>
               <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
@@ -391,7 +388,7 @@ export function ProjectRegistrationForm({
   // If registration was cancelled
   if (registration && registration.status === 'cancelled') {
     return (
-      <Card>
+      <Card className="shadow-none border-none p-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <XCircle className="h-5 w-5 text-muted-foreground" />
@@ -401,7 +398,7 @@ export function ProjectRegistrationForm({
             {t('project.registrationCancelled')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 p-0">
           <div>
             <h4 className="font-semibold mb-2">{project.title}</h4>
             <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
@@ -441,8 +438,8 @@ export function ProjectRegistrationForm({
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="shadow-none border-none p-2">
+      <CardHeader className='px-0'>
         <CardTitle className="flex items-center gap-2">
           <Users className="h-5 w-5 text-primary" />
           {t('project.registerInProject')}
@@ -451,7 +448,7 @@ export function ProjectRegistrationForm({
           {t('project.registerDescription')}
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 p-0">
         <div>
           <h4 className="font-semibold mb-2">{project.title}</h4>
           <p className="text-sm text-muted-foreground line-clamp-3">{project.description}</p>

@@ -20,6 +20,8 @@ export interface Project extends BaseEntity {
   students: User[];
   groupId?: string;
   groupName?: string;
+  assignedGroupId?: string;
+  isLinkedToGroup?: boolean;
   committeeId?: string;
   documents: (string | Document)[];
   maxStudents: number;

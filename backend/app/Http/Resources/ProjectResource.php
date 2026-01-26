@@ -23,6 +23,8 @@ class ProjectResource extends JsonResource
             'currentStudents' => $this->current_students,
             'currentGroups' => $this->assigned_group_id ? 1 : 0,
             'maxGroups' => 1,
+            'assignedGroupId' => $this->assigned_group_id ? (string) $this->assigned_group_id : null,
+            'isLinkedToGroup' => $this->assigned_group_id !== null,
             'specialization' => $this->specialization,
             'keywords' => $this->keywords,
             'supervisorId' => $this->supervisor_id ? (string) $this->supervisor_id : null,

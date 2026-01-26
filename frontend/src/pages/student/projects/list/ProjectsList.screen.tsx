@@ -1,12 +1,13 @@
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, Button } from '@/components/ui'
 import { BlockContent, LoadingSpinner } from '@/components/common'
-import { Calendar, ArrowRight } from 'lucide-react'
+import { Calendar, ArrowRight, ArrowLeft } from 'lucide-react'
 import { ProjectBrowser } from '../components/ProjectBrowser'
 import { ProjectsView } from '../view/ProjectsView.screen'
 import { ProjectsRegister } from '../register/ProjectsRegister.screen'
 import { RejectionDetailsModal } from '../components/RejectionDetailsModal'
 import { useProjectsList } from './ProjectsList.hook'
+import { useNavigate } from 'react-router-dom'
 
 export function ProjectsList() {
   const { t } = useTranslation()
@@ -30,7 +31,7 @@ export function ProjectsList() {
     pagination,
     setPagination,
   } = useProjectsList()
-
+  const navigate = useNavigate()  
   const handleSelectProject = (project: any) => {
     // Allow viewing project details even if rejected
     setState((prev) => ({
@@ -54,7 +55,7 @@ export function ProjectsList() {
       if (!studentGroup) {
         return
       }
-      
+
       // Check if project was rejected - prevent registration
       const registration = registrations?.find((r) => r.projectId === state.selectedProject?.id)
       if (registration?.status === 'rejected') {
@@ -87,21 +88,12 @@ export function ProjectsList() {
   // If registration form is shown, render it as full page
   if (state.selectedProject && state.showRegistrationForm) {
     return (
-      <div className="space-y-6">
-        <Button
-          variant="ghost"
-          onClick={() => {
-            setState((prev) => ({
-              ...prev,
-              selectedProject: null,
-              showRegistrationForm: false,
-            }))
-          }}
-          className="mb-4"
-        >
-          <ArrowRight className="ml-2 h-4 w-4" />
-          {t('project.backToProjects')}
+      <BlockContent title={t('project.register')} actions={
+        <Button variant="outline" onClick={handleRegistrationCancel} className="shrink-0">
+          <ArrowLeft className="size-4 ltr:rotate-180" />
+          {t('common.back')}
         </Button>
+      }>
         <ProjectsRegister
           project={state.selectedProject}
           open={true}
@@ -109,7 +101,7 @@ export function ProjectsList() {
           onSuccess={handleRegistrationSuccess}
           onCancel={handleRegistrationCancel}
         />
-      </div>
+      </BlockContent>
     )
   }
 

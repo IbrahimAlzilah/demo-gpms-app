@@ -9,7 +9,7 @@ export function useAnnounceProjectsList() {
   
   const [state, setState] = useState<AnnounceProjectsListState>({
     selectedProjects: new Set(),
-    viewStatus: 'all',
+    viewStatus: 'draft', // Default to 'draft' to show approved projects that need to be announced
     projectToViewId: null,
     projectToRemove: null,
     showRemoveConfirm: false,

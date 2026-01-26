@@ -48,7 +48,7 @@ export function useRegisterProject() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       queryClient.invalidateQueries({ queryKey: ["project-registrations"] });
-      queryClient.invalidateQueries({ queryKey: ["available-projects-table"] });
+      queryClient.invalidateQueries({ queryKey: ["student-projects-table"] });
       queryClient.invalidateQueries({ queryKey: ["project-registration"] });
     },
   });
@@ -69,7 +69,7 @@ export function useCancelRegistration() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["project-registrations"] });
       queryClient.invalidateQueries({ queryKey: ["projects"] });
-      queryClient.invalidateQueries({ queryKey: ["available-projects-table"] });
+      queryClient.invalidateQueries({ queryKey: ["student-projects-table"] });
       queryClient.invalidateQueries({ queryKey: ["project-registration"] });
       queryClient.invalidateQueries({ queryKey: ["group-registration-requests"] });
     },
@@ -91,7 +91,7 @@ export function useBatchRegisterProjects() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["project-registrations"] });
       queryClient.invalidateQueries({ queryKey: ["projects"] });
-      queryClient.invalidateQueries({ queryKey: ["available-projects-table"] });
+      queryClient.invalidateQueries({ queryKey: ["student-projects-table"] });
       queryClient.invalidateQueries({ queryKey: ["project-registration"] });
       queryClient.invalidateQueries({ queryKey: ["group-registration-requests"] });
     },

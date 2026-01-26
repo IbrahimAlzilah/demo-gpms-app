@@ -1407,13 +1407,11 @@
     "cannotReRegisterRejectedDescription": "You can register in another available project",
     "canRegisterInDifferentProject": "You can submit a new registration request for another project (if the registration period is still open)",
     "selectProject": "Select Project",
-    "activeProjects": "Active Projects",
-    "supervisor": "Supervisor"
+    "activeProjects": "Active Projects"
   },
   "registration": {
     "management": "Registration Management",
     "student": "Student",
-    "project": "Project",
     "pending": "Pending",
     "approved": "Approved",
     "rejected": "Rejected",

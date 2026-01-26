@@ -3,7 +3,7 @@ import { DataTableColumnHeader } from '@/components/ui/data-table/data-table-col
 import { StatusBadge } from '@/components/common/StatusBadge'
 import { ActionsDropdown } from '@/components/common/ActionsDropdown'
 import type { Project } from '@/types/project.types'
-import { Eye, Clock, CheckCircle2, XCircle, AlertCircle } from 'lucide-react'
+import { Eye, Clock, CheckCircle2, XCircle, AlertCircle, CheckCircle } from 'lucide-react'
 import type { ProjectTableColumnsProps } from '../../types/Projects.types'
 
 export function createProjectColumns({
@@ -20,7 +20,18 @@ export function createProjectColumns({
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('project.title')} />
       ),
-      cell: ({ row }) => <div className="font-medium" dir="auto">{row.original.title}</div>,
+      cell: ({ row }) => {
+        const project = row.original
+        const isLinkedToGroup = project.isLinkedToGroup || project.assignedGroupId
+        return (
+          <div className="flex items-center gap-2">
+            {isLinkedToGroup && (
+              <CheckCircle className="h-4 w-4 text-success shrink-0" title={t('project.linkedToGroup', { defaultValue: 'Linked to a group' })} />
+            )}
+            <div className="font-medium" dir="auto">{project.title}</div>
+          </div>
+        )
+      },
     },
     {
       accessorKey: 'description',

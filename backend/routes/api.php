@@ -74,6 +74,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('projects/registrations/{registration}', [App\Http\Controllers\Student\ProjectController::class, 'cancelRegistration']);
         Route::post('projects/batch-register', [App\Http\Controllers\Student\ProjectController::class, 'batchRegister'])
             ->middleware('window:project_registration');
+        // Single project registration route (for backward compatibility or single project registration)
+        Route::post('projects/{project}/register', [App\Http\Controllers\Student\ProjectController::class, 'register'])
+            ->middleware('window:project_registration');
         
         Route::apiResource('projects', App\Http\Controllers\Student\ProjectController::class);
         Route::get('projects/{project}/notes', [App\Http\Controllers\Student\ProjectController::class, 'getSupervisorNotes']);

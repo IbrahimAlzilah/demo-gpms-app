@@ -29,7 +29,7 @@ export function ProjectsRegister({
     <ProjectRegistrationForm
       project={project}
       onSuccess={handleSuccess}
-      onCancel={onCancel || onClose}
+      // onCancel={onCancel || onClose}
     />
   )
 }

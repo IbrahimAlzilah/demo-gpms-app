@@ -36,11 +36,10 @@ export function useProjectsList() {
     pagination,
     setPagination,
   } = useDataTable({
-    queryKey: ['available-projects-table'],
+    queryKey: ['student-projects-table'],
     queryFn: (params) => {
-      // Filter to only available projects
-      const filters = { ...params?.filters, status: 'available_for_registration' }
-      return projectService.getTableData({ ...params, filters })
+      // Fetch all visible projects (no status filter)
+      return projectService.getTableData({ ...params })
     },
     initialPageSize: 10,
     enableServerSide: true,

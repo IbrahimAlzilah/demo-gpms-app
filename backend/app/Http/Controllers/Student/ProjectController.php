@@ -30,6 +30,7 @@ class ProjectController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $user = $request->user();
         $query = Project::with(['supervisor', 'students', 'assignedGroup.leader', 'assignedGroup.members']);
 
         // Check if requesting available projects via 'available' parameter or filters
@@ -37,12 +38,38 @@ class ProjectController extends Controller
         $isRequestingAvailable = ($request->has('available') && $request->available) 
             || (isset($filters['status']) && $filters['status'] === ProjectStatus::AVAILABLE_FOR_REGISTRATION->value);
 
-        // Show available projects or student's registered projects
         if ($isRequestingAvailable) {
+            // Show only available projects (legacy behavior)
             $query->where('status', ProjectStatus::AVAILABLE_FOR_REGISTRATION->value);
         } else {
-            $query->whereHas('students', function ($q) use ($request) {
-                $q->where('users.id', $request->user()->id);
+            // Show all visible projects published by Project Committee
+            // Include projects with status: ANNOUNCED, AVAILABLE_FOR_REGISTRATION, IN_PROGRESS, COMPLETED
+            // Also include projects linked to the student's group leader
+            
+            // Get the student's group (if they are leader or member)
+            $userGroup = \App\Models\StudentGroup::where(function ($q) use ($user) {
+                $q->where('leader_id', $user->id)
+                    ->orWhereHas('members', function ($memberQuery) use ($user) {
+                        $memberQuery->where('users.id', $user->id);
+                    });
+            })
+            ->where('status', 'active')
+            ->first();
+
+            // Build query: visible projects OR projects assigned to student's group
+            $query->where(function ($q) use ($userGroup) {
+                // All visible projects published by Project Committee
+                $q->whereIn('status', [
+                    ProjectStatus::ANNOUNCED->value,
+                    ProjectStatus::AVAILABLE_FOR_REGISTRATION->value,
+                    ProjectStatus::IN_PROGRESS->value,
+                    ProjectStatus::COMPLETED->value,
+                ]);
+                
+                // Also include projects assigned to the student's group (if they have one)
+                if ($userGroup) {
+                    $q->orWhere('assigned_group_id', $userGroup->id);
+                }
             });
         }
 
