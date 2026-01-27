@@ -84,7 +84,8 @@
     "endsInDays_other": "Ends in {{count}} days",
     "retry": "Retry",
     "notAssigned": "Not Assigned",
-    "members": "Members"
+    "members": "Members",
+    "createdBy": "Created by"
   },
   "app": {
     "name": "Graduation Project Management System",
@@ -1201,6 +1202,12 @@
       "periodActivated": "Period activated successfully",
       "periodDeactivated": "Period deactivated successfully",
       "activateError": "Failed to activate period",
+      "statusScheduled": "Scheduled - Will activate automatically on start date",
+      "statusActive": "Currently active - Students will be notified",
+      "statusInactive": "Inactive - Period is disabled",
+      "statusExpired": "Expired - Period has ended",
+      "notificationInfo": "Notifications will be sent to students automatically when the period becomes active (on start date or when manually activated).",
+      "scheduledPeriodInfo": "This period is scheduled and will be activated automatically when the start date is reached. Students will receive notifications at that time.",
       "deactivateError": "Failed to deactivate period"
     },
     "announce": {

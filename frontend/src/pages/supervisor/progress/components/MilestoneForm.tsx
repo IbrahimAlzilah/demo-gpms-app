@@ -72,7 +72,7 @@ export function MilestoneForm({
       onOpenChange={handleClose}
       title={isEditMode ? t('milestone.editMilestone') : t('milestone.createMilestone')}
     >
-      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="title">{t('milestone.title')} *</Label>
           <Input

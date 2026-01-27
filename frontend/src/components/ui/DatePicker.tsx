@@ -96,7 +96,7 @@ export function DatePicker({
     <div className={cn("space-y-2", className)}>
       {label && (
         <Label htmlFor={inputId} className={cn(error && "text-destructive")}>
-          {label} {required && "*"}
+          {label} {required && <span className="text-destructive">*</span>}
         </Label>
       )}
       <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -112,8 +112,9 @@ export function DatePicker({
             )}
             disabled={disabled}
           >
-            <CalendarIcon className="size-4" />
-            {date ? format(date, "PPP") : <span>{placeholder}</span>}
+            {/* {date ? format(date, "PPP") : <span>{placeholder}</span>} */}
+            {date ? format(date, "yyyy-MM-dd") : <span>{placeholder}</span>}
+            <CalendarIcon className="size-4 ms-auto" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">

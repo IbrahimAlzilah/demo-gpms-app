@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, DatePicker } from '@/components/ui'
 import { ModalDialog } from '@/components/common'
-import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
+import { AlertCircle, Loader2, Info } from 'lucide-react'
 import { timePeriodSchema, type TimePeriodSchema } from '../../schema'
 import type { TimePeriod } from '@/types/period.types'
 
@@ -23,7 +23,6 @@ export function PeriodForm({
   onSubmit,
   period,
   isPending = false,
-  success = false,
 }: PeriodFormProps) {
   const { t } = useTranslation()
   const isEditMode = !!period
@@ -112,33 +111,9 @@ export function PeriodForm({
       onOpenChange={handleClose}
       title={isEditMode ? t('committee.periods.editPeriod') : t('committee.periods.createNew')}
     >
-      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-        {success && !isEditMode && (
-          <div className="flex items-start gap-2 p-3 text-sm text-success bg-success/10 border border-success/20 rounded-md">
-            <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" />
-            <span>{t('committee.periods.periodCreated')}</span>
-          </div>
-        )}
-
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="name">{t('committee.periods.name')} *</Label>
-          <Input
-            id="name"
-            {...register('name')}
-            placeholder={t('committee.periods.namePlaceholder')}
-            className={errors.name ? 'border-destructive' : ''}
-            aria-invalid={!!errors.name}
-          />
-          {errors.name && (
-            <p className="text-xs text-destructive flex items-center gap-1">
-              <AlertCircle className="h-3 w-3" />
-              {errors.name.message}
-            </p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="type">{t('committee.periods.type')} *</Label>
+          <Label htmlFor="type">{t('committee.periods.type')} <span className="text-destructive">*</span></Label>
           <Select
             value={watch('type') || ''}
             onValueChange={(value) => setValue('type', value as TimePeriodSchema['type'])}
@@ -161,6 +136,23 @@ export function PeriodForm({
             <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
               {errors.type.message}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="name">{t('committee.periods.name')} <span className="text-destructive">*</span></Label>
+          <Input
+            id="name"
+            {...register('name')}
+            placeholder={t('committee.periods.namePlaceholder')}
+            className={errors.name ? 'border-destructive' : ''}
+            aria-invalid={!!errors.name}
+          />
+          {errors.name && (
+            <p className="text-xs text-destructive flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" />
+              {errors.name.message}
             </p>
           )}
         </div>
@@ -188,20 +180,39 @@ export function PeriodForm({
         </div>
 
         {isEditMode && (
-          <div className="flex items-center justify-between p-4 rounded-lg border border-border">
-            <div className="space-y-0.5">
-              <Label htmlFor="isActive" className="text-base">
-                {t('committee.periods.status')}
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                {t('committee.periods.statusDescription')}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-4 rounded-lg border border-border">
+              <div className="space-y-0.5">
+                <Label htmlFor="isActive" className="text-base">
+                  {t('committee.periods.status')}
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  {t('committee.periods.statusDescription')}
+                </p>
+              </div>
+              <Switch
+                id="isActive"
+                checked={(watch('isActive' as keyof TimePeriodSchema) as boolean | undefined) ?? false}
+                onCheckedChange={(checked) => setValue('isActive' as keyof TimePeriodSchema, checked as never, { shouldValidate: true })}
+              />
+            </div>
+
+            {/* Notification info */}
+            <div className="flex items-start gap-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
+              <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+              <p className="text-xs text-blue-900 dark:text-blue-100">
+                {t('committee.periods.notificationInfo')}
               </p>
             </div>
-            <Switch
-              id="isActive"
-              checked={(watch('isActive' as keyof TimePeriodSchema) as boolean | undefined) ?? false}
-              onCheckedChange={(checked) => setValue('isActive' as keyof TimePeriodSchema, checked as never, { shouldValidate: true })}
-            />
+          </div>
+        )}
+
+        {!isEditMode && (
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
+            <Info className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+            <p className="text-xs text-amber-900 dark:text-amber-100">
+              {t('committee.periods.scheduledPeriodInfo')}
+            </p>
           </div>
         )}
 

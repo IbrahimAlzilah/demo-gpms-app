@@ -29,7 +29,7 @@ class CheckTimeWindow
         $activeWindow = TimePeriod::whereIn('type', $types)
             ->where('is_active', true)
             ->where('start_date', '<=', now())
-            ->where('end_date', '>=', now())
+            ->where('end_date', '>=', now()->startOfDay())
             ->first();
 
         if (!$activeWindow) {

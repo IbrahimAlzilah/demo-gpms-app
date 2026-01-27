@@ -96,7 +96,9 @@ export function PeriodsList() {
       } else {
         await createPeriod.mutateAsync({
           ...data,
-          isActive: true,
+          // Periods are created as inactive by default - they will be activated
+          // automatically when start date is reached or manually by the committee
+          isActive: false,
         })
         setState((prev) => ({ ...prev, success: true, showForm: false }))
         toastSuccess('committee.periods.periodCreated')
@@ -107,21 +109,48 @@ export function PeriodsList() {
 
       if (err?.response?.data) {
         const errorData = err.response.data
-        // Check for validation errors (these are usually already translated strings from backend)
-        if (errorData.errors && errorData.errors.type) {
-          errorMsg = Array.isArray(errorData.errors.type)
-            ? errorData.errors.type[0]
-            : errorData.errors.type
-        } else if (errorData.message) {
+
+        // Check for validation errors - prioritize specific field errors
+        if (errorData.errors) {
+          // Check for type field errors (duplicate period type)
+          if (errorData.errors.type) {
+            errorMsg = Array.isArray(errorData.errors.type)
+              ? errorData.errors.type[0]
+              : errorData.errors.type
+          }
+          // Check for start_date field errors (overlapping dates)
+          else if (errorData.errors.start_date) {
+            errorMsg = Array.isArray(errorData.errors.start_date)
+              ? errorData.errors.start_date[0]
+              : errorData.errors.start_date
+          }
+          // Check for end_date field errors
+          else if (errorData.errors.end_date) {
+            errorMsg = Array.isArray(errorData.errors.end_date)
+              ? errorData.errors.end_date[0]
+              : errorData.errors.end_date
+          }
+          // Check for general validation errors
+          else if (errorData.errors.message) {
+            errorMsg = Array.isArray(errorData.errors.message)
+              ? errorData.errors.message[0]
+              : errorData.errors.message
+          }
+        }
+        // Fallback to message field
+        else if (errorData.message) {
           errorMsg = errorData.message
-        } else if (errorData.error) {
+        }
+        // Fallback to error field
+        else if (errorData.error) {
           errorMsg = errorData.error
         }
       } else if (err instanceof Error) {
         errorMsg = err.message
       }
 
-      // useToast hook will try to translate, and if not found, will use the message as-is
+      // Display error message in toast
+      // The message from backend is already user-friendly and explains the issue
       toastError(errorMsg)
     }
   }

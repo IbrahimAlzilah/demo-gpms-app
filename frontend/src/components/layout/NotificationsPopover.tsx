@@ -10,6 +10,7 @@ import { getNotificationTarget, getNotificationIconType, formatRelativeTime } fr
 import type { NotificationDto } from '@/types/notification.types'
 import { useAuthStore } from '@/pages/auth/login'
 import { useDirection } from '@/hooks/use-direction'
+import { ConfirmDialog } from '@/components/common'
 
 interface NotificationsPopoverProps {
   className?: string
@@ -39,6 +40,7 @@ const notificationBgColors = {
 export function NotificationsPopover({ className }: NotificationsPopoverProps) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
+  const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false)
   const [hoveredNotificationId, setHoveredNotificationId] = useState<string | null>(null)
   const navigate = useNavigate()
   const { user } = useAuthStore()
@@ -79,21 +81,26 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
     return t('notifications.title');
   }
 
-  const getNotificationMessage = (message: string) => {
+  const getNotificationMessage = (message: string): string => {
     try {
       const parsed = JSON.parse(message);
       if (parsed.key) {
         // Translate period type if it exists in params
         const params = { ...parsed.params };
-        if (params?.type) {
-          const typeKey = `committee.periods.types.${params.type}`;
+        if (params?.type && typeof params.type === 'string') {
+          // Convert underscore_case to camelCase for translation key lookup
+          // e.g., "request_submission" -> "requestSubmission"
+          const camelCaseType = params.type.replace(/_([a-z])/g, (_: string, letter: string) => letter.toUpperCase());
+          const typeKey = `committee.periods.types.${camelCaseType}`;
           const translatedType = t(typeKey);
           // Only use translated type if translation exists (not the same as key)
           if (translatedType !== typeKey) {
             params.type = translatedType;
           }
         }
-        return t(parsed.key, params);
+        const translated = t(parsed.key, params);
+        // Ensure we always return a string
+        return String(translated);
       }
       return message;
     } catch (e) {
@@ -118,13 +125,15 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
     }
   }
 
-  const handleDeleteAll = async () => {
-    if (window.confirm(t('notifications.confirmDeleteAll'))) {
-      try {
-        await deleteAll.mutateAsync()
-      } catch (error) {
-        console.error('Failed to delete all notifications:', error)
-      }
+  const handleDeleteAll = () => {
+    setShowDeleteAllDialog(true)
+  }
+
+  const confirmDeleteAll = async () => {
+    try {
+      await deleteAll.mutateAsync()
+    } catch (error) {
+      console.error('Failed to delete all notifications:', error)
     }
   }
 
@@ -207,16 +216,16 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
                     onMouseEnter={() => setHoveredNotificationId(notification.id)}
                     onMouseLeave={() => setHoveredNotificationId(null)}
                   >
-                    <div className="flex items-start gap-4">
+                    <div className="flex items-start gap-3">
                       {/* Icon */}
-                      <div className={cn('shrink-0 w-10 h-10 rounded-full flex items-center justify-center', bgColor)}>
+                      <div className={cn('shrink-0 w-8 h-8 rounded-full flex items-center justify-center', bgColor)}>
                         <Icon className={cn('h-5 w-5', iconColor)} />
                       </div>
 
                       {/* Content */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-3 mb-1">
-                          <p className="font-bold text-sm text-foreground line-clamp-1 leading-tight mt-0.5">
+                          <p className="font-bold text-[.8rem] text-foreground line-clamp-1 leading-tight mt-0.5">
                             {getNotificationTitle(notification)}
                           </p>
                           <div className="flex items-center gap-2 shrink-0">
@@ -249,7 +258,7 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
                             </span>
                           </div>
                         </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2 mb-2 leading-relaxed">
+                        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                           {getNotificationMessage(notification.message)}
                         </p>
                         {target.label && (
@@ -258,7 +267,7 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
                               e.stopPropagation()
                               handleNotificationClick(notification)
                             }}
-                            className="text-sm font-medium text-blue-600 hover:underline inline-flex items-center gap-1"
+                            className="text-[.8rem] font-medium text-blue-600 hover:underline inline-flex items-center gap-1"
                           >
                             {target.label}
                           </button>
@@ -288,6 +297,17 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
           </div>
         )}
       </PopoverContent>
+
+      <ConfirmDialog
+        open={showDeleteAllDialog}
+        onOpenChange={setShowDeleteAllDialog}
+        onConfirm={confirmDeleteAll}
+        title={t('notifications.deleteAll')}
+        description={t('notifications.confirmDeleteAll')}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
+        variant="destructive"
+      />
     </Popover>
   )
 }

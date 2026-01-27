@@ -29,6 +29,13 @@ return Application::configure(basePath: dirname(__DIR__))
             ->dailyAt('09:00')
             ->timezone('Asia/Riyadh')
             ->withoutOverlapping();
+
+        // Schedule period activation check to run daily at 8:00 AM
+        // This will activate periods when their start date is reached
+        $schedule->command('periods:activate')
+            ->dailyAt('08:00')
+            ->timezone('Asia/Riyadh')
+            ->withoutOverlapping();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

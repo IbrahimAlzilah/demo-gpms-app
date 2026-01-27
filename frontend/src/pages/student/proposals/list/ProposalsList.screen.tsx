@@ -126,24 +126,31 @@ export function ProposalsList() {
   const [showNoGroupModal, setShowNoGroupModal] = useState(false)
 
   const handleSubmitClick = async () => {
-    // First check if student has a group at all
-    if (!studentGroup) {
-      setShowNoGroupModal(true)
-      return
-    }
-
-    if (!canSubmit) {
-      toastError('proposal.onlyLeaderCanSubmit')
-      return
-    }
-
-    // Check if proposal submission period is active
+    // First check if proposal submission period is active
     if (!isSubmissionPeriodActive) {
       toastError('proposal.submissionPeriodClosed')
       return
     }
 
-    // Check if locked from group data
+    // Then check if student has a group at all
+    if (!studentGroup) {
+      setShowNoGroupModal(true)
+      return
+    }
+
+    // Then check if user is a leader
+    if (!canSubmit) {
+      toastError('proposal.onlyLeaderCanSubmit')
+      return
+    }
+
+    // Then check if proposal submission period is active
+    if (!isSubmissionPeriodActive) {
+      toastError('proposal.submissionPeriodClosed')
+      return
+    }
+
+    // Then check if locked from group data
     if (studentGroup && isLeader) {
       const isLocked = !!(studentGroup.proposalsInitialSubmittedAt || studentGroup.proposals_initial_submitted_at)
       if (isLocked) {
@@ -201,7 +208,6 @@ export function ProposalsList() {
           >
             <Edit className="size-4" />
             {t('proposal.editProposals')}
-            <ArrowRight className="size-3 opacity-0 -ms-1 group-hover:opacity-100 group-hover:ms-0 transition-all" />
           </Button>
         )
       }
@@ -217,7 +223,6 @@ export function ProposalsList() {
         >
           <PlusCircle className="size-4" />
           {t('proposal.submitNew')}
-          <ArrowRight className="size-3 opacity-0 -ms-1 group-hover:opacity-100 group-hover:ms-0 transition-all" />
         </Button>
       )
     },

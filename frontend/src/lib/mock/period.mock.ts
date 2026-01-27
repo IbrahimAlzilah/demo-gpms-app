@@ -1,85 +1,101 @@
-import { v4 as uuidv4 } from 'uuid'
-import type { TimePeriod, PeriodType } from '../../types/period.types'
+import { v4 as uuidv4 } from "uuid";
+import type { TimePeriod, PeriodType } from "../../types/period.types";
 
 // Mock time periods database
 export const mockTimePeriods: TimePeriod[] = [
   {
-    id: '1',
-    name: 'فترة تقديم المقترحات',
-    type: 'proposal_submission',
-    startDate: new Date('2022-12-20').toISOString(),
-    endDate: new Date('2026-02-01').toISOString(),
+    id: "1",
+    name: "فترة تقديم المقترحات",
+    type: "proposal_submission",
+    startDate: new Date("2022-12-20").toISOString(),
+    endDate: new Date("2026-02-01").toISOString(),
     isActive: true,
-    academicYear: '2025-2026',
-    semester: 'Fall',
-    description: 'فترة تقديم مقترحات مشاريع التخرج',
-    createdBy: '3',
+    academicYear: "2025-2026",
+    semester: "Fall",
+    description: "فترة تقديم مقترحات مشاريع التخرج",
+    createdBy: "3",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
-]
+];
 
 export const mockPeriodService = {
   getAll: async (): Promise<TimePeriod[]> => {
-    await new Promise((resolve) => setTimeout(resolve, 300))
-    return [...mockTimePeriods]
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    return [...mockTimePeriods];
   },
 
   getById: async (id: string): Promise<TimePeriod | null> => {
-    await new Promise((resolve) => setTimeout(resolve, 200))
-    return mockTimePeriods.find((p) => p.id === id) || null
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    return mockTimePeriods.find((p) => p.id === id) || null;
   },
 
   getByType: async (type: PeriodType): Promise<TimePeriod | null> => {
-    await new Promise((resolve) => setTimeout(resolve, 200))
-    return (
-      mockTimePeriods.find(
-        (p) => p.type === type && p.isActive
-      ) || null
-    )
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    return mockTimePeriods.find((p) => p.type === type && p.isActive) || null;
   },
 
   create: async (
-    data: Omit<TimePeriod, 'id' | 'createdAt' | 'updatedAt'>
+    data: Omit<TimePeriod, "id" | "createdAt" | "updatedAt">,
   ): Promise<TimePeriod> => {
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    await new Promise((resolve) => setTimeout(resolve, 500));
     const period: TimePeriod = {
       ...data,
       id: uuidv4(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-    }
-    mockTimePeriods.push(period)
-    return period
+    };
+    mockTimePeriods.push(period);
+    return period;
   },
 
-  update: async (id: string, data: Partial<TimePeriod>): Promise<TimePeriod> => {
-    await new Promise((resolve) => setTimeout(resolve, 300))
-    const index = mockTimePeriods.findIndex((p) => p.id === id)
-    if (index === -1) throw new Error('Period not found')
+  update: async (
+    id: string,
+    data: Partial<TimePeriod>,
+  ): Promise<TimePeriod> => {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const index = mockTimePeriods.findIndex((p) => p.id === id);
+    if (index === -1) throw new Error("Period not found");
     mockTimePeriods[index] = {
       ...mockTimePeriods[index],
       ...data,
       updatedAt: new Date().toISOString(),
-    }
-    return mockTimePeriods[index]
+    };
+    return mockTimePeriods[index];
   },
 
   delete: async (id: string): Promise<void> => {
-    await new Promise((resolve) => setTimeout(resolve, 300))
-    const index = mockTimePeriods.findIndex((p) => p.id === id)
-    if (index === -1) throw new Error('Period not found')
-    mockTimePeriods.splice(index, 1)
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const index = mockTimePeriods.findIndex((p) => p.id === id);
+    if (index === -1) throw new Error("Period not found");
+    mockTimePeriods.splice(index, 1);
   },
 
   isPeriodActive: async (type: PeriodType): Promise<boolean> => {
-    await new Promise((resolve) => setTimeout(resolve, 100))
-    const period = mockTimePeriods.find((p) => p.type === type && p.isActive)
-    if (!period) return true
-    const now = new Date()
-    const start = new Date(period.startDate)
-    const end = new Date(period.endDate)
-    return now >= start && now <= end
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const period = mockTimePeriods.find((p) => p.type === type && p.isActive);
+    if (!period) return true;
+    const now = new Date();
+    // Set to start of day for date-only comparison
+    const nowStartOfDay = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
+    const start = new Date(period.startDate);
+    const startStartOfDay = new Date(
+      start.getFullYear(),
+      start.getMonth(),
+      start.getDate(),
+    );
+    const end = new Date(period.endDate);
+    const endStartOfDay = new Date(
+      end.getFullYear(),
+      end.getMonth(),
+      end.getDate(),
+    );
+    // Period is active if current date is between start and end (inclusive)
+    // End date is valid for the entire day
+    return nowStartOfDay >= startStartOfDay && nowStartOfDay <= endStartOfDay;
   },
-}
-
+};

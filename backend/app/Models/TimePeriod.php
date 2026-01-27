@@ -48,6 +48,8 @@ class TimePeriod extends Model
 
     /**
      * Check if period is currently active
+     * Period is active if current date is between start_date and end_date (inclusive)
+     * The end_date is considered valid for the entire day
      */
     public function isCurrentlyActive(): bool
     {
@@ -55,9 +57,9 @@ class TimePeriod extends Model
             return false;
         }
 
-        $now = now()->toDateString();
-        return $now >= $this->start_date->toDateString() 
-            && $now <= $this->end_date->toDateString();
+        $now = now()->startOfDay();
+        return $now >= $this->start_date->startOfDay()
+            && $now <= $this->end_date->startOfDay();
     }
 
     /**
@@ -66,8 +68,37 @@ class TimePeriod extends Model
     public function containsDate(string $date): bool
     {
         $checkDate = \Carbon\Carbon::parse($date)->toDateString();
-        return $checkDate >= $this->start_date->toDateString() 
+        return $checkDate >= $this->start_date->toDateString()
             && $checkDate <= $this->end_date->toDateString();
+    }
+
+    /**
+     * Check if period should be active based on current date
+     * Returns true if start_date has been reached and end_date has not passed
+     */
+    public function shouldBeActive(): bool
+    {
+        $now = now()->startOfDay();
+        return $now >= $this->start_date->startOfDay()
+            && $now <= $this->end_date->startOfDay();
+    }
+
+    /**
+     * Check if period has passed its end date
+     */
+    public function hasEnded(): bool
+    {
+        $now = now()->startOfDay();
+        return $now > $this->end_date->startOfDay();
+    }
+
+    /**
+     * Check if period start date is in the future
+     */
+    public function isScheduled(): bool
+    {
+        $now = now()->startOfDay();
+        return $now < $this->start_date->startOfDay();
     }
 }
 

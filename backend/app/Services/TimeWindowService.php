@@ -19,7 +19,7 @@ class TimeWindowService
         return TimePeriod::where('type', $type)
             ->where('is_active', true)
             ->where('start_date', '<=', now())
-            ->where('end_date', '>=', now())
+            ->where('end_date', '>=', now()->startOfDay())
             ->exists();
     }
 
@@ -33,7 +33,7 @@ class TimeWindowService
         return TimePeriod::where('type', $type)
             ->where('is_active', true)
             ->where('start_date', '<=', now())
-            ->where('end_date', '>=', now())
+            ->where('end_date', '>=', now()->startOfDay())
             ->first();
     }
 
@@ -44,7 +44,7 @@ class TimeWindowService
     {
         return TimePeriod::where('is_active', true)
             ->where('start_date', '<=', now())
-            ->where('end_date', '>=', now())
+            ->where('end_date', '>=', now()->startOfDay())
             ->get();
     }
 
@@ -69,7 +69,7 @@ class TimeWindowService
         return TimePeriod::where('type', $type)
             ->where('is_active', true)
             ->where('start_date', '<=', $date)
-            ->where('end_date', '>=', $date)
+            ->where('end_date', '>=', $date->startOfDay())
             ->exists();
     }
 

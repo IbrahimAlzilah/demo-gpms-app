@@ -90,7 +90,8 @@
     "endsInDays_other": "ينتهي خلال {{count}} أيام",
     "retry": "إعادة المحاولة",
     "notAssigned": "غير معين",
-    "members": "أعضاء"
+    "members": "أعضاء",
+    "createdBy": "انشأ بواسطة"
   },
   "app": {
     "name": "نظام إدارة تقييم مشاريع التخرج",
@@ -623,7 +624,6 @@
     "moreCharactersNeeded": "{{count}} حرف إضافي مطلوب",
     "associatedProject": "المشروع المرتبط",
     "noMembersAdded": "لم يتم إضافة أعضاء للفريق",
-    "groupMembers": "أعضاء المجموعة",
     "groupSubmissionMessage": "سيتم تقديم هذا المقترح باسم المجموعة",
     "groupSubmissionAutoSelected": "سيتم تقديم هذا المقترح باسم المجموعة تلقائياً",
     "addAnother": "إضافة مقترح آخر",
@@ -1281,10 +1281,10 @@
         "proposalSubmission": "تقديم المقترحات",
         "projectRegistration": "التسجيل في المشاريع",
         "requestSubmission": "تقديم الطلبات",
-        "chapterSubmissionPhase1": "تسليم الفصول – المرحلة الأولى",
-        "finalDefensePhase1": "المناقشة النهائية – المرحلة الأولى",
-        "chapterSubmissionPhase2": "تسليم الفصول – المرحلة الثانية",
-        "finalDefensePhase2": "المناقشة النهائية – المرحلة الثانية",
+        "chapterSubmissionPhase1": "تسليم الفصول – مرحلة 1",
+        "finalDefensePhase1": "المناقشة النهائية –1",
+        "chapterSubmissionPhase2": "تسليم الفصول – مرحلة 2",
+        "finalDefensePhase2": "المناقشة النهائية –2",
         "finalProjectDocumentSubmission": "تسليم وثائق المشروع النهائية",
         "gradeApproval": "اعتماد الدرجات",
         "general": "عام"
@@ -1296,7 +1296,13 @@
       "periodActivated": "تم تفعيل الفترة بنجاح",
       "periodDeactivated": "تم إلغاء تفعيل الفترة بنجاح",
       "activateError": "فشل تفعيل الفترة",
-      "deactivateError": "فشل إلغاء تفعيل الفترة"
+      "deactivateError": "فشل إلغاء تفعيل الفترة",
+      "statusScheduled": "مجدولة - سيتم التفعيل تلقائياً في تاريخ البداية",
+      "statusActive": "نشطة حالياً - سيتم إشعار الطلاب",
+      "statusInactive": "غير نشطة - الفترة معطلة",
+      "statusExpired": "منتهية - انتهت الفترة",
+      "notificationInfo": "سيتم إرسال الإشعارات للطلاب تلقائياً عند تفعيل الفترة (في تاريخ البداية أو عند التفعيل اليدوي).",
+      "scheduledPeriodInfo": "هذه الفترة مجدولة وسيتم تفعيلها تلقائياً عند الوصول إلى تاريخ البداية. سيتم إشعار الطلاب في ذلك الوقت."
     },
     "announce": {
       "selectAtLeastOne": "يرجى اختيار مشروع واحد على الأقل",

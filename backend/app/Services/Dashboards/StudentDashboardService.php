@@ -69,7 +69,7 @@ class StudentDashboardService
         $activeTimeWindows = TimePeriod::whereIn('type', $relevantTypes)
             ->where('is_active', true)
             ->where('start_date', '<=', now())
-            ->where('end_date', '>=', now())
+            ->where('end_date', '>=', now()->startOfDay())
             ->orderBy('end_date', 'asc')
             ->get()
             ->map(function ($period) {
@@ -78,7 +78,7 @@ class StudentDashboardService
                 $end = Carbon::parse($period->end_date);
                 $hoursRemaining = max(0, $now->diffInHours($end, false));
                 $daysRemaining = round($hoursRemaining / 24, 1);
-                
+
                 return [
                     'id' => $period->id,
                     'name' => $period->name,

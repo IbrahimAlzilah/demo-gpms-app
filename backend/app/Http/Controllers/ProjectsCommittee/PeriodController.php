@@ -25,7 +25,7 @@ class PeriodController extends Controller
     public function store(Request $request): JsonResponse
     {
         $allowedTypes = \App\Enums\TimePeriodType::values();
-        
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'type' => [
@@ -48,10 +48,12 @@ class PeriodController extends Controller
         ]);
 
         try {
+            // Create period as inactive by default - it will be activated when start date is reached
+            // or manually by the committee
             $period = TimePeriod::create([
                 ...$validated,
                 'created_by' => $request->user()->id,
-                'is_active' => true,
+                'is_active' => false, // Default to false - period is scheduled but not yet active
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             // Handle unique constraint violation
@@ -68,31 +70,9 @@ class PeriodController extends Controller
             throw $e;
         }
 
-        // Notify all students about the new period
-        $students = \App\Models\User::role('student')->get(['id']);
-        if ($students->isNotEmpty()) {
-            $now = now();
-            $notifications = $students->map(function ($student) use ($period, $now) {
-                return [
-                    'user_id' => $student->id,
-                    'message' => json_encode([
-                        'key' => 'notifications.periods.new_announcement',
-                        'params' => [
-                            'type' => $period->type,
-                            'name' => $period->name,
-                        ],
-                    ]),
-                    'type' => 'period_announcement',
-                    'related_entity_type' => TimePeriod::class,
-                    'related_entity_id' => $period->id,
-                    'is_read' => false,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ];
-            })->toArray();
-            
-            \App\Models\Notification::insert($notifications);
-        }
+        // Do NOT send notifications immediately upon creation
+        // Notifications will be sent automatically when the period becomes active
+        // (either when start date is reached via scheduled command, or manually activated)
 
         return response()->json([
             'success' => true,
@@ -104,7 +84,7 @@ class PeriodController extends Controller
     public function update(Request $request, TimePeriod $period): JsonResponse
     {
         $allowedTypes = \App\Enums\TimePeriodType::values();
-        
+
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'type' => 'sometimes|in:' . implode(',', $allowedTypes),
@@ -138,12 +118,12 @@ class PeriodController extends Controller
             $existingPeriod = TimePeriod::where('type', $validated['type'])
                 ->where('id', '!=', $period->id)
                 ->first();
-            
+
             if ($existingPeriod) {
                 $typeLabel = \App\Enums\TimePeriodType::from($validated['type'])->label();
                 return response()->json([
                     'success' => false,
-                    'message' => "A time period with type '{$typeLabel}' already exists.",
+                    'message' => "A time period with type '{$typeLabel}' already exists. Please update the existing period or delete it first.",
                     'errors' => [
                         'type' => ["A time period with this type already exists. Please update the existing period or delete it first."],
                     ],
@@ -151,12 +131,45 @@ class PeriodController extends Controller
             }
         }
 
+        // Check for overlapping dates if dates or type are being changed
+        $checkStartDate = $validated['start_date'] ?? $period->start_date?->toDateString();
+        $checkEndDate = $validated['end_date'] ?? $period->end_date?->toDateString();
+        $checkType = $validated['type'] ?? $period->type;
+
+        if ($checkStartDate && $checkEndDate && $checkType) {
+            $overlapping = TimePeriod::where('type', $checkType)
+                ->where('id', '!=', $period->id)
+                ->where(function ($query) use ($checkStartDate, $checkEndDate) {
+                    $query->whereBetween('start_date', [$checkStartDate, $checkEndDate])
+                        ->orWhereBetween('end_date', [$checkStartDate, $checkEndDate])
+                        ->orWhere(function ($q) use ($checkStartDate, $checkEndDate) {
+                            $q->where('start_date', '<=', $checkStartDate)
+                              ->where('end_date', '>=', $checkEndDate);
+                        });
+                })
+                ->first();
+
+            if ($overlapping) {
+                $typeLabel = \App\Enums\TimePeriodType::from($checkType)->label();
+                return response()->json([
+                    'success' => false,
+                    'message' => "A time period with type '{$typeLabel}' already exists with overlapping dates. Please update the existing period or delete it first.",
+                    'errors' => [
+                        'start_date' => ["A time period with this type already exists with overlapping dates. Please update the existing period or delete it first."],
+                    ],
+                ], 422);
+            }
+        }
+
+        // Store original is_active state before update
+        $wasActiveBefore = $period->is_active;
+
         try {
             $period->update($validated);
         } catch (\Illuminate\Database\QueryException $e) {
             // Handle unique constraint violation
             if ($e->getCode() === '23000' && str_contains($e->getMessage(), 'Duplicate entry')) {
-                $typeLabel = isset($validated['type']) 
+                $typeLabel = isset($validated['type'])
                     ? \App\Enums\TimePeriodType::from($validated['type'])->label()
                     : \App\Enums\TimePeriodType::from($period->type)->label();
                 return response()->json([
@@ -170,31 +183,15 @@ class PeriodController extends Controller
             throw $e;
         }
 
-        // Notify students if the period was just activated
-        if ($period->wasChanged('is_active') && $period->is_active) {
-            $students = \App\Models\User::role('student')->get(['id']);
-            if ($students->isNotEmpty()) {
-                $now = now();
-                $notifications = $students->map(function ($student) use ($period, $now) {
-                    return [
-                        'user_id' => $student->id,
-                        'message' => json_encode([
-                            'key' => 'notifications.periods.activated',
-                            'params' => [
-                                'type' => $period->type,
-                                'name' => $period->name,
-                            ],
-                        ]),
-                        'type' => 'period_announcement',
-                        'related_entity_type' => TimePeriod::class,
-                        'related_entity_id' => $period->id,
-                        'is_read' => false,
-                        'created_at' => $now,
-                        'updated_at' => $now,
-                    ];
-                })->toArray();
-                
-                \App\Models\Notification::insert($notifications);
+        // Refresh period to get latest data (in case dates were updated)
+        $period->refresh();
+
+        // Notify students only if the period was just activated (changed from inactive to active)
+        // AND the start date has been reached
+        if (!$wasActiveBefore && $period->is_active) {
+            // Only send notifications if the period's start date has been reached
+            if ($period->start_date <= now()->startOfDay()) {
+                $this->sendPeriodActivationNotifications($period);
             }
         }
 
@@ -233,6 +230,39 @@ class PeriodController extends Controller
             $query->where('is_active', $isActive);
         }
         return $query;
+    }
+
+    /**
+     * Send activation notifications to all students for a period
+     */
+    protected function sendPeriodActivationNotifications(TimePeriod $period): void
+    {
+        $students = \App\Models\User::role('student')->get(['id']);
+        if ($students->isEmpty()) {
+            return;
+        }
+
+        $now = now();
+        $notifications = $students->map(function ($student) use ($period, $now) {
+            return [
+                'user_id' => $student->id,
+                'message' => json_encode([
+                    'key' => 'notifications.periods.activated',
+                    'params' => [
+                        'type' => $period->type,
+                        'name' => $period->name,
+                    ],
+                ]),
+                'type' => 'period_announcement',
+                'related_entity_type' => TimePeriod::class,
+                'related_entity_id' => $period->id,
+                'is_read' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        })->toArray();
+
+        \App\Models\Notification::insert($notifications);
     }
 }
 

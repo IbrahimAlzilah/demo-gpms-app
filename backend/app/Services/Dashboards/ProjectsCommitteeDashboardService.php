@@ -48,7 +48,7 @@ class ProjectsCommitteeDashboardService
         $now = now();
         $activePeriods = TimePeriod::where('is_active', true)
             ->where('start_date', '<=', $now)
-            ->where('end_date', '>=', $now)
+            ->where('end_date', '>=', $now->startOfDay())
             ->orderBy('end_date', 'asc')
             ->get();
 
@@ -62,7 +62,7 @@ class ProjectsCommitteeDashboardService
             $start = Carbon::parse($currentPeriod->start_date);
             $end = Carbon::parse($currentPeriod->end_date);
             $total = $end->diffInDays($start, false);
-            
+
             if ($total > 0) {
                 $elapsed = max(0, $now->diffInDays($start, false));
                 $progressPercent = min(100, max(0, round(($elapsed / $total) * 100)));
