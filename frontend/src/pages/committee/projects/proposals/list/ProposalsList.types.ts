@@ -1,32 +1,37 @@
-import type { Proposal } from '@/types/project.types'
-import type { Submission } from '../types/GroupedSubmissions.types'
+import type { Proposal } from "@/types/project.types";
+import type { Submission } from "../types/GroupedSubmissions.types";
 
-export type ProposalStatusFilter = 'all' | 'pending_review' | 'approved' | 'rejected' | 'requires_modification'
-export type ViewMode = 'grouped' | 'individual'
+export type ProposalStatusFilter =
+  | "all"
+  | "pending_review"
+  | "approved"
+  | "rejected"
+  | "requires_modification";
+export type ViewMode = "grouped" | "individual";
 
 export interface ProposalsListState {
-  selectedProposal: Proposal | null
-  action: 'approve' | 'reject' | 'modify' | null
-  statusFilter: ProposalStatusFilter
-  proposalToEditId: string | null
-  proposalToDelete: Proposal | null
-  proposalToViewId: string | null
-  viewMode: ViewMode
+  selectedProposal: Proposal | null;
+  action: "approve" | "reject" | "modify" | null;
+  statusFilter: ProposalStatusFilter;
+  proposalToEditId: string | null;
+  proposalToDelete: Proposal | null;
+  proposalToViewId: string | null;
+  viewMode: ViewMode;
   registrationDetails?: Array<{
-    type: string
-    project_id?: number
-    project_title?: string
-    group_id?: number
-    group_name?: string
-    count?: number
-  }>
-  showRegistrationWarning?: boolean
+    type: string;
+    project_id?: number;
+    project_title?: string;
+    group_id?: number;
+    group_name?: string;
+    count?: number;
+  }>;
+  showRegistrationWarning?: boolean;
 }
 
 export interface ProposalsListData {
-  proposals: Proposal[]
-  submissions: Submission[] // Grouped submissions
-  isLoading: boolean
-  error: Error | null
-  pageCount: number
+  proposals: Proposal[];
+  submissions: Submission[]; // Grouped submissions
+  isLoading: boolean;
+  error: Error | null;
+  pageCount: number;
 }
