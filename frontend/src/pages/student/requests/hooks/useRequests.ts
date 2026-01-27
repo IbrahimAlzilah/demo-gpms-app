@@ -12,6 +12,8 @@ export function useRequests() {
       return requestService.getAll(user.id)
     },
     enabled: !!user,
+    staleTime: 0,
+    refetchOnMount: true,
   })
 }
 
@@ -20,6 +22,8 @@ export function useRequest(id: string) {
     queryKey: ['requests', id],
     queryFn: () => requestService.getById(id),
     enabled: !!id,
+    staleTime: 0,
+    refetchOnMount: true,
   })
 }
 

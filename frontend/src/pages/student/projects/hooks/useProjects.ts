@@ -9,6 +9,8 @@ export function useProjects() {
   return useQuery({
     queryKey: ["projects"],
     queryFn: () => projectService.getAll(),
+    staleTime: 0,
+    refetchOnMount: true,
   });
 }
 
@@ -19,6 +21,8 @@ export function useAvailableProjects() {
   return useQuery({
     queryKey: ["projects", "available"],
     queryFn: () => projectService.getAvailable(),
+    staleTime: 0,
+    refetchOnMount: true,
   });
 }
 
@@ -30,6 +34,8 @@ export function useProject(id: string) {
     queryKey: ["projects", id],
     queryFn: () => projectService.getById(id),
     enabled: !!id,
+    staleTime: 0,
+    refetchOnMount: true,
   });
 }
 
@@ -42,6 +48,8 @@ export function useStudentRegistrations() {
       return projectService.getStudentRegistrations(user.id);
     },
     enabled: !!user,
+    staleTime: 0,
+    refetchOnMount: true,
   });
 }
 
@@ -54,6 +62,8 @@ export function useProjectRegistration(projectId: string) {
       return projectService.getRegistrationByProject(projectId, user.id);
     },
     enabled: !!user && !!projectId,
+    staleTime: 0,
+    refetchOnMount: true,
   });
 }
 

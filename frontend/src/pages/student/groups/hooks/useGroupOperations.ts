@@ -237,6 +237,8 @@ export function useMyJoinRequests() {
   return useQuery({
     queryKey: ['my-join-requests'],
     queryFn: () => groupService.getMyJoinRequests(),
+    staleTime: 0,
+    refetchOnMount: true,
   })
 }
 

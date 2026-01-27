@@ -8,6 +8,8 @@ export function useGroupByProject(projectId: string) {
     queryKey: ['groups', 'project', projectId],
     queryFn: () => groupService.getByProjectId(projectId),
     enabled: !!projectId,
+    staleTime: 0,
+    refetchOnMount: true,
   })
 }
 
@@ -20,7 +22,8 @@ export function useMyGroup() {
       return groupService.getByStudentId(user.id)
     },
     enabled: !!user,
-    refetchInterval: 30000,
+    staleTime: 0,
+    refetchOnMount: true,
   })
 }
 
@@ -33,7 +36,8 @@ export function useGroupInvitations() {
       return groupService.getInvitations(user.id)
     },
     enabled: !!user,
-    refetchInterval: 30000,
+    staleTime: 0,
+    refetchOnMount: true,
   })
 }
 

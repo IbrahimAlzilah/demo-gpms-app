@@ -4,6 +4,7 @@ import { useAuthStore } from '@/pages/auth/login'
 
 /**
  * Hook to fetch the current user's project
+ * Note: This hook relies on useProjects which already has staleTime: 0 and refetchOnMount: true
  */
 export function useFollowUp() {
   const { user } = useAuthStore()

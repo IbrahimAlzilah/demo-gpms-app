@@ -27,24 +27,32 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
     queryKey: ['supervisor-notes', projectId],
     queryFn: () => projectService.getSupervisorNotes(projectId),
     enabled: !!projectId,
+    staleTime: 0,
+    refetchOnMount: true,
   })
 
   const { data: milestones, isLoading: milestonesLoading } = useQuery({
     queryKey: ['project-milestones', projectId],
     queryFn: () => projectService.getMilestones(projectId),
     enabled: !!projectId,
+    staleTime: 0,
+    refetchOnMount: true,
   })
 
   const { data: meetings, isLoading: meetingsLoading } = useQuery({
     queryKey: ['project-meetings', projectId],
     queryFn: () => projectService.getMeetings(projectId),
     enabled: !!projectId,
+    staleTime: 0,
+    refetchOnMount: true,
   })
 
   const { data: progressPercentage, isLoading: progressLoading } = useQuery({
     queryKey: ['project-progress', projectId],
     queryFn: () => projectService.getProgressPercentage(projectId),
     enabled: !!projectId,
+    staleTime: 0,
+    refetchOnMount: true,
   })
 
   const queryClient = useQueryClient()

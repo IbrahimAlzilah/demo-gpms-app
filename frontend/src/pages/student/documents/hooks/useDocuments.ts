@@ -8,6 +8,8 @@ export function useDocuments(projectId?: string) {
   return useQuery({
     queryKey: ['documents', projectId],
     queryFn: () => documentService.getAll(projectId),
+    staleTime: 0,
+    refetchOnMount: true,
   })
 }
 
@@ -19,5 +21,7 @@ export function useDocument(id: string) {
     queryKey: ['documents', id],
     queryFn: () => documentService.getById(id),
     enabled: !!id,
+    staleTime: 0,
+    refetchOnMount: true,
   })
 }

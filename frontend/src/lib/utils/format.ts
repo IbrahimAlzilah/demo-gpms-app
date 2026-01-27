@@ -27,7 +27,7 @@ export function formatDateTime(date: string | Date | null | undefined): string {
 }
 
 export function formatRelativeTime(
-  date: string | Date | null | undefined
+  date: string | Date | null | undefined,
 ): string {
   if (!date) return "-";
   const d = typeof date === "string" ? new Date(date) : date;
@@ -50,6 +50,21 @@ export function formatRelativeTime(
   }
 
   return formatDate(d);
+}
+
+/**
+ * Format date as YYYY-MM-DD (e.g. for tables)
+ */
+export function formatDateShort(
+  date: string | Date | null | undefined,
+): string {
+  if (!date) return "-";
+  const d = typeof date === "string" ? new Date(date) : date;
+  if (!(d instanceof Date) || isNaN(d.getTime())) return "-";
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 export function formatFileSize(bytes: number): string {

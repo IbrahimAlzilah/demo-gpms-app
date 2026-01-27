@@ -6,6 +6,7 @@ export function useStudentDashboard() {
   return useQuery<StudentDashboardData, Error>({
     queryKey: ['student-dashboard'],
     queryFn: () => dashboardService.getStudentDashboard(),
-    staleTime: 30000, // 30 seconds
+    staleTime: 0,
+    refetchOnMount: true,
   })
 }

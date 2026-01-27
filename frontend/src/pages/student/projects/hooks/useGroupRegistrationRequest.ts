@@ -14,5 +14,7 @@ export function useGroupRegistrationRequest() {
       return response.data.data
     },
     retry: 1,
+    staleTime: 0,
+    refetchOnMount: true,
   })
 }

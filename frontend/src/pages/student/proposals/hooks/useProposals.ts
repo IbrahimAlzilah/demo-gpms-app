@@ -8,6 +8,8 @@ export function useProposals() {
   return useQuery({
     queryKey: ['proposals'],
     queryFn: () => proposalService.getAll(),
+    staleTime: 0,
+    refetchOnMount: true,
   })
 }
 
@@ -19,5 +21,7 @@ export function useProposal(id: string) {
     queryKey: ['proposals', id],
     queryFn: () => proposalService.getById(id),
     enabled: !!id,
+    staleTime: 0,
+    refetchOnMount: true,
   })
 }

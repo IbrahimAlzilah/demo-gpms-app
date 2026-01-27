@@ -27,6 +27,8 @@ export function GroupJoinRequestsList({
   const { data: joinRequests, isLoading } = useQuery({
     queryKey: ['group-join-requests', group.id],
     queryFn: () => groupService.getJoinRequests(group.id),
+    staleTime: 0,
+    refetchOnMount: true,
   })
 
   const handleApprove = async (requestId: string) => {

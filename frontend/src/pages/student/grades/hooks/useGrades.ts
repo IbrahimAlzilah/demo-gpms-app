@@ -15,6 +15,8 @@ export function useGrades(isApproved?: boolean) {
       return gradeService.getGrades(user.id, isApproved)
     },
     enabled: !!user,
+    staleTime: 0,
+    refetchOnMount: true,
   })
 }
 
@@ -26,5 +28,7 @@ export function useGrade(id: string) {
     queryKey: ['grades', id],
     queryFn: () => gradeService.getGradeById(id),
     enabled: !!id,
+    staleTime: 0,
+    refetchOnMount: true,
   })
 }

@@ -2,9 +2,10 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { DataTableColumnHeader } from '@/components/ui/data-table/data-table-column-header'
 import { StatusBadge } from '@/components/common/StatusBadge'
 import { ActionsDropdown, type TableAction } from '@/components/common/ActionsDropdown'
+import { Badge } from '@/components/ui/badge'
 import type { Proposal } from '@/types/project.types'
-import { Eye, Edit, CheckCircle2, XCircle, Clock, AlertCircle } from 'lucide-react'
-import { formatRelativeTime } from '@/lib/utils/format'
+import { Eye, Edit } from 'lucide-react'
+import { formatDateShort } from '@/lib/utils/format'
 import type { ProposalTableColumnsProps } from '../../types/Proposals.types'
 
 export function createProposalColumns({
@@ -13,31 +14,68 @@ export function createProposalColumns({
   t,
   readOnly = false,
 }: ProposalTableColumnsProps): ColumnDef<Proposal>[] {
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return <CheckCircle2 className="h-4 w-4 text-success" />
-      case 'rejected':
-        return <XCircle className="h-4 w-4 text-destructive" />
-      case 'requires_modification':
-        return <AlertCircle className="h-4 w-4 text-warning" />
-      default:
-        return <Clock className="h-4 w-4 text-muted-foreground" />
-    }
-  }
-
   return [
+    {
+      accessorKey: 'submitter',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('proposal.submitterName')} />
+      ),
+      cell: ({ row }) => {
+        const s = row.original.submitter
+        const initial = s?.name?.charAt(0)?.toUpperCase() ?? '?'
+        const id = s?.studentId ?? s?.username ?? ''
+        return (
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
+              {initial}
+            </div>
+            <div className="min-w-0">
+              <div className="font-medium truncate">{s?.name ?? '-'}</div>
+              {id ? (
+                <div className="text-xs text-muted-foreground truncate">{id}</div>
+              ) : null}
+            </div>
+          </div>
+        )
+      },
+      enableSorting: true,
+      enableColumnFilter: true,
+      filterFn: (row, _id, value) => {
+        const s = row.original.submitter
+        const name = (s?.name ?? '').toLowerCase()
+        const sid = (s?.studentId ?? s?.username ?? '').toLowerCase()
+        const v = String(value).toLowerCase()
+        return name.includes(v) || sid.includes(v)
+      },
+    },
+    {
+      accessorKey: 'studentGroup.groupCode',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('group.groupCode')} />
+      ),
+      cell: ({ row }) =>
+        row.original.studentGroup?.groupCode ? (
+          <Badge variant="outline">{row.original.studentGroup.groupCode}</Badge>
+        ) : (
+          <span className="text-muted-foreground">-</span>
+        ),
+      enableSorting: true,
+      enableColumnFilter: true,
+      filterFn: (row, _id, value) => {
+        const code = (row.original.studentGroup?.groupCode ?? '').toLowerCase()
+        return code.includes(String(value).toLowerCase())
+      },
+    },
     {
       accessorKey: 'title',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('proposal.title')} />
       ),
       cell: ({ row }) => (
-        <div className="font-medium flex items-center gap-2">
-          {getStatusIcon(row.original.status)}
-          <span className="max-w-[300px] truncate">{row.original.title}</span>
-        </div>
+        <div className="font-medium max-w-[200px] truncate">{row.original.title}</div>
       ),
+      enableSorting: true,
+      enableColumnFilter: true,
     },
     {
       accessorKey: 'description',
@@ -45,19 +83,27 @@ export function createProposalColumns({
         <DataTableColumnHeader column={column} title={t('proposal.description')} />
       ),
       cell: ({ row }) => (
-        <div className="max-w-[400px] truncate text-muted-foreground text-sm">
+        <div className="max-w-[300px] truncate text-muted-foreground text-sm">
           {row.original.description}
         </div>
       ),
+      enableSorting: true,
+      enableColumnFilter: true,
     },
     {
-      accessorKey: 'submitter',
+      accessorKey: 'submitter.department',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('proposal.submitterName')} />
+        <DataTableColumnHeader column={column} title={t('common.department')} />
       ),
       cell: ({ row }) => (
-        <div>{t(`roles.${row.original.submitter?.role}`) || row.original.submitter?.role}</div>
+        <div className="text-sm">{row.original.submitter?.department ?? '-'}</div>
       ),
+      enableSorting: true,
+      enableColumnFilter: true,
+      filterFn: (row, _id, value) => {
+        const dept = (row.original.submitter?.department ?? '').toLowerCase()
+        return dept.includes(String(value).toLowerCase())
+      },
     },
     {
       accessorKey: 'status',
@@ -66,7 +112,8 @@ export function createProposalColumns({
       ),
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
       filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id))
+        const vals = Array.isArray(value) ? value : [value]
+        return vals.includes(row.getValue(id))
       },
       enableSorting: false,
     },
@@ -77,21 +124,10 @@ export function createProposalColumns({
       ),
       cell: ({ row }) => (
         <div className="text-sm text-muted-foreground">
-          {formatRelativeTime(row.original.createdAt)}
+          {formatDateShort(row.original.createdAt)}
         </div>
       ),
-    },
-    {
-      accessorKey: 'reviewedAt',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('proposal.reviewedAt')} />
-      ),
-      cell: ({ row }) => (
-        <div className="text-sm text-muted-foreground">
-          {row.original.reviewedAt ? formatRelativeTime(row.original.reviewedAt) : '-'}
-        </div>
-      ),
-      enableSorting: false,
+      enableSorting: true,
     },
     {
       id: 'actions',
@@ -100,8 +136,6 @@ export function createProposalColumns({
       ),
       cell: ({ row }) => {
         const proposal = row.original
-
-        // Explicitly type the actions array to include all TableAction properties
         const actions: TableAction<Proposal>[] = [
           {
             id: 'view',
@@ -110,21 +144,20 @@ export function createProposalColumns({
             onClick: () => onView(proposal),
           },
         ]
-
-        // Only show edit action if not read-only and edit handler is provided
         if (!readOnly && onEdit) {
           actions.push({
             id: 'edit',
             label: t('common.edit'),
             icon: Edit,
             onClick: () => onEdit(proposal),
-            // UC-ST-01: Allow edit for pending_review or requires_modification
-            hidden: (row: Proposal) => (row.status !== 'pending_review' && row.status !== 'requires_modification'),
+            hidden: (r: Proposal) =>
+              r.status !== 'pending_review' && r.status !== 'requires_modification',
           })
         }
-
         return <ActionsDropdown row={proposal} actions={actions} />
       },
+      enableSorting: false,
+      enableHiding: false,
     },
   ]
 }

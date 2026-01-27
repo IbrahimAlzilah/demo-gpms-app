@@ -53,6 +53,8 @@ export function useDataTable<TData>({
     queryFn: () => queryFn(queryParams!),
     enabled: enableServerSide ? !!queryParams : true,
     placeholderData: keepPreviousData,
+    staleTime: 0,
+    refetchOnMount: true,
   })
 
   // For server-side, return data as-is
