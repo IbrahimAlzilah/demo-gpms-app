@@ -1,22 +1,25 @@
 import { useTranslation } from 'react-i18next'
-import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui'
 import { LoadingSpinner } from '@/components/common'
 import { UserPlus, CheckCircle2, XCircle, Clock, Loader2 } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
-import { groupService } from '../api/group.service'
 import { useApproveJoinRequest, useRejectJoinRequest } from '../hooks/useGroupOperations'
-import type { ProjectGroup } from '@/types/project.types'
+import type { ProjectGroup, StudentGroup, GroupJoinRequest } from '@/types/project.types'
+import { useGroupJoinRequests } from '../hooks/useGroups'
 
 interface GroupJoinRequestsListProps {
-  group: ProjectGroup
+  group: ProjectGroup | StudentGroup
+  requests?: GroupJoinRequest[]
+  isLoading?: boolean
   onError?: (error: string) => void
   onSuccess?: (message: string) => void
 }
 
 export function GroupJoinRequestsList({
   group,
+  requests: promptRequests,
+  isLoading: promptLoading,
   onError,
   onSuccess,
 }: GroupJoinRequestsListProps) {
@@ -24,12 +27,10 @@ export function GroupJoinRequestsList({
   const approveRequest = useApproveJoinRequest()
   const rejectRequest = useRejectJoinRequest()
 
-  const { data: joinRequests, isLoading } = useQuery({
-    queryKey: ['group-join-requests', group.id],
-    queryFn: () => groupService.getJoinRequests(group.id),
-    staleTime: 0,
-    refetchOnMount: true,
-  })
+  const { data: fetchedRequests, isLoading: isFetching } = useGroupJoinRequests(promptRequests ? undefined : group.id)
+
+  const joinRequests = promptRequests || fetchedRequests
+  const isLoading = promptLoading !== undefined ? promptLoading : isFetching
 
   const handleApprove = async (requestId: string) => {
     try {

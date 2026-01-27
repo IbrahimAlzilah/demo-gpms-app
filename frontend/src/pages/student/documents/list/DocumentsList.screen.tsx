@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DataTable, Button } from '@/components/ui'
 import { BlockContent, LoadingSpinner } from '@/components/common'
-import { PlusCircle, FolderOpen, AlertCircle, Calendar } from 'lucide-react'
+import { PlusCircle, FolderOpen, AlertCircle } from 'lucide-react'
 import { createDocumentColumns } from '../components/table'
 import { StatisticsCards } from '../components/StatisticsCards'
 import { DocumentsNew } from '../new/DocumentsNew.screen'
@@ -48,13 +48,13 @@ export function DocumentsList() {
 
   const actions = useMemo(
     () =>
-      isPeriodActive && state.selectedProjectId ? (
+      state.selectedProjectId ? (
         <Button onClick={() => setState((prev) => ({ ...prev, showUploadForm: true }))}>
           <PlusCircle className="size-4" />
           {t('document.uploadNew')}
         </Button>
       ) : null,
-    [t, isPeriodActive, state.selectedProjectId, setState]
+    [t, state.selectedProjectId, setState]
   )
 
   // Show loading spinner while projects are being fetched
@@ -85,21 +85,6 @@ export function DocumentsList() {
 
   return (
     <>
-      {/* Period Status */}
-      {!isPeriodActive && !periodLoading && (
-        <div className="flex items-start gap-3 p-4 bg-warning/10 border border-warning/20 rounded-lg">
-          <Calendar className="h-5 w-5 text-warning mt-0.5" />
-          <div>
-            <p className="text-sm font-medium text-warning-foreground">
-              {t('document.periodClosedMessage')}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {t('document.periodClosedDescription')}
-            </p>
-          </div>
-        </div>
-      )}
-
       {/* Project Info */}
       {/* <Card className="mb-6">
         <CardHeader>

@@ -329,14 +329,14 @@
     "errorNoGroup": "You must be a member of a group to submit this request",
     "errorNoProject": "You must have an approved project to submit this request",
     "windowClosed": "Request Submission Closed",
-    "windowClosedDesc": "Requests can only be submitted during the Project Registration period.",
+    "windowClosedDesc": "Request submission is currently unavailable. Requests can only be submitted during the active request submission period.",
     "groupLeaderOnly": "Only group leaders can submit this request",
     "guidance": {
       "title": "Submission Requirements",
       "step1": {
-        "title": "Registration Period",
-        "active": "Registration period is open",
-        "closed": "Registration period is closed"
+        "title": "Request Submission Period",
+        "active": "Request submission period is open",
+        "closed": "Request submission period is closed"
       },
       "step2": {
         "title": "Group Membership",
@@ -1185,6 +1185,7 @@
       "types": {
         "proposalSubmission": "Proposal Submission",
         "projectRegistration": "Project Registration",
+        "requestSubmission": "Request Submission",
         "chapterSubmissionPhase1": "Chapters Submission – Phase 1",
         "finalDefensePhase1": "Final Defense – Phase 1",
         "chapterSubmissionPhase2": "Chapters Submission – Phase 2",
@@ -1192,7 +1193,15 @@
         "finalProjectDocumentSubmission": "Final Project Document Submission",
         "gradeApproval": "Grade Approval",
         "general": "General"
-      }
+      },
+      "status": "Status",
+      "statusDescription": "Enable or disable this time period. When disabled, actions controlled by this period will be blocked.",
+      "activate": "Activate Period",
+      "deactivate": "Deactivate Period",
+      "periodActivated": "Period activated successfully",
+      "periodDeactivated": "Period deactivated successfully",
+      "activateError": "Failed to activate period",
+      "deactivateError": "Failed to deactivate period"
     },
     "announce": {
       "selectAtLeastOne": "Please select at least one project",
@@ -1373,6 +1382,7 @@
   "project": {
     "browseDescription": "Browse available projects for registration and choose the right project for you",
     "backToProjects": "Back to Projects List",
+    "projectNotFound": "Project not found",
     "title": "Project Title",
     "description": "Description",
     "supervisor": "Supervisor",
@@ -1386,9 +1396,11 @@
     "specialization": "Specialization",
     "keywords": "Keywords",
     "documents": "Documents",
+    "linkedToGroup": "Linked to a group",
     "register": "Register in Project",
     "registerInProject": "Register in Project",
     "registerDescription": "Review project details before registering",
+    "reviewDetailsBeforeRegistering": "Review project details before registering",
     "confirmRegistration": "Confirm Registration",
     "registering": "Registering...",
     "registrationSuccess": "Registration request sent successfully. Please wait for approval from the projects committee.",
@@ -1401,6 +1413,7 @@
     "registrationStatus": "Registration Request Status",
     "registrationPending": "Registration request pending review",
     "registrationPendingMessage": "Registration request has been sent to the projects committee. Please wait for approval.",
+    "registrationReviewRequest": "Your registration request will be sent to the Projects Committee for review. You will be notified of the decision.",
     "submittedAt": "Submission Date",
     "registrationApproved": "Registration request approved",
     "registrationRejected": "Registration request rejected",

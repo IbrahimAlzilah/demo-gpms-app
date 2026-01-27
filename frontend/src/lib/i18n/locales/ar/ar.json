@@ -340,14 +340,14 @@
     "errorNoGroup": "يجب أن تكون عضواً في مجموعة لتقديم هذا الطلب",
     "errorNoProject": "يجب أن يكون لديك مشروع معتمد لتقديم هذا الطلب",
     "windowClosed": "إغلاق تقديم الطلبات",
-    "windowClosedDesc": "يمكن تقديم الطلبات فقط خلال فترة تسجيل المشاريع.",
+    "windowClosedDesc": "تقديم الطلبات غير متاح حاليًا. يمكن تقديم الطلبات فقط خلال فترة تقديم الطلبات النشطة.",
     "groupLeaderOnly": "يمكن لقادة المجموعات فقط تقديم هذا الطلب",
     "guidance": {
       "title": "متطلبات التقديم",
       "step1": {
-        "title": "فترة التسجيل",
-        "active": "فترة التسجيل مفتوحة",
-        "closed": "فترة التسجيل مغلقة"
+        "title": "فترة تقديم الطلبات",
+        "active": "فترة تقديم الطلبات مفتوحة",
+        "closed": "فترة تقديم الطلبات مغلقة"
       },
       "step2": {
         "title": "عضوية المجموعة",
@@ -1280,6 +1280,7 @@
       "types": {
         "proposalSubmission": "تقديم المقترحات",
         "projectRegistration": "التسجيل في المشاريع",
+        "requestSubmission": "تقديم الطلبات",
         "chapterSubmissionPhase1": "تسليم الفصول – المرحلة الأولى",
         "finalDefensePhase1": "المناقشة النهائية – المرحلة الأولى",
         "chapterSubmissionPhase2": "تسليم الفصول – المرحلة الثانية",
@@ -1287,7 +1288,15 @@
         "finalProjectDocumentSubmission": "تسليم وثائق المشروع النهائية",
         "gradeApproval": "اعتماد الدرجات",
         "general": "عام"
-      }
+      },
+      "status": "الحالة",
+      "statusDescription": "تفعيل أو إلغاء تفعيل هذه الفترة الزمنية. عند الإلغاء، سيتم حظر الإجراءات التي تتحكم فيها هذه الفترة.",
+      "activate": "تفعيل الفترة",
+      "deactivate": "إلغاء تفعيل الفترة",
+      "periodActivated": "تم تفعيل الفترة بنجاح",
+      "periodDeactivated": "تم إلغاء تفعيل الفترة بنجاح",
+      "activateError": "فشل تفعيل الفترة",
+      "deactivateError": "فشل إلغاء تفعيل الفترة"
     },
     "announce": {
       "selectAtLeastOne": "يرجى اختيار مشروع واحد على الأقل",
@@ -1468,6 +1477,7 @@
   "project": {
     "browseDescription": "تصفح المشاريع المتاحة للتسجيل واختر المشروع المناسب لك",
     "backToProjects": "العودة إلى قائمة المشاريع",
+    "projectNotFound": "المشروع غير موجود",
     "title": "عنوان المشروع",
     "description": "الوصف",
     "supervisor": "المشرف",
@@ -1481,9 +1491,11 @@
     "specialization": "التخصص",
     "keywords": "الكلمات المفتاحية",
     "documents": "المستندات",
+    "linkedToGroup": "مرتبط بمجموعة",
     "register": "التسجيل في المشروع",
     "registerInProject": "التسجيل في المشروع",
     "registerDescription": "تأكد من تفاصيل المشروع قبل التسجيل",
+    "reviewDetailsBeforeRegistering": "راجع تفاصيل المشروع قبل التسجيل",
     "confirmRegistration": "تأكيد التسجيل",
     "registering": "جاري التسجيل...",
     "registrationSuccess": "تم إرسال طلب التسجيل بنجاح. يرجى انتظار الموافقة من لجنة المشاريع.",
@@ -1496,6 +1508,7 @@
     "registrationStatus": "حالة طلب التسجيل",
     "registrationPending": "طلب التسجيل قيد المراجعة",
     "registrationPendingMessage": "تم إرسال طلب التسجيل إلى لجنة المشاريع. يرجى انتظار الموافقة.",
+    "registrationReviewRequest": "سيتم إرسال طلب التسجيل إلى لجنة المشاريع للمراجعة، وسيتم إشعارك بقرار اللجنة.",
     "submittedAt": "تاريخ التقديم",
     "registrationApproved": "تم قبول طلب التسجيل",
     "registrationRejected": "تم رفض طلب التسجيل",
@@ -1561,12 +1574,12 @@
     "assignedGroupDetails": "المجموعة المعينة",
     "groupLeader": "قائد المجموعة",
     "canStillRegister": "لا يزال بإمكانك تقديم طلب تسجيل",
-    "canStillRegisterDescription": "يمكنك تقديم طلب تسجيل لهذا المشروع. ستراجع لجنة المشاريع طلبك وتقرر الموافقة عليه أو رفضه، مع الأخذ في الاعتبار التعيين الحالي."
+    "canStillRegisterDescription": "يمكنك تقديم طلب تسجيل لهذا المشروع. ستراجع لجنة المشاريع طلبك وتقرر الموافقة عليه أو رفضه، مع الأخذ في الاعتبار التعيين الحالي.",
+    "submitRegistrationRequest": "إرسال طلب تسجيل"
   },
   "registration": {
     "management": "إدارة طلبات التسجيل",
     "student": "الطالب",
-    "project": "المشروع",
     "pending": "قيد الانتظار",
     "approved": "معتمد",
     "rejected": "مرفوض",

@@ -17,7 +17,7 @@ export function DocumentsNew({ projectId, open, onClose, onSuccess }: DocumentsN
   }
 
   return (
-    <ModalDialog open={open} onOpenChange={onClose} title={t('document.uploadNew')}>
+    <ModalDialog open={open} onOpenChange={onClose} title={t('document.uploadNew')} className="max-w-2xl">
       <DocumentUpload projectId={projectId} onSuccess={handleSuccess} />
     </ModalDialog>
   )

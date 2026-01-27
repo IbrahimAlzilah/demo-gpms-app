@@ -49,13 +49,28 @@ export function createProposalColumns({
       },
     },
     {
+      accessorKey: 'submitter.department',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('common.department')} />
+      ),
+      cell: ({ row }) => (
+        <div className="text-sm">{row.original.submitter?.department ?? '-'}</div>
+      ),
+      enableSorting: true,
+      enableColumnFilter: true,
+      filterFn: (row, _id, value) => {
+        const dept = (row.original.submitter?.department ?? '').toLowerCase()
+        return dept.includes(String(value).toLowerCase())
+      },
+    },
+    {
       accessorKey: 'studentGroup.groupCode',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('group.groupCode')} />
+        <DataTableColumnHeader column={column} title={t('groups.groupCode')} />
       ),
       cell: ({ row }) =>
         row.original.studentGroup?.groupCode ? (
-          <Badge variant="outline">{row.original.studentGroup.groupCode}</Badge>
+          <Badge variant="outline" className="shadow-none">{row.original.studentGroup.groupCode}</Badge>
         ) : (
           <span className="text-muted-foreground">-</span>
         ),
@@ -89,21 +104,6 @@ export function createProposalColumns({
       ),
       enableSorting: true,
       enableColumnFilter: true,
-    },
-    {
-      accessorKey: 'submitter.department',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.department')} />
-      ),
-      cell: ({ row }) => (
-        <div className="text-sm">{row.original.submitter?.department ?? '-'}</div>
-      ),
-      enableSorting: true,
-      enableColumnFilter: true,
-      filterFn: (row, _id, value) => {
-        const dept = (row.original.submitter?.department ?? '').toLowerCase()
-        return dept.includes(String(value).toLowerCase())
-      },
     },
     {
       accessorKey: 'status',

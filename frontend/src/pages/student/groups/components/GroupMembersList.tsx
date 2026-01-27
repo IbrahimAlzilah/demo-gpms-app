@@ -3,10 +3,10 @@ import { Button } from '@/components/ui'
 import { UserMinus, Crown } from 'lucide-react'
 import { useAuthStore } from '@/pages/auth/login'
 import { useRemoveGroupMember } from '../hooks/useGroupOperations'
-import type { ProjectGroup } from '@/types/project.types'
+import type { ProjectGroup, StudentGroup } from '@/types/project.types'
 
 interface GroupMembersListProps {
-  group: ProjectGroup
+  group: ProjectGroup | StudentGroup
   onError?: (error: string) => void
   onSuccess?: (message: string) => void
 }

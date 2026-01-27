@@ -1,13 +1,13 @@
 import { useTranslation } from 'react-i18next'
-import { Card, CardContent } from '@/components/ui'
-import { BlockContent, LoadingSpinner } from '@/components/common'
-import { Calendar } from 'lucide-react'
+import { BlockContent } from '@/components/common'
+import { Calendar, AlertCircle } from 'lucide-react'
 import { ProjectBrowser } from '../components/ProjectBrowser'
 import { ProjectsView } from '../view/ProjectsView.screen'
 import { RejectionDetailsModal } from '../components/RejectionDetailsModal'
 import { useProjectsList } from './ProjectsList.hook'
 import { useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/lib/constants'
+import { cn } from '@/lib/utils'
 
 export function ProjectsList() {
   const { t } = useTranslation()
@@ -71,45 +71,42 @@ export function ProjectsList() {
   // Navigation to /projects/register/:projectId handles the registration page
 
   return (
-    <>
-      <BlockContent title={t('nav.projects')} variant="data-table">
-        {periodLoading ? (
-          <Card>
-            <CardContent className="pt-6">
-              <LoadingSpinner />
-            </CardContent>
-          </Card>
-        ) : !isPeriodActive ? (
-          <Card className="border-warning p-0 shadow-none mb-4">
-            <div className="flex items-start gap-3 p-4 bg-warning/10 border border-warning/20 rounded-lg">
-              <Calendar className="h-5 w-5 text-warning mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-warning-foreground">
-                  {t('project.periodClosedMessage')}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {t('project.periodClosedDescription')}
-                </p>
-              </div>
-            </div>
-          </Card>
-        ) : null}
+    <div className="space-y-6">
+      {/* Period Closed Message */}
+      {!periodLoading && !isPeriodActive && (
+        <div className="flex items-start gap-3 p-4 rounded-xl border bg-warning/10 border-warning/20">
+          <Calendar className="h-5 w-5 text-warning mt-0.5 shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-warning-foreground">
+              {t('project.periodClosedMessage')}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {t('project.periodClosedDescription')}
+            </p>
+          </div>
+        </div>
+      )}
 
+      {/* Main Content */}
+      <BlockContent title={t('nav.projects')} variant="data-table">
         <ProjectBrowser
           onSelectProject={handleSelectProject}
           onViewRejection={handleViewRejection}
           studentGroup={studentGroup}
           groupLoading={groupLoading}
         />
-
-        {data.error && (
-          <BlockContent variant="container" className="border-destructive mt-4">
-            <div className="flex items-center gap-2 text-destructive">
-              <span>{t('project.loadError')}</span>
-            </div>
-          </BlockContent>
-        )}
       </BlockContent>
+
+      {/* Error Display */}
+      {data.error && (
+        <div className={cn(
+          'flex items-center gap-3 p-4 rounded-xl border',
+          'bg-gradient-to-r from-destructive/10 to-destructive/5 border-destructive/30'
+        )}>
+          <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
+          <span className="text-sm text-destructive">{t('project.loadError')}</span>
+        </div>
+      )}
 
       {/* View Project Details Modal */}
       {state.selectedProject && state.showDetails && (
@@ -139,6 +136,6 @@ export function ProjectsList() {
           }))
         }}
       />
-    </>
+    </div>
   )
 }

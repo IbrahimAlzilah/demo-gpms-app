@@ -1,7 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { groupService } from '../api/group.service'
 import { useAuthStore } from '@/pages/auth/login'
-import type { User } from '@/types/user.types'
 
 export function useGroupByProject(projectId: string) {
   return useQuery({
@@ -43,5 +42,18 @@ export function useGroupInvitations() {
 
 
 // Mutations have been moved to useGroupOperations.ts
+
+export function useGroupJoinRequests(groupId: string | undefined) {
+  return useQuery({
+    queryKey: ['group-join-requests', groupId],
+    queryFn: () => {
+      if (!groupId) throw new Error('Group ID is required')
+      return groupService.getJoinRequests(groupId)
+    },
+    enabled: !!groupId,
+    staleTime: 0,
+    refetchOnMount: true,
+  })
+}
 
 

@@ -3,18 +3,22 @@ import { Button } from "@/components/ui/button"
 import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
 import { StatusBadge } from "@/components/common/StatusBadge"
 import type { TimePeriod } from "@/types/period.types"
-import { Edit, Trash2 } from "lucide-react"
+import { Edit, Trash2, Power, PowerOff } from "lucide-react"
 import { formatDate } from "@/lib/utils/format"
 
 export interface PeriodTableColumnsProps {
   onEdit?: (period: TimePeriod) => void
   onDelete?: (period: TimePeriod) => void
+  onActivate?: (period: TimePeriod) => void
+  onDeactivate?: (period: TimePeriod) => void
   t: (key: string) => string
 }
 
 export function createPeriodColumns({
   onEdit,
   onDelete,
+  onActivate,
+  onDeactivate,
   t,
 }: PeriodTableColumnsProps): ColumnDef<TimePeriod>[] {
   const periodTypeLabels: Record<string, string> = {
@@ -85,6 +89,30 @@ export function createPeriodColumns({
         const period = row.original
         return (
           <div className="flex items-center gap-2">
+            {onActivate && !period.isActive && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onActivate(period)}
+                className="h-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+                title={t('committee.periods.activate')}
+              >
+                <Power className="h-4 w-4" />
+                <span className="sr-only">{t('committee.periods.activate')}</span>
+              </Button>
+            )}
+            {onDeactivate && period.isActive && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onDeactivate(period)}
+                className="h-8 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                title={t('committee.periods.deactivate')}
+              >
+                <PowerOff className="h-4 w-4" />
+                <span className="sr-only">{t('committee.periods.deactivate')}</span>
+              </Button>
+            )}
             {onEdit && (
               <Button
                 variant="ghost"

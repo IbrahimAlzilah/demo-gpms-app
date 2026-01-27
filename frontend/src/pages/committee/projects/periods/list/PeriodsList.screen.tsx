@@ -1,6 +1,6 @@
-import { useMemo } from 'react'
+import { useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useCreatePeriod, useUpdatePeriod, useDeletePeriod } from '../hooks/usePeriodOperations'
+import { useCreatePeriod, useUpdatePeriod, useDeletePeriod, useActivatePeriod, useDeactivatePeriod } from '../hooks/usePeriodOperations'
 import { Button, DataTable } from '@/components/ui'
 import { BlockContent, ModalDialog } from '@/components/common'
 import { useToast } from '@/components/common'
@@ -17,6 +17,8 @@ export function PeriodsList() {
   const createPeriod = useCreatePeriod()
   const updatePeriod = useUpdatePeriod()
   const deletePeriod = useDeletePeriod()
+  const activatePeriod = useActivatePeriod()
+  const deactivatePeriod = useDeactivatePeriod()
 
   const {
     data,
@@ -34,6 +36,32 @@ export function PeriodsList() {
     setPagination,
   } = usePeriodsList()
 
+  const handleActivate = useCallback(
+    async (period: any) => {
+      try {
+        await activatePeriod.mutateAsync(period.id.toString())
+        toastSuccess('committee.periods.periodActivated')
+      } catch (err: any) {
+        const errorMsg = err?.response?.data?.message || err?.message || 'committee.periods.activateError'
+        toastError(errorMsg)
+      }
+    },
+    [activatePeriod, toastSuccess, toastError]
+  )
+
+  const handleDeactivate = useCallback(
+    async (period: any) => {
+      try {
+        await deactivatePeriod.mutateAsync(period.id.toString())
+        toastSuccess('committee.periods.periodDeactivated')
+      } catch (err: any) {
+        const errorMsg = err?.response?.data?.message || err?.message || 'committee.periods.deactivateError'
+        toastError(errorMsg)
+      }
+    },
+    [deactivatePeriod, toastSuccess, toastError]
+  )
+
   const columns = useMemo(
     () =>
       createPeriodColumns({
@@ -43,9 +71,11 @@ export function PeriodsList() {
         onDelete: (period) => {
           setState((prev) => ({ ...prev, selectedPeriod: period, showDeleteDialog: true }))
         },
+        onActivate: handleActivate,
+        onDeactivate: handleDeactivate,
         t,
       }),
-    [t, setState]
+    [t, setState, handleActivate, handleDeactivate]
   )
 
   const handleFormSubmit = async (data: TimePeriodSchema) => {

@@ -96,6 +96,7 @@ export function PeriodForm({
   const periodTypeOptions = [
     { value: 'proposal_submission', label: t('committee.periods.types.proposalSubmission') },
     { value: 'project_registration', label: t('committee.periods.types.projectRegistration') },
+    { value: 'request_submission', label: t('committee.periods.types.requestSubmission') },
     { value: 'chapter_submission_phase_1', label: t('committee.periods.types.chapterSubmissionPhase1') },
     { value: 'final_defense_phase_1', label: t('committee.periods.types.finalDefensePhase1') },
     { value: 'chapter_submission_phase_2', label: t('committee.periods.types.chapterSubmissionPhase2') },
