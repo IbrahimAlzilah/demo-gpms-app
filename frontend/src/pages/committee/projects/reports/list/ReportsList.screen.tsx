@@ -58,6 +58,8 @@ export function ReportsList() {
       const allPeriods = await periodService.getAll()
       return allPeriods.filter(p => p.type === 'general')
     },
+    staleTime: 0,
+    refetchOnMount: true,
   })
 
   // Fetch supervisors for filter
@@ -66,6 +68,8 @@ export function ReportsList() {
     queryFn: async () => {
       return await supervisorAssignmentService.getAvailableSupervisors()
     },
+    staleTime: 0,
+    refetchOnMount: true,
   })
 
   const handleFilterChange = (key: keyof ReportFilters, value: string | number | undefined) => {

@@ -325,7 +325,32 @@
     "change_supervisor": "Change Supervisor",
     "change_group": "Change Group",
     "change_project": "Change Project",
-    "other": "Other Request"
+    "other": "Other Request",
+    "errorNoGroup": "You must be a member of a group to submit this request",
+    "errorNoProject": "You must have an approved project to submit this request",
+    "windowClosed": "Request Submission Closed",
+    "windowClosedDesc": "Requests can only be submitted during the Project Registration period.",
+    "groupLeaderOnly": "Only group leaders can submit this request",
+    "guidance": {
+      "title": "Submission Requirements",
+      "step1": {
+        "title": "Registration Period",
+        "active": "Registration period is open",
+        "closed": "Registration period is closed"
+      },
+      "step2": {
+        "title": "Group Membership",
+        "active": "You are a member of a group",
+        "inactive": "You are not in a group",
+        "info": "Required for Group Change requests"
+      },
+      "step3": {
+        "title": "Project Approval",
+        "active": "You have an approved project",
+        "inactive": "No approved project found",
+        "info": "Required for Project/Supervisor Change requests"
+      }
+    }
   },
   "groups": {
     "title": "Group Management",
@@ -757,7 +782,25 @@
     "fileTooLarge": "File is too large (maximum 10MB)",
     "details": "Document Details",
     "fileName": "File Name",
-    "loadError": "An error occurred while loading the document"
+    "loadError": "An error occurred while loading the document",
+    "windowClosed": "Document Submission Period Closed",
+    "windowClosedDesc": "Document submission is only allowed during chapters submission or final document submission periods. Please wait until the submission period is opened by the Projects Committee.",
+    "guidance": {
+      "title": "Document Submission Guidelines",
+      "step1": {
+        "title": "Project Registration",
+        "active": "You are registered in a project. You can submit documents.",
+        "inactive": "You must be registered in a project before you can submit documents."
+      },
+      "step2": {
+        "title": "Submission Period",
+        "active": "A document submission period is currently active. You can submit documents.",
+        "closed": "No document submission period is currently active. Submission is not available.",
+        "phase1": "Chapter Submission Phase 1 is active",
+        "phase2": "Chapter Submission Phase 2 is active",
+        "final": "Final Project Document Submission period is active"
+      }
+    }
   },
   "followUp": {
     "pageDescription": "Follow your project progress, including project status, completion percentage, supervisor notes, and deadlines",

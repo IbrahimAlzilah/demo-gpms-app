@@ -1,14 +1,16 @@
-import { useQuery } from '@tanstack/react-query'
-import { committeeDistributionService } from '../api/committee.service'
+import { useQuery } from "@tanstack/react-query";
+import { committeeDistributionService } from "../api/committee.service";
 
 /**
  * Fetch projects ready for discussion
  */
 export function useDistributeCommittees() {
   return useQuery({
-    queryKey: ['projects-ready-for-discussion'],
+    queryKey: ["projects-ready-for-discussion"],
     queryFn: () => committeeDistributionService.getProjectsReadyForDiscussion(),
-  })
+    staleTime: 0,
+    refetchOnMount: true,
+  });
 }
 
 /**
@@ -16,7 +18,9 @@ export function useDistributeCommittees() {
  */
 export function useDiscussionCommitteeMembers() {
   return useQuery({
-    queryKey: ['discussion-committee-members'],
+    queryKey: ["discussion-committee-members"],
     queryFn: () => committeeDistributionService.getDiscussionCommitteeMembers(),
-  })
+    staleTime: 0,
+    refetchOnMount: true,
+  });
 }

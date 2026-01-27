@@ -27,6 +27,8 @@ export function AssignmentRequestsList() {
   const { data: requests, isLoading } = useQuery({
     queryKey: ['supervisor-assignment-requests'],
     queryFn: () => supervisorAssignmentService.getAssignmentRequests(),
+    staleTime: 0,
+    refetchOnMount: true,
   })
 
   const cancelMutation = useMutation({

@@ -8,5 +8,7 @@ export function useSupervisors() {
   return useQuery({
     queryKey: ["supervisor-supervisors"],
     queryFn: () => supervisorService.getAll(),
+    staleTime: 0,
+    refetchOnMount: true,
   });
 }

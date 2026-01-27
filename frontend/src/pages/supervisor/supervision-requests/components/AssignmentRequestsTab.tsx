@@ -31,6 +31,8 @@ export function AssignmentRequestsTab() {
     const { data: requests, isLoading } = useQuery({
         queryKey: ['supervisor-assignment-requests-tab'],
         queryFn: () => supervisionService.getAssignmentRequests(),
+        staleTime: 0,
+        refetchOnMount: true,
     })
 
     // Approve mutation

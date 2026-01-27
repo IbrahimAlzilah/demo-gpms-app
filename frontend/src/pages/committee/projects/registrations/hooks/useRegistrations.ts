@@ -1,14 +1,19 @@
-import { useQuery } from '@tanstack/react-query'
-import { registrationService, type RegistrationListParams } from '../api/registration.service'
+import { useQuery } from "@tanstack/react-query";
+import {
+  registrationService,
+  type RegistrationListParams,
+} from "../api/registration.service";
 
 /**
  * Fetch all registrations
  */
 export function useRegistrations(params?: RegistrationListParams) {
   return useQuery({
-    queryKey: ['committee-registrations', params],
+    queryKey: ["committee-registrations", params],
     queryFn: () => registrationService.getAll(params),
-  })
+    staleTime: 0,
+    refetchOnMount: true,
+  });
 }
 
 /**
@@ -16,8 +21,10 @@ export function useRegistrations(params?: RegistrationListParams) {
  */
 export function useRegistration(id: string) {
   return useQuery({
-    queryKey: ['committee-registration', id],
+    queryKey: ["committee-registration", id],
     queryFn: () => registrationService.getById(id),
     enabled: !!id,
-  })
+    staleTime: 0,
+    refetchOnMount: true,
+  });
 }

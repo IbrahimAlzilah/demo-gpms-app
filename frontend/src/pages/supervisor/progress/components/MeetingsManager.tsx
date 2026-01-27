@@ -32,6 +32,8 @@ export function MeetingsManager({ projectId, project }: MeetingsManagerProps) {
     queryKey: ['project-meetings', projectId],
     queryFn: () => meetingService.getAll(projectId),
     enabled: !!projectId,
+    staleTime: 0,
+    refetchOnMount: true,
   })
 
   const createMeeting = useCreateMeeting(projectId)

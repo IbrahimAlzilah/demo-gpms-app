@@ -32,6 +32,8 @@ export function MilestonesManager({ projectId }: MilestonesManagerProps) {
     queryKey: ['project-milestones', projectId],
     queryFn: () => milestoneService.getAll(projectId),
     enabled: !!projectId,
+    staleTime: 0,
+    refetchOnMount: true,
   })
 
   const createMilestone = useCreateMilestone(projectId)

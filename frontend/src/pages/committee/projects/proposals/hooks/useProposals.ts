@@ -1,14 +1,16 @@
-import { useQuery } from '@tanstack/react-query'
-import { committeeProposalService } from '../api/proposal.service'
+import { useQuery } from "@tanstack/react-query";
+import { committeeProposalService } from "../api/proposal.service";
 
 /**
  * Fetch pending proposals
  */
 export function usePendingProposals() {
   return useQuery({
-    queryKey: ['committee-proposals', 'pending'],
+    queryKey: ["committee-proposals", "pending"],
     queryFn: () => committeeProposalService.getPending(),
-  })
+    staleTime: 0,
+    refetchOnMount: true,
+  });
 }
 
 /**
@@ -16,9 +18,11 @@ export function usePendingProposals() {
  */
 export function useAllProposals() {
   return useQuery({
-    queryKey: ['committee-proposals'],
+    queryKey: ["committee-proposals"],
     queryFn: () => committeeProposalService.getAll(),
-  })
+    staleTime: 0,
+    refetchOnMount: true,
+  });
 }
 
 /**
@@ -26,8 +30,10 @@ export function useAllProposals() {
  */
 export function useProposal(id: string) {
   return useQuery({
-    queryKey: ['committee-proposals', id],
+    queryKey: ["committee-proposals", id],
     queryFn: () => committeeProposalService.getById(id),
     enabled: !!id,
-  })
+    staleTime: 0,
+    refetchOnMount: true,
+  });
 }

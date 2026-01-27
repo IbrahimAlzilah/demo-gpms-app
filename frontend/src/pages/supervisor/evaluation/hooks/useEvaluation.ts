@@ -1,18 +1,20 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { evaluationService } from '../api/evaluation.service'
-import { useAuthStore } from '@/pages/auth/login'
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { evaluationService } from "../api/evaluation.service";
+import { useAuthStore } from "@/pages/auth/login";
 
 export function useProjectGrades(projectId: string) {
   return useQuery({
-    queryKey: ['supervisor-grades', projectId],
+    queryKey: ["supervisor-grades", projectId],
     queryFn: () => evaluationService.getGrades(projectId),
     enabled: !!projectId,
-  })
+    staleTime: 0,
+    refetchOnMount: true,
+  });
 }
 
 export function useSubmitGrade() {
-  const queryClient = useQueryClient()
-  const { user } = useAuthStore()
+  const queryClient = useQueryClient();
+  const { user } = useAuthStore();
 
   return useMutation({
     mutationFn: ({
@@ -20,27 +22,27 @@ export function useSubmitGrade() {
       studentId,
       grade,
     }: {
-      projectId: string
-      studentId: string
+      projectId: string;
+      studentId: string;
       grade: {
-        score: number
-        maxScore: number
-        criteria: Record<string, number>
-        comments?: string
-      }
+        score: number;
+        maxScore: number;
+        criteria: Record<string, number>;
+        comments?: string;
+      };
     }) => {
-      if (!user) throw new Error('User not authenticated')
+      if (!user) throw new Error("User not authenticated");
       return evaluationService.submitGrade(
         projectId,
         studentId,
         grade,
-        user.id
-      )
+        user.id,
+      );
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ['supervisor-grades', variables.projectId],
-      })
+        queryKey: ["supervisor-grades", variables.projectId],
+      });
     },
-  })
+  });
 }

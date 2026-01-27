@@ -50,6 +50,8 @@ export function ProposalCreateDialog({ open, onOpenChange }: ProposalCreateDialo
             return response.data
         },
         enabled: open,
+        staleTime: 0,
+        refetchOnMount: true,
     })
 
     const createMutation = useMutation({

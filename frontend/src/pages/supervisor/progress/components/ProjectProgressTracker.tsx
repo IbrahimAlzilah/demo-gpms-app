@@ -23,6 +23,8 @@ export function ProjectProgressTracker({ projectId }: ProjectProgressTrackerProp
     queryKey: ['supervisor-notes', projectId],
     queryFn: () => projectService.getSupervisorNotes(projectId),
     enabled: !!projectId,
+    staleTime: 0,
+    refetchOnMount: true,
   })
 
   const queryClient = useQueryClient()
