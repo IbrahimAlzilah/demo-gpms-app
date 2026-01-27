@@ -648,7 +648,7 @@
     "editProposal": "تعديل المقترح",
     "assign": "تعيين",
     "assignmentType": "نوع التعيين",
-    "submissionPeriodClosed": "فترة تقديم المقترحات مغلقة",
+    "submissionPeriodClosed": "فترة تقديم المقترحات مغلقة حالياً",
     "submissionPeriodClosedMessage": "يمكن تقديم المقترحات فقط خلال فترة تقديم المقترحات النشطة. يرجى التحقق من النوافذ الزمنية لمعرفة متى يكون التقديم متاحًا."
   },
   "group": {

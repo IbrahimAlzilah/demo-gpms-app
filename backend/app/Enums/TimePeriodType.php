@@ -6,6 +6,7 @@ enum TimePeriodType: string
 {
     case PROPOSAL_SUBMISSION = 'proposal_submission';
     case PROJECT_REGISTRATION = 'project_registration';
+    case REQUEST_SUBMISSION = 'request_submission';
     case CHAPTER_SUBMISSION_PHASE_1 = 'chapter_submission_phase_1';
     case FINAL_DEFENSE_PHASE_1 = 'final_defense_phase_1';
     case CHAPTER_SUBMISSION_PHASE_2 = 'chapter_submission_phase_2';
@@ -19,6 +20,7 @@ enum TimePeriodType: string
         return match($this) {
             self::PROPOSAL_SUBMISSION => 'تقديم المقترحات',
             self::PROJECT_REGISTRATION => 'التسجيل في المشاريع',
+            self::REQUEST_SUBMISSION => 'تقديم الطلبات',
             self::CHAPTER_SUBMISSION_PHASE_1 => 'تسليم الفصول - المرحلة الأولى',
             self::FINAL_DEFENSE_PHASE_1 => 'المناقشة النهائية - المرحلة الأولى',
             self::CHAPTER_SUBMISSION_PHASE_2 => 'تسليم الفصول - المرحلة الثانية',
@@ -34,6 +36,7 @@ enum TimePeriodType: string
         return match($this) {
             self::PROPOSAL_SUBMISSION => 'فترة تقديم مقترحات المشاريع من الطلاب والمشرفين',
             self::PROJECT_REGISTRATION => 'فترة تسجيل الطلاب في المشاريع المعتمدة',
+            self::REQUEST_SUBMISSION => 'فترة تقديم طلبات الطلاب (تغيير المجموعة، تغيير المشروع، وغيرها)',
             self::CHAPTER_SUBMISSION_PHASE_1 => 'فترة تسليم الفصول - المرحلة الأولى',
             self::FINAL_DEFENSE_PHASE_1 => 'فترة المناقشة النهائية - المرحلة الأولى',
             self::CHAPTER_SUBMISSION_PHASE_2 => 'فترة تسليم الفصول - المرحلة الثانية',

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { mockAuthService } from '@/lib/mock/auth.mock'
+import { authService } from '@/pages/auth/login/api/auth.service'
 import { Button, Input, Label } from '@/components/ui'
 import { ROUTES } from '@/lib/constants'
 import { useToast } from '@/components/common'
@@ -39,7 +39,7 @@ export function ForgetPasswordForm() {
     setSubmittedEmail(data.email)
 
     try {
-      const response = await mockAuthService.recoverPassword({ email: data.email })
+      const response = await authService.recoverPassword({ email: data.email })
       const successMessage = response.message || t('auth.forgetPassword.success')
       setMessage(successMessage)
       setIsSuccess(true)
