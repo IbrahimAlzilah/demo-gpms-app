@@ -45,13 +45,13 @@ export function DocumentGuidance({
   ]
 
   return (
-    <Card className="bg-muted/50 border-none shadow-sm">
+    <Card className="bg-muted/50 border-none shadow-none p-0">
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-4">
           <Info className="h-4 w-4 text-primary" />
           <h4 className="font-medium text-sm text-primary">{t('document.guidance.title')}</h4>
         </div>
-        <div className="space-y-4">
+        <div className="space-y-0">
           {steps.map((step, index) => (
             <div key={index} className="flex gap-3">
               <div className="flex flex-col items-center">

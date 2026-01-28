@@ -50,6 +50,12 @@ export function DocumentsView({ documentId, open, onClose }: DocumentsViewProps)
               <p className="text-xs text-muted-foreground">{t('document.documentType')}</p>
               <p className="text-sm font-medium">{document.type}</p>
             </div>
+            {document.type === 'chapters' && document.chapterNumber && (
+              <div>
+                <p className="text-xs text-muted-foreground">{t('document.chapter')}</p>
+                <p className="text-sm font-medium">{document.chapterNumber}</p>
+              </div>
+            )}
             <div>
               <p className="text-xs text-muted-foreground">{t('document.size')}</p>
               <p className="text-sm font-medium">{formatFileSize(document.fileSize)}</p>

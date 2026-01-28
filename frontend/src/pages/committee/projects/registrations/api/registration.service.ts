@@ -218,9 +218,23 @@ export const registrationService = {
       `/projects-committee/registrations/unified-groups?${queryParams.toString()}`,
     );
 
+    // Support both shapes:
+    // - With interceptor: response.data is already the array, response.pagination holds meta
+    // - Without interceptor: response.data is { data: [...], pagination: {...} }
+    const raw = (response as any).data;
+    const dataArray = Array.isArray(raw)
+      ? raw
+      : Array.isArray(raw?.data)
+        ? raw.data
+        : [];
+
+    const pagination =
+      (response as any).pagination ??
+      (raw && typeof raw === "object" && "pagination" in raw ? (raw as any).pagination : undefined);
+
     return {
-      data: Array.isArray(response.data) ? response.data : [],
-      pagination: (response as any).pagination,
+      data: dataArray,
+      pagination,
     };
   },
 };

@@ -17,6 +17,7 @@ class DocumentResource extends JsonResource
         return [
             'id' => (string) $this->id,
             'type' => $this->type,
+            'chapterNumber' => $this->chapter_number,
             'projectId' => (string) $this->project_id,
             'fileName' => $this->file_name,
             'fileUrl' => $this->file_url ?? '',

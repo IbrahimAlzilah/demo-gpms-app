@@ -50,6 +50,19 @@ export function createDocumentColumns({
       },
     },
     {
+      accessorKey: 'chapterNumber',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('document.chapter')} />
+      ),
+      cell: ({ row }) => (
+        <div className="text-sm text-muted-foreground">
+          {row.original.type === 'chapters' && row.original.chapterNumber
+            ? row.original.chapterNumber
+            : '-'}
+        </div>
+      ),
+    },
+    {
       accessorKey: 'reviewStatus',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('document.reviewStatus')} />

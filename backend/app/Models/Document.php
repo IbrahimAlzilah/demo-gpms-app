@@ -12,6 +12,7 @@ class Document extends Model
 
     protected $fillable = [
         'type',
+        'chapter_number',
         'project_id',
         'file_name',
         'file_path',
@@ -27,6 +28,7 @@ class Document extends Model
     protected $casts = [
         'reviewed_at' => 'datetime',
         'file_size' => 'integer',
+        'chapter_number' => 'integer',
     ];
 
     /**

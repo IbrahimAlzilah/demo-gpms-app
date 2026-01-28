@@ -50,12 +50,13 @@ class DocumentController extends Controller
             'project_id' => 'required|exists:projects,id',
             'file' => 'required|file|max:10240', // 10MB max
             'type' => 'required|in:proposal,chapters,final_report,code,presentation,other',
+            'chapter_number' => 'nullable|integer|min:1|max:6',
         ]);
 
         try {
             $project = \App\Models\Project::findOrFail($validated['project_id']);
             $user = $request->user();
-            
+
             // UC-ST-06: Verify student is registered in the project
             $isRegistered = $project->students()->where('users.id', $user->id)->exists();
             if (!$isRegistered) {
@@ -70,19 +71,22 @@ class DocumentController extends Controller
             $isWindowActive = $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::FINAL_PROJECT_DOCUMENT_SUBMISSION)
                 || $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::CHAPTER_SUBMISSION_PHASE_1)
                 || $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::CHAPTER_SUBMISSION_PHASE_2);
-            
+
             if (!$isWindowActive) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Document submission is only allowed during chapters submission or final document submission periods',
                 ], 403);
             }
-            
+
+            $chapterNumber = $request->input('chapter_number');
+
             $document = $this->documentService->upload(
                 $project,
                 $request->file('file'),
                 $validated['type'],
-                $user
+                $user,
+                $chapterNumber
             );
 
             return response()->json([

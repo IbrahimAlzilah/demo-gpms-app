@@ -604,7 +604,7 @@ class RegistrationController extends Controller
         $search = $request->get('search');
         $projectId = $request->get('project_id'); // Filter by specific project
 
-        // Get all active groups that have either proposals or registration requests
+        // Get all active groups that have either proposals, registration requests, or legacy registrations
         $query = StudentGroup::with([
             'leader',
             'members',
@@ -615,7 +615,28 @@ class RegistrationController extends Controller
                 // Groups with proposals
                 $q->whereHas('proposals')
                     // Or groups with registration requests
-                    ->orWhereHas('groupRegistrationRequests');
+                    ->orWhereHas('groupRegistrationRequests')
+                    // Or groups with legacy project registrations (registrations not linked to GroupRegistrationRequest)
+                    // These are registrations where group_registration_request_id is NULL
+                    // and the student is either the leader or a member of the group
+                    ->orWhere(function ($legacyQuery) {
+                        $legacyQuery->whereExists(function ($subQuery) {
+                            $subQuery->select(\DB::raw(1))
+                                ->from('project_registrations')
+                                ->whereNull('group_registration_request_id')
+                                ->where(function ($studentQuery) {
+                                    // Student is the leader
+                                    $studentQuery->whereColumn('project_registrations.student_id', 'student_groups.leader_id')
+                                        // Or student is a member of the group
+                                        ->orWhereExists(function ($memberQuery) {
+                                            $memberQuery->select(\DB::raw(1))
+                                                ->from('student_group_members')
+                                                ->whereColumn('student_group_members.group_id', 'student_groups.id')
+                                                ->whereColumn('student_group_members.student_id', 'project_registrations.student_id');
+                                        });
+                                });
+                        });
+                    });
             });
 
         // Filter by project if specified (show all groups requesting this project)
@@ -628,6 +649,24 @@ class RegistrationController extends Controller
                 // Or groups with registration requests for this project
                 ->orWhereHas('groupRegistrationRequests.projectRegistrations', function ($regQuery) use ($projectId) {
                     $regQuery->where('project_id', $projectId);
+                })
+                // Or groups with legacy registrations for this project
+                ->orWhere(function ($legacyQuery) use ($projectId) {
+                    $legacyQuery->whereExists(function ($subQuery) use ($projectId) {
+                        $subQuery->select(\DB::raw(1))
+                            ->from('project_registrations')
+                            ->whereNull('group_registration_request_id')
+                            ->where('project_id', $projectId)
+                            ->where(function ($studentQuery) {
+                                $studentQuery->whereColumn('project_registrations.student_id', 'student_groups.leader_id')
+                                    ->orWhereExists(function ($memberQuery) {
+                                        $memberQuery->select(\DB::raw(1))
+                                            ->from('student_group_members')
+                                            ->whereColumn('student_group_members.group_id', 'student_groups.id')
+                                            ->whereColumn('student_group_members.student_id', 'project_registrations.student_id');
+                                    });
+                            });
+                    });
                 });
             });
         }
@@ -648,6 +687,28 @@ class RegistrationController extends Controller
                     ->orWhereHas('groupRegistrationRequests.projectRegistrations.project', function ($projectQuery) use ($search) {
                         $projectQuery->where('title', 'like', "%{$search}%")
                             ->orWhere('description', 'like', "%{$search}%");
+                    })
+                    // Also search in legacy registrations' projects
+                    ->orWhere(function ($legacyQuery) use ($search) {
+                        $legacyQuery->whereExists(function ($subQuery) use ($search) {
+                            $subQuery->select(\DB::raw(1))
+                                ->from('project_registrations')
+                                ->join('projects', 'project_registrations.project_id', '=', 'projects.id')
+                                ->whereNull('project_registrations.group_registration_request_id')
+                                ->where(function ($projectSearch) use ($search) {
+                                    $projectSearch->where('projects.title', 'like', "%{$search}%")
+                                        ->orWhere('projects.description', 'like', "%{$search}%");
+                                })
+                                ->where(function ($studentQuery) {
+                                    $studentQuery->whereColumn('project_registrations.student_id', 'student_groups.leader_id')
+                                        ->orWhereExists(function ($memberQuery) {
+                                            $memberQuery->select(\DB::raw(1))
+                                                ->from('student_group_members')
+                                                ->whereColumn('student_group_members.group_id', 'student_groups.id')
+                                                ->whereColumn('student_group_members.student_id', 'project_registrations.student_id');
+                                        });
+                                });
+                        });
                     });
             });
         }
@@ -687,9 +748,67 @@ class RegistrationController extends Controller
         ]);
 
         // Transform groups to include proposals and registrations
-        $unifiedGroups = $groups->map(function (StudentGroup $group) {
+        $unifiedGroups = $groups->map(function (StudentGroup $group) use ($status) {
             $proposals = $group->proposals ?? collect([]);
             $registrationRequests = $group->groupRegistrationRequests ?? collect([]);
+
+            // Also fetch legacy registrations (registrations without group_registration_request_id)
+            // for group members (leader and members)
+            $memberIds = $group->members()->pluck('users.id')->push($group->leader_id)->unique();
+            
+            $legacyRegistrationsQuery = ProjectRegistration::with([
+                    'project.supervisor',
+                    'student',
+                    'reviewer',
+                ])
+                ->whereNull('group_registration_request_id')
+                ->whereIn('student_id', $memberIds);
+            
+            // Apply status filter if provided
+            if ($status && $status !== 'all') {
+                $legacyRegistrationsQuery->where('status', $status);
+            }
+            
+            $legacyRegistrations = $legacyRegistrationsQuery->orderBy('submitted_at', 'desc')->get();
+            
+            // Convert legacy registrations to GroupRegistrationRequest-like structure
+            $legacyRequests = collect([]);
+            if ($legacyRegistrations->isNotEmpty()) {
+                // Group legacy registrations by submit date (treat all same-day as one request)
+                $legacyGrouped = $legacyRegistrations->groupBy(function ($reg) {
+                    return $reg->submitted_at ? $reg->submitted_at->format('Y-m-d') : 'unknown';
+                });
+                
+                foreach ($legacyGrouped as $dateKey => $dateRegistrations) {
+                    $firstReg = $dateRegistrations->first();
+                    
+                    // Create a virtual GroupRegistrationRequest-like object
+                    $legacyRequest = new \stdClass();
+                    $legacyRequest->id = 'legacy_' . $group->id . '_' . $dateKey;
+                    $legacyRequest->student_group_id = $group->id;
+                    $legacyRequest->submitted_by = $firstReg->student_id;
+                    $legacyRequest->status = $this->determineLegacyRequestStatus($dateRegistrations->all());
+                    $legacyRequest->submitted_at = $firstReg->submitted_at ?? now();
+                    $legacyRequest->reviewed_at = $firstReg->reviewed_at;
+                    $legacyRequest->reviewed_by = $firstReg->reviewed_by;
+                    $legacyRequest->review_comments = $firstReg->review_comments;
+                    $legacyRequest->approved_project_id = $this->getApprovedProjectId($dateRegistrations->all());
+                    $legacyRequest->created_at = $firstReg->created_at ?? now();
+                    $legacyRequest->updated_at = $firstReg->updated_at ?? now();
+                    
+                    // Set relationships
+                    $legacyRequest->studentGroup = $group;
+                    $legacyRequest->submitter = $firstReg->student;
+                    $legacyRequest->reviewer = $firstReg->reviewer;
+                    $legacyRequest->approvedProject = $this->getApprovedProject($dateRegistrations->all());
+                    $legacyRequest->projectRegistrations = $dateRegistrations;
+                    
+                    $legacyRequests->push($legacyRequest);
+                }
+            }
+            
+            // Merge regular registration requests with legacy requests
+            $allRegistrationRequests = $registrationRequests->concat($legacyRequests);
 
             // Get approved project (from approved proposal or approved registration)
             $approvedProject = null;
@@ -700,9 +819,18 @@ class RegistrationController extends Controller
             if ($approvedProposal && $approvedProposal->project) {
                 $approvedProject = $approvedProposal->project;
             } else {
+                // Check regular registration requests
                 $approvedRequest = $registrationRequests->firstWhere('status', 'approved');
                 if ($approvedRequest && $approvedRequest->approvedProject) {
                     $approvedProject = $approvedRequest->approvedProject;
+                }
+                
+                // Also check legacy registrations for approved projects
+                if (!$approvedProject) {
+                    $approvedLegacy = $legacyRegistrations->firstWhere('status', 'approved');
+                    if ($approvedLegacy && $approvedLegacy->project) {
+                        $approvedProject = $approvedLegacy->project;
+                    }
                 }
             }
 
@@ -711,18 +839,19 @@ class RegistrationController extends Controller
                 return $proposal->status === \App\Enums\ProposalStatus::PENDING_REVIEW ||
                        (is_string($proposal->status) && $proposal->status === 'pending_review');
             });
-            $hasPendingRegistrations = $registrationRequests->contains('status', 'pending');
+            $hasPendingRegistrations = $registrationRequests->contains('status', 'pending') ||
+                                       $legacyRegistrations->contains('status', 'pending');
 
             return [
                 'id' => (string) $group->id,
                 'group' => new StudentGroupResource($group),
                 'proposals' => ProposalResource::collection($proposals),
-                'registrationRequests' => GroupRegistrationRequestResource::collection($registrationRequests),
+                'registrationRequests' => GroupRegistrationRequestResource::collection($allRegistrationRequests),
                 'approvedProject' => $approvedProject ? new \App\Http\Resources\ProjectResource($approvedProject) : null,
                 'hasPendingProposals' => $hasPendingProposals,
                 'hasPendingRegistrations' => $hasPendingRegistrations,
                 'totalProposals' => $proposals->count(),
-                'totalRegistrationRequests' => $registrationRequests->count(),
+                'totalRegistrationRequests' => $allRegistrationRequests->count(),
                 'canApproveNewProject' => $approvedProject === null, // Can only approve if no approved project exists
             ];
         });

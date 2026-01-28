@@ -57,7 +57,15 @@ export function UnifiedGroupCard({
   const [isExpanded, setIsExpanded] = useState(false)
   const [expandedSection, setExpandedSection] = useState<'proposals' | 'registrations' | null>(null)
 
-  const { group, proposals, registrationRequests, approvedProject, hasPendingProposals, hasPendingRegistrations, canApproveNewProject } = unifiedGroup
+  const {
+    group,
+    proposals = [],
+    registrationRequests = [],
+    approvedProject,
+    hasPendingProposals,
+    hasPendingRegistrations,
+    canApproveNewProject,
+  } = unifiedGroup
 
   // Warning: Group already has approved project
   const hasApprovedProjectWarning = !canApproveNewProject && approvedProject
