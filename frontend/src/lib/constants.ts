@@ -188,11 +188,6 @@ export const NAV_MENU: Record<string, NavMenuItem[]> = {
       icon: "LayoutDashboard",
     },
     {
-      labelKey: "nav.periods",
-      path: ROUTES.PROJECTS_COMMITTEE.PERIODS,
-      icon: "Calendar",
-    },
-    {
       labelKey: "nav.proposals",
       path: ROUTES.PROJECTS_COMMITTEE.PROPOSALS,
       icon: "FileText",
@@ -208,19 +203,24 @@ export const NAV_MENU: Record<string, NavMenuItem[]> = {
       icon: "UserPlus",
     },
     {
-      labelKey: "nav.processRequests",
-      path: ROUTES.PROJECTS_COMMITTEE.REQUESTS,
-      icon: "FileCheck",
-    },
-    {
       labelKey: "nav.manageRegistrations",
       path: ROUTES.PROJECTS_COMMITTEE.REGISTRATIONS,
       icon: "UserCheck",
     },
     {
+      labelKey: "nav.processRequests",
+      path: ROUTES.PROJECTS_COMMITTEE.REQUESTS,
+      icon: "FileCheck",
+    },
+    {
       labelKey: "nav.distributeCommittees",
       path: ROUTES.PROJECTS_COMMITTEE.DISTRIBUTE_COMMITTEES,
       icon: "Users",
+    },
+    {
+      labelKey: "nav.periods",
+      path: ROUTES.PROJECTS_COMMITTEE.PERIODS,
+      icon: "Calendar",
     },
     {
       labelKey: "nav.reports",

@@ -3,9 +3,8 @@ import { useProjectRegisterPage } from './ProjectRegisterPage.hook'
 import { ProjectRegistrationForm } from '../components/ProjectRegistrationForm'
 import { BlockContent } from '@/components/common'
 import { LoadingSpinner } from '@/components/common'
-import { Button } from '@/components/ui'
 import { ArrowLeft, AlertCircle } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button } from '@/components/ui'
 
 export function ProjectRegisterPageScreen() {
   const { t } = useTranslation()
@@ -74,48 +73,6 @@ export function ProjectRegisterPageScreen() {
       }
     >
       <div className="space-y-6">
-        {/* Project Summary Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {project.title}
-            </CardTitle>
-            <CardDescription>
-              {t('project.reviewDetailsBeforeRegistering', { defaultValue: 'Review project details before registering' })}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {project.description && (
-                <div>
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap" dir="auto">
-                    {project.description}
-                  </p>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-muted-foreground">
-                    {t('project.supervisor', { defaultValue: 'Supervisor' })}:
-                  </span>
-                  <span className="text-sm">
-                    {project.supervisor?.name || t('project.notAssigned', { defaultValue: 'Not assigned' })}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-muted-foreground">
-                    {t('project.students', { defaultValue: 'Students' })}:
-                  </span>
-                  <span className="text-sm">
-                    {project.currentStudents}/{project.maxStudents}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Registration Form */}
         <ProjectRegistrationForm
           project={project}

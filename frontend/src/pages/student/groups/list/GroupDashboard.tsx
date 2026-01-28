@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Badge, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui'
-import { Users, Copy, CheckCircle2, Trash2, LogOut, UserPlus, Briefcase } from 'lucide-react'
+import { Users, Copy, CheckCircle2, LogOut, UserPlus, Briefcase } from 'lucide-react'
 import { useState } from 'react'
 import { GroupMembersList } from '../components/GroupMembersList'
 import { GroupJoinRequestsList } from '../components/GroupJoinRequestsList'
 import type { StudentGroup } from '@/types/project.types'
+import { BlockContent } from '@/components/common'
 
 interface GroupDashboardProps {
     group: StudentGroup
@@ -38,19 +39,34 @@ export function GroupDashboard({
     }
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
+        <BlockContent title={group.name || t('groups.title')} actions={
+            < div className="flex items-center gap-2">
+                {isLeader ? (
+                    <>
+                        <Button onClick={onInviteMember} disabled={group.members.length >= group.maxMembers}>
+                            <UserPlus className="size-4" />
+                            {t('groups.inviteMember')}
+                        </Button>
+                    </>
+                ) : (
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant="outline" className="opacity-50 cursor-not-allowed">
+                                <LogOut className="size-4" />
+                                {t('groups.leave')}
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>{t('groups.onlyLeaderCanLeaveGroup')}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                )}
+            </div>
+        }>
             {/* Dashboard Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-6">
+            < div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3">
                 <div>
                     <div className="flex items-center gap-3 mb-1">
-                        <h1 className="text-2xl font-bold tracking-tight">
-                            {group.name || t('groups.title')}
-                        </h1>
-                        <Badge variant={group.status === 'active' ? 'default' : 'secondary'}>
-                            {group.status}
-                        </Badge>
-                    </div>
-                    <p className="text-muted-foreground flex items-center gap-2 text-sm">
                         <Users className="w-4 h-4" />
                         {group.members.length} / {group.maxMembers} {t('groups.membersCount')}
                         {group.members.length >= group.maxMembers && (
@@ -58,33 +74,12 @@ export function GroupDashboard({
                                 {t('groups.full')}
                             </span>
                         )}
-                    </p>
+                        <Badge variant={group.status === 'active' ? 'default' : 'secondary'}>
+                            {group.status}
+                        </Badge>
+                    </div>
                 </div>
-
-                {/* Action Bar */}
-                <div className="flex items-center gap-2">
-                    {isLeader ? (
-                        <>
-                            <Button onClick={onInviteMember} disabled={group.members.length >= group.maxMembers}>
-                                <UserPlus className="w-4 h-4 mr-2" />
-                                {t('groups.inviteMember')}
-                            </Button>
-                        </>
-                    ) : (
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="outline" className="opacity-50 cursor-not-allowed">
-                                    <LogOut className="w-4 h-4 mr-2" />
-                                    {t('groups.leave')}
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Only the group leader can delete the group.</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    )}
-                </div>
-            </div>
+            </div >
 
             <div className="grid md:grid-cols-3 gap-6">
                 {/* Left Column: Members & Main Info */}
@@ -92,7 +87,7 @@ export function GroupDashboard({
 
                     {/* Project Status Card */}
                     <Card className="bg-primary/5 border-primary/20">
-                        <CardContent className="pt-6 flex items-start gap-4">
+                        <CardContent className="flex items-start gap-4">
                             <div className="p-3 bg-primary/20 rounded-lg text-primary">
                                 <Briefcase className="w-5 h-5" />
                             </div>
@@ -117,7 +112,6 @@ export function GroupDashboard({
                     <Card>
                         <CardHeader>
                             <CardTitle>{t('groups.members')}</CardTitle>
-                            <CardDescription>Manage your group members</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <GroupMembersList group={group} />
@@ -128,12 +122,12 @@ export function GroupDashboard({
                 {/* Right Column: Sidebar / Admin Panel */}
                 <div className="space-y-6">
                     {/* Code Card */}
-                    <Card>
+                    <Card className="gap-3">
                         <CardHeader>
                             <CardTitle className="text-base">{t('groups.groupCode')}</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="flex items-center gap-2 p-3 bg-muted rounded-md border">
+                            <div className="flex items-center gap-2 p-2 bg-muted rounded-md border">
                                 <code className="flex-1 font-mono text-lg font-bold text-center tracking-wider">
                                     {group.groupCode || 'N/A'}
                                 </code>
@@ -168,24 +162,23 @@ export function GroupDashboard({
                             </Card>
 
                             {/* Danger Zone */}
-                            <Card className="border-destructive/30">
-                                <CardHeader>
+                            <Card className="border-destructive/30 gap-0 p-0">
+                                {/* <CardHeader>
                                     <CardTitle className="text-base text-destructive">Danger Zone</CardTitle>
-                                </CardHeader>
-                                <CardContent>
+                                </CardHeader> */}
+                                <CardContent className="p-3">
                                     <Button
                                         variant="destructive"
                                         className="w-full"
                                         onClick={onDeleteGroup}
                                         disabled={hasProjectRegistrations}
-                                        title={hasProjectRegistrations ? "Cannot delete group with active project registrations" : ""}
+                                        title={hasProjectRegistrations ? t('groups.cannotDeleteGroupWhileRegisteredInProject') : ""}
                                     >
-                                        <Trash2 className="w-4 h-4 mr-2" />
                                         {t('groups.deleteGroup')}
                                     </Button>
                                     {hasProjectRegistrations && (
                                         <p className="text-xs text-destructive mt-2 text-center">
-                                            Cannot delete group while registered in project.
+                                            {t('groups.cannotDeleteGroupWhileRegisteredInProject')}
                                         </p>
                                     )}
                                 </CardContent>
@@ -194,6 +187,6 @@ export function GroupDashboard({
                     )}
                 </div>
             </div>
-        </div>
+        </BlockContent >
     )
 }

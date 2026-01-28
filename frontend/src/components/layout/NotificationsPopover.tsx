@@ -224,7 +224,7 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
 
                       {/* Content */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-3 mb-1">
+                        <div className="flex items-start justify-between gap-3">
                           <p className="font-bold text-[.8rem] text-foreground line-clamp-1 leading-tight mt-0.5">
                             {getNotificationTitle(notification)}
                           </p>

@@ -421,7 +421,17 @@
     "fullCapacity": "Group is full",
     "groupId": "Group ID",
     "joining": "Joining...",
-    "join": "Join"
+    "join": "Join",
+    "leave": "Leave",
+    "deleteGroup": "Delete Group",
+    "confirmDeleteGroup": "Are you sure you want to delete the group? All members will be removed.",
+    "deleteSuccess": "Group deleted successfully",
+    "deleteError": "Failed to delete group",
+    "deleting": "Deleting...",
+    "deleteGroupDescription": "You can only delete the group if you have no project registrations",
+    "onlyLeaderCanLeaveGroup": "Only the group leader can leave the group",
+    "cannotDeleteGroupWhileRegisteredInProject": "You cannot delete the group while registered in a project",
+    "manageYourGroupMembers": "Manage your group members"
   },
   "theme": {
     "light": "Light",
@@ -1534,6 +1544,12 @@
     "projects": "Projects",
     "groupRegistrationRequest": "Group Registration Request",
     "projectsInRequest": "Projects in this request",
+    "groupHasApprovedProject": "This group already has an approved project: {{project}}. Only one project can be approved per group.",
+    "cannotApproveAnother": "Cannot approve another project - group already has an approved project",
+    "approvedProject": "Approved Project",
+    "registrationRequests": "Registration Requests",
+    "request": "Request",
+    "requests": "Requests",
     "noProjectsInRequest": "No projects found in this request",
     "groupDetails": "Group Details",
     "groupLeader": "Group Leader",
@@ -1541,7 +1557,7 @@
     "registrationRequest": "Registration Request",
     "requestApproved": "Request Approved",
     "requestRejected": "Request Rejected",
-    "approvedProject": "Approved project: {{project}}",
+    "approvedProjectMessage": "Approved project: {{project}}",
     "cancel": "Cancel Request",
     "cancelSuccess": "Registration request cancelled successfully",
     "cancelError": "Failed to cancel registration request",
@@ -1554,7 +1570,16 @@
     "manualRegistrationError": "Failed to register group",
     "loadError": "An error occurred while loading registration requests",
     "autoApprove": "Auto-approve registration",
-    "autoApproveNote": "The registration will remain pending until manually approved"
+    "autoApproveNote": "The registration will remain pending until manually approved",
+    "groupHasApprovedProject": "This group already has an approved project: {{project}}. Only one project can be approved per group.",
+    "cannotApproveAnother": "Cannot approve another project - group already has an approved project",
+    "approvedProject": "Approved Project",
+    "registrationRequests": "Registration Requests",
+    "request": "Request",
+    "requests": "Requests",
+    "searchPlaceholder": "Search groups, projects...",
+    "allRequests": "All Requests",
+    "filterByProject": "Filter by Project"
   },
   "admin": {
     "usersDescription": "Full control over user accounts and permission management"

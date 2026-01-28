@@ -1,13 +1,18 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useApproveProposal, useRejectProposal, useRequestModification, useDeleteProposal } from '../hooks/useProposalOperations'
+import { useApproveRegistration, useRejectRegistration } from '../../registrations/hooks/useRegistrationOperations'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Button, Input, Card, CardContent } from '@/components/ui'
+import { useQuery } from '@tanstack/react-query'
+import { committeeProjectService } from '../../announce-projects/api/project.service'
 import { BlockContent, ConfirmDialog, LoadingSpinner } from '@/components/common'
 import { ProposalReviewDialog } from '../components/ProposalReviewDialog'
 import { ProposalsNew } from '../new/ProposalsNew.screen'
 import { ProposalsEdit } from '../edit/ProposalsEdit.screen'
 import { ProposalsView } from '../view/ProposalsView.screen'
 import { GroupedSubmissionCard } from '../components/GroupedSubmissionCard'
+import { UnifiedGroupCard } from '../../registrations/components/UnifiedGroupCard'
+import { RegistrationDetailsView } from '../../registrations/components/RegistrationDetailsView'
 import { useProposalsList } from './ProposalsList.hook'
 import { AlertCircle, PlusCircle, Search, FileText } from 'lucide-react'
 import { useToast } from '@/components/common'
@@ -20,9 +25,21 @@ export function ProposalsList() {
   const rejectProposal = useRejectProposal()
   const requestModification = useRequestModification()
   const deleteProposal = useDeleteProposal()
+  const approveRegistration = useApproveRegistration()
+  const rejectRegistration = useRejectRegistration()
 
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [editingProposalId, setEditingProposalId] = useState<string | null>(null)
+
+  // Fetch available projects for filtering (requirement #3: multiple groups per project)
+  const { data: availableProjects } = useQuery({
+    queryKey: ['committee-projects-for-filter'],
+    queryFn: async () => {
+      const result = await committeeProjectService.getTableData({ page: 1, pageSize: 1000 }, 'available_for_registration')
+      return result.data || []
+    },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  })
 
   const {
     data,
@@ -32,6 +49,8 @@ export function ProposalsList() {
     pageCount,
     globalFilter,
     setGlobalFilter,
+    projectFilter,
+    setProjectFilter,
     pagination,
     setPagination,
   } = useProposalsList()
@@ -133,7 +152,7 @@ export function ProposalsList() {
         }
       >
         {/* Filters */}
-        <div className="mb-4 flex items-center gap-2 flex-wrap">
+        <div className="mb-4 flex items-center justify-between gap-2 flex-wrap">
           {/* Search - Left side */}
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute start-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -144,6 +163,26 @@ export function ProposalsList() {
               className="h-9 ps-9"
             />
           </div>
+
+          {/* Project Filter - Middle (optional, for requirement #3: multiple groups per project) */}
+          {availableProjects && availableProjects.length > 0 && (
+            <Select
+              value={projectFilter || 'all'}
+              onValueChange={(value) => setProjectFilter(value === 'all' ? '' : value)}
+            >
+              <SelectTrigger id="project-filter" className="w-[200px]">
+                <SelectValue placeholder={t('registration.filterByProject') || 'Filter by Project'} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('common.all')} {t('registration.projects')}</SelectItem>
+                {availableProjects.map((project) => (
+                  <SelectItem key={project.id} value={project.id}>
+                    {project.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
 
           {/* Status Filter - Right side */}
           <Select
@@ -163,7 +202,7 @@ export function ProposalsList() {
           </Select>
         </div>
 
-        {/* Grouped View */}
+        {/* Unified Groups View - Student Groups with Proposals + Registrations */}
         <div className="space-y-4">
           {data.error ? (
             <div className="text-center py-8">
@@ -177,7 +216,7 @@ export function ProposalsList() {
                 </p>
               </div>
             </div>
-          ) : data.submissions.length === 0 ? (
+          ) : data.unifiedGroups.length === 0 && data.submissions.length === 0 ? (
             <div className="text-center py-12">
               <div className="flex flex-col items-center gap-3">
                 <FileText className="h-12 w-12 text-muted-foreground/50" />
@@ -195,42 +234,115 @@ export function ProposalsList() {
               </div>
             </div>
           ) : (
-            data.submissions.map((submission) => (
-              <GroupedSubmissionCard
-                key={submission.id}
-                submission={submission}
-                onViewProposal={(proposal) => {
-                  setState((prev) => ({ ...prev, proposalToViewId: proposal.id }))
-                }}
-                onApproveProposal={(proposal) => {
-                  setState((prev) => ({ ...prev, selectedProposal: proposal, action: 'approve' }))
-                }}
-                onRejectProposal={(proposal) => {
-                  setState((prev) => ({ ...prev, selectedProposal: proposal, action: 'reject' }))
-                }}
-                onRequestModification={(proposal) => {
-                  setState((prev) => ({ ...prev, selectedProposal: proposal, action: 'modify' }))
-                }}
-                onEditProposal={(proposal) => {
-                  setEditingProposalId(proposal.id)
-                }}
-                onDeleteProposal={(proposal) => {
-                  setState((prev) => ({ ...prev, proposalToDelete: proposal }))
-                }}
-                isLoadingAction={(proposalId) => {
-                  return (
-                    (approveProposal.isPending && state.selectedProposal?.id === proposalId && state.action === 'approve') ||
-                    (rejectProposal.isPending && state.selectedProposal?.id === proposalId && state.action === 'reject') ||
-                    (requestModification.isPending && state.selectedProposal?.id === proposalId && state.action === 'modify')
-                  )
-                }}
-                t={t}
-              />
-            ))
+            <>
+              {/* Student Groups with Proposals and Registrations */}
+              {data.unifiedGroups.map((unifiedGroup) => (
+                <UnifiedGroupCard
+                  key={unifiedGroup.id}
+                  unifiedGroup={unifiedGroup}
+                  onViewProposal={(proposal) => {
+                    setState((prev) => ({ ...prev, proposalToViewId: proposal.id }))
+                  }}
+                  onViewRegistration={(registration) => {
+                    setState((prev) => ({ ...prev, registrationToViewId: registration.id }))
+                  }}
+                  onApproveProposal={(proposal) => {
+                    setState((prev) => ({ ...prev, selectedProposal: proposal, action: 'approve' }))
+                  }}
+                  onRejectProposal={(proposal) => {
+                    setState((prev) => ({ ...prev, selectedProposal: proposal, action: 'reject' }))
+                  }}
+                  onRequestModification={(proposal) => {
+                    setState((prev) => ({ ...prev, selectedProposal: proposal, action: 'modify' }))
+                  }}
+                  onApproveProject={async (requestId, projectId) => {
+                    try {
+                      // Find the registration in the request
+                      const request = unifiedGroup.registrationRequests.find(r => r.id === requestId)
+                      const registration = request?.projectRegistrations?.find(r => r.project?.id === projectId)
+                      if (registration) {
+                        await approveRegistration.mutateAsync({
+                          registrationId: registration.id,
+                          comments: undefined,
+                        })
+                        toastSuccess('registration.approveSuccess')
+                      }
+                    } catch (err) {
+                      toastError(err instanceof Error ? err.message : 'registration.approveError')
+                    }
+                  }}
+                  onRejectRequest={async (requestId) => {
+                    try {
+                      const request = unifiedGroup.registrationRequests.find(r => r.id === requestId)
+                      if (request?.projectRegistrations?.[0]) {
+                        await rejectRegistration.mutateAsync({
+                          registrationId: request.projectRegistrations[0].id,
+                          comments: t('registration.rejectTitle'),
+                        })
+                        toastSuccess('registration.rejectSuccess')
+                      }
+                    } catch (err) {
+                      toastError(err instanceof Error ? err.message : 'registration.rejectError')
+                    }
+                  }}
+                  onEditProposal={(proposal) => {
+                    setEditingProposalId(proposal.id)
+                  }}
+                  onDeleteProposal={(proposal) => {
+                    setState((prev) => ({ ...prev, proposalToDelete: proposal }))
+                  }}
+                  isLoadingAction={(id, type) => {
+                    if (type === 'proposal') {
+                      return (
+                        (approveProposal.isPending && state.selectedProposal?.id === id && state.action === 'approve') ||
+                        (rejectProposal.isPending && state.selectedProposal?.id === id && state.action === 'reject') ||
+                        (requestModification.isPending && state.selectedProposal?.id === id && state.action === 'modify')
+                      )
+                    } else {
+                      return approveRegistration.isPending || rejectRegistration.isPending
+                    }
+                  }}
+                />
+              ))}
+
+              {/* Supervisor Proposals (separate from student groups) */}
+              {data.submissions.map((submission) => (
+                <GroupedSubmissionCard
+                  key={submission.id}
+                  submission={submission}
+                  onViewProposal={(proposal) => {
+                    setState((prev) => ({ ...prev, proposalToViewId: proposal.id }))
+                  }}
+                  onApproveProposal={(proposal) => {
+                    setState((prev) => ({ ...prev, selectedProposal: proposal, action: 'approve' }))
+                  }}
+                  onRejectProposal={(proposal) => {
+                    setState((prev) => ({ ...prev, selectedProposal: proposal, action: 'reject' }))
+                  }}
+                  onRequestModification={(proposal) => {
+                    setState((prev) => ({ ...prev, selectedProposal: proposal, action: 'modify' }))
+                  }}
+                  onEditProposal={(proposal) => {
+                    setEditingProposalId(proposal.id)
+                  }}
+                  onDeleteProposal={(proposal) => {
+                    setState((prev) => ({ ...prev, proposalToDelete: proposal }))
+                  }}
+                  isLoadingAction={(proposalId) => {
+                    return (
+                      (approveProposal.isPending && state.selectedProposal?.id === proposalId && state.action === 'approve') ||
+                      (rejectProposal.isPending && state.selectedProposal?.id === proposalId && state.action === 'reject') ||
+                      (requestModification.isPending && state.selectedProposal?.id === proposalId && state.action === 'modify')
+                    )
+                  }}
+                  t={t}
+                />
+              ))}
+            </>
           )}
 
           {/* Pagination Controls for Grouped View - Match Registration pattern */}
-          {!data.isLoading && data.submissions.length > 0 && pageCount > 1 && (
+          {!data.isLoading && (data.unifiedGroups.length > 0 || data.submissions.length > 0) && pageCount > 1 && (
             <div className="flex items-center justify-between pt-4">
               <p className="text-sm text-muted-foreground">
                 {(() => {
@@ -366,6 +478,16 @@ export function ProposalsList() {
           setState((prev) => ({ ...prev, proposalToViewId: null }))
         }}
       />
+
+      {state.registrationToViewId && (
+        <RegistrationDetailsView
+          registrationId={state.registrationToViewId}
+          open={true}
+          onClose={() => {
+            setState((prev) => ({ ...prev, registrationToViewId: null }))
+          }}
+        />
+      )}
     </>
   )
 }

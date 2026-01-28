@@ -1,5 +1,6 @@
 import type { Proposal } from "@/types/project.types";
 import type { Submission } from "../types/GroupedSubmissions.types";
+import type { UnifiedGroup } from "../../registrations/api/registration.service";
 
 export type ProposalStatusFilter =
   | "all"
@@ -26,11 +27,13 @@ export interface ProposalsListState {
     count?: number;
   }>;
   showRegistrationWarning?: boolean;
+  registrationToViewId?: string | null;
 }
 
 export interface ProposalsListData {
   proposals: Proposal[];
-  submissions: Submission[]; // Grouped submissions
+  submissions: Submission[]; // Supervisor submissions only
+  unifiedGroups: UnifiedGroup[]; // Student groups with proposals + registrations
   isLoading: boolean;
   error: Error | null;
   pageCount: number;

@@ -77,7 +77,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Single project registration route (for backward compatibility or single project registration)
         Route::post('projects/{project}/register', [App\Http\Controllers\Student\ProjectController::class, 'register'])
             ->middleware('window:project_registration');
-        
+
         Route::apiResource('projects', App\Http\Controllers\Student\ProjectController::class);
         Route::get('projects/{project}/notes', [App\Http\Controllers\Student\ProjectController::class, 'getSupervisorNotes']);
         Route::post('projects/{project}/notes/{note}/reply', [App\Http\Controllers\Student\ProjectController::class, 'replyToNote']);
@@ -197,6 +197,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('requests/{projectRequest}/reject', [App\Http\Controllers\ProjectsCommittee\RequestController::class, 'reject']);
         Route::apiResource('requests', App\Http\Controllers\ProjectsCommittee\RequestController::class);
         Route::get('registrations', [App\Http\Controllers\ProjectsCommittee\RegistrationController::class, 'index']);
+        Route::get('registrations/unified-groups', [App\Http\Controllers\ProjectsCommittee\RegistrationController::class, 'unifiedGroups']);
         Route::get('registrations/groups', [App\Http\Controllers\ProjectsCommittee\RegistrationController::class, 'groups']);
         Route::get('registrations/{registration}', [App\Http\Controllers\ProjectsCommittee\RegistrationController::class, 'show']);
         Route::post('registrations', [App\Http\Controllers\ProjectsCommittee\RegistrationController::class, 'store']);

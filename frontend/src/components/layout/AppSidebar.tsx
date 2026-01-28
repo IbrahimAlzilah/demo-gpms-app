@@ -1,12 +1,11 @@
+import { useState, useEffect } from 'react'
+import type { ComponentType } from 'react'
+import type { SVGProps } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/pages/auth/login'
 import { NAV_MENU } from '@/lib/constants'
 import { cn } from '@/lib/utils'
-import * as Icons from 'lucide-react'
-import { ChevronDown, ChevronUp, ChevronsLeft, ChevronsRight } from 'lucide-react'
-import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
 import {
   Sidebar,
   SidebarContent,
@@ -21,9 +20,10 @@ import {
   SidebarMenuSubItem,
   SidebarMenuSubButton,
   useSidebar,
-} from '@/components/ui/sidebar'
-import type { ComponentType } from 'react'
-import type { SVGProps } from 'react'
+  Button,
+} from '@/components/ui'
+import * as Icons from 'lucide-react'
+import { ChevronDown, ChevronUp, ChevronsLeft, ChevronsRight } from 'lucide-react'
 import logo from '@/assets/logo2.png'
 
 const getIcon = (iconName: string): ComponentType<SVGProps<SVGSVGElement>> => {
@@ -88,7 +88,7 @@ export function AppSidebar() {
   }, [location.pathname, menuItems, expandedMenus])
 
   return (
-    <Sidebar side={isRtl ? 'right' : 'left'} collapsible="icon" className="border-r border-sidebar-border/50 bg-sidebar/95 backdrop-blur supports-[backdrop-filter]:bg-sidebar/60">
+    <Sidebar side={isRtl ? 'right' : 'left'} collapsible="icon" className="border-r border-sidebar-border/50 bg-sidebar/95 backdrop-blur supports-backdrop-filter:bg-sidebar/60">
       <SidebarHeader className={cn(
         'flex flex-row items-center h-16 px-4 border-b border-sidebar-border/50 transition-all duration-300',
         'group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center'

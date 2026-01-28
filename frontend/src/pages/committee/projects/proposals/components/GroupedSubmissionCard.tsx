@@ -2,12 +2,12 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui'
 import { StatusBadge } from '@/components/common'
-import { 
-  ChevronDown, 
-  ChevronUp, 
-  Users, 
-  User, 
-  FileText, 
+import {
+  ChevronDown,
+  ChevronUp,
+  Users,
+  User,
+  FileText,
   Calendar,
   Eye,
   Check,
@@ -91,8 +91,8 @@ export function GroupedSubmissionCard({
             {/* Icon */}
             <div className={cn(
               'p-2 rounded-lg shrink-0',
-              isStudentGroup 
-                ? 'bg-primary/10 text-primary' 
+              isStudentGroup
+                ? 'bg-primary/10 text-primary'
                 : 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
             )}>
               {isStudentGroup ? (
@@ -108,9 +108,9 @@ export function GroupedSubmissionCard({
                 <h3 className="font-semibold text-base truncate">{displayName}</h3>
                 <StatusBadge status={submission.status === 'mixed' ? 'pending_review' : submission.status} />
               </div>
-              
+
               <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{description}</p>
-              
+
               {/* Status Summary */}
               {submission.status === 'mixed' && (
                 <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -136,17 +136,17 @@ export function GroupedSubmissionCard({
                 <div className="flex items-center gap-1.5">
                   <FileText className="h-3.5 w-3.5" />
                   <span className="font-medium">
-                    {submission.totalProposals} {submission.totalProposals === 1 ? t('proposal.proposal') : t('proposal.proposals')}
+                    {submission.totalProposals} {submission.totalProposals === 1 ? t('proposal.proposal') : t('common.proposals')}
                   </span>
                 </div>
-                
+
                 {isStudentGroup && studentGroupSubmission.studentGroup && (
                   <>
                     <div className="flex items-center gap-1.5">
                       <Users className="h-3.5 w-3.5" />
                       <span>
-                        {studentGroupSubmission.studentGroup.memberCount || 
-                         studentGroupSubmission.studentGroup.members?.length || 0} {t('common.members')}
+                        {studentGroupSubmission.studentGroup.memberCount ||
+                          studentGroupSubmission.studentGroup.members?.length || 0} {t('common.members')}
                       </span>
                     </div>
                     {studentGroupSubmission.studentGroup.leader && (
@@ -159,7 +159,7 @@ export function GroupedSubmissionCard({
                     )}
                   </>
                 )}
-                
+
                 {isStudentGroup && studentGroupSubmission.submitter && (
                   <div className="flex items-center gap-1.5">
                     <User className="h-3.5 w-3.5" />
@@ -222,7 +222,7 @@ export function GroupedSubmissionCard({
           <div className="flex items-center justify-between mb-4">
             <div>
               <h4 className="text-sm font-semibold mb-1">
-                {t('committee.proposal.proposalsInSubmission') || 'Proposals in this submission'} 
+                {t('committee.proposal.proposalsInSubmission') || 'Proposals in this submission'}
               </h4>
               <p className="text-xs text-muted-foreground">
                 {t('committee.proposal.allProposalsVisible') || 'All proposals are listed below. Each proposal can be reviewed independently.'}
@@ -244,159 +244,159 @@ export function GroupedSubmissionCard({
                 const isLoading = isLoadingAction?.(proposal.id) || false
                 const canReview = proposal.status === 'pending_review' || proposal.status === 'requires_modification'
                 return (
-                <div
-                  key={proposal.id}
-                  className={cn(
-                    'p-4 rounded-lg border bg-background',
-                    'hover:bg-muted/50 transition-all duration-200',
-                    'hover:shadow-md hover:border-primary/20',
-                    isLoading && 'opacity-60 pointer-events-none',
-                    !canReview && 'opacity-90'
-                  )}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3 flex-1 min-w-0">
-                      <div className={cn(
-                        'p-2.5 rounded-lg shrink-0 mt-0.5',
-                        'border-2',
-                        proposal.status === 'approved' && 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800',
-                        proposal.status === 'rejected' && 'bg-rose-50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800',
-                        proposal.status === 'requires_modification' && 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800',
-                        proposal.status === 'pending_review' && 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800'
-                      )}>
-                        <FileText className={cn(
-                          'h-4 w-4',
-                          proposal.status === 'approved' && 'text-emerald-600 dark:text-emerald-400',
-                          proposal.status === 'rejected' && 'text-rose-600 dark:text-rose-400',
-                          proposal.status === 'requires_modification' && 'text-amber-600 dark:text-amber-400',
-                          proposal.status === 'pending_review' && 'text-blue-600 dark:text-blue-400'
-                        )} />
+                  <div
+                    key={proposal.id}
+                    className={cn(
+                      'p-4 rounded-lg border bg-background',
+                      'hover:bg-muted/50 transition-all duration-200',
+                      'hover:shadow-md hover:border-primary/20',
+                      isLoading && 'opacity-60 pointer-events-none',
+                      !canReview && 'opacity-90'
+                    )}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        <div className={cn(
+                          'p-2.5 rounded-lg shrink-0 mt-0.5',
+                          'border-2',
+                          proposal.status === 'approved' && 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800',
+                          proposal.status === 'rejected' && 'bg-rose-50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800',
+                          proposal.status === 'requires_modification' && 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800',
+                          proposal.status === 'pending_review' && 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800'
+                        )}>
+                          <FileText className={cn(
+                            'h-4 w-4',
+                            proposal.status === 'approved' && 'text-emerald-600 dark:text-emerald-400',
+                            proposal.status === 'rejected' && 'text-rose-600 dark:text-rose-400',
+                            proposal.status === 'requires_modification' && 'text-amber-600 dark:text-amber-400',
+                            proposal.status === 'pending_review' && 'text-blue-600 dark:text-blue-400'
+                          )} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start gap-2 mb-2 flex-wrap">
+                            <span className="text-xs font-bold text-muted-foreground bg-muted px-2 py-1 rounded-md border">
+                              #{index + 1}
+                            </span>
+                            <h5 className="text-base font-semibold flex-1 min-w-[200px]">{proposal.title}</h5>
+                            <StatusBadge status={proposal.status} />
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-3 leading-relaxed line-clamp-3">
+                            {proposal.description}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="h-3 w-3" />
+                              <span className="font-medium">{t('proposal.submittedAt')}:</span>
+                              <span>{formatDate(proposal.createdAt)}</span>
+                            </div>
+                            {proposal.reviewedAt && (
+                              <div className="flex items-center gap-1.5">
+                                <CheckCircle2 className="h-3 w-3" />
+                                <span className="font-medium">{t('proposal.reviewedAt')}:</span>
+                                <span>{formatDate(proposal.reviewedAt)}</span>
+                              </div>
+                            )}
+                            {proposal.reviewer && (
+                              <div className="flex items-center gap-1.5">
+                                <User className="h-3 w-3" />
+                                <span className="font-medium">{t('proposal.reviewer')}:</span>
+                                <span>{proposal.reviewer.name || proposal.reviewer.email || 'Unknown'}</span>
+                              </div>
+                            )}
+                          </div>
+                          {proposal.reviewNotes && (
+                            <div className="mt-3 p-2.5 rounded-md bg-muted/50 border border-border/50">
+                              <p className="text-xs font-medium text-muted-foreground mb-1">{t('proposal.reviewNotes')}:</p>
+                              <p className="text-xs text-muted-foreground line-clamp-2">{proposal.reviewNotes}</p>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start gap-2 mb-2 flex-wrap">
-                          <span className="text-xs font-bold text-muted-foreground bg-muted px-2 py-1 rounded-md border">
-                            #{index + 1}
-                          </span>
-                          <h5 className="text-base font-semibold flex-1 min-w-[200px]">{proposal.title}</h5>
-                          <StatusBadge status={proposal.status} />
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-3 leading-relaxed line-clamp-3">
-                          {proposal.description}
-                        </p>
-                        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                          <div className="flex items-center gap-1.5">
-                            <Calendar className="h-3 w-3" />
-                            <span className="font-medium">{t('proposal.submittedAt')}:</span>
-                            <span>{formatDate(proposal.createdAt)}</span>
-                          </div>
-                          {proposal.reviewedAt && (
-                            <div className="flex items-center gap-1.5">
-                              <CheckCircle2 className="h-3 w-3" />
-                              <span className="font-medium">{t('proposal.reviewedAt')}:</span>
-                              <span>{formatDate(proposal.reviewedAt)}</span>
+
+                      {/* Proposal Actions */}
+                      <div className="flex items-center gap-1 shrink-0">
+                        {isLoading ? (
+                          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                        ) : (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => onViewProposal(proposal)}
+                              className="h-9 px-3 hover:bg-primary/10"
+                              title={t('common.view')}
+                            >
+                              <Eye className="size-4" />
+                            </Button>
+
+                            {canReview && (
+                              <div className="flex items-center gap-1 border-l border-border/50 ps-1">
+                                {onApproveProposal && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => onApproveProposal(proposal)}
+                                    className="h-9 px-3 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
+                                    title={t('committee.proposal.approve')}
+                                  >
+                                    <Check className="size-4" />
+                                  </Button>
+                                )}
+                                {onRequestModification && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => onRequestModification(proposal)}
+                                    className="h-9 px-3 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/20"
+                                    title={t('committee.proposal.requestModification')}
+                                  >
+                                    <FileEdit className="size-4" />
+                                  </Button>
+                                )}
+                                {onRejectProposal && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => onRejectProposal(proposal)}
+                                    className="h-9 px-3 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/20"
+                                    title={t('committee.proposal.reject')}
+                                  >
+                                    <X className="size-4" />
+                                  </Button>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Edit and Delete buttons - always visible for Projects Committee */}
+                            <div className="flex items-center gap-1 border-l border-border/50 ps-1">
+                              {onEditProposal && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => onEditProposal(proposal)}
+                                  className="h-9 px-3 hover:bg-primary/10"
+                                  title={t('common.edit')}
+                                >
+                                  <Edit className="size-4" />
+                                </Button>
+                              )}
+                              {onDeleteProposal && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => onDeleteProposal(proposal)}
+                                  className="h-9 px-3 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/20"
+                                  title={t('common.delete')}
+                                >
+                                  <Trash2 className="size-4" />
+                                </Button>
+                              )}
                             </div>
-                          )}
-                          {proposal.reviewer && (
-                            <div className="flex items-center gap-1.5">
-                              <User className="h-3 w-3" />
-                              <span className="font-medium">{t('proposal.reviewer')}:</span>
-                              <span>{proposal.reviewer.name || proposal.reviewer.email || 'Unknown'}</span>
-                            </div>
-                          )}
-                        </div>
-                        {proposal.reviewNotes && (
-                          <div className="mt-3 p-2.5 rounded-md bg-muted/50 border border-border/50">
-                            <p className="text-xs font-medium text-muted-foreground mb-1">{t('proposal.reviewNotes')}:</p>
-                            <p className="text-xs text-muted-foreground line-clamp-2">{proposal.reviewNotes}</p>
-                          </div>
+                          </>
                         )}
                       </div>
                     </div>
-
-                    {/* Proposal Actions */}
-                    <div className="flex items-center gap-1 shrink-0">
-                      {isLoading ? (
-                        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                      ) : (
-                        <>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => onViewProposal(proposal)}
-                            className="h-9 px-3 hover:bg-primary/10"
-                            title={t('common.view')}
-                          >
-                            <Eye className="size-4" />
-                          </Button>
-                          
-                          {canReview && (
-                            <div className="flex items-center gap-1 border-l border-border/50 ps-1">
-                              {onApproveProposal && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => onApproveProposal(proposal)}
-                                  className="h-9 px-3 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
-                                  title={t('committee.proposal.approve')}
-                                >
-                                  <Check className="size-4" />
-                                </Button>
-                              )}
-                              {onRequestModification && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => onRequestModification(proposal)}
-                                  className="h-9 px-3 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/20"
-                                  title={t('committee.proposal.requestModification')}
-                                >
-                                  <FileEdit className="size-4" />
-                                </Button>
-                              )}
-                              {onRejectProposal && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => onRejectProposal(proposal)}
-                                  className="h-9 px-3 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/20"
-                                  title={t('committee.proposal.reject')}
-                                >
-                                  <X className="size-4" />
-                                </Button>
-                              )}
-                            </div>
-                          )}
-                          
-                          {/* Edit and Delete buttons - always visible for Projects Committee */}
-                          <div className="flex items-center gap-1 border-l border-border/50 ps-1">
-                            {onEditProposal && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => onEditProposal(proposal)}
-                                className="h-9 px-3 hover:bg-primary/10"
-                                title={t('common.edit')}
-                              >
-                                <Edit className="size-4" />
-                              </Button>
-                            )}
-                            {onDeleteProposal && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => onDeleteProposal(proposal)}
-                                className="h-9 px-3 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/20"
-                                title={t('common.delete')}
-                              >
-                                <Trash2 className="size-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </>
-                      )}
-                    </div>
                   </div>
-                </div>
                 )
               })}
             </div>

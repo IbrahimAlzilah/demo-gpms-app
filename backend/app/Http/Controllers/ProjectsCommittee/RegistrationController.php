@@ -5,15 +5,19 @@ namespace App\Http\Controllers\ProjectsCommittee;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProjectRegistrationResource;
 use App\Http\Resources\GroupRegistrationRequestResource;
+use App\Http\Resources\StudentGroupResource;
+use App\Http\Resources\ProposalResource;
 use App\Http\Traits\HasTableQuery;
 use App\Models\ProjectRegistration;
 use App\Models\GroupRegistrationRequest;
 use App\Models\StudentGroup;
 use App\Models\Project;
+use App\Models\Proposal;
 use App\Services\ProjectService;
 use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class RegistrationController extends Controller
 {
@@ -485,11 +489,11 @@ class RegistrationController extends Controller
             // Check if this registration belongs to a group registration request
             if ($registration->group_registration_request_id) {
                 $groupRequest = $registration->groupRegistrationRequest;
-                
+
                 // Reject all registrations in the same request
                 $allRegistrations = ProjectRegistration::where('group_registration_request_id', $groupRequest->id)
                     ->get();
-                
+
                 foreach ($allRegistrations as $reg) {
                     $reg->update([
                         'status' => 'rejected',
@@ -498,7 +502,7 @@ class RegistrationController extends Controller
                         'review_comments' => $validated['comments'],
                     ]);
                 }
-                
+
                 // Update the group request status
                 $groupRequest->update([
                     'status' => 'rejected',
@@ -584,5 +588,156 @@ class RegistrationController extends Controller
             $query->where('student_id', $filters['student_id']);
         }
         return $query;
+    }
+
+    /**
+     * Get unified group data with proposals and registrations
+     * Returns groups with all their proposals and registration requests in one view
+     */
+    public function unifiedGroups(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', GroupRegistrationRequest::class);
+
+        $page = (int) $request->get('page', 1);
+        $pageSize = (int) $request->get('pageSize', 10);
+        $status = $request->get('status');
+        $search = $request->get('search');
+        $projectId = $request->get('project_id'); // Filter by specific project
+
+        // Get all active groups that have either proposals or registration requests
+        $query = StudentGroup::with([
+            'leader',
+            'members',
+            'assignedProjects.supervisor',
+        ])
+            ->where('status', 'active')
+            ->where(function ($q) {
+                // Groups with proposals
+                $q->whereHas('proposals')
+                    // Or groups with registration requests
+                    ->orWhereHas('groupRegistrationRequests');
+            });
+
+        // Filter by project if specified (show all groups requesting this project)
+        if ($projectId) {
+            $query->where(function ($q) use ($projectId) {
+                // Groups with proposals targeting this project
+                $q->whereHas('proposals', function ($proposalQuery) use ($projectId) {
+                    $proposalQuery->where('target_project_id', $projectId);
+                })
+                // Or groups with registration requests for this project
+                ->orWhereHas('groupRegistrationRequests.projectRegistrations', function ($regQuery) use ($projectId) {
+                    $regQuery->where('project_id', $projectId);
+                });
+            });
+        }
+
+        // Apply search filter
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('group_code', 'like', "%{$search}%")
+                    ->orWhereHas('leader', function ($leaderQuery) use ($search) {
+                        $leaderQuery->where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('proposals', function ($proposalQuery) use ($search) {
+                        $proposalQuery->where('title', 'like', "%{$search}%")
+                            ->orWhere('description', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('groupRegistrationRequests.projectRegistrations.project', function ($projectQuery) use ($search) {
+                        $projectQuery->where('title', 'like', "%{$search}%")
+                            ->orWhere('description', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Get total count before pagination
+        $total = $query->count();
+
+        // Apply pagination
+        $groups = $query->orderBy('created_at', 'desc')
+            ->skip(($page - 1) * $pageSize)
+            ->take($pageSize)
+            ->get();
+
+        // Load proposals and registration requests for each group
+        $groups->load([
+            'proposals' => function ($query) use ($status) {
+                $query->with(['submitter', 'reviewer', 'project', 'targetProject', 'proposedSupervisor']);
+                if ($status && $status !== 'all') {
+                    // Handle both enum and string status values
+                    $query->where('status', $status);
+                }
+                $query->orderBy('created_at', 'desc');
+            },
+            'groupRegistrationRequests' => function ($query) use ($status) {
+                $query->with([
+                    'submitter',
+                    'reviewer',
+                    'approvedProject.supervisor',
+                    'projectRegistrations.project.supervisor',
+                    'projectRegistrations.student',
+                ]);
+                if ($status && $status !== 'all') {
+                    $query->where('status', $status);
+                }
+                $query->orderBy('submitted_at', 'desc');
+            },
+        ]);
+
+        // Transform groups to include proposals and registrations
+        $unifiedGroups = $groups->map(function (StudentGroup $group) {
+            $proposals = $group->proposals ?? collect([]);
+            $registrationRequests = $group->groupRegistrationRequests ?? collect([]);
+
+            // Get approved project (from approved proposal or approved registration)
+            $approvedProject = null;
+            $approvedProposal = $proposals->first(function ($proposal) {
+                return $proposal->status === \App\Enums\ProposalStatus::APPROVED ||
+                       (is_string($proposal->status) && $proposal->status === 'approved');
+            });
+            if ($approvedProposal && $approvedProposal->project) {
+                $approvedProject = $approvedProposal->project;
+            } else {
+                $approvedRequest = $registrationRequests->firstWhere('status', 'approved');
+                if ($approvedRequest && $approvedRequest->approvedProject) {
+                    $approvedProject = $approvedRequest->approvedProject;
+                }
+            }
+
+            // Check if group has any pending proposals or registrations
+            $hasPendingProposals = $proposals->contains(function ($proposal) {
+                return $proposal->status === \App\Enums\ProposalStatus::PENDING_REVIEW ||
+                       (is_string($proposal->status) && $proposal->status === 'pending_review');
+            });
+            $hasPendingRegistrations = $registrationRequests->contains('status', 'pending');
+
+            return [
+                'id' => (string) $group->id,
+                'group' => new StudentGroupResource($group),
+                'proposals' => ProposalResource::collection($proposals),
+                'registrationRequests' => GroupRegistrationRequestResource::collection($registrationRequests),
+                'approvedProject' => $approvedProject ? new \App\Http\Resources\ProjectResource($approvedProject) : null,
+                'hasPendingProposals' => $hasPendingProposals,
+                'hasPendingRegistrations' => $hasPendingRegistrations,
+                'totalProposals' => $proposals->count(),
+                'totalRegistrationRequests' => $registrationRequests->count(),
+                'canApproveNewProject' => $approvedProject === null, // Can only approve if no approved project exists
+            ];
+        });
+
+        $totalPages = (int) ceil($total / $pageSize);
+
+        return response()->json([
+            'success' => true,
+            'data' => $unifiedGroups,
+            'pagination' => [
+                'page' => $page,
+                'pageSize' => $pageSize,
+                'total' => $total,
+                'totalPages' => $totalPages,
+            ],
+        ]);
     }
 }

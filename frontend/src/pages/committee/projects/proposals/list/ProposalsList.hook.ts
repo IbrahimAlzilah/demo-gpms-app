@@ -4,6 +4,10 @@ import { useDataTable } from "@/hooks/useDataTable";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import type { SortingState, ColumnFiltersState } from "@tanstack/react-table";
 import { committeeProposalService } from "../api/proposal.service";
+import {
+  registrationService,
+  type UnifiedGroup,
+} from "../../registrations/api/registration.service";
 import type {
   ProposalsListState,
   ProposalsListData,
@@ -30,6 +34,7 @@ export function useProposalsList() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
+  const [projectFilter, setProjectFilter] = useState<string>("");
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
@@ -63,8 +68,58 @@ export function useProposalsList() {
     enableServerSide: true,
   });
 
-  // Grouped submissions query (for grouped view)
-  const submissionsQueryParams = useMemo(() => {
+  // Unified groups query (student groups with proposals + registrations)
+  const unifiedGroupsQueryParams = useMemo(() => {
+    if (!isGroupedView) return undefined;
+    return {
+      page: pagination.pageIndex + 1,
+      pageSize: pagination.pageSize,
+      search: globalFilter,
+      status: state.statusFilter !== "all" ? state.statusFilter : undefined,
+      project_id: projectFilter || undefined,
+    };
+  }, [
+    isGroupedView,
+    pagination.pageIndex,
+    pagination.pageSize,
+    globalFilter,
+    state.statusFilter,
+    projectFilter,
+  ]);
+
+  const {
+    data: unifiedGroupsData,
+    isLoading: unifiedGroupsLoading,
+    error: unifiedGroupsError,
+  } = useQuery({
+    queryKey: [
+      "committee-unified-groups",
+      state.statusFilter,
+      globalFilter,
+      unifiedGroupsQueryParams,
+    ],
+    queryFn: async () => {
+      if (!unifiedGroupsQueryParams) {
+        return {
+          data: [],
+          pagination: {
+            page: 1,
+            pageSize: 10,
+            total: 0,
+            totalPages: 0,
+          },
+        };
+      }
+      return registrationService.getUnifiedGroups(unifiedGroupsQueryParams);
+    },
+    enabled: isGroupedView && !!unifiedGroupsQueryParams,
+    placeholderData: keepPreviousData,
+    staleTime: 0,
+    refetchOnMount: true,
+  });
+
+  // Supervisor proposals query (separate from student groups)
+  const supervisorSubmissionsQueryParams = useMemo(() => {
     if (!isGroupedView) return undefined;
     return buildTableQueryParams({
       page: pagination.pageIndex,
@@ -74,18 +129,18 @@ export function useProposalsList() {
   }, [isGroupedView, pagination.pageIndex, pagination.pageSize, globalFilter]);
 
   const {
-    data: submissionsData,
-    isLoading: submissionsLoading,
-    error: submissionsError,
+    data: supervisorSubmissionsData,
+    isLoading: supervisorSubmissionsLoading,
+    error: supervisorSubmissionsError,
   } = useQuery({
     queryKey: [
-      "committee-proposals-submissions",
+      "committee-proposals-supervisor-submissions",
       state.statusFilter,
       globalFilter,
-      submissionsQueryParams,
+      supervisorSubmissionsQueryParams,
     ],
     queryFn: async () => {
-      if (!submissionsQueryParams) {
+      if (!supervisorSubmissionsQueryParams) {
         return {
           data: [],
           totalCount: 0,
@@ -94,13 +149,24 @@ export function useProposalsList() {
           totalPages: 0,
         };
       }
-      return committeeProposalService.getSubmissionsTableData(
-        submissionsQueryParams,
-        state.statusFilter === "all" ? undefined : state.statusFilter,
-        globalFilter || undefined,
+      // Get all submissions and filter for supervisor-only
+      const allSubmissions =
+        await committeeProposalService.getSubmissionsTableData(
+          supervisorSubmissionsQueryParams,
+          state.statusFilter === "all" ? undefined : state.statusFilter,
+          globalFilter || undefined,
+        );
+      // Filter to only supervisor submissions
+      const supervisorSubmissions = allSubmissions.data.filter(
+        (submission) => submission.origin === "supervisor",
       );
+      return {
+        ...allSubmissions,
+        data: supervisorSubmissions,
+        totalCount: supervisorSubmissions.length,
+      };
     },
-    enabled: isGroupedView && !!submissionsQueryParams,
+    enabled: isGroupedView && !!supervisorSubmissionsQueryParams,
     placeholderData: keepPreviousData,
     staleTime: 0,
     refetchOnMount: true,
@@ -128,19 +194,35 @@ export function useProposalsList() {
     : setProposalsPagination;
 
   // Determine which data to use based on view mode
-  const isLoading = isGroupedView ? submissionsLoading : proposalsLoading;
-  const error = isGroupedView ? submissionsError : proposalsError;
+  const isLoading = isGroupedView
+    ? unifiedGroupsLoading || supervisorSubmissionsLoading
+    : proposalsLoading;
+  const error = isGroupedView
+    ? unifiedGroupsError || supervisorSubmissionsError
+    : proposalsError;
+
+  const unifiedGroups: UnifiedGroup[] = isGroupedView
+    ? unifiedGroupsData?.data || []
+    : [];
+  const supervisorSubmissions: Submission[] = isGroupedView
+    ? supervisorSubmissionsData?.data || []
+    : [];
+
   const totalCount = isGroupedView
-    ? submissionsData?.totalCount || 0
+    ? (unifiedGroupsData?.pagination?.total || 0) +
+      (supervisorSubmissionsData?.totalCount || 0)
     : proposalsTotalCount;
   const pageCount = isGroupedView
-    ? submissionsData?.totalPages || 0
+    ? Math.max(
+        unifiedGroupsData?.pagination?.totalPages || 0,
+        supervisorSubmissionsData?.totalPages || 0,
+      )
     : proposalsPageCount;
-  const submissions = isGroupedView ? submissionsData?.data || [] : [];
 
   const data: ProposalsListData = {
     proposals: proposals || [],
-    submissions: submissions as Submission[],
+    submissions: supervisorSubmissions as Submission[],
+    unifiedGroups: unifiedGroups,
     isLoading,
     error: error as Error | null,
     pageCount,
@@ -159,6 +241,8 @@ export function useProposalsList() {
     setColumnFilters: currentSetColumnFilters,
     globalFilter: currentGlobalFilter,
     setGlobalFilter: currentSetGlobalFilter,
+    projectFilter,
+    setProjectFilter,
     pagination: currentPagination,
     setPagination: currentSetPagination,
     t,

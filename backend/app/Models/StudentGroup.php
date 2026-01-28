@@ -94,6 +94,22 @@ class StudentGroup extends Model
     }
 
     /**
+     * Get all proposals submitted by this group
+     */
+    public function proposals(): HasMany
+    {
+        return $this->hasMany(Proposal::class, 'student_group_id');
+    }
+
+    /**
+     * Get all group registration requests for this group
+     */
+    public function groupRegistrationRequests(): HasMany
+    {
+        return $this->hasMany(GroupRegistrationRequest::class, 'student_group_id');
+    }
+
+    /**
      * Check if group is full based on settings
      */
     public function isFull(): bool

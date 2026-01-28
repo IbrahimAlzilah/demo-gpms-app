@@ -51,7 +51,7 @@ class ProposalService
 
     /**
      * Approve a proposal and optionally create a project
-     * 
+     *
      * Note: This method only updates the specific proposal passed to it.
      * Each proposal in a group or submission is reviewed independently.
      * Approving, rejecting, or requesting changes on one proposal does NOT
@@ -60,9 +60,40 @@ class ProposalService
     public function approve(Proposal $proposal, User $reviewer, ?int $projectId = null): Proposal
     {
         return DB::transaction(function () use ($proposal, $reviewer, $projectId) {
+            // If proposal has a student_group_id, check constraints
+            if ($proposal->student_group_id) {
+                $studentGroup = \App\Models\StudentGroup::find($proposal->student_group_id);
+
+                if ($studentGroup) {
+                    // Constraint 1: One project per group - check if group already has an approved project
+                    $existingApprovedProject = $studentGroup->assignedProjects()
+                        ->where('status', \App\Enums\ProjectStatus::IN_PROGRESS->value)
+                        ->orWhere('status', \App\Enums\ProjectStatus::COMPLETED->value)
+                        ->first();
+
+                    if ($existingApprovedProject) {
+                        throw new \Exception("Group already has an approved project: {$existingApprovedProject->title}. Only one project can be approved per group.");
+                    }
+
+                    // Constraint 2: During registration period, only one approved proposal per group
+                    $timeWindowService = app(\App\Services\TimeWindowService::class);
+                    $isRegistrationPeriod = $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::PROJECT_REGISTRATION);
+
+                    if ($isRegistrationPeriod) {
+                        $existingApprovedProposal = \App\Models\Proposal::where('student_group_id', $studentGroup->id)
+                            ->where('status', \App\Enums\ProposalStatus::APPROVED)
+                            ->first();
+
+                        if ($existingApprovedProposal && $existingApprovedProposal->id !== $proposal->id) {
+                            throw new \Exception("Group already has an approved proposal during the registration period. Only one proposal can be approved per group during this period.");
+                        }
+                    }
+                }
+            }
+
             // Determine target project: use provided ID, target_project_id, or create new
             $targetProjectId = $projectId ?? $proposal->target_project_id;
-            
+
             if (!$targetProjectId) {
                 // Create a new project from the proposal
                 $project = $this->projectService->createFromProposal([
@@ -99,31 +130,31 @@ class ProposalService
             // If proposal has a student_group_id, auto-register the group
             if ($proposal->student_group_id) {
                 $studentGroup = \App\Models\StudentGroup::find($proposal->student_group_id);
-                
+
                 if ($studentGroup && $studentGroup->status === 'active') {
                     // Validate group meets registration requirements before auto-registering
                     if (!$studentGroup->meetsRegistrationRequirements()) {
                         $minMembers = app(\App\Services\SettingsService::class)->getGroupMinMembers();
                         $maxMembers = app(\App\Services\SettingsService::class)->getGroupMaxMembers();
                         $totalMembers = $studentGroup->getTotalMemberCount();
-                        
+
                         if ($totalMembers < $minMembers) {
                             throw new \Exception("Group must have at least {$minMembers} members to be registered via proposal approval");
                         }
-                        
+
                         if ($totalMembers > $maxMembers) {
                             throw new \Exception("Group cannot have more than {$maxMembers} members");
                         }
                     }
                     // Get all group members (including leader)
                     $groupMembers = $studentGroup->members()->pluck('users.id')->push($studentGroup->leader_id)->unique();
-                    
+
                     // Attach all group members to project
                     foreach ($groupMembers as $memberId) {
                         if (!$project->students()->where('users.id', $memberId)->exists()) {
                             $project->students()->attach($memberId);
                             $project->increment('current_students');
-                            
+
                             // Create approved registration records for all members
                             \App\Models\ProjectRegistration::updateOrCreate(
                                 [
@@ -167,7 +198,7 @@ class ProposalService
 
     /**
      * Reject a proposal
-     * 
+     *
      * Note: This method only updates the specific proposal passed to it.
      * Each proposal in a group or submission is reviewed independently.
      * Approving, rejecting, or requesting changes on one proposal does NOT
@@ -204,7 +235,7 @@ class ProposalService
 
     /**
      * Request modification for a proposal
-     * 
+     *
      * Note: This method only updates the specific proposal passed to it.
      * Each proposal in a group or submission is reviewed independently.
      * Approving, rejecting, or requesting changes on one proposal does NOT
@@ -242,7 +273,7 @@ class ProposalService
      * @param Proposal $proposal The proposal to update
      * @param array $data The data to update
      * @param User|null $user The user performing the update (null for committee members)
-     * 
+     *
      * Note: Projects Committee members can edit proposals regardless of status.
      * For approved/rejected proposals, review data (reviewed_by, reviewed_at, review_notes, project_id)
      * is preserved to maintain data integrity.
@@ -276,12 +307,12 @@ class ProposalService
             'title' => $data['title'] ?? $proposal->title,
             'description' => $data['description'] ?? $proposal->description,
         ];
-        
+
         // Only update other fields if user is not a committee member (for backward compatibility with other roles)
         if ($user && !$user->isProjectsCommittee()) {
             $updateData['proposed_supervisor_id'] = $data['proposed_supervisor_id'] ?? $proposal->proposed_supervisor_id;
         }
-        
+
         $proposal->update(array_merge($updateData, $statusUpdate));
 
         return $proposal->fresh();
@@ -425,7 +456,7 @@ class ProposalService
 
     /**
      * Create multiple proposals in a batch
-     * 
+     *
      * @param array $proposalsData Array of proposal data arrays
      * @param User $submitter The user submitting the proposals
      * @param int|null $studentGroupId The student group ID (null for solo students)
@@ -435,7 +466,7 @@ class ProposalService
     {
         return DB::transaction(function () use ($proposalsData, $submitter, $studentGroupId) {
             $createdProposals = [];
-            
+
             foreach ($proposalsData as $data) {
                 $proposal = Proposal::create([
                     'title' => $data['title'],
@@ -445,7 +476,7 @@ class ProposalService
                     'target_project_id' => $data['target_project_id'] ?? null,
                     'status' => 'pending_review',
                 ]);
-                
+
                 $createdProposals[] = $proposal;
             }
 
@@ -473,14 +504,14 @@ class ProposalService
                 ->toArray();
 
             if (!empty($committeeMembers) && !empty($createdProposals)) {
-                $submitterName = $studentGroupId 
+                $submitterName = $studentGroupId
                     ? ($createdProposals[0]->studentGroup?->name ?? $submitter->name)
                     : $submitter->name;
                 $count = count($createdProposals);
-                $message = $count === 1 
+                $message = $count === 1
                     ? "تم تقديم مقترح جديد: {$createdProposals[0]->title} من قبل {$submitterName}"
                     : "تم تقديم {$count} مقترحات جديدة من قبل {$submitterName}";
-                
+
                 $this->notificationService->createForUsers(
                     $committeeMembers,
                     $message,
@@ -496,7 +527,7 @@ class ProposalService
 
     /**
      * Update multiple proposals and optionally add new ones in a batch
-     * 
+     *
      * @param array $updates Array of updates: ['id' => proposal_id, ...data] for existing proposals
      * @param array $newProposals Array of new proposal data arrays
      * @param User $user The user performing the update
@@ -513,9 +544,9 @@ class ProposalService
             foreach ($updates as $updateData) {
                 $proposalId = $updateData['id'];
                 unset($updateData['id']);
-                
+
                 $proposal = Proposal::findOrFail($proposalId);
-                
+
                 // Enforce status check for non-committee members
                 if (!$user->isProjectsCommittee() && !$proposal->canBeModified()) {
                     throw new \Illuminate\Http\Exceptions\HttpResponseException(
@@ -536,11 +567,11 @@ class ProposalService
                     'title' => $updateData['title'] ?? $proposal->title,
                     'description' => $updateData['description'] ?? $proposal->description,
                 ];
-                
+
                 if (!$user->isProjectsCommittee()) {
                     $updateFields['proposed_supervisor_id'] = $updateData['proposed_supervisor_id'] ?? $proposal->proposed_supervisor_id;
                 }
-                
+
                 $proposal->update(array_merge($updateFields, $statusUpdate));
                 $updatedProposals[] = $proposal->fresh();
             }
@@ -557,7 +588,7 @@ class ProposalService
                         'target_project_id' => $data['target_project_id'] ?? null,
                         'status' => 'pending_review',
                     ]);
-                    
+
                     $createdProposals[] = $proposal;
                 }
             }
@@ -571,7 +602,7 @@ class ProposalService
 
     /**
      * Check if a group is locked from submitting new proposals
-     * 
+     *
      * @param int|null $studentGroupId The student group ID (null for solo students)
      * @return bool True if locked, false otherwise
      */
@@ -593,7 +624,7 @@ class ProposalService
 
     /**
      * Check if a supervisor is locked from submitting new proposals
-     * 
+     *
      * @param User $user The supervisor user
      * @return bool True if locked, false otherwise
      */

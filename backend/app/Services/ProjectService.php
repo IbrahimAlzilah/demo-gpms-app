@@ -36,7 +36,7 @@ class ProjectService
 
     /**
      * Register a student to a project
-     * 
+     *
      * @deprecated Individual registration is not allowed. Use registerStudentGroup() instead.
      * This method is kept for backward compatibility but will throw an error.
      */
@@ -139,11 +139,11 @@ class ProjectService
             $minMembers = app(\App\Services\SettingsService::class)->getGroupMinMembers();
             $maxMembers = app(\App\Services\SettingsService::class)->getGroupMaxMembers();
             $totalMembers = $group->getTotalMemberCount();
-            
+
             if ($totalMembers < $minMembers) {
                 throw new \Exception("Group must have at least {$minMembers} members to register for projects");
             }
-            
+
             if ($totalMembers > $maxMembers) {
                 throw new \Exception("Group cannot have more than {$maxMembers} members to register for projects");
             }
@@ -229,34 +229,6 @@ class ProjectService
 
         return DB::transaction(function () use ($registration, $reviewer) {
             $project = $registration->project;
-            
-            // Check if this registration belongs to a group registration request
-            if ($registration->group_registration_request_id) {
-                $request = $registration->groupRegistrationRequest;
-                
-                // Reject/cancel all other registrations in the same request
-                $otherRegistrations = ProjectRegistration::where('group_registration_request_id', $request->id)
-                    ->where('id', '!=', $registration->id)
-                    ->get();
-                
-                foreach ($otherRegistrations as $otherReg) {
-                    $otherReg->update(['status' => 'rejected']);
-                }
-                
-                // Update the request status
-                $request->update([
-                    'status' => 'approved',
-                    'approved_project_id' => $project->id,
-                    'reviewed_by' => $reviewer->id,
-                    'reviewed_at' => now(),
-                ]);
-            }
-            
-            $registration->update([
-                'status' => 'approved',
-                'reviewed_by' => $reviewer->id,
-                'reviewed_at' => now(),
-            ]);
 
             // Check if this registration is from a group by finding the student's active group
             $studentGroup = \App\Models\StudentGroup::where(function ($query) use ($registration) {
@@ -266,15 +238,58 @@ class ProjectService
                     });
             })->where('status', 'active')->first();
 
+            // Constraint: One project per group - check if group already has an approved project
+            if ($studentGroup) {
+                $existingApprovedProject = $studentGroup->assignedProjects()
+                    ->where('id', '!=', $project->id) // Exclude current project
+                    ->where(function ($q) {
+                        $q->where('status', \App\Enums\ProjectStatus::IN_PROGRESS->value)
+                            ->orWhere('status', \App\Enums\ProjectStatus::COMPLETED->value);
+                    })
+                    ->first();
+
+                if ($existingApprovedProject) {
+                    throw new \Exception("Group already has an approved project: {$existingApprovedProject->title}. Only one project can be approved per group.");
+                }
+            }
+
+            // Check if this registration belongs to a group registration request
+            if ($registration->group_registration_request_id) {
+                $request = $registration->groupRegistrationRequest;
+
+                // Reject/cancel all other registrations in the same request
+                $otherRegistrations = ProjectRegistration::where('group_registration_request_id', $request->id)
+                    ->where('id', '!=', $registration->id)
+                    ->get();
+
+                foreach ($otherRegistrations as $otherReg) {
+                    $otherReg->update(['status' => 'rejected']);
+                }
+
+                // Update the request status
+                $request->update([
+                    'status' => 'approved',
+                    'approved_project_id' => $project->id,
+                    'reviewed_by' => $reviewer->id,
+                    'reviewed_at' => now(),
+                ]);
+            }
+
+            $registration->update([
+                'status' => 'approved',
+                'reviewed_by' => $reviewer->id,
+                'reviewed_at' => now(),
+            ]);
+
             if ($studentGroup) {
                 // This is a group registration - attach all group members
                 $groupMembers = $studentGroup->members()->pluck('users.id')->push($studentGroup->leader_id)->unique();
-                
+
                 foreach ($groupMembers as $memberId) {
                     if (!$project->students()->where('users.id', $memberId)->exists()) {
                         $project->students()->attach($memberId);
                         $project->increment('current_students');
-                        
+
                         // Create approved registration records for all members
                         ProjectRegistration::updateOrCreate(
                             [

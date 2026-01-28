@@ -91,7 +91,8 @@
     "retry": "إعادة المحاولة",
     "notAssigned": "غير معين",
     "members": "أعضاء",
-    "createdBy": "انشأ بواسطة"
+    "createdBy": "انشأ بواسطة",
+    "proposals": "المقترحات"
   },
   "app": {
     "name": "نظام إدارة تقييم مشاريع التخرج",
@@ -390,6 +391,7 @@
     "accept": "قبول",
     "reject": "رفض",
     "remove": "إزالة",
+    "leave": "مغادرة",
     "inviteeId": "معرف الطالب",
     "inviteMessage": "رسالة الدعوة",
     "enterStudentId": "يرجى إدخال معرف الطالب",
@@ -452,8 +454,11 @@
     "deleteSuccess": "تم حذف المجموعة بنجاح",
     "deleteError": "فشل حذف المجموعة",
     "deleting": "جاري الحذف...",
-    "deleteGroupDescription": "يمكن حذف المجموعة فقط إذا لم يكن هناك أي تسجيلات مشاريع سابقة"
-  },
+    "deleteGroupDescription": "يمكن حذف المجموعة فقط إذا لم يكن هناك أي تسجيلات مشاريع سابقة",
+    "onlyLeaderCanLeaveGroup": "يمكن فقط قائد المجموعة مغادرة المجموعة",
+    "cannotDeleteGroupWhileRegisteredInProject": "لا يمكن حذف المجموعة أثناء التسجيل في المشروع",
+    "manageYourGroupMembers": "إدارة أعضاء المجموعة"
+    },
   "theme": {
     "light": "فاتح",
     "dark": "داكن",
@@ -1655,6 +1660,15 @@
     "loadError": "حدث خطأ أثناء تحميل طلبات التسجيل",
     "autoApprove": "الموافقة التلقائية على التسجيل",
     "autoApproveNote": "سيبقى التسجيل قيد الانتظار حتى يتم الموافقة عليه يدوياً",
+    "groupHasApprovedProject": "هذه المجموعة لديها بالفعل مشروع معتمد: {{project}}. يمكن الموافقة على مشروع واحد فقط لكل مجموعة.",
+    "cannotApproveAnother": "لا يمكن الموافقة على مشروع آخر - المجموعة لديها بالفعل مشروع معتمد",
+    "approvedProject": "المشروع المعتمد",
+    "registrationRequests": "طلبات التسجيل",
+    "request": "طلب",
+    "requests": "طلبات",
+    "searchPlaceholder": "البحث في المجموعات والمشاريع...",
+    "allRequests": "جميع الطلبات",
+    "filterByProject": "تصفية حسب المشروع",
     "status": "حالة التسجيل",
     "noRegistrationRequest": "لا يوجد طلب تسجيل",
     "noRegistrationRequestDescription": "لم تقم بتقديم أي طلب تسجيل بعد. تصفح المشاريع المتاحة وسجل مجموعتك.",

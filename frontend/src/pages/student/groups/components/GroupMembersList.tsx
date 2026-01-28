@@ -39,8 +39,8 @@ export function GroupMembersList({ group, onError, onSuccess }: GroupMembersList
 
   return (
     <div>
-      <h4 className="font-semibold mb-3 flex items-center gap-2">
-        {t('groups.members')}
+      <h4 className="font-small mb-3 flex items-center gap-2">
+        {t('groups.manageYourGroupMembers')}
       </h4>
       <div className="space-y-2">
         {group.members.map((member) => (

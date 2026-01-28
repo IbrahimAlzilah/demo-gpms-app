@@ -5,11 +5,13 @@ import { useApproveRegistration, useRejectRegistration } from '../hooks/useRegis
 import { RegistrationDetailsView } from '../components/RegistrationDetailsView'
 import { ManualRegistrationDialog } from '../components/ManualRegistrationDialog'
 import { GroupedRegistrationCard } from '../components/GroupedRegistrationCard'
-import { Card, CardContent, Textarea, Label, Button } from '@/components/ui'
+import { UnifiedGroupCard } from '../components/UnifiedGroupCard'
+import { Card, CardContent, Textarea, Label, Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { LoadingSpinner, ConfirmDialog, BlockContent, useToast } from '@/components/common'
 import type { ProjectRegistration } from '@/types/project.types'
 import { useRegistrationsList } from './RegistrationsList.hook'
-import { AlertCircle, UserPlus, Users } from 'lucide-react'
+import { useUnifiedGroups } from '../hooks/useUnifiedGroups'
+import { AlertCircle, UserPlus, Users, Search } from 'lucide-react'
 import { apiClient } from '@/lib/axios'
 
 export function RegistrationsList() {
@@ -38,6 +40,8 @@ export function RegistrationsList() {
       toastSuccess('registration.manualRegistrationSuccess')
       queryClient.invalidateQueries({ queryKey: ['committee-registrations'] })
       queryClient.invalidateQueries({ queryKey: ['committee-registrations-table'] })
+      queryClient.invalidateQueries({ queryKey: ['committee-registrations-grouped'] })
+      queryClient.invalidateQueries({ queryKey: ['committee-unified-groups'] })
       queryClient.invalidateQueries({ queryKey: ['project-registrations'] })
     },
     onError: (err: any) => {
@@ -45,6 +49,22 @@ export function RegistrationsList() {
     },
   })
 
+  // Use unified groups hook to get groups with proposals and registrations
+  const {
+    unifiedGroups,
+    isLoading: unifiedGroupsLoading,
+    error: unifiedGroupsError,
+    totalCount,
+    pageCount,
+    statusFilter,
+    setStatusFilter,
+    search,
+    setSearch,
+    pagination,
+    setPagination,
+  } = useUnifiedGroups()
+
+  // Keep the old hook for backward compatibility if needed
   const {
     data,
     state,
@@ -63,6 +83,9 @@ export function RegistrationsList() {
       queryClient.invalidateQueries({ queryKey: ['committee-registrations-grouped'] })
       queryClient.invalidateQueries({ queryKey: ['committee-registrations-table'] })
       queryClient.invalidateQueries({ queryKey: ['committee-registrations'] })
+      queryClient.invalidateQueries({ queryKey: ['committee-unified-groups'] })
+      queryClient.invalidateQueries({ queryKey: ['committee-proposals-submissions'] })
+      queryClient.invalidateQueries({ queryKey: ['committee-proposals-supervisor-submissions'] })
       setState((prev) => ({
         ...prev,
         showDialog: false,
@@ -90,6 +113,9 @@ export function RegistrationsList() {
       queryClient.invalidateQueries({ queryKey: ['committee-registrations-grouped'] })
       queryClient.invalidateQueries({ queryKey: ['committee-registrations-table'] })
       queryClient.invalidateQueries({ queryKey: ['committee-registrations'] })
+      queryClient.invalidateQueries({ queryKey: ['committee-unified-groups'] })
+      queryClient.invalidateQueries({ queryKey: ['committee-proposals-submissions'] })
+      queryClient.invalidateQueries({ queryKey: ['committee-proposals-supervisor-submissions'] })
       setState((prev) => ({
         ...prev,
         showDialog: false,
@@ -112,7 +138,7 @@ export function RegistrationsList() {
     }))
   }
 
-  if (data.isLoading) {
+  if (unifiedGroupsLoading) {
     return (
       <Card>
         <CardContent className="pt-6">
@@ -133,13 +159,39 @@ export function RegistrationsList() {
           </Button>
         }
       >
-        {/* Always show grouped view */}
+        {/* Filters */}
+        <div className="mb-4 flex items-center justify-between gap-2 flex-wrap">
+          {/* Search - Left side */}
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute start-3 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={t('registration.searchPlaceholder') || 'Search groups...'}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-9 ps-9"
+            />
+          </div>
+
+          {/* Status Filter - Right side */}
+          <Select
+            value={statusFilter}
+            onValueChange={(value) => setStatusFilter(value)}
+          >
+            <SelectTrigger id="status-filter" className="w-[200px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('registration.allRequests') || 'All Requests'}</SelectItem>
+              <SelectItem value="pending">{t('registration.pending')}</SelectItem>
+              <SelectItem value="approved">{t('registration.approved')}</SelectItem>
+              <SelectItem value="rejected">{t('registration.rejected')}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Unified Groups View */}
         <div className="space-y-4">
-          {data.isLoading ? (
-            <div className="flex justify-center py-8">
-              <LoadingSpinner />
-            </div>
-          ) : data.error ? (
+          {unifiedGroupsError ? (
             <div className="text-center py-8">
               <div className="flex flex-col items-center gap-2">
                 <AlertCircle className="h-8 w-8 text-destructive" />
@@ -147,54 +199,99 @@ export function RegistrationsList() {
                   {t('registration.loadError')}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {data.error instanceof Error ? data.error.message : String(data.error)}
+                  {unifiedGroupsError instanceof Error ? unifiedGroupsError.message : String(unifiedGroupsError)}
                 </p>
               </div>
             </div>
-          ) : data.groupedRequests && Array.isArray(data.groupedRequests) && data.groupedRequests.length > 0 ? (
+          ) : unifiedGroups.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="flex flex-col items-center gap-3">
+                <Users className="h-12 w-12 text-muted-foreground/50" />
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">
+                    {t('registration.noRegistrations')}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {search
+                      ? t('registration.noResultsForSearch') || 'Try adjusting your search criteria'
+                      : t('registration.noRegistrationsDescription') ||
+                      'No registration requests have been submitted yet'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
             <>
-              {data.groupedRequests.map((request) => (
-                <GroupedRegistrationCard
-                  key={request.id}
-                  request={request}
+              {unifiedGroups.map((unifiedGroup) => (
+                <UnifiedGroupCard
+                  key={unifiedGroup.id}
+                  unifiedGroup={unifiedGroup}
+                  onViewProposal={(proposal) => {
+                    // Navigate to proposal view if needed
+                    console.log('View proposal:', proposal.id)
+                  }}
                   onViewRegistration={(registration) => {
                     setState((prev) => ({ ...prev, registrationToViewId: registration.id }))
                   }}
+                  onApproveProposal={undefined}
+                  onRejectProposal={undefined}
+                  onRequestModification={undefined}
+                  onEditProposal={undefined}
+                  onDeleteProposal={undefined}
                   onApproveProject={async (requestId, projectId) => {
-                    const registration = request.projectRegistrations?.find(r => r.projectId === projectId)
-                    if (registration) {
-                      handleActionClick(registration, 'approve')
+                    try {
+                      const request = unifiedGroup.registrationRequests.find(r => r.id === requestId)
+                      const registration = request?.projectRegistrations?.find(r => r.project?.id === projectId)
+                      if (registration) {
+                        await approveRegistration.mutateAsync({
+                          registrationId: registration.id,
+                          comments: undefined,
+                        })
+                        toastSuccess('registration.approveSuccess')
+                        queryClient.invalidateQueries({ queryKey: ['committee-unified-groups'] })
+                      }
+                    } catch (err) {
+                      toastError(err instanceof Error ? err.message : 'registration.approveError')
                     }
                   }}
                   onRejectRequest={async (requestId) => {
-                    const request = data.groupedRequests?.find(r => r.id === requestId)
-                    if (request?.projectRegistrations?.[0]) {
-                      handleActionClick(request.projectRegistrations[0], 'reject')
+                    try {
+                      const request = unifiedGroup.registrationRequests.find(r => r.id === requestId)
+                      if (request?.projectRegistrations?.[0]) {
+                        await rejectRegistration.mutateAsync({
+                          registrationId: request.projectRegistrations[0].id,
+                          comments: t('registration.rejectTitle'),
+                        })
+                        toastSuccess('registration.rejectSuccess')
+                        queryClient.invalidateQueries({ queryKey: ['committee-unified-groups'] })
+                      }
+                    } catch (err) {
+                      toastError(err instanceof Error ? err.message : 'registration.rejectError')
                     }
                   }}
-                  isLoadingAction={(requestId) => {
-                    const request = data.groupedRequests?.find(r => r.id === requestId)
-                    return request?.projectRegistrations?.some(r =>
-                      approveRegistration.isPending || rejectRegistration.isPending
-                    ) || false
+                  isLoadingAction={(id, type) => {
+                    if (type === 'registration') {
+                      return approveRegistration.isPending || rejectRegistration.isPending
+                    }
+                    return false
                   }}
                 />
               ))}
-              {data.groupedPagination && (
+              {pageCount > 1 && (
                 <div className="flex items-center justify-between pt-4">
                   <p className="text-sm text-muted-foreground">
                     {(() => {
-                      const from = ((data.groupedPagination.page - 1) * data.groupedPagination.pageSize) + 1
-                      const to = Math.min(data.groupedPagination.page * data.groupedPagination.pageSize, data.groupedPagination.total)
-                      return `Showing ${from}-${to} of ${data.groupedPagination.total}`
+                      const from = (pagination.pageIndex * pagination.pageSize) + 1
+                      const to = Math.min((pagination.pageIndex + 1) * pagination.pageSize, totalCount)
+                      return `Showing ${from}-${to} of ${totalCount}`
                     })()}
                   </p>
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled={!data.groupedPagination || data.groupedPagination.page <= 1}
-                      onClick={() => setGroupedPagination((prev) => ({
+                      disabled={pagination.pageIndex === 0}
+                      onClick={() => setPagination((prev) => ({
                         ...prev,
                         pageIndex: prev.pageIndex - 1
                       }))}
@@ -204,8 +301,8 @@ export function RegistrationsList() {
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled={!data.groupedPagination || data.groupedPagination.page >= data.groupedPagination.totalPages}
-                      onClick={() => setGroupedPagination((prev) => ({
+                      disabled={pagination.pageIndex >= pageCount - 1}
+                      onClick={() => setPagination((prev) => ({
                         ...prev,
                         pageIndex: prev.pageIndex + 1
                       }))}
@@ -216,24 +313,6 @@ export function RegistrationsList() {
                 </div>
               )}
             </>
-          ) : (
-            <div className="text-center py-12">
-              <div className="flex flex-col items-center gap-3">
-                <Users className="h-12 w-12 text-muted-foreground/50" />
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">
-                    {t('registration.noRegistrations')}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {state.statusFilter !== 'all'
-                      ? t('registration.noRegistrationsForStatus', { status: state.statusFilter }) ||
-                      `No ${state.statusFilter} registrations found`
-                      : t('registration.noRegistrationsDescription') ||
-                      'No registration requests have been submitted yet'}
-                  </p>
-                </div>
-              </div>
-            </div>
           )}
         </div>
       </BlockContent>
