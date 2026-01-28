@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { DataTable, Button } from '@/components/ui'
-import { BlockContent, ModalDialog } from '@/components/common'
+import { BlockContent, ModalDialog, ConfirmDialog } from '@/components/common'
 import { useToast } from '@/components/common'
 import {
   AlertCircle,
@@ -15,7 +15,7 @@ import {
 import { createProposalColumns } from '../components/table'
 import { EmptyProposalsState } from '../components/EmptyProposalsState'
 import { useProposalsList } from './ProposalsList.hook'
-import { useResubmitProposal } from '../hooks/useProposalOperations'
+import { useResubmitProposal, useDeleteProposal } from '../hooks/useProposalOperations'
 import { useAuthStore } from '@/pages/auth/login'
 import { ROUTES } from '@/lib/constants'
 import { cn } from '@/lib/utils'
@@ -30,8 +30,10 @@ export function ProposalsList() {
   const { user } = useAuthStore()
   const [assignmentProposal, setAssignmentProposal] = useState<Proposal | null>(null)
   const [showLockModal, setShowLockModal] = useState(false)
+  const [proposalToDelete, setProposalToDelete] = useState<Proposal | null>(null)
 
   const resubmitProposal = useResubmitProposal()
+  const deleteProposal = useDeleteProposal()
   const {
     data,
     state,
@@ -94,6 +96,9 @@ export function ProposalsList() {
         },
         onAssign: (proposal) => {
           setAssignmentProposal(proposal)
+        },
+        onDelete: (proposal) => {
+          setProposalToDelete(proposal)
         },
         t,
       }),
@@ -326,6 +331,32 @@ export function ProposalsList() {
           setAssignmentProposal(null)
           // Refresh will be handled by query invalidation
         }}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={!!proposalToDelete}
+        onClose={() => setProposalToDelete(null)}
+        onConfirm={async () => {
+          if (!proposalToDelete) return
+          try {
+            await deleteProposal.mutateAsync(proposalToDelete.id)
+            toastSuccess('committee.proposal.deleteSuccess')
+          } catch (error: any) {
+            toastError(error?.message || 'committee.proposal.deleteError')
+          } finally {
+            setProposalToDelete(null)
+          }
+        }}
+        title={t('committee.proposal.confirmDelete')}
+        description={
+          proposalToDelete
+            ? t('committee.proposal.confirmDeleteDescription', { title: proposalToDelete.title })
+            : ''
+        }
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
+        variant="destructive"
       />
     </div>
   )

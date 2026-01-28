@@ -40,7 +40,6 @@ export function ProjectsCommitteeDashboardPage() {
       chapter_submission_phase_2: t('phase.chapterSubmissionPhase2', { defaultValue: 'Chapters Submission – Phase 2' }),
       final_defense_phase_2: t('phase.finalDefensePhase2', { defaultValue: 'Final Defense – Phase 2' }),
       final_project_document_submission: t('phase.finalProjectDocumentSubmission', { defaultValue: 'Final Project Document Submission' }),
-      grade_approval: t('phase.gradeApproval', { defaultValue: 'Grade Approval' }),
       general: t('phase.general', { defaultValue: 'General' }),
     }
     return labels[type] || type

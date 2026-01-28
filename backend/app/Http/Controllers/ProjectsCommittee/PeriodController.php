@@ -233,19 +233,34 @@ class PeriodController extends Controller
     }
 
     /**
-     * Send activation notifications to all students for a period
+     * Send activation notifications for a period.
+     *
+     * Requirements for Proposal Submission Period:
+     * - Notify supervisors only
+     * - Do NOT notify students
+     * For other periods, keep existing student notifications behaviour.
      */
     protected function sendPeriodActivationNotifications(TimePeriod $period): void
     {
-        $students = \App\Models\User::role('student')->get(['id']);
-        if ($students->isEmpty()) {
+        // Determine recipients based on period type
+        if ($period->type === \App\Enums\TimePeriodType::PROPOSAL_SUBMISSION->value) {
+            // Proposal Submission Period -> supervisors only
+            $recipients = \App\Models\User::where('role', 'supervisor')
+                ->where('status', 'active')
+                ->get(['id']);
+        } else {
+            // Default behaviour: notify students (backward compatible)
+            $recipients = \App\Models\User::role('student')->get(['id']);
+        }
+
+        if ($recipients->isEmpty()) {
             return;
         }
 
         $now = now();
-        $notifications = $students->map(function ($student) use ($period, $now) {
+        $notifications = $recipients->map(function ($user) use ($period, $now) {
             return [
-                'user_id' => $student->id,
+                'user_id' => $user->id,
                 'message' => json_encode([
                     'key' => 'notifications.periods.activated',
                     'params' => [

@@ -465,9 +465,9 @@ class ProposalService
     public function delete(Proposal $proposal): bool
     {
         return DB::transaction(function () use ($proposal) {
-            // Delete related notifications
-            \App\Models\Notification::where('notifiable_type', 'proposal')
-                ->where('notifiable_id', $proposal->id)
+            // Delete related notifications (using correct columns)
+            \App\Models\Notification::where('related_entity_type', 'proposal')
+                ->where('related_entity_id', $proposal->id)
                 ->delete();
 
             // Note: We do NOT delete the project (project_id) as it may be used by other proposals

@@ -27,13 +27,13 @@ class ProposalPolicy
         if ($proposal->student_group_id) {
             $studentGroup = \App\Models\StudentGroup::where('status', 'active')
                 ->find($proposal->student_group_id);
-            
+
             if ($studentGroup) {
                 // Check if user is the leader
                 if ($studentGroup->leader_id === $user->id) {
                     return true;
                 }
-                
+
                 // Check if user is a member of the group
                 if ($studentGroup->hasMember($user->id)) {
                     return true;
@@ -125,23 +125,35 @@ class ProposalPolicy
             return true;
         }
 
-        // For students: must be submitter AND proposal must be modifiable
-        if ($proposal->submitter_id !== $user->id || !$proposal->status->canBeModified()) {
-            return false;
+        // Supervisors: can delete their own supervisor-origin proposals (no group)
+        // ONLY while status is strictly pending_review.
+        if ($user->isSupervisor()) {
+            return $proposal->submitter_id === $user->id
+                && $proposal->student_group_id === null
+                && $proposal->status === ProposalStatus::PENDING_REVIEW;
         }
 
-        // ENFORCE: If proposal belongs to a group, user must be the group leader
-        if ($proposal->student_group_id) {
-            $studentGroup = \App\Models\StudentGroup::where('status', 'active')
-                ->find($proposal->student_group_id);
-            if (!$studentGroup || $studentGroup->leader_id !== $user->id) {
+        // Students: must be submitter AND group leader when proposal belongs to a group,
+        // and proposal must still be modifiable (pending or requires_modification).
+        if ($user->isStudent()) {
+            if ($proposal->submitter_id !== $user->id || !$proposal->status?->canBeModified()) {
                 return false;
             }
-        } else {
-            // ENFORCE: Solo proposals are not allowed - must be in a group
+
+            if ($proposal->student_group_id) {
+                $studentGroup = \App\Models\StudentGroup::where('status', 'active')
+                    ->find($proposal->student_group_id);
+                if (!$studentGroup || $studentGroup->leader_id !== $user->id) {
+                    return false;
+                }
+
+                return true;
+            }
+
+            // Solo student proposals without a group are not allowed to be deleted
             return false;
         }
 
-        return true;
+        return false;
     }
 }

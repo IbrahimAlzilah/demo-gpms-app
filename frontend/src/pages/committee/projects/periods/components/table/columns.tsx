@@ -29,7 +29,6 @@ export function createPeriodColumns({
     chapter_submission_phase_2: t('committee.periods.types.chapterSubmissionPhase2'),
     final_defense_phase_2: t('committee.periods.types.finalDefensePhase2'),
     final_project_document_submission: t('committee.periods.types.finalProjectDocumentSubmission'),
-    grade_approval: t('committee.periods.types.gradeApproval'),
     general: t('committee.periods.types.general'),
   }
 

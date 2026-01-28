@@ -7,6 +7,7 @@ use App\Http\Resources\ProposalResource;
 use App\Http\Traits\HasTableQuery;
 use App\Models\Proposal;
 use App\Services\ProposalService;
+use App\Enums\ProposalStatus;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -74,7 +75,16 @@ class ProposalController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => new ProposalResource($proposal->load(['submitter', 'reviewer', 'project'])),
+            'data' => new ProposalResource(
+                $proposal->load([
+                    'submitter',
+                    'reviewer',
+                    'project',
+                    'studentGroup',
+                    'assignedToGroup',
+                    'proposedSupervisor',
+                ])
+            ),
         ]);
     }
 
@@ -159,7 +169,7 @@ class ProposalController extends Controller
     public function getSubmissionContext(Request $request): JsonResponse
     {
         $user = $request->user();
-        
+
         // Get ALL proposals submitted by the supervisor (to check statuses)
         $allProposals = Proposal::where('submitter_id', $user->id)
             ->whereNull('student_group_id') // Only supervisor proposals
@@ -207,7 +217,7 @@ class ProposalController extends Controller
                 \App\Enums\ProposalStatus::REQUIRES_MODIFICATION
             ]);
         });
-        
+
         return response()->json([
             'success' => true,
             'data' => [
@@ -225,13 +235,13 @@ class ProposalController extends Controller
     {
         $user = $request->user();
         $timeWindowService = app(\App\Services\TimeWindowService::class);
-        
+
         // Check which window is active
         $isProposalSubmissionWindow = $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::PROPOSAL_SUBMISSION);
-        
+
         // Supervisors can update proposals during active window OR when proposal requires modification
         $canUpdate = $isProposalSubmissionWindow;
-        
+
         if (!$canUpdate) {
             // Check if any proposal requires modification (allows editing even outside windows)
             $proposalIds = $request->input('updates', []);
@@ -243,7 +253,7 @@ class ProposalController extends Controller
                     ->where('status', 'requires_modification')
                     ->exists();
             }
-            
+
             if (!$hasModificationRequired) {
                 return response()->json([
                     'success' => false,
@@ -251,7 +261,7 @@ class ProposalController extends Controller
                 ], 403);
             }
         }
-        
+
         $validated = $request->validate([
             'updates' => 'required|array',
             'updates.*.id' => 'required|exists:proposals,id',
@@ -293,11 +303,11 @@ class ProposalController extends Controller
                 'message' => 'Editing is only allowed when all proposals are in pending review or requires modification status.',
             ], 403);
         }
-        
+
         // Validate updates - check authorization and ownership for each proposal
         foreach ($validated['updates'] as $updateData) {
             $proposal = Proposal::findOrFail($updateData['id']);
-            
+
             // Check if user can update this proposal
             if ($proposal->submitter_id !== $user->id) {
                 return response()->json([
@@ -321,7 +331,7 @@ class ProposalController extends Controller
                     'message' => "You can only update proposals you submitted.",
                 ], 403);
             }
-            
+
             // Ensure proposal is in editable status
             if (!in_array($proposal->status, [
                 \App\Enums\ProposalStatus::PENDING_REVIEW,
@@ -333,7 +343,7 @@ class ProposalController extends Controller
                 ], 403);
             }
         }
-        
+
         // Perform batch update
         $result = $this->proposalService->updateBatch(
             $validated['updates'],
@@ -341,10 +351,10 @@ class ProposalController extends Controller
             $user,
             null // Supervisors don't have student_group_id
         );
-        
+
         $allProposals = array_merge($result['updated'], $result['created']);
         $proposalIds = collect($allProposals)->pluck('id')->toArray();
-        
+
         return response()->json([
             'success' => true,
             'data' => ProposalResource::collection(Proposal::whereIn('id', $proposalIds)->with(['submitter', 'reviewer', 'project'])->get()),
@@ -356,9 +366,9 @@ class ProposalController extends Controller
     {
         $this->authorize('delete', $proposal);
 
-        // Only allow deletion if proposal is in draft or pending_review status
-        // Once approved or rejected, it should not be deleted
-        if (!in_array($proposal->status, ['draft', 'pending_review', 'requires_modification'])) {
+        // Supervisors can only delete proposals while they are still pending review.
+        // Once approved / rejected (or moved to any final state), deletion is not allowed.
+        if ($proposal->status !== ProposalStatus::PENDING_REVIEW) {
             return response()->json([
                 'success' => false,
                 'message' => 'Cannot delete proposal that has been reviewed',
@@ -378,6 +388,167 @@ class ProposalController extends Controller
                 'message' => $e->getMessage(),
             ], 400);
         }
+    }
+
+    /**
+     * List active student groups that can be assigned to a proposal (supervisor view)
+     */
+    public function getStudentGroups(Request $request): JsonResponse
+    {
+        // Only supervisors can query groups for assignment
+        $user = $request->user();
+        if (!$user || !$user->isSupervisor()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only supervisors can access student groups for assignment',
+            ], 403);
+        }
+
+        $groups = \App\Models\StudentGroup::with(['leader'])
+            ->where('status', 'active')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($group) {
+                return [
+                    'id' => (string) $group->id,
+                    'name' => $group->name,
+                    'code' => $group->group_code,
+                    'leader' => $group->leader ? [
+                        'id' => (string) $group->leader->id,
+                        'name' => $group->leader->name,
+                        'email' => $group->leader->email,
+                    ] : null,
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $groups,
+        ]);
+    }
+
+    /**
+     * Directly assign a student group to a supervisor proposal
+     * and record supervision intent.
+     */
+    public function assignToGroup(Request $request, Proposal $proposal): JsonResponse
+    {
+        $this->authorize('update', $proposal);
+
+        $user = $request->user();
+
+        // Only allow assignment for proposals submitted by this supervisor
+        if ($proposal->submitter_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You can only assign your own proposals to groups',
+            ], 403);
+        }
+
+        // Only pending_review proposals can be assigned
+        if (!$proposal->isPending()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only proposals in pending review status can be assigned to a group',
+            ], 400);
+        }
+
+        $validated = $request->validate([
+            'student_group_id' => 'required|exists:student_groups,id',
+        ]);
+
+        $group = \App\Models\StudentGroup::where('id', $validated['student_group_id'])
+            ->where('status', 'active')
+            ->first();
+
+        if (!$group) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Selected group is not active or does not exist',
+            ], 400);
+        }
+
+        // Link proposal to group and record supervisor intent
+        $proposal->update([
+            'student_group_id' => $group->id,
+            'assigned_to_group_id' => $group->id,
+            'assignment_type' => 'direct',
+            'assigned_at' => now(),
+            'proposed_supervisor_id' => $proposal->proposed_supervisor_id ?: $user->id,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => new ProposalResource(
+                $proposal->fresh()->load(['submitter', 'proposedSupervisor', 'studentGroup', 'assignedToGroup', 'project'])
+            ),
+            'message' => 'Proposal assigned to group successfully',
+        ]);
+    }
+
+    /**
+     * Request assignment of a supervisor proposal to a student group,
+     * with optional notes explaining the supervision intent.
+     */
+    public function requestAssignment(Request $request, Proposal $proposal): JsonResponse
+    {
+        $this->authorize('update', $proposal);
+
+        $user = $request->user();
+
+        if ($proposal->submitter_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You can only request assignment for your own proposals',
+            ], 403);
+        }
+
+        if (!$proposal->isPending()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only proposals in pending review status can be assigned to a group',
+            ], 400);
+        }
+
+        $validated = $request->validate([
+            'student_group_id' => 'required|exists:student_groups,id',
+            'notes' => 'nullable|string',
+        ]);
+
+        $group = \App\Models\StudentGroup::where('id', $validated['student_group_id'])
+            ->where('status', 'active')
+            ->first();
+
+        if (!$group) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Selected group is not active or does not exist',
+            ], 400);
+        }
+
+        $updateData = [
+            'student_group_id' => $group->id,
+            'assigned_to_group_id' => $group->id,
+            'assignment_type' => 'request',
+            'assigned_at' => now(),
+            'proposed_supervisor_id' => $proposal->proposed_supervisor_id ?: $user->id,
+        ];
+
+        // Optionally append notes to review_notes for committee visibility (without changing logic)
+        if (!empty($validated['notes'])) {
+            $prefix = $proposal->review_notes ? $proposal->review_notes . "\n\n" : '';
+            $updateData['review_notes'] = $prefix . 'Supervisor assignment request notes: ' . $validated['notes'];
+        }
+
+        $proposal->update($updateData);
+
+        return response()->json([
+            'success' => true,
+            'data' => new ProposalResource(
+                $proposal->fresh()->load(['submitter', 'proposedSupervisor', 'studentGroup', 'assignedToGroup', 'project'])
+            ),
+            'message' => 'Assignment request recorded successfully',
+        ]);
     }
 
     protected function applySearch($query, string $search)

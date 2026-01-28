@@ -98,27 +98,35 @@ class SendDeadlineReminders extends Command
     private function getUsersForPeriodType(string $periodType): \Illuminate\Database\Eloquent\Collection
     {
         return match ($periodType) {
-            TimePeriodType::PROPOSAL_SUBMISSION->value => User::whereIn('role', ['student', 'supervisor'])
+            // Proposal Submission Period:
+            // Requirements: notify supervisors only, do NOT notify students
+            TimePeriodType::PROPOSAL_SUBMISSION->value => User::where('role', 'supervisor')
                 ->where('status', 'active')
                 ->get(),
+
             TimePeriodType::PROJECT_REGISTRATION->value => User::where('role', 'student')
                 ->where('status', 'active')
                 ->get(),
+
             TimePeriodType::CHAPTER_SUBMISSION_PHASE_1->value,
             TimePeriodType::CHAPTER_SUBMISSION_PHASE_2->value,
             TimePeriodType::FINAL_PROJECT_DOCUMENT_SUBMISSION->value => User::where('role', 'student')
                 ->where('status', 'active')
                 ->get(),
+
             TimePeriodType::FINAL_DEFENSE_PHASE_1->value,
             TimePeriodType::FINAL_DEFENSE_PHASE_2->value => User::whereIn('role', ['student', 'projects_committee', 'discussion_committee'])
                 ->where('status', 'active')
                 ->get(),
+
             TimePeriodType::GRADE_APPROVAL->value => User::where('role', 'projects_committee')
                 ->where('status', 'active')
                 ->get(),
+
             TimePeriodType::GENERAL->value => User::whereIn('role', ['student', 'supervisor', 'projects_committee', 'discussion_committee'])
                 ->where('status', 'active')
                 ->get(),
+
             default => collect([]),
         };
     }

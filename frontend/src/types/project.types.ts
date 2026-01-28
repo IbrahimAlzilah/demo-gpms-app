@@ -59,6 +59,10 @@ export interface Proposal extends BaseEntity {
   studentGroup?: StudentGroup;
   targetProjectId?: string;
   targetProject?: Project;
+  assignedToGroupId?: string | null;
+  assignedToGroup?: StudentGroup | null;
+  assignmentType?: "direct" | "request" | null;
+  assignedAt?: string | null;
 }
 
 export interface ProjectGroup extends BaseEntity {
@@ -187,7 +191,11 @@ export interface GroupInvitation extends BaseEntity {
   message?: string;
 }
 
-export type GroupJoinRequestStatus = "pending" | "approved" | "rejected" | "cancelled";
+export type GroupJoinRequestStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "cancelled";
 
 export interface GroupJoinRequest extends BaseEntity {
   groupId: string;

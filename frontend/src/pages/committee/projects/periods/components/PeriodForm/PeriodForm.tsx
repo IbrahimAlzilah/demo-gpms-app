@@ -101,7 +101,6 @@ export function PeriodForm({
     { value: 'chapter_submission_phase_2', label: t('committee.periods.types.chapterSubmissionPhase2') },
     { value: 'final_defense_phase_2', label: t('committee.periods.types.finalDefensePhase2') },
     { value: 'final_project_document_submission', label: t('committee.periods.types.finalProjectDocumentSubmission') },
-    { value: 'grade_approval', label: t('committee.periods.types.gradeApproval') },
     { value: 'general', label: t('committee.periods.types.general') },
   ]
 

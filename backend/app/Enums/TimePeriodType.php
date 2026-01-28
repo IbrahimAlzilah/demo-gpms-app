@@ -26,7 +26,6 @@ enum TimePeriodType: string
             self::CHAPTER_SUBMISSION_PHASE_2 => 'تسليم الفصول - المرحلة الثانية',
             self::FINAL_DEFENSE_PHASE_2 => 'المناقشة النهائية - المرحلة الثانية',
             self::FINAL_PROJECT_DOCUMENT_SUBMISSION => 'تسليم وثائق المشروع النهائية',
-            self::GRADE_APPROVAL => 'اعتماد الدرجات',
             self::GENERAL => 'عام',
         };
     }
@@ -42,7 +41,6 @@ enum TimePeriodType: string
             self::CHAPTER_SUBMISSION_PHASE_2 => 'فترة تسليم الفصول - المرحلة الثانية',
             self::FINAL_DEFENSE_PHASE_2 => 'فترة المناقشة النهائية - المرحلة الثانية',
             self::FINAL_PROJECT_DOCUMENT_SUBMISSION => 'فترة تسليم وثائق المشروع النهائية',
-            self::GRADE_APPROVAL => 'فترة اعتماد الدرجات النهائية',
             self::GENERAL => 'فترة عامة - تسمح بتمكين جميع الفترات السابقة',
         };
     }

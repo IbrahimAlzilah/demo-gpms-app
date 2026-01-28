@@ -3,7 +3,7 @@ import { DataTableColumnHeader } from '@/components/ui/data-table/data-table-col
 import { StatusBadge } from '@/components/common/StatusBadge'
 import { ActionsDropdown } from '@/components/common/ActionsDropdown'
 import type { Proposal } from '@/types/project.types'
-import { Eye, Edit, Users } from 'lucide-react'
+import { Eye, Edit, Users, Trash2 } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
 import type { ProposalTableColumnsProps } from '../../types/Proposals.types'
 
@@ -11,6 +11,7 @@ export function createProposalColumns({
   onView,
   onEdit,
   onAssign,
+  onDelete,
   t,
 }: ProposalTableColumnsProps): ColumnDef<Proposal>[] {
   return [
@@ -97,8 +98,20 @@ export function createProposalColumns({
             label: t('proposal.assignToGroup'),
             icon: Users,
             onClick: () => onAssign?.(proposal),
-            hidden: (row: Proposal) => !onAssign || !['pending_review', 'approved'].includes(row.status) || !!row.assignedToGroupId,
+            // Only allow assignment while proposal is still pending review and not already assigned
+            hidden: (row: Proposal) =>
+              !onAssign || row.status !== 'pending_review' || !!row.assignedToGroupId,
             variant: 'default' as const,
+          },
+          {
+            id: 'delete',
+            label: t('common.delete'),
+            icon: Trash2,
+            onClick: () => onDelete?.(proposal),
+            // Only allow delete while proposal is pending review (matches business rule)
+            hidden: (row: Proposal) =>
+              !onDelete || row.status !== 'pending_review',
+            variant: 'destructive' as const,
             separator: true,
           },
         ]

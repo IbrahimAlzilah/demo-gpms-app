@@ -90,6 +90,18 @@ export function ProposalsView() {
         actions={
           <div className="flex items-center gap-2">
             <StatusBadge status={proposal.status} />
+            {proposal.studentGroup && (
+              <span className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-primary/5 border border-primary/20 text-primary">
+                {t('proposal.studentGroup')}: {proposal.studentGroup.name || proposal.studentGroup.groupCode || `#${proposal.studentGroup.id}`}
+              </span>
+            )}
+            {proposal.assignmentType && (
+              <span className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-muted border border-border/50 text-muted-foreground">
+                {proposal.assignmentType === 'direct'
+                  ? t('proposal.directAssignment')
+                  : t('proposal.requestAssignment')}
+              </span>
+            )}
             <Button variant="outline" onClick={() => navigate(ROUTES.SUPERVISOR.MY_PROPOSALS)}>
               <ArrowLeft className="size-4 ltr:rotate-180" />
               {t('common.back')}
