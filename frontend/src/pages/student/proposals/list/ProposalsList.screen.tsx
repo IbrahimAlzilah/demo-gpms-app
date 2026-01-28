@@ -11,7 +11,6 @@ import {
   Edit,
   Eye,
   PlusCircle,
-  ArrowRight
 } from 'lucide-react'
 import { createProposalColumns } from '../components/table'
 // import { StatisticsCards } from '../components/StatisticsCards'
@@ -31,7 +30,20 @@ export function ProposalsList() {
   const { toastSuccess, toastError } = useToast()
   const { user } = useAuthStore()
   const { data: studentGroup } = useMyGroup()
-  const { isPeriodActive: isSubmissionPeriodActive, isLoading: isPeriodLoading } = usePeriodCheck('proposal_submission')
+  // Period rules:
+  // - Students can submit proposals only during the Project Registration period
+  // - Student submissions must be disabled during the Proposal Submission period
+  const {
+    isPeriodActive: isRegistrationPeriodActive,
+    isLoading: isRegistrationLoading,
+  } = usePeriodCheck('project_registration')
+  const {
+    isPeriodActive: isProposalSubmissionActive,
+    isLoading: isProposalLoading,
+  } = usePeriodCheck('proposal_submission')
+
+  const isStudentSubmissionAllowed = isRegistrationPeriodActive && !isProposalSubmissionActive
+  const isPeriodLoading = isRegistrationLoading || isProposalLoading
   const [showLockModal, setShowLockModal] = useState(false)
   const [showReadOnlyModal, setShowReadOnlyModal] = useState(false)
 
@@ -126,13 +138,7 @@ export function ProposalsList() {
   const [showNoGroupModal, setShowNoGroupModal] = useState(false)
 
   const handleSubmitClick = async () => {
-    // First check if proposal submission period is active
-    if (!isSubmissionPeriodActive) {
-      toastError('proposal.submissionPeriodClosed')
-      return
-    }
-
-    // Then check if student has a group at all
+    // First check if student has a group at all
     if (!studentGroup) {
       setShowNoGroupModal(true)
       return
@@ -144,9 +150,10 @@ export function ProposalsList() {
       return
     }
 
-    // Then check if proposal submission period is active
-    if (!isSubmissionPeriodActive) {
-      toastError('proposal.submissionPeriodClosed')
+    // Then check if current windows allow student submissions:
+    // Must be within project_registration window AND outside proposal_submission window
+    if (!isStudentSubmissionAllowed) {
+      toastError('proposal.studentSubmissionNotAllowedNow')
       return
     }
 
@@ -217,16 +224,19 @@ export function ProposalsList() {
         <Button
           variant="default"
           onClick={handleSubmitClick}
-          // disabled={!isSubmissionPeriodActive || isPeriodLoading}
-          disabled={isPeriodLoading}
-          title={!isSubmissionPeriodActive ? t('proposal.submissionPeriodClosed') : undefined}
+          disabled={isPeriodLoading || !isStudentSubmissionAllowed}
+          title={
+            !isStudentSubmissionAllowed
+              ? t('proposal.studentSubmissionNotAllowedNow')
+              : undefined
+          }
         >
           <PlusCircle className="size-4" />
           {t('proposal.submitNew')}
         </Button>
       )
     },
-    [t, canSubmit, hasSubmittedProposals, handleSubmitClick, navigate, isSubmissionPeriodActive, isPeriodLoading]
+    [t, canSubmit, hasSubmittedProposals, handleSubmitClick, navigate, isStudentSubmissionAllowed, isPeriodLoading]
   )
 
   const pageTitle = isMyProposals

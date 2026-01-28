@@ -29,21 +29,47 @@ class ProposalService
             'status' => 'pending_review',
         ]);
 
-        // Notify projects committee members about new proposal
-        $committeeMembers = User::where('role', 'projects_committee')
-            ->where('status', 'active')
-            ->pluck('id')
-            ->toArray();
+        // Determine notification recipients based on period type and submitter role
+        $timeWindowService = app(\App\Services\TimeWindowService::class);
+        $isProposalSubmissionPeriod = $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::PROPOSAL_SUBMISSION);
+        $isSupervisorSubmitter = $submitter->isSupervisor();
 
-        if (!empty($committeeMembers)) {
-            $submitterName = $proposal->studentGroup ? $proposal->studentGroup->name : $submitter->name;
-            $this->notificationService->createForUsers(
-                $committeeMembers,
-                "تم تقديم مقترح جديد: {$proposal->title} من قبل {$submitterName}",
-                'proposal_submitted',
-                'proposal',
-                $proposal->id
-            );
+        // During Proposal Submission Period: Only notify supervisors if submitter is supervisor
+        // Otherwise, notify committee members
+        if ($isProposalSubmissionPeriod && $isSupervisorSubmitter) {
+            // Notify only supervisors during Proposal Submission Period
+            $supervisors = User::where('role', 'supervisor')
+                ->where('status', 'active')
+                ->pluck('id')
+                ->toArray();
+
+            if (!empty($supervisors)) {
+                $submitterName = $submitter->name;
+                $this->notificationService->createForUsers(
+                    $supervisors,
+                    "تم تقديم مقترح جديد: {$proposal->title} من قبل {$submitterName}",
+                    'proposal_submitted',
+                    'proposal',
+                    $proposal->id
+                );
+            }
+        } else {
+            // Notify projects committee members about new proposal (default behavior)
+            $committeeMembers = User::where('role', 'projects_committee')
+                ->where('status', 'active')
+                ->pluck('id')
+                ->toArray();
+
+            if (!empty($committeeMembers)) {
+                $submitterName = $proposal->studentGroup ? $proposal->studentGroup->name : $submitter->name;
+                $this->notificationService->createForUsers(
+                    $committeeMembers,
+                    "تم تقديم مقترح جديد: {$proposal->title} من قبل {$submitterName}",
+                    'proposal_submitted',
+                    'proposal',
+                    $proposal->id
+                );
+            }
         }
 
         return $proposal;
@@ -497,13 +523,12 @@ class ProposalService
                 }
             }
 
-            // Notify projects committee members about new proposals (single notification for batch)
-            $committeeMembers = User::where('role', 'projects_committee')
-                ->where('status', 'active')
-                ->pluck('id')
-                ->toArray();
+            // Determine notification recipients based on period type and submitter role
+            $timeWindowService = app(\App\Services\TimeWindowService::class);
+            $isProposalSubmissionPeriod = $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::PROPOSAL_SUBMISSION);
+            $isSupervisorSubmitter = $submitter->isSupervisor();
 
-            if (!empty($committeeMembers) && !empty($createdProposals)) {
+            if (!empty($createdProposals)) {
                 $submitterName = $studentGroupId
                     ? ($createdProposals[0]->studentGroup?->name ?? $submitter->name)
                     : $submitter->name;
@@ -512,13 +537,41 @@ class ProposalService
                     ? "تم تقديم مقترح جديد: {$createdProposals[0]->title} من قبل {$submitterName}"
                     : "تم تقديم {$count} مقترحات جديدة من قبل {$submitterName}";
 
-                $this->notificationService->createForUsers(
-                    $committeeMembers,
-                    $message,
-                    'proposal_submitted',
-                    'proposal',
-                    $createdProposals[0]->id
-                );
+                // During Proposal Submission Period: Only notify supervisors if submitter is supervisor
+                // Otherwise, notify committee members
+                if ($isProposalSubmissionPeriod && $isSupervisorSubmitter) {
+                    // Notify only supervisors during Proposal Submission Period
+                    $supervisors = User::where('role', 'supervisor')
+                        ->where('status', 'active')
+                        ->pluck('id')
+                        ->toArray();
+
+                    if (!empty($supervisors)) {
+                        $this->notificationService->createForUsers(
+                            $supervisors,
+                            $message,
+                            'proposal_submitted',
+                            'proposal',
+                            $createdProposals[0]->id
+                        );
+                    }
+                } else {
+                    // Notify projects committee members about new proposals (default behavior)
+                    $committeeMembers = User::where('role', 'projects_committee')
+                        ->where('status', 'active')
+                        ->pluck('id')
+                        ->toArray();
+
+                    if (!empty($committeeMembers)) {
+                        $this->notificationService->createForUsers(
+                            $committeeMembers,
+                            $message,
+                            'proposal_submitted',
+                            'proposal',
+                            $createdProposals[0]->id
+                        );
+                    }
+                }
             }
 
             return $createdProposals;

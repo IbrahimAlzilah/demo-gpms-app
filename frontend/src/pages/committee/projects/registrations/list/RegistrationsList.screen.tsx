@@ -4,13 +4,16 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useApproveRegistration, useRejectRegistration } from '../hooks/useRegistrationOperations'
 import { RegistrationDetailsView } from '../components/RegistrationDetailsView'
 import { ManualRegistrationDialog } from '../components/ManualRegistrationDialog'
-import { GroupedRegistrationCard } from '../components/GroupedRegistrationCard'
+// Kept for backward compatibility (legacy grouped view)
+// import { GroupedRegistrationCard } from '../components/GroupedRegistrationCard'
 import { UnifiedGroupCard } from '../components/UnifiedGroupCard'
 import { Card, CardContent, Textarea, Label, Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { LoadingSpinner, ConfirmDialog, BlockContent, useToast } from '@/components/common'
-import type { ProjectRegistration } from '@/types/project.types'
+// import type { ProjectRegistration } from '@/types/project.types'
 import { useRegistrationsList } from './RegistrationsList.hook'
 import { useUnifiedGroups } from '../hooks/useUnifiedGroups'
+import { committeeProjectService } from '../../announce-projects/api/project.service'
+import { useQuery } from '@tanstack/react-query'
 import { AlertCircle, UserPlus, Users, Search } from 'lucide-react'
 import { apiClient } from '@/lib/axios'
 
@@ -22,6 +25,19 @@ export function RegistrationsList() {
 
   const approveRegistration = useApproveRegistration()
   const rejectRegistration = useRejectRegistration()
+
+  // Fetch available projects to enable per-project filtering of requesting groups
+  const { data: availableProjects } = useQuery({
+    queryKey: ['committee-registration-projects-for-filter'],
+    queryFn: async () => {
+      const result = await committeeProjectService.getTableData(
+        { page: 1, pageSize: 1000 },
+        'available_for_registration'
+      )
+      return result.data || []
+    },
+    staleTime: 5 * 60 * 1000,
+  })
 
   const manualRegisterMutation = useMutation({
     mutationFn: async ({ projectId, groupId, autoApprove }: {
@@ -60,16 +76,18 @@ export function RegistrationsList() {
     setStatusFilter,
     search,
     setSearch,
+    projectId,
+    setProjectId,
     pagination,
     setPagination,
   } = useUnifiedGroups()
 
   // Keep the old hook for backward compatibility if needed
   const {
-    data,
+    // legacyData,
     state,
     setState,
-    setGroupedPagination,
+    // setGroupedPagination,
   } = useRegistrationsList()
 
   const handleApprove = async () => {
@@ -128,15 +146,7 @@ export function RegistrationsList() {
     }
   }
 
-  const handleActionClick = (registration: ProjectRegistration, actionType: 'approve' | 'reject') => {
-    setState((prev) => ({
-      ...prev,
-      selectedRegistration: registration,
-      action: actionType,
-      comments: '',
-      showDialog: true,
-    }))
-  }
+  // Legacy table actions are no longer used; unified view handles current flow.
 
   if (unifiedGroupsLoading) {
     return (
@@ -172,21 +182,47 @@ export function RegistrationsList() {
             />
           </div>
 
-          {/* Status Filter - Right side */}
-          <Select
-            value={statusFilter}
-            onValueChange={(value) => setStatusFilter(value)}
-          >
-            <SelectTrigger id="status-filter" className="w-[200px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t('registration.allRequests') || 'All Requests'}</SelectItem>
-              <SelectItem value="pending">{t('registration.pending')}</SelectItem>
-              <SelectItem value="approved">{t('registration.approved')}</SelectItem>
-              <SelectItem value="rejected">{t('registration.rejected')}</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Project Filter - show all groups requesting the same project */}
+            {availableProjects && availableProjects.length > 0 && (
+              <Select
+                value={projectId || 'all'}
+                onValueChange={(value) => setProjectId(value === 'all' ? undefined : value)}
+              >
+                <SelectTrigger id="project-filter" className="w-[220px]">
+                  <SelectValue placeholder={t('registration.filterByProject') || 'Filter by Project'} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">
+                    {t('common.all')} {t('registration.projects')}
+                  </SelectItem>
+                  {availableProjects.map((project) => (
+                    <SelectItem key={project.id} value={project.id}>
+                      {project.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
+            {/* Status Filter */}
+            <Select
+              value={statusFilter}
+              onValueChange={(value) => setStatusFilter(value)}
+            >
+              <SelectTrigger id="status-filter" className="w-[200px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  {t('registration.allRequests') || 'All Requests'}
+                </SelectItem>
+                <SelectItem value="pending">{t('registration.pending')}</SelectItem>
+                <SelectItem value="approved">{t('registration.approved')}</SelectItem>
+                <SelectItem value="rejected">{t('registration.rejected')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Unified Groups View */}
@@ -269,7 +305,7 @@ export function RegistrationsList() {
                       toastError(err instanceof Error ? err.message : 'registration.rejectError')
                     }
                   }}
-                  isLoadingAction={(id, type) => {
+                  isLoadingAction={(_, type) => {
                     if (type === 'registration') {
                       return approveRegistration.isPending || rejectRegistration.isPending
                     }

@@ -104,7 +104,7 @@ export function RequestsList() {
 
   return (
     <>
-      <BlockContent title={t('nav.processRequests')}>
+      <BlockContent title={t('nav.processRequests')} variant="data-table">
         <DataTable
           toolbarContent={
             <Select

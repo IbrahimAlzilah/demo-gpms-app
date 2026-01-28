@@ -62,6 +62,28 @@ export function ProposalsList() {
   ) => {
     try {
       if (actionType === 'approve') {
+        // Check if group already has approved project before attempting approval
+        const proposal = data.unifiedGroups
+          .flatMap(ug => ug.proposals)
+          .concat(data.submissions.flatMap(s => s.proposals))
+          .find(p => p.id === proposalId)
+
+        if (proposal?.studentGroupId) {
+          const unifiedGroup = data.unifiedGroups.find(
+            ug => ug.group?.id === proposal.studentGroupId
+          )
+
+          if (unifiedGroup && !unifiedGroup.canApproveNewProject && unifiedGroup.approvedProject) {
+            toastError(
+              t('committee.proposal.groupHasApprovedProjectError', {
+                project: unifiedGroup.approvedProject.title || t('common.project'),
+                defaultValue: `Cannot approve: Group already has an approved project: ${unifiedGroup.approvedProject.title || 'N/A'}. Only one project can be approved per group.`
+              })
+            )
+            return
+          }
+        }
+
         await approveProposal.mutateAsync({ id: proposalId })
         toastSuccess('committee.proposal.approveSuccess')
       } else if (actionType === 'reject') {
@@ -77,7 +99,17 @@ export function ProposalsList() {
       }
       setState((prev) => ({ ...prev, selectedProposal: null, action: null }))
     } catch (err) {
-      toastError(err instanceof Error ? err.message : 'committee.proposal.processError')
+      // Check if error is about group already having approved project
+      const errorMessage = err instanceof Error ? err.message : String(err)
+      if (errorMessage.includes('already has an approved project') || errorMessage.includes('Only one project can be approved')) {
+        toastError(
+          t('committee.proposal.groupHasApprovedProjectError', {
+            defaultValue: errorMessage
+          })
+        )
+      } else {
+        toastError(errorMessage || 'committee.proposal.processError')
+      }
     }
   }
 
@@ -394,6 +426,20 @@ export function ProposalsList() {
         }}
         onConfirm={handleConfirm}
         isLoading={isLoadingAction}
+        approvedProject={
+          state.selectedProposal?.studentGroupId
+            ? data.unifiedGroups.find(
+              (ug) => ug.group?.id === state.selectedProposal?.studentGroupId
+            )?.approvedProject || null
+            : null
+        }
+        canApproveNewProject={
+          state.selectedProposal?.studentGroupId
+            ? data.unifiedGroups.find(
+              (ug) => ug.group?.id === state.selectedProposal?.studentGroupId
+            )?.canApproveNewProject ?? true
+            : true
+        }
       />
 
       {editingProposalId && (

@@ -13,10 +13,10 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { StatusBadge } from "@/components/common"
-import { AlertCircle, FileText, User, Users, Calendar, Loader2, CheckCircle, XCircle, FileEdit } from "lucide-react"
+import { AlertCircle, FileText, User, Users, Calendar, Loader2, CheckCircle, XCircle, FileEdit, AlertTriangle } from "lucide-react"
 import { formatDate } from "@/lib/utils/format"
 import { cn } from "@/lib/utils"
-import type { Proposal } from "@/types/project.types"
+import type { Proposal, Project } from "@/types/project.types"
 import { proposalReviewSchema, type ProposalReviewSchema } from "../schema"
 
 interface ProposalReviewDialogProps {
@@ -25,6 +25,8 @@ interface ProposalReviewDialogProps {
   onClose: () => void
   onConfirm: (proposalId: string, actionType: "approve" | "reject" | "modify", notes?: string) => void
   isLoading?: boolean
+  approvedProject?: Project | null // Group's already approved project (if any)
+  canApproveNewProject?: boolean // Whether a new project can be approved for this group
 }
 
 export function ProposalReviewDialog({
@@ -33,6 +35,8 @@ export function ProposalReviewDialog({
   onClose,
   onConfirm,
   isLoading = false,
+  approvedProject,
+  canApproveNewProject = true,
 }: ProposalReviewDialogProps) {
   const { t } = useTranslation()
 
@@ -170,6 +174,43 @@ export function ProposalReviewDialog({
                   )}
                 </div>
 
+                {/* Warning: Group already has an approved project */}
+                {action === "approve" && proposal.studentGroup && !canApproveNewProject && approvedProject && (
+                  <div className="mt-3 p-3 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-xs space-y-1.5">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                      <div className="flex-1">
+                        <p className="font-medium text-amber-900 dark:text-amber-100">
+                          {t('committee.proposal.groupHasApprovedProjectWarning') ||
+                            'Group Already Has Approved Project'}
+                        </p>
+                        <p className="text-amber-800 dark:text-amber-200 mt-1">
+                          {t('committee.proposal.groupHasApprovedProjectMessage', {
+                            project: approvedProject.title || t('common.project'),
+                            defaultValue: `This group already has an approved project: ${approvedProject.title || 'N/A'}. Only one project can be approved per group. Approving this proposal will fail.`
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Supervisor assignment hint for approved supervisor-origin proposals */}
+                {action === "approve" && proposal.proposedSupervisor && (
+                  <div className="mt-3 p-3 rounded-md bg-primary/5 border border-primary/20 text-xs text-muted-foreground space-y-1.5">
+                    <p className="font-medium text-primary">
+                      {t('committee.proposal.supervisorAssignmentHintTitle') ||
+                        'Supervisor assignment and approval'}
+                    </p>
+                    <p>
+                      {t('committee.proposal.supervisorAssignmentHintBody', {
+                        supervisor: proposal.proposedSupervisor.name || proposal.proposedSupervisor.email || '',
+                      }) ||
+                        'Approving this proposal will link the proposed supervisor to the group. The supervisor must still confirm the supervision request before the assignment becomes final.'}
+                    </p>
+                  </div>
+                )}
+
                 {/* Student Group Details */}
                 {proposal.studentGroup && (
                   <div className="p-3 rounded-md bg-muted/30 border border-border/50">
@@ -265,9 +306,15 @@ export function ProposalReviewDialog({
             </Button>
             <Button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || (action === "approve" && !canApproveNewProject && proposal?.studentGroup)}
               variant={action === "reject" ? "destructive" : "default"}
               className="min-w-[100px]"
+              title={
+                action === "approve" && !canApproveNewProject && proposal?.studentGroup
+                  ? t('committee.proposal.cannotApproveAnotherProject') ||
+                  'Cannot approve another project for this group'
+                  : undefined
+              }
             >
               {isLoading ? (
                 <>
