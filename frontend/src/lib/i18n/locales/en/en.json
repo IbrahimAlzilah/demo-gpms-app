@@ -166,7 +166,10 @@
     "reports": "Reports",
     "users": "User Management",
     "notifications": "Notifications",
-    "announce": "Announce Projects"
+    "announce": "Announce Projects",
+    "supervision-requests": "Supervision Requests",
+    "my-proposals": "My Proposals",
+    "approved-proposals": "Approved Proposals"
   },
   "dashboard": {
     "student": {
@@ -811,7 +814,71 @@
         "phase2": "Chapter Submission Phase 2 is active",
         "final": "Final Project Document Submission period is active"
       }
-    }
+    },
+    "documentType": "Document Type",
+    "chapter": "Chapter",
+    "workflow": {
+      "title": "Document Submission Workflow",
+      "description": "Follow the steps below to complete your project document submission",
+      "nextUploadNew": "Next: Upload new document",
+      "viewWorkflow": "View submission workflow",
+      "eligibility": {
+        "title": "Eligibility to Submit",
+        "completed": "You are registered in an approved project and have a supervisor assigned",
+        "noProject": "You must be registered in a project approved by the Projects Committee",
+        "noSupervisor": "Your project must have a supervisor assigned"
+      },
+      "phase1": {
+        "title": "Phase 1 – Chapter Submission (1–3)",
+        "active": "Chapter 1–3 submission period is currently active",
+        "completed": "All Phase 1 chapters have been submitted",
+        "locked": "Wait until the Chapter 1–3 submission period is open"
+      },
+      "defense1": {
+        "title": "Final Discussion – 1",
+        "active": "Final Discussion – 1 period is currently active",
+        "completed": "Final Discussion – 1 is complete and grades have been approved",
+        "pending": "Wait until the Final Discussion – 1 period is open",
+        "locked": "Complete Chapter 1–3 submission first"
+      },
+      "phase2": {
+        "title": "Phase 2 – Chapter Submission (4–6)",
+        "active": "Chapter 4–6 submission period is currently active",
+        "completed": "All Phase 2 chapters have been submitted",
+        "pending": "Wait until the Chapter 4–6 submission period is open",
+        "locked": "Complete Final Discussion – 1 first"
+      },
+      "defense2": {
+        "title": "Final Discussion – 2",
+        "active": "Final Discussion – 2 period is currently active",
+        "completed": "Final Discussion – 2 is complete and grades have been approved",
+        "pending": "Wait until the Final Discussion – 2 period is open",
+        "locked": "Complete Chapter 4–6 submission first"
+      },
+      "final": {
+        "title": "Final Project Document Submission",
+        "active": "Final document submission period is currently active",
+        "pending": "Wait until the final document submission period is open",
+        "locked": "Complete Final Discussion – 2 first"
+      }
+    },
+    "chapters": {
+      "title": "Chapter Status",
+      "phase1": "Phase 1",
+      "phase2": "Phase 2",
+      "chapter": "Chapter",
+      "readyToSubmit": "Ready to submit",
+      "phaseNotActive": "Submission period is not currently active",
+      "defense1NotCompleted": "Final Discussion – 1 must be completed first",
+      "prevChapterNotApproved": "Chapter {{chapter}} must be approved first",
+      "pendingReview": "Under supervisor review"
+    },
+    "upload": {
+      "chapterWillSubmit": "Chapter {{chapter}} will be submitted",
+      "chapterWillSubmitDesc": "This file will be uploaded as the specified chapter automatically",
+      "allChaptersCompleted": "All six chapters have been completed"
+    },
+    "clickOrDragToUpload": "Click or drag file to upload"
   },
   "followUp": {
     "pageDescription": "Follow your project progress, including project status, completion percentage, supervisor notes, and deadlines",

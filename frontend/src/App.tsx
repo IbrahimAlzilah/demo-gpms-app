@@ -5,14 +5,14 @@ import { ErrorBoundary, Toaster } from '@/components/common'
 
 function App() {
   return (
-    <ErrorBoundary> 
+    // <ErrorBoundary> 
     <ThemeProvider>
       <DirectionProvider>
         <RootRouter />
         <Toaster />
       </DirectionProvider>
     </ThemeProvider>
-    </ErrorBoundary>
+    // </ErrorBoundary>
   )
 }
 

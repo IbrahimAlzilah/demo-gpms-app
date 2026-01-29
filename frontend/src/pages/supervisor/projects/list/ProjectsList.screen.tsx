@@ -47,7 +47,7 @@ export function ProjectsList({ onProjectSelect }: ProjectsListProps = {}) {
 
   return (
     <>
-      <BlockContent title={t('nav.projects')}>
+      <BlockContent title={t('nav.projects')} variant='data-table'>
         <DataTable
           columns={columns}
           data={data.projects}

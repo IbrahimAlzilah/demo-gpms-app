@@ -180,7 +180,7 @@ export function ActionsDropdown<T = unknown>({
                   action.className
                 )}
               >
-                <Icon className="me-2 h-4 w-4" />
+                <Icon className="size-4" />
                 <span>{action.label}</span>
               </DropdownMenuItem>
             </React.Fragment>

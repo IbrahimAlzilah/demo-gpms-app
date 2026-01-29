@@ -1,5 +1,6 @@
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { cn } from '@/lib/utils'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useUploadDocument } from '../../hooks/useDocumentOperations'
@@ -14,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { AlertCircle, Upload, File, Loader2, CheckCircle2, Clock } from 'lucide-react'
+import { AlertCircle, Upload, Loader2, CheckCircle2, Clock } from 'lucide-react'
 import { formatFileSize } from '@/lib/utils/format'
 import { documentUploadSchema, type DocumentUploadSchema } from '../../schema'
 import type { DocumentType } from '@/types/request.types'
@@ -29,6 +30,7 @@ interface DocumentUploadProps {
 export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
   const { t } = useTranslation()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isDragActive, setIsDragActive] = useState(false)
   const uploadDocument = useUploadDocument()
   const { data: existingDocuments } = useDocuments(projectId)
   // Check if any document submission period is active
@@ -53,7 +55,7 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
     },
   })
 
-  const selectedFile = watch('file')
+  // const selectedFile = watch('file')
   const documentType = watch('documentType')
 
   const allowedDocumentTypes: DocumentType[] = useMemo(() => {
@@ -207,6 +209,23 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
               ))}
             </SelectContent>
           </Select>
+          {documentType === 'chapters' && nextAllowedChapter && (
+            <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
+              <p className="text-sm font-medium text-primary">
+                {t('document.upload.chapterWillSubmit', { chapter: nextAllowedChapter })}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {t('document.upload.chapterWillSubmitDesc')}
+              </p>
+            </div>
+          )}
+          {documentType === 'chapters' && !nextAllowedChapter && (
+            <div className="p-3 rounded-lg bg-muted border border-muted-foreground/20">
+              <p className="text-sm text-muted-foreground">
+                {t('document.upload.allChaptersCompleted')}
+              </p>
+            </div>
+          )}
           {errors.documentType && (
             <p className="text-xs text-destructive flex items-center gap-1">
               <AlertCircle className="h-3 w-3" />
@@ -219,45 +238,71 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
           <Label htmlFor="file">
             {t('document.selectFile')} <span className="text-destructive">*</span>
           </Label>
-          <div className="flex items-center gap-2">
-            <Controller
-              name="file"
-              control={control}
-              render={({ field: { onChange, name, onBlur } }) => (
-                <input
-                  name={name}
-                  onBlur={onBlur}
-                  ref={fileInputRef}
-                  id="file"
-                  type="file"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    onChange(file || undefined)
+
+          <Controller
+            name="file"
+            control={control}
+            render={({ field: { onChange, name, onBlur, value } }) => (
+              <>
+                <div
+                  className={cn(
+                    "border-2 border-dashed rounded-lg p-8 text-center transition-all cursor-pointer",
+                    isDragActive ? "border-primary bg-primary/5" : "border-muted-foreground/25 hover:bg-muted/50",
+                    errors.file && "border-destructive/50 bg-destructive/5",
+                    value && "border-success/50 bg-success/5"
+                  )}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDragActive(true);
                   }}
-                  className="flex-1 h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                  accept=".pdf,.doc,.docx,.zip,.rar"
-                  aria-invalid={!!errors.file}
-                  disabled={!isPeriodActive || !hasProject}
-                />
-              )}
-            />
-          </div>
-          {selectedFile && (
-            <div className="flex items-center gap-2 p-3 bg-muted rounded-lg border">
-              <File className="h-5 w-5 text-muted-foreground" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{selectedFile.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {formatFileSize(selectedFile.size)}
-                </p>
-              </div>
-              <CheckCircle2 className="h-5 w-5 text-success" />
-            </div>
-          )}
-          <p className="text-xs text-muted-foreground">
-            {t('document.fileUploadHint')}
-          </p>
+                  onDragLeave={() => setIsDragActive(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDragActive(false);
+                    if (e.dataTransfer.files?.[0]) {
+                      onChange(e.dataTransfer.files[0]);
+                    }
+                  }}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <input
+                    name={name}
+                    onBlur={onBlur}
+                    ref={fileInputRef}
+                    id="file"
+                    type="file"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) onChange(file)
+                    }}
+                    accept=".pdf,.doc,.docx,.zip,.rar"
+                    disabled={!isPeriodActive || !hasProject || uploadDocument.isPending}
+                  />
+
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <div className={cn(
+                      "h-12 w-12 rounded-full flex items-center justify-center transition-colors",
+                      value ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"
+                    )}>
+                      {value ? <CheckCircle2 className="h-6 w-6" /> : <Upload className="h-6 w-6" />}
+                    </div>
+
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">
+                        {value ? value.name : t('document.clickOrDragToUpload')}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {value ? formatFileSize(value.size) : t('document.fileUploadHint')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          />
         </div>
+
 
         <Button
           type="submit"
@@ -276,7 +321,7 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
             </>
           )}
         </Button>
-      </form>
-    </div>
+      </form >
+    </div >
   )
 }

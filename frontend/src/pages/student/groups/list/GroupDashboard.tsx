@@ -122,7 +122,7 @@ export function GroupDashboard({
                 {/* Right Column: Sidebar / Admin Panel */}
                 <div className="space-y-6">
                     {/* Code Card */}
-                    <Card className="gap-3">
+                    <Card>
                         <CardHeader>
                             <CardTitle className="text-base">{t('groups.groupCode')}</CardTitle>
                         </CardHeader>
@@ -176,11 +176,11 @@ export function GroupDashboard({
                                     >
                                         {t('groups.deleteGroup')}
                                     </Button>
-                                    {hasProjectRegistrations && (
+                                    {/* {hasProjectRegistrations && (
                                         <p className="text-xs text-destructive mt-2 text-center">
                                             {t('groups.cannotDeleteGroupWhileRegisteredInProject')}
                                         </p>
-                                    )}
+                                    )} */}
                                 </CardContent>
                             </Card>
                         </>

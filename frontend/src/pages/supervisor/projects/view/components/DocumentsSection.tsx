@@ -47,7 +47,7 @@ export function DocumentsSection({ documents, isLoading, projectId }: DocumentsS
       return supervisorDocumentService.review(actualProjectId, documentId, status, comments)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['supervisor-project', actualProjectId] })
+      queryClient.invalidateQueries({ queryKey: ['supervisor-projects', actualProjectId] })
       setReviewState({ document: null, status: null, comments: '', showDialog: false })
       toastSuccess('supervisor.documentReviewed')
     },

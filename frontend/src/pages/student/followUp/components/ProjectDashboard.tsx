@@ -110,9 +110,9 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
   return (
     <>
       {/* Main Unified Card */}
-      <BlockContent title={t('nav.followUp')}>
+      <BlockContent title={t('nav.followUp')} variant='data-table'>
         {/* Project Header Section */}
-        <div className="px-6 pb-6 border-b">
+        <div className="px-6 py-6 border-b">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             {/* Project Info - Left Side */}
             <div className="space-y-3 flex-1">
@@ -288,7 +288,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
               size="sm"
               onClick={() => setShowUploadModal(true)}
             >
-              <Upload className="me-2 h-4 w-4" />
+              <Upload className="size-4" />
               {t('followUp.uploadNewDocument')}
             </Button>
           </div>
@@ -374,7 +374,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                   setReplyContent((prev) => ({ ...prev, [noteId]: '' }))
                 }}
               >
-                <X className="me-2 h-4 w-4" />
+                <X className="size-4" />
                 {t('common.cancel')}
               </Button>
               <Button
@@ -388,7 +388,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                   </>
                 ) : (
                   <>
-                    <Send className="me-2 h-4 w-4" />
+                    <Send className="size-4" />
                     {t('common.send')}
                   </>
                 )}

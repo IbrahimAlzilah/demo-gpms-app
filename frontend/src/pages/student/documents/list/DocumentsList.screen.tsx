@@ -1,13 +1,15 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { DataTable, Button } from '@/components/ui'
+import { Button } from '@/components/ui'
 import { BlockContent, LoadingSpinner } from '@/components/common'
-import { PlusCircle, FolderOpen, AlertCircle } from 'lucide-react'
-import { createDocumentColumns } from '../components/table'
+import { PlusCircle, FolderOpen, AlertCircle, ListOrdered } from 'lucide-react'
 import { StatisticsCards } from '../components/StatisticsCards'
+import { DocumentWorkflowModal } from '../components/DocumentWorkflowModal'
+import { ChapterStatusCards } from '../components/ChapterStatusCards'
 import { DocumentsNew } from '../new/DocumentsNew.screen'
 import { DocumentsView } from '../view/DocumentsView.screen'
 import { useDocumentsList } from './DocumentsList.hook'
+import { Card, CardContent } from '@/components/ui'
 
 export function DocumentsList() {
   const { t } = useTranslation()
@@ -17,44 +19,35 @@ export function DocumentsList() {
     setState,
     userProject,
     projectsLoading,
+    isPhase1Active,
+    isPhase2Active,
+    isFinalDefense1Active,
+    isFinalDefense2Active,
+    isFinalActive,
     isPeriodActive,
-    periodLoading,
-    totalCount,
-    pageCount,
-    sorting,
-    setSorting,
-    columnFilters,
-    setColumnFilters,
-    globalFilter,
-    setGlobalFilter,
-    pagination,
-    setPagination,
+    hasSupervisor,
+    finalDefense1Completed,
+    finalDefense2Completed,
   } = useDocumentsList()
-
-  const columns = useMemo(
-    () =>
-      createDocumentColumns({
-        onView: (document) => {
-          setState((prev) => ({ ...prev, selectedDocument: document }))
-        },
-        t,
-      }),
-    [t, setState]
-  )
 
   const handleFormSuccess = () => {
     setState((prev) => ({ ...prev, showUploadForm: false }))
   }
 
+  const openWorkflowModal = () => setState((prev) => ({ ...prev, showWorkflowModal: true }))
+  const openUploadForm = () => setState((prev) => ({ ...prev, showUploadForm: true }))
+
   const actions = useMemo(
     () =>
       state.selectedProjectId ? (
-        <Button onClick={() => setState((prev) => ({ ...prev, showUploadForm: true }))}>
-          <PlusCircle className="size-4" />
-          {t('document.uploadNew')}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={openUploadForm} className="gap-2">
+            <PlusCircle className="size-4" />
+            {t('document.uploadNew')}
+          </Button>
+        </div>
       ) : null,
-    [t, state.selectedProjectId, setState]
+    [t, state.selectedProjectId]
   )
 
   // Show loading spinner while projects are being fetched
@@ -83,48 +76,65 @@ export function DocumentsList() {
     )
   }
 
+  const handleChapterClick = (_chapterNumber: number) => {
+    setState((prev) => ({ ...prev, showUploadForm: true }))
+  }
+
   return (
     <>
-      {/* Project Info */}
-      {/* <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>{t('document.currentProject')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="font-medium">{userProject?.title}</p>
-          <p className="text-sm text-muted-foreground line-clamp-2">
-            {userProject?.description}
-          </p>
-        </CardContent>
-      </Card> */}
-
-      {/* Statistics Cards */}
-      <StatisticsCards statistics={data.statistics} t={t} />
-
       <BlockContent title={t('nav.documents')} actions={actions}>
-        <DataTable
-          columns={columns}
-          data={data.documents}
-          isLoading={data.isLoading}
-          error={data.error}
-          pageCount={pageCount}
-          totalCount={totalCount}
-          pageIndex={pagination.pageIndex}
-          pageSize={pagination.pageSize}
-          onPaginationChange={(pageIndex, pageSize) => {
-            setPagination({ pageIndex, pageSize })
-          }}
-          sorting={sorting}
-          onSortingChange={setSorting}
-          columnFilters={columnFilters}
-          onColumnFiltersChange={setColumnFilters}
-          searchValue={globalFilter}
-          onSearchChange={setGlobalFilter}
-          enableFiltering={true}
-          enableViews={true}
-          emptyMessage={t('document.noDocuments')}
-        />
+        {/* Workflow CTA card */}
+        <Card className="border-dashed border-2 border-primary/30 bg-primary/5">
+          <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-3">
+            <div>
+              <h3 className="font-semibold text-base mb-1">{t('document.workflow.title')}</h3>
+              <p className="text-sm text-muted-foreground">{t('document.workflow.description')}</p>
+            </div>
+            <Button onClick={openWorkflowModal} variant="secondary" className="gap-2 shrink-0">
+              <ListOrdered className="size-4" />
+              {t('document.workflow.viewWorkflow')}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Chapter Status Cards */}
+        <div className="mt-6">
+          <ChapterStatusCards
+            documents={data.documents}
+            isPhase1Active={isPhase1Active}
+            isPhase2Active={isPhase2Active}
+            finalDefense1Completed={finalDefense1Completed}
+            onChapterClick={handleChapterClick}
+            onViewDocument={(document) => setState((prev) => ({ ...prev, selectedDocument: document }))}
+            t={t}
+          />
+        </div>
+
+        {/* Statistics Cards */}
+        {/* {data.statistics.total > 0 && (
+          <div className="mt-6">
+            <StatisticsCards statistics={data.statistics} t={t} />
+          </div>
+        )} */}
       </BlockContent>
+
+      {/* Workflow modal */}
+      <DocumentWorkflowModal
+        open={state.showWorkflowModal}
+        onOpenChange={(open) => setState((prev) => ({ ...prev, showWorkflowModal: open }))}
+        onUploadNew={openUploadForm}
+        documents={data.documents}
+        isPhase1Active={isPhase1Active}
+        isPhase2Active={isPhase2Active}
+        isFinalDefense1Active={isFinalDefense1Active}
+        isFinalDefense2Active={isFinalDefense2Active}
+        isFinalActive={isFinalActive}
+        hasProject={!!userProject}
+        hasSupervisor={hasSupervisor}
+        finalDefense1Completed={finalDefense1Completed}
+        finalDefense2Completed={finalDefense2Completed}
+        canUpload={!!state.selectedProjectId && isPeriodActive}
+      />
 
       {data.error && (
         <BlockContent variant="container" className="border-destructive">
