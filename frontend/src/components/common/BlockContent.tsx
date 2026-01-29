@@ -32,7 +32,7 @@ export const BlockContent = ({
     const containerClassName = `container mx-auto ${className}`.trim();
     content = <div className={containerClassName}>{children}</div>;
   } else {
-    const cardClassName = `shadow-none border border-border gap-0 !p-0 print:shadow-none print:border-0 ${className}`.trim();
+    const cardClassName = `shadow-none border border-border/80 gap-0 !p-0 print:shadow-none print:border-0 ${className}`.trim();
 
     content = (
       <Card className={cn(printShadow ? "print:shadow-none print:border-0" : "", cardClassName)}>

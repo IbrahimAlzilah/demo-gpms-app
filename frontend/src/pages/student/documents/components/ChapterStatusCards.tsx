@@ -1,4 +1,4 @@
-import { CheckCircle2, Clock, XCircle, Lock, FileText, AlertCircle, MessageSquare, Download, Upload } from 'lucide-react'
+import { CheckCircle2, Clock, XCircle, Lock, AlertCircle, Download, Upload, Eye } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -24,6 +24,8 @@ interface ChapterInfo {
   status: ChapterStatus
   document?: Document
   canSubmit: boolean
+  /** Can replace file while chapter is pending (no supervisor decision yet). */
+  canReplace: boolean
   reason?: string
 }
 
@@ -57,19 +59,21 @@ export function ChapterStatusCards({
     let reason: string | undefined
 
     if (chapterNum === 1) {
-      canSubmit = phaseActive && phase === 1
+      canSubmit = phaseActive && phase === 1 && (status === 'not_started' || status === 'rejected')
       if (!phaseActive) reason = t('document.chapters.phaseNotActive')
+      if (status === 'pending') reason = t('document.chapters.pendingReview')
     } else if (chapterNum === 4) {
-      canSubmit = phaseActive && phase === 2 && finalDefense1Completed
+      canSubmit = phaseActive && phase === 2 && finalDefense1Completed && (status === 'not_started' || status === 'rejected')
       if (!finalDefense1Completed) reason = t('document.chapters.defense1NotCompleted')
       else if (!phaseActive) reason = t('document.chapters.phaseNotActive')
+      if (status === 'pending') reason = t('document.chapters.pendingReview')
     } else {
-      // Chapters 2, 3, 5, 6
+      // Chapters 2, 3, 5, 6: allow submit when prev approved; allow resubmit when rejected
       const prevChapter = chapterNum - 1
       const prevDoc = chapterDocs.find((doc) => doc.chapterNumber === prevChapter)
       const prevApproved = prevDoc?.reviewStatus === 'approved'
 
-      canSubmit = phaseActive && prevApproved && status !== 'pending'
+      canSubmit = phaseActive && prevApproved && (status === 'not_started' || status === 'rejected')
       if (!prevApproved) {
         reason = t('document.chapters.prevChapterNotApproved', { chapter: prevChapter })
       } else if (!phaseActive) {
@@ -79,12 +83,25 @@ export function ChapterStatusCards({
       }
     }
 
+    // Can replace file while pending (no supervisor decision yet); disabled once approved/rejected
+    let canReplace = false
+    if (status === 'pending' && phaseActive) {
+      if (chapterNum === 1) canReplace = phase === 1
+      else if (chapterNum === 4) canReplace = phase === 2 && finalDefense1Completed
+      else {
+        const prevChapter = chapterNum - 1
+        const prevDoc = chapterDocs.find((doc) => doc.chapterNumber === prevChapter)
+        canReplace = prevDoc?.reviewStatus === 'approved'
+      }
+    }
+
     return {
       number: chapterNum,
       phase,
       status,
       document: chapterDoc,
       canSubmit,
+      canReplace,
       reason,
     }
   }
@@ -106,13 +123,13 @@ export function ChapterStatusCards({
 
   const getStatusColor = (chapter: ChapterInfo) => {
     if (chapter.status === 'approved') {
-      return 'border-success/50 1bg-success/5'
+      return 'border-success/50'
     }
     if (chapter.status === 'pending') {
-      return 'border-warning/50 1bg-warning/5'
+      return 'border-warning/50'
     }
     if (chapter.status === 'rejected') {
-      return 'border-destructive/50 1bg-destructive/5'
+      return 'border-destructive/50'
     }
     if (chapter.canSubmit) {
       return 'border-primary/50 bg-primary/5 ring-2 ring-primary/20'
@@ -188,7 +205,17 @@ export function ChapterStatusCards({
                 {chapter.document && (
                   <div className="text-xs text-muted-foreground">
                     <p className="truncate">{chapter.document.fileName}</p>
-                    {chapter.document.reviewComments && (
+                    {chapter.status === 'rejected' && chapter.document.reviewComments && (
+                      <div className="mt-2 p-2 rounded-md bg-destructive/10 border border-destructive/20">
+                        <p className="text-xs font-medium text-destructive mb-0.5">
+                          {t('document.chapters.supervisorFeedback')}
+                        </p>
+                        <p className="text-xs whitespace-pre-wrap line-clamp-1">
+                          {chapter.document.reviewComments}
+                        </p>
+                      </div>
+                    )}
+                    {chapter.status !== 'rejected' && chapter.document.reviewComments && (
                       <p className="mt-1 line-clamp-2 italic">
                         {chapter.document.reviewComments}
                       </p>
@@ -209,8 +236,8 @@ export function ChapterStatusCards({
                   </div>
                 )}
 
-                {/* Action buttons: View & Download when document exists; Upload when can submit and no document */}
-                <div className="flex items-center gap-2 pt-3 mt-2 border-t border-border/50" onClick={(e) => e.stopPropagation()}>
+                {/* Action buttons: View & Download when document exists; Resubmit when rejected; Upload when can submit and no document */}
+                <div className="flex flex-wrap items-center gap-2 pt-3 mt-2 border-t border-border/50" onClick={(e) => e.stopPropagation()}>
                   {chapter.document ? (
                     <>
                       <Button
@@ -221,7 +248,7 @@ export function ChapterStatusCards({
                         title={t('common.view')}
                         aria-label={t('common.view')}
                       >
-                        <MessageSquare className="h-4 w-4" />
+                        <Eye className="h-4 w-4" />
                         <span className="sr-only sm:not-sr-only">{t('common.view')}</span>
                       </Button>
                       <Button
@@ -241,6 +268,38 @@ export function ChapterStatusCards({
                         <Download className="h-4 w-4" />
                         <span className="sr-only sm:not-sr-only">{t('document.download')}</span>
                       </Button>
+                      {chapter.status === 'pending' && chapter.canReplace && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 gap-1.5 text-xs"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onChapterClick?.(chapter.number)
+                          }}
+                          title={t('document.chapters.replaceFile')}
+                          aria-label={t('document.chapters.replaceFile')}
+                        >
+                          <Upload className="h-4 w-4" />
+                          <span>{t('document.chapters.replaceFile')}</span>
+                        </Button>
+                      )}
+                      {chapter.status === 'rejected' && chapter.canSubmit && (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="h-8 gap-1.5 text-xs"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onChapterClick?.(chapter.number)
+                          }}
+                          title={t('document.chapters.resubmit')}
+                          aria-label={t('document.chapters.resubmit')}
+                        >
+                          <Upload className="h-4 w-4" />
+                          <span>{t('document.chapters.resubmit')}</span>
+                        </Button>
+                      )}
                     </>
                   ) : chapter.canSubmit ? (
                     <Button

@@ -40,6 +40,7 @@ export function useDocumentsList() {
     showUploadForm: false,
     showWorkflowModal: false,
     selectedProjectId: undefined,
+    selectedChapterForUpload: null,
   });
 
   // Get user's project
@@ -91,7 +92,37 @@ export function useDocumentsList() {
     enableServerSide: true,
   });
 
-  // Calculate statistics
+  // Fetch all documents for the project (for chapter cards and workflow) so we have latest per chapter
+  const { data: allDocumentsForProject } = useQuery({
+    queryKey: ["documents", state.selectedProjectId, "all"],
+    queryFn: () => documentService.getAllForProject(state.selectedProjectId!),
+    enabled: !!state.selectedProjectId,
+    staleTime: 0,
+    refetchOnMount: true,
+  });
+
+  // For chapter cards: use latest document per chapter (by id) so resubmissions show current status
+  const documentsForChapterCards = useMemo(() => {
+    if (!allDocumentsForProject?.length) return [];
+    const chapterDocs = allDocumentsForProject.filter(
+      (d: Document) =>
+        d.type === "chapters" && typeof d.chapterNumber === "number",
+    );
+    const latestByChapter = new Map<number, Document>();
+    for (const doc of chapterDocs) {
+      const n = doc.chapterNumber!;
+      const existing = latestByChapter.get(n);
+      if (
+        !existing ||
+        (doc.id && existing.id && String(doc.id) > String(existing.id))
+      ) {
+        latestByChapter.set(n, doc);
+      }
+    }
+    return Array.from(latestByChapter.values());
+  }, [allDocumentsForProject]);
+
+  // Calculate statistics (from table data)
   const statistics = useMemo(() => {
     if (!documents) return { total: 0, pending: 0, approved: 0, rejected: 0 };
 
@@ -108,6 +139,7 @@ export function useDocumentsList() {
 
   const data: DocumentsListData = {
     documents: documents || [],
+    documentsForChapterCards,
     statistics,
     isLoading: isLoading || periodLoading,
     error: error as Error | null,

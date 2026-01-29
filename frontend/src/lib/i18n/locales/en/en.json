@@ -871,12 +871,19 @@
       "phaseNotActive": "Submission period is not currently active",
       "defense1NotCompleted": "Final Discussion – 1 must be completed first",
       "prevChapterNotApproved": "Chapter {{chapter}} must be approved first",
-      "pendingReview": "Under supervisor review"
+      "pendingReview": "Under supervisor review",
+      "supervisorFeedback": "Supervisor feedback",
+      "resubmit": "Resubmit",
+      "replaceFile": "Replace file"
     },
-    "upload": {
+    "uploadChapters": {
       "chapterWillSubmit": "Chapter {{chapter}} will be submitted",
       "chapterWillSubmitDesc": "This file will be uploaded as the specified chapter automatically",
-      "allChaptersCompleted": "All six chapters have been completed"
+      "allChaptersCompleted": "All six chapters have been completed",
+      "resubmittingChapter": "Resubmitting Chapter {{chapter}}",
+      "resubmittingChapterDesc": "Upload a revised file for review. The chapter will return to Pending Review status.",
+      "replaceChapter": "Replace file for Chapter {{chapter}}",
+      "replaceChapterDesc": "Upload a new file to replace the current submission. The chapter will remain in Pending Review."
     },
     "clickOrDragToUpload": "Click or drag file to upload"
   },

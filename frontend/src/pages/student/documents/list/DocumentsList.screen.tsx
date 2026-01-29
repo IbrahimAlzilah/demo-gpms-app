@@ -1,15 +1,14 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button } from '@/components/ui'
+import { Card, CardContent, Button } from '@/components/ui'
 import { BlockContent, LoadingSpinner } from '@/components/common'
 import { PlusCircle, FolderOpen, AlertCircle, ListOrdered } from 'lucide-react'
-import { StatisticsCards } from '../components/StatisticsCards'
+// import { StatisticsCards } from '../components/StatisticsCards'
 import { DocumentWorkflowModal } from '../components/DocumentWorkflowModal'
 import { ChapterStatusCards } from '../components/ChapterStatusCards'
 import { DocumentsNew } from '../new/DocumentsNew.screen'
 import { DocumentsView } from '../view/DocumentsView.screen'
 import { useDocumentsList } from './DocumentsList.hook'
-import { Card, CardContent } from '@/components/ui'
 
 export function DocumentsList() {
   const { t } = useTranslation()
@@ -31,7 +30,7 @@ export function DocumentsList() {
   } = useDocumentsList()
 
   const handleFormSuccess = () => {
-    setState((prev) => ({ ...prev, showUploadForm: false }))
+    setState((prev) => ({ ...prev, showUploadForm: false, selectedChapterForUpload: null }))
   }
 
   const openWorkflowModal = () => setState((prev) => ({ ...prev, showWorkflowModal: true }))
@@ -76,31 +75,35 @@ export function DocumentsList() {
     )
   }
 
-  const handleChapterClick = (_chapterNumber: number) => {
-    setState((prev) => ({ ...prev, showUploadForm: true }))
+  const handleChapterClick = (chapterNumber: number) => {
+    setState((prev) => ({
+      ...prev,
+      showUploadForm: true,
+      selectedChapterForUpload: chapterNumber,
+    }))
   }
 
   return (
     <>
       <BlockContent title={t('nav.documents')} actions={actions}>
         {/* Workflow CTA card */}
-        <Card className="border-dashed border-2 border-primary/30 bg-primary/5">
+        <Card className="border-dashed border-2 border-primary/20 bg-primary/3">
           <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-3">
             <div>
-              <h3 className="font-semibold text-base mb-1">{t('document.workflow.title')}</h3>
-              <p className="text-sm text-muted-foreground">{t('document.workflow.description')}</p>
+              <h3 className="font-semibold text-sm mb-1">{t('document.workflow.title')}</h3>
+              <p className="text-xs text-muted-foreground">{t('document.workflow.description')}</p>
             </div>
-            <Button onClick={openWorkflowModal} variant="secondary" className="gap-2 shrink-0">
+            <Button onClick={openWorkflowModal} variant="outline" className="gap-2 shrink-0">
               <ListOrdered className="size-4" />
               {t('document.workflow.viewWorkflow')}
             </Button>
           </CardContent>
         </Card>
 
-        {/* Chapter Status Cards */}
+        {/* Chapter Status Cards (uses latest per chapter for resubmission support) */}
         <div className="mt-6">
           <ChapterStatusCards
-            documents={data.documents}
+            documents={data.documentsForChapterCards}
             isPhase1Active={isPhase1Active}
             isPhase2Active={isPhase2Active}
             finalDefense1Completed={finalDefense1Completed}
@@ -123,7 +126,7 @@ export function DocumentsList() {
         open={state.showWorkflowModal}
         onOpenChange={(open) => setState((prev) => ({ ...prev, showWorkflowModal: open }))}
         onUploadNew={openUploadForm}
-        documents={data.documents}
+        documents={data.documentsForChapterCards}
         isPhase1Active={isPhase1Active}
         isPhase2Active={isPhase2Active}
         isFinalDefense1Active={isFinalDefense1Active}
@@ -145,13 +148,20 @@ export function DocumentsList() {
         </BlockContent>
       )}
 
-      {/* Upload Document Modal */}
+      {/* Upload Document Modal (initialChapterNumber when resubmitting rejected or replacing pending) */}
       {state.selectedProjectId && (
         <DocumentsNew
           projectId={state.selectedProjectId}
           open={state.showUploadForm}
-          onClose={() => setState((prev) => ({ ...prev, showUploadForm: false }))}
+          onClose={() => setState((prev) => ({ ...prev, showUploadForm: false, selectedChapterForUpload: null }))}
           onSuccess={handleFormSuccess}
+          initialChapterNumber={state.selectedChapterForUpload ?? undefined}
+          replaceMode={
+            state.selectedChapterForUpload != null &&
+            data.documentsForChapterCards.some(
+              (d) => d.chapterNumber === state.selectedChapterForUpload && d.reviewStatus === 'pending'
+            )
+          }
         />
       )}
 

@@ -906,12 +906,19 @@
       "phaseNotActive": "فترة التسليم غير نشطة حالياً",
       "defense1NotCompleted": "يجب إكمال المناقشة النهائية - 1 أولاً",
       "prevChapterNotApproved": "يجب الموافقة على الفصل {{chapter}} أولاً",
-      "pendingReview": "قيد المراجعة من قبل المشرف"
+      "pendingReview": "قيد المراجعة من قبل المشرف",
+      "supervisorFeedback": "ملاحظات المشرف",
+      "resubmit": "إعادة التسليم",
+      "replaceFile": "استبدال الملف"
     },
-    "upload": {
+    "uploadChapters": {
       "chapterWillSubmit": "سيتم تسليم الفصل {{chapter}}",
       "chapterWillSubmitDesc": "سيتم رفع هذا الملف كالفصل المحدد تلقائياً",
-      "allChaptersCompleted": "تم إكمال جميع الفصول الستة"
+      "allChaptersCompleted": "تم إكمال جميع الفصول الستة",
+      "resubmittingChapter": "إعادة تسليم الفصل {{chapter}}",
+      "resubmittingChapterDesc": "ارفع ملفاً معدلاً للمراجعة. سيعود الفصل إلى حالة قيد المراجعة.",
+      "replaceChapter": "استبدال ملف الفصل {{chapter}}",
+      "replaceChapterDesc": "ارفع ملفاً جديداً لاستبدال التسليم الحالي. سيبقى الفصل في حالة قيد المراجعة."
     },
     "clickOrDragToUpload": "انقر أو اسحب الملف للرفع"
   },

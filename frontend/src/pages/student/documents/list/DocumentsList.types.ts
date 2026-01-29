@@ -6,10 +6,14 @@ export interface DocumentsListState {
   showUploadForm: boolean;
   showWorkflowModal: boolean;
   selectedProjectId: string | undefined;
+  /** When set, upload form opens for resubmitting this chapter. */
+  selectedChapterForUpload: number | null;
 }
 
 export interface DocumentsListData {
   documents: Document[];
+  /** Latest document per chapter for chapter cards (supports resubmission). */
+  documentsForChapterCards: Document[];
   statistics: DocumentStatistics;
   isLoading: boolean;
   error: Error | null;

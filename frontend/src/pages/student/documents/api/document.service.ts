@@ -14,6 +14,15 @@ export const documentService = {
     return Array.isArray(response.data) ? response.data : [];
   },
 
+  /** Fetch all documents for a project (e.g. for chapter cards; uses large page size). */
+  getAllForProject: async (projectId: string): Promise<Document[]> => {
+    const result = await documentService.getTableData(
+      { page: 1, pageSize: 100 },
+      projectId,
+    );
+    return result?.data ?? [];
+  },
+
   getTableData: async (
     params?: TableQueryParams,
     projectId?: string,

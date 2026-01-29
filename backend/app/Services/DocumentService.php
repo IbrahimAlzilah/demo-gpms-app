@@ -72,6 +72,28 @@ class DocumentService
         $fileName = time() . '_' . $sanitized . ($extension ? '.' . $extension : '');
         $filePath = $file->storeAs('documents', $fileName, 'documents');
 
+        // When chapter is already pending, replace the file (edit while under review)
+        if ($type === 'chapters' && $chapterNumber !== null) {
+            $existingPending = $project->documents()
+                ->where('type', 'chapters')
+                ->where('chapter_number', $chapterNumber)
+                ->where('review_status', 'pending')
+                ->first();
+
+            if ($existingPending) {
+                if (Storage::disk('documents')->exists($existingPending->file_path)) {
+                    Storage::disk('documents')->delete($existingPending->file_path);
+                }
+                $existingPending->update([
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_path' => $filePath,
+                    'file_size' => $file->getSize(),
+                    'mime_type' => $file->getMimeType(),
+                ]);
+                return $existingPending->fresh();
+            }
+        }
+
         return Document::create([
             'type' => $type,
             'chapter_number' => $chapterNumber,
@@ -123,19 +145,18 @@ class DocumentService
 
     /**
      * Enforce sequential chapter submission and defense-completion rules.
+     *
+     * - Edit while pending: If the chapter already has a pending submission, the student may
+     *   replace the file (same document updated; remains pending). No new document is created.
+     * - Resubmission: When a chapter is rejected, the student may upload a new document for
+     *   the same chapter; it is created with review_status 'pending'.
+     * - Once the supervisor has approved, rejected, or added a review decision, editing
+     *   is disabled (no pending document exists for that chapter).
      */
     protected function ensureChapterSequenceIsValid(Project $project, int $chapterNumber): void
     {
-        // Prevent multiple pending submissions for the same chapter
-        $hasPendingForChapter = $project->documents()
-            ->where('type', 'chapters')
-            ->where('chapter_number', $chapterNumber)
-            ->where('review_status', 'pending')
-            ->exists();
-
-        if ($hasPendingForChapter) {
-            throw new \Exception('You already have a pending submission for this chapter. Please wait for supervisor review.');
-        }
+        // Allow both: (1) new/resubmit when no pending, (2) replace when pending (handled in upload())
+        // Do not allow multiple pending rows: replace updates the existing pending document
 
         // Enforce previous chapter approval for chapters 2–6
         if ($chapterNumber > 1) {

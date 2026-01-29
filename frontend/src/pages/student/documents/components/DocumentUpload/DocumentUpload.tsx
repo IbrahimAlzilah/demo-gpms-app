@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { useForm, Controller } from 'react-hook-form'
@@ -25,9 +25,13 @@ import { toast } from 'sonner'
 interface DocumentUploadProps {
   projectId: string
   onSuccess?: () => void
+  /** When set, upload is for this chapter (new, replace pending, or resubmit rejected). */
+  initialChapterNumber?: number
+  /** True when replacing a pending chapter (edit while under review); false when resubmitting rejected. */
+  replaceMode?: boolean
 }
 
-export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
+export function DocumentUpload({ projectId, onSuccess, initialChapterNumber, replaceMode }: DocumentUploadProps) {
   const { t } = useTranslation()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isDragActive, setIsDragActive] = useState(false)
@@ -55,6 +59,11 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
     },
   })
 
+  const isResubmission = initialChapterNumber !== undefined
+  useEffect(() => {
+    if (isResubmission) setValue('documentType', 'chapters')
+  }, [isResubmission, setValue])
+
   // const selectedFile = watch('file')
   const documentType = watch('documentType')
 
@@ -81,8 +90,10 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
     allowedDocumentTypes.includes(option.value)
   )
 
-  // Determine the next allowed chapter based on existing documents
+  // Determine the next allowed chapter based on existing documents (or use initialChapterNumber for resubmission)
   const nextAllowedChapter = useMemo(() => {
+    if (initialChapterNumber !== undefined) return initialChapterNumber
+
     if (!existingDocuments) return 1
 
     const chapterDocs = existingDocuments.filter(
@@ -109,7 +120,7 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
 
     // All chapters approved
     return undefined
-  }, [existingDocuments])
+  }, [existingDocuments, initialChapterNumber])
 
 
 
@@ -121,7 +132,9 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
 
     try {
       const chapterNumber =
-        data.documentType === 'chapters' ? nextAllowedChapter : undefined
+        data.documentType === 'chapters'
+          ? (initialChapterNumber ?? nextAllowedChapter)
+          : undefined
 
       await uploadDocument.mutateAsync({
         projectId,
@@ -192,12 +205,12 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
             onValueChange={(value) =>
               setValue('documentType', value as DocumentUploadSchema['documentType'])
             }
-            disabled={!isPeriodActive || !hasProject}
+            disabled={!isPeriodActive || !hasProject || isResubmission}
           >
             <SelectTrigger
               id="documentType"
               className={errors.documentType ? 'border-destructive' : ''}
-              disabled={!isPeriodActive || !hasProject}
+              disabled={!isPeriodActive || !hasProject || isResubmission}
             >
               <SelectValue />
             </SelectTrigger>
@@ -210,19 +223,50 @@ export function DocumentUpload({ projectId, onSuccess }: DocumentUploadProps) {
             </SelectContent>
           </Select>
           {documentType === 'chapters' && nextAllowedChapter && (
-            <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
-              <p className="text-sm font-medium text-primary">
-                {t('document.upload.chapterWillSubmit', { chapter: nextAllowedChapter })}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {t('document.upload.chapterWillSubmitDesc')}
-              </p>
+            <div className={cn(
+              'p-3 rounded-lg border',
+              initialChapterNumber !== undefined
+                ? replaceMode
+                  ? 'bg-blue-500/10 border-blue-500/30'
+                  : 'bg-amber-500/10 border-amber-500/30'
+                : 'bg-primary/5 border-primary/20'
+            )}>
+              {initialChapterNumber !== undefined ? (
+                replaceMode ? (
+                  <>
+                    <p className="text-sm font-medium text-blue-700 dark:text-blue-400">
+                      {t('document.uploadChapters.replaceChapter', { chapter: nextAllowedChapter })}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t('document.uploadChapters.replaceChapterDesc')}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
+                      {t('document.uploadChapters.resubmittingChapter', { chapter: nextAllowedChapter })}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t('document.uploadChapters.resubmittingChapterDesc')}
+                    </p>
+                  </>
+                )
+              ) : (
+                <>
+                  <p className="text-sm font-medium text-primary">
+                    {t('document.uploadChapters.chapterWillSubmit', { chapter: nextAllowedChapter })}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t('document.uploadChapters.chapterWillSubmitDesc')}
+                  </p>
+                </>
+              )}
             </div>
           )}
           {documentType === 'chapters' && !nextAllowedChapter && (
             <div className="p-3 rounded-lg bg-muted border border-muted-foreground/20">
               <p className="text-sm text-muted-foreground">
-                {t('document.upload.allChaptersCompleted')}
+                {t('document.uploadChapters.allChaptersCompleted')}
               </p>
             </div>
           )}
