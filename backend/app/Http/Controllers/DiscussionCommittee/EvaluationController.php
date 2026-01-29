@@ -37,7 +37,7 @@ class EvaluationController extends Controller
 
             // Verify user is assigned to this project's committee
             $isAssigned = $project->committeeMembers()->where('users.id', $request->user()->id)->exists();
-            
+
             if (!$isAssigned) {
                 return response()->json([
                     'success' => false,
@@ -57,7 +57,7 @@ class EvaluationController extends Controller
 
         // Otherwise, return paginated list of all evaluation items (project + student combinations)
         $userId = $request->user()->id;
-        
+
         // Get all projects assigned to this committee member
         $projectsQuery = Project::whereHas('committeeMembers', function ($q) use ($userId) {
             $q->where('users.id', $userId);
@@ -73,10 +73,10 @@ class EvaluationController extends Controller
         // Get paginated projects
         $page = (int) $request->get('page', 1);
         $pageSize = (int) $request->get('pageSize', 10);
-        
+
         $totalProjects = $projectsQuery->count();
         $totalPages = ceil($totalProjects / $pageSize);
-        
+
         $projects = $projectsQuery->skip(($page - 1) * $pageSize)
             ->take($pageSize)
             ->get();
@@ -173,7 +173,7 @@ class EvaluationController extends Controller
     /**
      * Submit a grade/evaluation
      * POST /discussion-committee/evaluations
-     * 
+     *
      * Accepts both payload formats:
      * - Backend format: project_id, student_id, score, max_score, criteria, comments
      * - Frontend format: projectId, studentId, grade.score, grade.maxScore, grade.criteria, grade.comments
@@ -183,7 +183,7 @@ class EvaluationController extends Controller
         // Normalize payload - handle both frontend (camelCase + nested grade) and backend (snake_case) formats
         $projectId = $request->input('project_id') ?? $request->input('projectId');
         $studentId = $request->input('student_id') ?? $request->input('studentId');
-        
+
         // Handle nested grade object from frontend or flat structure
         $gradeData = $request->input('grade');
         $score = $gradeData['score'] ?? $request->input('score');
@@ -191,28 +191,38 @@ class EvaluationController extends Controller
         $criteria = $gradeData['criteria'] ?? $request->input('criteria');
         $comments = $gradeData['comments'] ?? $request->input('comments');
 
-        // Validate normalized data
+        // Validate normalized data (criteria optional; default to empty array)
+        $criteriaNormalized = $criteria;
+        if ($criteriaNormalized === null || $criteriaNormalized === '') {
+            $criteriaNormalized = [];
+        }
+        if (is_object($criteriaNormalized)) {
+            $criteriaNormalized = (array) $criteriaNormalized;
+        }
+
         $validated = validator([
             'project_id' => $projectId,
             'student_id' => $studentId,
             'score' => $score,
             'max_score' => $maxScore,
-            'criteria' => $criteria,
+            'criteria' => $criteriaNormalized,
             'comments' => $comments,
         ], [
             'project_id' => 'required|exists:projects,id',
             'student_id' => 'required|exists:users,id',
             'score' => 'required|numeric|min:0',
             'max_score' => 'required|numeric|min:0',
-            'criteria' => 'required|array',
+            'criteria' => 'nullable|array',
             'comments' => 'nullable|string',
         ])->validate();
+
+        $validated['criteria'] = $validated['criteria'] ?? [];
 
         $project = Project::findOrFail($validated['project_id']);
 
         // Verify user is assigned to this project's committee
         $isAssigned = $project->committeeMembers()->where('users.id', $request->user()->id)->exists();
-        
+
         if (!$isAssigned) {
             return response()->json([
                 'success' => false,
@@ -244,12 +254,12 @@ class EvaluationController extends Controller
 
         try {
             $student = \App\Models\User::findOrFail($validated['student_id']);
-            
+
             // Check if grade is already approved (prevent updates after approval)
             $existingGrade = Grade::where('project_id', $project->id)
                 ->where('student_id', $student->id)
                 ->first();
-            
+
             if ($existingGrade && $existingGrade->is_approved) {
                 return response()->json([
                     'success' => false,

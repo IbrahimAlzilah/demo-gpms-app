@@ -1,19 +1,21 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useApproveGrade } from '../hooks/useGradeOperations'
+import { useApproveGrade, usePublishGrades } from '../hooks/useGradeOperations'
 import { createGradeColumns } from '../components/table/columns'
-import { DataTable, Button, Alert, AlertDescription } from '@/components/ui'
+import { DataTable, Button, Alert, AlertDescription, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoadingSpinner, ConfirmDialog } from '@/components/common'
-import { Info } from 'lucide-react'
+import { Info, Send } from 'lucide-react'
 import type { Grade } from '@/types/evaluation.types'
 import { useGradesList } from './GradesList.hook'
 import { useToast } from '@/components/common'
+import { committeeGradeService } from '../api/grade.service'
 
 export function GradesList() {
   const { t } = useTranslation()
   const { toastSuccess, toastError } = useToast()
   const approveGrade = useApproveGrade()
+  const publishGrades = usePublishGrades()
 
   const {
     data,
@@ -60,6 +62,21 @@ export function GradesList() {
     }))
   }
 
+  const handlePublishToStudents = async () => {
+    try {
+      const { data } = await committeeGradeService.getAll({ is_approved: true, pageSize: 1000 })
+      const ids = (data || []).map((g: Grade) => g.id)
+      if (ids.length === 0) {
+        toastError(t('committee.grades.noApprovedToPublish'))
+        return
+      }
+      await publishGrades.mutateAsync(ids)
+      toastSuccess(t('committee.grades.publishSuccess', { count: ids.length }))
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : t('committee.grades.publishError'))
+    }
+  }
+
   const columns = useMemo(
     () =>
       createGradeColumns({
@@ -97,28 +114,34 @@ export function GradesList() {
           <CardTitle>{t('grades.management')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-2 mb-4">
-            <Button
-              variant={state.approvalFilter === 'pending' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setState((prev) => ({ ...prev, approvalFilter: 'pending' }))}
+          <div className="flex flex-wrap gap-3 mb-4 items-center">
+            <Select
+              value={state.approvalFilter}
+              onValueChange={(value) =>
+                setState((prev) => ({ ...prev, approvalFilter: value as 'pending' | 'approved' | 'all' }))
+              }
             >
-              {t('grades.pending')}
-            </Button>
-            <Button
-              variant={state.approvalFilter === 'approved' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setState((prev) => ({ ...prev, approvalFilter: 'approved' }))}
-            >
-              {t('grades.approved')}
-            </Button>
-            <Button
-              variant={state.approvalFilter === 'all' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setState((prev) => ({ ...prev, approvalFilter: 'all' }))}
-            >
-              {t('common.all')}
-            </Button>
+              <SelectTrigger id="approval-filter" className="w-[220px]">
+                <SelectValue placeholder={t('common.filterByStatus')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">{t('grades.pending')}</SelectItem>
+                <SelectItem value="approved">{t('grades.approved')}</SelectItem>
+                <SelectItem value="all">{t('common.all')}</SelectItem>
+              </SelectContent>
+            </Select>
+            {state.approvalFilter === 'approved' && (
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={handlePublishToStudents}
+                disabled={publishGrades.isPending}
+                className="gap-1"
+              >
+                <Send className="h-4 w-4" />
+                {t('committee.grades.publishToStudents')}
+              </Button>
+            )}
           </div>
 
           <DataTable

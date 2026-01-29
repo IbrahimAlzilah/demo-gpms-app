@@ -1,8 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { committeeDistributionService } from "../api/committee.service";
+import {
+  committeeDistributionService,
+  type ProjectFilterStatus,
+  type DefensePhaseFilter,
+} from "../api/committee.service";
 
 /**
- * Fetch projects ready for discussion
+ * Fetch projects ready for discussion (legacy)
  */
 export function useDistributeCommittees() {
   return useQuery({
@@ -14,7 +18,29 @@ export function useDistributeCommittees() {
 }
 
 /**
- * Fetch discussion committee members
+ * Fetch projects for discussion with filtering
+ * defensePhase: Final Defense 1 (Phase 1 complete) / Final Defense 2 (FD1 + Phase 2 complete)
+ */
+export function useProjectsForDiscussion(
+  filterStatus?: ProjectFilterStatus,
+  search?: string,
+  defensePhase?: DefensePhaseFilter,
+) {
+  return useQuery({
+    queryKey: ["projects-for-discussion", filterStatus, search, defensePhase],
+    queryFn: () =>
+      committeeDistributionService.getProjectsForDiscussion(
+        filterStatus,
+        search,
+        defensePhase,
+      ),
+    staleTime: 0,
+    refetchOnMount: true,
+  });
+}
+
+/**
+ * Fetch discussion committee members with detailed profiles
  */
 export function useDiscussionCommitteeMembers() {
   return useQuery({

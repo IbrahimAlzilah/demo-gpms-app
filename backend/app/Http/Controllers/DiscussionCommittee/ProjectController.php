@@ -29,7 +29,7 @@ class ProjectController extends Controller
     public function show(Project $project): JsonResponse
     {
         $isAssigned = $project->committeeMembers()->where('users.id', request()->user()->id)->exists();
-        
+
         if (!$isAssigned) {
             return response()->json([
                 'success' => false,
@@ -39,7 +39,15 @@ class ProjectController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => new ProjectResource($project->load(['supervisor', 'students', 'assignedGroup.leader', 'assignedGroup.members', 'grades', 'committeeMembers'])),
+            'data' => new ProjectResource($project->load([
+                'supervisor',
+                'students',
+                'assignedGroup.leader',
+                'assignedGroup.members',
+                'documents',
+                'grades',
+                'committeeMembers',
+            ])),
         ]);
     }
 

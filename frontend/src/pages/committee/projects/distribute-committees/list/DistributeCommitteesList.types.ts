@@ -1,12 +1,22 @@
-import type { Project } from '@/types/project.types'
+import type {
+  CommitteeMemberProfile,
+  ProjectForDiscussion,
+  ProjectFilterStatus,
+  DefensePhaseFilter,
+} from "../api/committee.service";
 
 export interface DistributeCommitteesListState {
-  assignments: Map<string, string[]>
+  assignments: Map<string, string[]>;
+  filterStatus: ProjectFilterStatus;
+  defensePhase: DefensePhaseFilter;
+  searchQuery: string;
+  selectedMemberForDetails: CommitteeMemberProfile | null;
+  showMemberDetailsDialog: boolean;
 }
 
 export interface DistributeCommitteesListData {
-  projects: Project[]
-  members: Array<{ id: string; name: string }>
-  isLoading: boolean
-  error: Error | null
+  projects: ProjectForDiscussion[];
+  members: CommitteeMemberProfile[];
+  isLoading: boolean;
+  error: Error | null;
 }

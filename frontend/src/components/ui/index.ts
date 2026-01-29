@@ -13,14 +13,15 @@ export * from "./checkbox";
 export * from "./separator";
 export * from "./table";
 export * from "./badge";
+export * from "./progress";
 export * from "./data-table";
 export * from "./tooltip";
 export * from "./sidebar";
 export * from "./skeleton";
 export * from "./switch";
-export * from './DatePicker'
-export * from './calendar'
-export * from './alert'
-export * from './tabs'
-export * from './radio-group'
+export * from "./DatePicker";
+export * from "./calendar";
+export * from "./alert";
+export * from "./tabs";
+export * from "./radio-group";
 // export * from './toaster'

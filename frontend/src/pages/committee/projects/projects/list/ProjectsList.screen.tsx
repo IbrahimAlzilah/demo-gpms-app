@@ -1,16 +1,17 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { DataTable, Button, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui'
 import { BlockContent } from '@/components/common'
 import { AlertCircle, Megaphone } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { ROUTES } from '@/lib/constants'
 import { createProjectsColumns } from '../components/table'
-import { ProjectDetailsView } from '../../announce-projects/components/ProjectDetailsView'
 import { useProjectsList } from './ProjectsList.hook'
 
 export function ProjectsList() {
     const { t } = useTranslation()
+    const navigate = useNavigate()
 
     const {
         data,
@@ -33,12 +34,10 @@ export function ProjectsList() {
     const columns = useMemo(
         () =>
             createProjectsColumns({
-                onView: (project) => {
-                    setState((prev) => ({ ...prev, projectToViewId: project.id }))
-                },
+                onView: (project) => navigate(ROUTES.PROJECTS_COMMITTEE.PROJECT_DETAIL(project.id)),
                 t,
             }),
-        [setState, t]
+        [navigate, t]
     )
 
     const actions = (
@@ -108,14 +107,6 @@ export function ProjectsList() {
                         <span>{t('committee.projects.loadError', { defaultValue: 'Error loading projects' })}</span>
                     </div>
                 </BlockContent>
-            )}
-
-            {state.projectToViewId && (
-                <ProjectDetailsView
-                    projectId={state.projectToViewId}
-                    open={!!state.projectToViewId}
-                    onClose={() => setState((prev) => ({ ...prev, projectToViewId: null }))}
-                />
             )}
         </>
     )

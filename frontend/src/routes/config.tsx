@@ -30,12 +30,14 @@ import {
   // Discussion Committee
   LazyDiscussionCommitteeDashboardPage,
   LazyDiscussionProjectsPage,
+  LazyDiscussionProjectDetailPage,
   LazyDiscussionEvaluationPage,
   // Projects Committee
   LazyProjectsCommitteeDashboardPage,
   LazyPeriodsPage,
   LazyCommitteeProposalsPage,
   LazyProjectsPage,
+  LazyProjectManagementPage,
   LazyAnnounceProjectsPage,
   LazySupervisorsPage,
   LazyCommitteeRequestsPage,
@@ -176,6 +178,10 @@ export const discussionCommitteeRoutes: RouteConfig[] = [
     element: LazyDiscussionCommitteeDashboardPage,
   },
   {
+    path: 'projects/:projectId',
+    element: LazyDiscussionProjectDetailPage,
+  },
+  {
     path: 'projects',
     element: LazyDiscussionProjectsPage,
   },
@@ -198,6 +204,10 @@ export const projectsCommitteeRoutes: RouteConfig[] = [
   {
     path: 'proposals',
     element: LazyCommitteeProposalsPage,
+  },
+  {
+    path: 'projects/:projectId',
+    element: LazyProjectManagementPage,
   },
   {
     path: 'projects',

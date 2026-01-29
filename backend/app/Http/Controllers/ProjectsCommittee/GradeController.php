@@ -114,6 +114,57 @@ class GradeController extends Controller
     }
 
     /**
+     * Publish/announce approved grades to students
+     */
+    public function publish(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'grade_ids' => 'required|array|min:1',
+            'grade_ids.*' => 'exists:grades,id',
+        ]);
+
+        try {
+            $grades = Grade::whereIn('id', $validated['grade_ids'])
+                ->where('is_approved', true)
+                ->with(['student', 'project'])
+                ->get();
+
+            if ($grades->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No approved grades found to publish',
+                ], 400);
+            }
+
+            $publishedCount = 0;
+            foreach ($grades as $grade) {
+                // Send notification to student
+                $this->notificationService->create(
+                    $grade->student,
+                    "تم إعلان نتيجتك النهائية في المشروع: {$grade->project->title}\nالدرجة النهائية: {$grade->final_grade}",
+                    'grade_published',
+                    'grade',
+                    $grade->id
+                );
+                $publishedCount++;
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "تم إعلان {$publishedCount} درجة بنجاح",
+                'data' => [
+                    'publishedCount' => $publishedCount,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
      * Apply search to query
      */
     protected function applySearch($query, string $search)

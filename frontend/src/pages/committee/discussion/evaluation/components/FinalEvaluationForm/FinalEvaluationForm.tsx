@@ -45,7 +45,7 @@ export function FinalEvaluationForm({
         grade: {
           score: scoreNum,
           maxScore: maxScoreNum,
-          criteria: {},
+          criteria: [], // required by backend; use empty array when no criteria
           comments: data.comments || undefined,
         },
       })

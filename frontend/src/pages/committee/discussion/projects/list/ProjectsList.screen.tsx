@@ -1,14 +1,18 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { DataTable } from '@/components/ui'
 import { BlockContent } from '@/components/common'
 import { AlertCircle } from 'lucide-react'
 import { createProjectsColumns } from '../components/table'
 import { useProjectsList } from './ProjectsList.hook'
+import { ROUTES } from '@/lib/constants'
+import type { Project } from '@/types/project.types'
 
 export function ProjectsList() {
   const { t } = useTranslation()
-  
+  const navigate = useNavigate()
+
   const {
     data,
     totalCount,
@@ -27,8 +31,9 @@ export function ProjectsList() {
     () =>
       createProjectsColumns({
         t,
+        onView: (project: Project) => navigate(ROUTES.DISCUSSION_COMMITTEE.PROJECT_DETAIL(project.id)),
       }),
-    [t]
+    [t, navigate]
   )
 
   return (

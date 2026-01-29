@@ -182,6 +182,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('proposals/students/search', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'searchStudents']);
         // apiResource automatically includes POST /proposals for store() method
         Route::apiResource('proposals', App\Http\Controllers\ProjectsCommittee\ProposalController::class);
+        Route::get('projects/statistics', [App\Http\Controllers\ProjectsCommittee\ProjectController::class, 'statistics']);
+        Route::get('projects/{project}/workflow', [App\Http\Controllers\ProjectsCommittee\ProjectController::class, 'workflow']);
+        Route::put('projects/{project}/status', [App\Http\Controllers\ProjectsCommittee\ProjectController::class, 'updateStatus']);
         Route::apiResource('projects', App\Http\Controllers\ProjectsCommittee\ProjectController::class);
         Route::post('projects/announce', [App\Http\Controllers\ProjectsCommittee\ProjectController::class, 'announce']);
         Route::post('projects/unannounce', [App\Http\Controllers\ProjectsCommittee\ProjectController::class, 'unannounce']);
@@ -205,10 +208,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('registrations/{registration}/reject', [App\Http\Controllers\ProjectsCommittee\RegistrationController::class, 'reject']);
         Route::post('committees/distribute', [App\Http\Controllers\ProjectsCommittee\CommitteeController::class, 'distribute']);
         Route::get('committees/members', [App\Http\Controllers\ProjectsCommittee\CommitteeController::class, 'members']);
+        Route::get('committees/projects', [App\Http\Controllers\ProjectsCommittee\CommitteeController::class, 'projectsForDiscussion']);
+        Route::delete('committees/projects/{project}/assignment', [App\Http\Controllers\ProjectsCommittee\CommitteeController::class, 'removeAssignment']);
         Route::get('grades', [App\Http\Controllers\ProjectsCommittee\GradeController::class, 'index']);
         Route::get('grades/{grade}', [App\Http\Controllers\ProjectsCommittee\GradeController::class, 'show']);
         Route::post('grades/{grade}/approve', [App\Http\Controllers\ProjectsCommittee\GradeController::class, 'approve'])
             ->middleware('window:grade_approval');
+        Route::post('grades/publish', [App\Http\Controllers\ProjectsCommittee\GradeController::class, 'publish']);
         Route::get('reports', [App\Http\Controllers\ProjectsCommittee\ReportController::class, 'index']);
         Route::get('reports/overview', [App\Http\Controllers\ProjectsCommittee\ReportController::class, 'overview']);
         Route::get('reports/projects', [App\Http\Controllers\ProjectsCommittee\ReportController::class, 'projects']);

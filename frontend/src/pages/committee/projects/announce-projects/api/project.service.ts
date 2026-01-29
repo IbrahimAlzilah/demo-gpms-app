@@ -1,6 +1,73 @@
 import { apiClient } from '../../../../../lib/axios'
-import type { Project } from '../../../../../types/project.types'
+import type { Project, ProjectStatus } from '../../../../../types/project.types'
 import type { TableQueryParams, TableResponse } from '../../../../../types/table.types'
+
+export interface ProjectStatistics {
+  total: number
+  byStatus: {
+    draft: number
+    available_for_registration: number
+    in_progress: number
+    completed: number
+    archived: number
+  }
+  withSupervisor: number
+  withoutSupervisor: number
+  withGroup: number
+  recentActivity: {
+    newThisWeek: number
+    updatedThisWeek: number
+  }
+}
+
+export interface WorkflowPhase {
+  name: string
+  title: string
+  status: 'pending' | 'in_progress' | 'completed'
+  details: Record<string, unknown>
+}
+
+export interface ProjectWorkflow {
+  project: Project
+  phases: WorkflowPhase[]
+  overallProgress: number
+}
+
+export interface ProjectDetailStatistics {
+  documentsCount: number
+  documentsByStatus: {
+    pending: number
+    approved: number
+    rejected: number
+  }
+  gradesCount: number
+  approvedGrades: number
+  milestonesCount: number
+  completedMilestones: number
+  meetingsCount: number
+  notesCount: number
+  requestsCount: number
+  pendingRequests: number
+}
+
+export interface ProjectDetailsResponse {
+  data: Project
+  statistics: ProjectDetailStatistics
+}
+
+export interface UpdateProjectPayload {
+  title?: string
+  description?: string
+  max_students?: number
+  specialization?: string
+  keywords?: string[]
+  supervisor_id?: string | null
+}
+
+export interface UpdateProjectStatusPayload {
+  status: ProjectStatus
+  notify_students?: boolean
+}
 
 export const committeeProjectService = {
   getAll: async (): Promise<Project[]> => {
@@ -43,13 +110,56 @@ export const committeeProjectService = {
     }
   },
 
-  getById: async (id: string): Promise<Project | null> => {
+  getById: async (id: string): Promise<ProjectDetailsResponse | null> => {
     try {
-      const response = await apiClient.get<Project>(`/projects-committee/projects/${id}`)
-      return response.data
+      const response = await apiClient.get<{ success: boolean; data: Project; statistics: ProjectDetailStatistics }>(`/projects-committee/projects/${id}`)
+      // Handle both wrapped and unwrapped response formats
+      if ('data' in response && 'success' in response.data) {
+        return { data: response.data.data, statistics: response.data.statistics }
+      }
+      return response.data as unknown as ProjectDetailsResponse
     } catch {
       return null
     }
+  },
+
+  /**
+   * Get comprehensive project statistics
+   */
+  getStatistics: async (): Promise<ProjectStatistics> => {
+    const response = await apiClient.get<{ success: boolean; data: ProjectStatistics }>('/projects-committee/projects/statistics')
+    return response.data.data || response.data as unknown as ProjectStatistics
+  },
+
+  /**
+   * Get project workflow with all phases
+   */
+  getWorkflow: async (projectId: string): Promise<ProjectWorkflow> => {
+    const response = await apiClient.get<{ success: boolean; data: ProjectWorkflow }>(`/projects-committee/projects/${projectId}/workflow`)
+    return response.data.data || response.data as unknown as ProjectWorkflow
+  },
+
+  /**
+   * Update project details
+   */
+  update: async (projectId: string, payload: UpdateProjectPayload): Promise<Project> => {
+    const response = await apiClient.put<{ success: boolean; data: Project }>(`/projects-committee/projects/${projectId}`, payload)
+    return response.data.data || response.data as unknown as Project
+  },
+
+  /**
+   * Update project status
+   */
+  updateStatus: async (projectId: string, payload: UpdateProjectStatusPayload): Promise<Project> => {
+    const response = await apiClient.put<{ success: boolean; data: Project }>(`/projects-committee/projects/${projectId}/status`, payload)
+    return response.data.data || response.data as unknown as Project
+  },
+
+  /**
+   * Delete a project (only non-active projects)
+   */
+  delete: async (projectId: string): Promise<void> => {
+    await apiClient.delete(`/projects-committee/projects/${projectId}`)
   },
 
   announce: async (projectIds: string[]): Promise<void> => {
@@ -60,3 +170,4 @@ export const committeeProjectService = {
     await apiClient.post('/projects-committee/projects/unannounce', { project_ids: projectIds })
   },
 }
+

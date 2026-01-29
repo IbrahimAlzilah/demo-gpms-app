@@ -56,9 +56,11 @@ class EvaluationController extends Controller
             'student_id' => 'required|exists:users,id',
             'score' => 'required|numeric|min:0',
             'max_score' => 'required|numeric|min:0',
-            'criteria' => 'required|array',
+            'criteria' => 'nullable|array',
             'comments' => 'nullable|string',
         ]);
+
+        $validated['criteria'] = $validated['criteria'] ?? [];
 
         $project = Project::findOrFail($validated['project_id']);
 

@@ -26,7 +26,8 @@ export const ROUTES = {
     PROPOSALS_VIEW: "/proposals",
     PROJECTS: "/projects",
     REGISTER_PROJECT: "/projects/register",
-    REGISTER_PROJECT_WITH_ID: (projectId: string) => `/projects/register/${projectId}`,
+    REGISTER_PROJECT_WITH_ID: (projectId: string) =>
+      `/projects/register/${projectId}`,
     GROUPS: "/groups",
     REQUESTS: "/requests",
     DOCUMENTS: "/documents",
@@ -51,6 +52,7 @@ export const ROUTES = {
   DISCUSSION_COMMITTEE: {
     DASHBOARD: "/dashboard",
     PROJECTS: "/projects",
+    PROJECT_DETAIL: (id: string) => `/projects/${id}`,
     EVALUATION: "/evaluation",
   },
   // Projects Committee routes
@@ -59,6 +61,7 @@ export const ROUTES = {
     PERIODS: "/periods",
     PROPOSALS: "/proposals",
     PROJECTS: "/projects",
+    PROJECT_DETAIL: (id: string) => `/projects/${id}`,
     ANNOUNCE_PROJECTS: "/announce",
     ASSIGN_SUPERVISORS: "/supervisors",
     REQUESTS: "/requests",
@@ -221,6 +224,11 @@ export const NAV_MENU: Record<string, NavMenuItem[]> = {
       labelKey: "nav.periods",
       path: ROUTES.PROJECTS_COMMITTEE.PERIODS,
       icon: "Calendar",
+    },
+    {
+      labelKey: "nav.grades",
+      path: ROUTES.PROJECTS_COMMITTEE.GRADES,
+      icon: "Award",
     },
     {
       labelKey: "nav.reports",
