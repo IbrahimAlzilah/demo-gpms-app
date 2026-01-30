@@ -416,7 +416,9 @@
     "groupIdPlaceholder": "Enter group ID",
     "groupIdDescription": "Share this ID with students to join the group",
     "groupIdRequired": "Group ID is required",
+    "groupIdentifier": "Group Identifier",
     "shareGroupId": "Share this ID with students",
+    "shareGroupCode": "Share group code",
     "submitJoinRequest": "Submit Join Request",
     "submittingRequest": "Submitting request...",
     "joinRequestError": "Failed to submit join request",
@@ -443,7 +445,10 @@
     "deleteGroupDescription": "You can only delete the group if you have no project registrations",
     "onlyLeaderCanLeaveGroup": "Only the group leader can leave the group",
     "cannotDeleteGroupWhileRegisteredInProject": "You cannot delete the group while registered in a project",
-    "manageYourGroupMembers": "Manage your group members"
+    "manageYourGroupMembers": "Manage your group members",
+    "confirmRemove": "Are you sure you want to remove this member from the group?",
+    "removeSuccess": "Member removed successfully",
+    "removeError": "Failed to remove member"
   },
   "theme": {
     "light": "Light",

@@ -9,9 +9,11 @@ interface GroupMembersListProps {
   group: ProjectGroup | StudentGroup
   onError?: (error: string) => void
   onSuccess?: (message: string) => void
+  /** When false, the "Manage your group members" heading is not rendered (e.g. when parent provides its own section title). */
+  showHeading?: boolean
 }
 
-export function GroupMembersList({ group, onError, onSuccess }: GroupMembersListProps) {
+export function GroupMembersList({ group, onError, onSuccess, showHeading = true }: GroupMembersListProps) {
   const { t } = useTranslation()
   const { user } = useAuthStore()
   const removeMember = useRemoveGroupMember()
@@ -39,9 +41,11 @@ export function GroupMembersList({ group, onError, onSuccess }: GroupMembersList
 
   return (
     <div>
-      <h4 className="font-small mb-3 flex items-center gap-2">
-        {t('groups.manageYourGroupMembers')}
-      </h4>
+      {showHeading && (
+        <h4 className="font-small mb-3 flex items-center gap-2">
+          {t('groups.manageYourGroupMembers')}
+        </h4>
+      )}
       <div className="space-y-2">
         {group.members.map((member) => (
           <div

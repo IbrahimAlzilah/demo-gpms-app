@@ -423,6 +423,7 @@
     "groupIdPlaceholder": "أدخل معرف المجموعة",
     "groupIdDescription": "شارك هذا المعرف مع الطلاب للانضمام إلى المجموعة",
     "groupIdRequired": "معرف المجموعة مطلوب",
+    "groupIdentifier": "معرف المجموعة",
     "shareGroupId": "شارك هذا المعرف مع الطلاب",
     "submitJoinRequest": "إرسال طلب الانضمام",
     "submittingRequest": "جاري إرسال الطلب...",
