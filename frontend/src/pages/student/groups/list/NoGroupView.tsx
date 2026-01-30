@@ -54,77 +54,79 @@ export function NoGroupView({
             </div>
 
             {/* Main Actions Grid */}
-            <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                {/* Create Group Card */}
-                <div className={`relative group ${hasPendingJoinRequest ? 'opacity-60 grayscale cursor-not-allowed' : ''}`}>
-                    <Card className={`h-full border-2 transition-all hover:border-primary/50 hover:shadow-md ${hasPendingJoinRequest ? '' : 'cursor-pointer'}`}
-                        onClick={!hasPendingJoinRequest ? onCreateClick : undefined}>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-3">
-                                <div className="p-2 bg-primary/10 rounded-full text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-                                    <PlusCircle className="w-6 h-6" />
-                                </div>
-                                {t('groups.createGroup')}
-                            </CardTitle>
-                            <CardDescription className="text-base">
-                                {t('groups.createGroupDescription')}
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <ul className="space-y-2 text-sm text-muted-foreground mb-6">
-                                <li className="flex items-center gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                    Become the Group Leader
-                                </li>
-                                <li className="flex items-center gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                    Invite other students
-                                </li>
-                                <li className="flex items-center gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                    Manage project registration
-                                </li>
-                            </ul>
-                            <Button className="w-full" disabled={hasPendingJoinRequest}>
-                                {t('groups.createGroup')} <ArrowRight className="w-4 h-4 ml-2" />
-                            </Button>
-                        </CardContent>
-                    </Card>
-                </div>
+            {!hasPendingJoinRequest && (
+                <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                    {/* Create Group Card */}
+                    <div className={`relative group ${hasPendingJoinRequest ? 'opacity-60 grayscale cursor-not-allowed' : ''}`}>
+                        <Card className={`h-full border-2 transition-all hover:border-primary/50 hover:shadow-md ${hasPendingJoinRequest ? '' : 'cursor-pointer'}`}
+                            onClick={!hasPendingJoinRequest ? onCreateClick : undefined}>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-3">
+                                    <div className="p-2 bg-primary/10 rounded-full text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                                        <PlusCircle className="w-6 h-6" />
+                                    </div>
+                                    {t('groups.createGroup')}
+                                </CardTitle>
+                                <CardDescription className="text-base">
+                                    {t('groups.createGroupDescription')}
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <ul className="space-y-2 text-sm text-muted-foreground mb-6">
+                                    <li className="flex items-center gap-2">
+                                        <CheckCircle2 className="w-4 h-4 text-green-500" />
+                                        Become the Group Leader
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                        <CheckCircle2 className="w-4 h-4 text-green-500" />
+                                        Invite other students
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                        <CheckCircle2 className="w-4 h-4 text-green-500" />
+                                        Manage project registration
+                                    </li>
+                                </ul>
+                                <Button className="w-full" disabled={hasPendingJoinRequest}>
+                                    {t('groups.createGroup')} <ArrowRight className="w-4 h-4 ml-2" />
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </div>
 
-                {/* Join Group Card */}
-                <div className={`relative group ${hasPendingJoinRequest ? 'opacity-60 grayscale cursor-not-allowed' : ''}`}>
-                    <Card className={`h-full border-2 transition-all hover:border-primary/50 hover:shadow-md ${hasPendingJoinRequest ? '' : 'cursor-pointer'}`}
-                        onClick={!hasPendingJoinRequest ? onJoinClick : undefined}>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-3">
-                                <div className="p-2 bg-secondary/20 rounded-full text-secondary-foreground group-hover:bg-secondary group-hover:text-white transition-colors">
-                                    <UserPlus className="w-6 h-6" />
-                                </div>
-                                {t('groups.joinGroup')}
-                            </CardTitle>
-                            <CardDescription className="text-base">
-                                {t('groups.joinGroupDescription')}
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <ul className="space-y-2 text-sm text-muted-foreground mb-6">
-                                <li className="flex items-center gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-secondary-foreground/70" />
-                                    Join via Group Code
-                                </li>
-                                <li className="flex items-center gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-secondary-foreground/70" />
-                                    Browse available groups
-                                </li>
-                            </ul>
-                            <Button variant="outline" className="w-full" disabled={hasPendingJoinRequest}>
-                                {t('groups.joinGroup')} <ArrowRight className="w-4 h-4 ml-2" />
-                            </Button>
-                        </CardContent>
-                    </Card>
+                    {/* Join Group Card */}
+                    <div className={`relative group ${hasPendingJoinRequest ? 'opacity-60 grayscale cursor-not-allowed' : ''}`}>
+                        <Card className={`h-full border-2 transition-all hover:border-primary/50 hover:shadow-md ${hasPendingJoinRequest ? '' : 'cursor-pointer'}`}
+                            onClick={!hasPendingJoinRequest ? onJoinClick : undefined}>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-3">
+                                    <div className="p-2 bg-secondary/20 rounded-full text-secondary-foreground group-hover:bg-secondary group-hover:text-white transition-colors">
+                                        <UserPlus className="w-6 h-6" />
+                                    </div>
+                                    {t('groups.joinGroup')}
+                                </CardTitle>
+                                <CardDescription className="text-base">
+                                    {t('groups.joinGroupDescription')}
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <ul className="space-y-2 text-sm text-muted-foreground mb-6">
+                                    <li className="flex items-center gap-2">
+                                        <CheckCircle2 className="w-4 h-4 text-secondary-foreground/70" />
+                                        Join via Group Code
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                        <CheckCircle2 className="w-4 h-4 text-secondary-foreground/70" />
+                                        Browse available groups
+                                    </li>
+                                </ul>
+                                <Button variant="outline" className="w-full" disabled={hasPendingJoinRequest}>
+                                    {t('groups.joinGroup')} <ArrowRight className="w-4 h-4 ml-2" />
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {hasPendingJoinRequest && (
                 <div className="max-w-2xl mx-auto p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-center text-sm">
