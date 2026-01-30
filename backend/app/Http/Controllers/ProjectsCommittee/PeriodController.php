@@ -96,6 +96,22 @@ class PeriodController extends Controller
             'description' => 'nullable|string',
         ]);
 
+        // Check if period has expired before allowing activation/deactivation
+        if (isset($validated['is_active'])) {
+            $endDate = $validated['end_date'] ?? $period->end_date;
+            $today = now()->startOfDay();
+
+            if ($endDate && $endDate < $today) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot modify an expired period. The period has already ended and its status cannot be changed.',
+                    'errors' => [
+                        'is_active' => ['This period has expired and cannot be activated or deactivated.'],
+                    ],
+                ], 422);
+            }
+        }
+
         // Validate date range: end_date must be after start_date
         // Use validated start_date if provided, otherwise use existing period start_date
         $startDate = $validated['start_date'] ?? $period->start_date?->toDateString();

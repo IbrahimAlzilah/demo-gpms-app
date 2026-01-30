@@ -4,9 +4,29 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Collection;
 
 class GroupRegistrationRequestResource extends JsonResource
 {
+    /**
+     * Deduplicate project registrations by project_id so the same project is only shown once per request.
+     * Keeps one registration per project: prefers approved, then pending, then rejected.
+     */
+    protected static function uniqueProjectRegistrations(Collection $registrations): Collection
+    {
+        if ($registrations->isEmpty()) {
+            return $registrations;
+        }
+        $statusOrder = ['approved' => 3, 'pending' => 2, 'rejected' => 1];
+        return $registrations
+            ->sortByDesc(function ($reg) use ($statusOrder) {
+                $status = is_string($reg->status ?? null) ? strtolower($reg->status) : '';
+                return $statusOrder[$status] ?? 0;
+            })
+            ->unique('project_id')
+            ->values();
+    }
+
     /**
      * Transform the resource into an array.
      *
@@ -34,7 +54,11 @@ class GroupRegistrationRequestResource extends JsonResource
         $submitter = $isModel ? $this->whenLoaded('submitter') : ($this->resource->submitter ?? null);
         $reviewer = $isModel ? $this->whenLoaded('reviewer') : ($this->resource->reviewer ?? null);
         $approvedProject = $isModel ? $this->whenLoaded('approvedProject') : ($this->resource->approvedProject ?? null);
-        $projectRegistrations = $isModel ? $this->whenLoaded('projectRegistrations') : ($this->resource->projectRegistrations ?? collect([]));
+        $rawProjectRegistrations = $isModel ? $this->whenLoaded('projectRegistrations') : ($this->resource->projectRegistrations ?? collect([]));
+        if ($rawProjectRegistrations instanceof \Illuminate\Http\Resources\MissingValue) {
+            $rawProjectRegistrations = collect([]);
+        }
+        $projectRegistrations = self::uniqueProjectRegistrations(collect($rawProjectRegistrations));
 
         return [
             'id' => $id,
@@ -50,7 +74,7 @@ class GroupRegistrationRequestResource extends JsonResource
             'submitter' => $submitter ? new UserResource($submitter) : null,
             'reviewer' => $reviewer ? new UserResource($reviewer) : null,
             'approvedProject' => $approvedProject ? new ProjectResource($approvedProject) : null,
-            'projectRegistrations' => $projectRegistrations ? ProjectRegistrationResource::collection($projectRegistrations) : [],
+            'projectRegistrations' => $projectRegistrations->isNotEmpty() ? ProjectRegistrationResource::collection($projectRegistrations) : [],
             'createdAt' => $createdAt,
             'updatedAt' => $updatedAt,
         ];

@@ -5,6 +5,7 @@ import { useMyGroup } from "@/pages/student/groups/hooks/useGroups";
 import { useAuthStore } from "@/pages/auth/login";
 import { useCreateBatchProposals } from "../hooks/useProposalOperations";
 import { usePeriodCheck } from "@/hooks/usePeriodCheck";
+import { getApiErrorMessage } from "@/lib/utils";
 import type { ProposalFormData } from "../types/Proposals.types";
 
 interface ProposalItem extends ProposalFormData {
@@ -134,17 +135,16 @@ export function useProposalsSubmit(onSuccess?: () => void) {
     } catch (error: any) {
       // Check if error is due to missing group
       if (error.response?.data?.code === "NO_GROUP") {
-        const message =
-          error.response?.data?.message || t("proposal.groupRequiredMessage");
+        const message = getApiErrorMessage(
+          error,
+          t,
+          "proposal.groupRequiredMessage",
+        );
         toastError(message);
-        // Don't show generic error for this case, the modal will handle it
         return;
       }
 
-      const message =
-        error.response?.data?.message ||
-        error.message ||
-        t("proposal.submitError");
+      const message = getApiErrorMessage(error, t, "proposal.submitError");
       toastError(message);
     } finally {
       setIsSubmitting(false);

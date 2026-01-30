@@ -752,10 +752,19 @@ class RegistrationController extends Controller
             $proposals = $group->proposals ?? collect([]);
             $registrationRequests = $group->groupRegistrationRequests ?? collect([]);
 
+            // Project IDs already present in regular registration requests (avoid showing same project twice)
+            $projectIdsInRegularRequests = $registrationRequests
+                ->flatMap(fn ($r) => $r->projectRegistrations ?? collect())
+                ->pluck('project_id')
+                ->unique()
+                ->filter()
+                ->values()
+                ->all();
+
             // Also fetch legacy registrations (registrations without group_registration_request_id)
-            // for group members (leader and members)
+            // for group members (leader and members). Exclude projects already in regular requests.
             $memberIds = $group->members()->pluck('users.id')->push($group->leader_id)->unique();
-            
+
             $legacyRegistrationsQuery = ProjectRegistration::with([
                     'project.supervisor',
                     'student',
@@ -763,14 +772,18 @@ class RegistrationController extends Controller
                 ])
                 ->whereNull('group_registration_request_id')
                 ->whereIn('student_id', $memberIds);
-            
+
+            if (!empty($projectIdsInRegularRequests)) {
+                $legacyRegistrationsQuery->whereNotIn('project_id', $projectIdsInRegularRequests);
+            }
+
             // Apply status filter if provided
             if ($status && $status !== 'all') {
                 $legacyRegistrationsQuery->where('status', $status);
             }
-            
+
             $legacyRegistrations = $legacyRegistrationsQuery->orderBy('submitted_at', 'desc')->get();
-            
+
             // Convert legacy registrations to GroupRegistrationRequest-like structure
             $legacyRequests = collect([]);
             if ($legacyRegistrations->isNotEmpty()) {
@@ -778,10 +791,10 @@ class RegistrationController extends Controller
                 $legacyGrouped = $legacyRegistrations->groupBy(function ($reg) {
                     return $reg->submitted_at ? $reg->submitted_at->format('Y-m-d') : 'unknown';
                 });
-                
+
                 foreach ($legacyGrouped as $dateKey => $dateRegistrations) {
                     $firstReg = $dateRegistrations->first();
-                    
+
                     // Create a virtual GroupRegistrationRequest-like object
                     $legacyRequest = new \stdClass();
                     $legacyRequest->id = 'legacy_' . $group->id . '_' . $dateKey;
@@ -795,18 +808,18 @@ class RegistrationController extends Controller
                     $legacyRequest->approved_project_id = $this->getApprovedProjectId($dateRegistrations->all());
                     $legacyRequest->created_at = $firstReg->created_at ?? now();
                     $legacyRequest->updated_at = $firstReg->updated_at ?? now();
-                    
+
                     // Set relationships
                     $legacyRequest->studentGroup = $group;
                     $legacyRequest->submitter = $firstReg->student;
                     $legacyRequest->reviewer = $firstReg->reviewer;
                     $legacyRequest->approvedProject = $this->getApprovedProject($dateRegistrations->all());
                     $legacyRequest->projectRegistrations = $dateRegistrations;
-                    
+
                     $legacyRequests->push($legacyRequest);
                 }
             }
-            
+
             // Merge regular registration requests with legacy requests
             $allRegistrationRequests = $registrationRequests->concat($legacyRequests);
 
@@ -824,7 +837,7 @@ class RegistrationController extends Controller
                 if ($approvedRequest && $approvedRequest->approvedProject) {
                     $approvedProject = $approvedRequest->approvedProject;
                 }
-                
+
                 // Also check legacy registrations for approved projects
                 if (!$approvedProject) {
                     $approvedLegacy = $legacyRegistrations->firstWhere('status', 'approved');

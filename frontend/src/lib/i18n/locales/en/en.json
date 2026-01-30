@@ -560,7 +560,7 @@
       "descriptionRequired": "Description is required",
       "descriptionMinLength": "Description must be at least 50 characters",
       "submitterRequired": "Please select a student",
-      "targetProjectRequired": "Target project is required during registration window",
+      "targetProjectOptional": "Target project is optional - you can submit general proposals or target specific projects",
       "groupRequiredWhenInGroup": "You must submit the proposal on behalf of your group",
       "groupRequiredDuringRegistration": "Group is required during registration window",
       "groupSizeInvalid": "Group must have at least 2 members and a maximum of 5 members"
@@ -646,7 +646,24 @@
     "assign": "Assign",
     "submissionPeriodClosed": "Proposal Submission Period Closed",
     "submissionPeriodClosedMessage": "Proposal submission is only allowed during the active proposal submission period. Please check the time windows to see when submission is available.",
-    "assignmentType": "Assignment Type"
+    "assignmentType": "Assignment Type",
+    "errors": {
+      "groupMinMembersRegistration": "Group must have at least {{count}} members to submit proposals during registration window",
+      "groupMaxMembers": "Group cannot have more than {{count}} members",
+      "onlyLeaderCanSubmit": "Only group leaders can submit proposals. You must be the leader of an active student group.",
+      "onlyLeaderCanAccessContext": "Only group leaders can access submission context. You must be the leader of an active student group.",
+      "onlyLeaderCanUpdate": "Only group leaders can update proposals. You must be the leader of an active student group.",
+      "submitOwnGroupOnly": "You can only submit proposals for your own group.",
+      "submissionLocked": "New proposal submissions are not allowed after the first submission. Please use the edit functionality to add new proposals to your existing submission.",
+      "periodClosed": "Proposal submission is only allowed during the project registration period. Please check the active time windows.",
+      "updatesOnlyInWindows": "Proposal updates are only allowed during proposal submission or project registration windows, or when revisions are requested.",
+      "updateOwnGroupOnly": "You can only update proposals for your own group.",
+      "editBlockedApproved": "Editing is not allowed. One or more proposals have already been approved by the Project Committee.",
+      "editBlockedNotAllPending": "Editing is only allowed when all proposals are in pending review or requires modification status.",
+      "studentGroupIdRequired": "student_group_id is required when adding new proposals.",
+      "addProposalsOwnGroupOnly": "You can only add proposals for your own group.",
+      "selectedUserNotSupervisor": "The selected user is not a supervisor"
+    }
   },
   "group": {
     "pageDescription": "Create a new group, join one, invite colleagues, or leave",
@@ -1340,6 +1357,9 @@
       "statusActive": "Currently active - Students will be notified",
       "statusInactive": "Inactive - Period is disabled",
       "statusExpired": "Expired - Period has ended",
+      "expired": "Expired",
+      "expiredPeriodWarning": "This period has expired and cannot be modified",
+      "cannotModifyExpired": "Cannot modify an expired period. The period has already ended and its status cannot be changed.",
       "notificationInfo": "Notifications will be sent to students automatically when the period becomes active (on start date or when manually activated).",
       "scheduledPeriodInfo": "This period is scheduled and will be activated automatically when the start date is reached. Students will receive notifications at that time.",
       "deactivateError": "Failed to deactivate period"

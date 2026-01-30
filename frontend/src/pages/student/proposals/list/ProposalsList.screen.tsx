@@ -21,7 +21,7 @@ import { useMyGroup } from '@/pages/student/groups/hooks/useGroups'
 import { useAuthStore } from '@/pages/auth/login'
 import { usePeriodCheck } from '@/hooks/usePeriodCheck'
 import { ROUTES } from '@/lib/constants'
-import { cn } from '@/lib/utils'
+import { cn, getApiErrorMessage } from '@/lib/utils'
 import { proposalService } from '../api/proposal.service'
 
 export function ProposalsList() {
@@ -122,10 +122,7 @@ export function ProposalsList() {
             // The edit page will also validate via getSubmissionContext
             navigate(ROUTES.STUDENT.PROPOSALS_EDIT)
           } catch (error: any) {
-            // Handle API errors
-            const errorMessage = error.response?.data?.message ||
-              error.message ||
-              'proposal.loadError'
+            const errorMessage = getApiErrorMessage(error, t, 'proposal.loadError')
             toastError(errorMessage)
           }
         },

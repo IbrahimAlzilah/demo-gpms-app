@@ -195,8 +195,8 @@ export function UnifiedGroupCard({
           {/* Proposals Section */}
           {proposals.length > 0 && (
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-semibold">
+              <div className="flex items-center justify-between bg-accent rounded-sm">
+                <h4 className="text-sm font-semibold text-primary">
                   {t('common.proposals')} ({proposals.length})
                 </h4>
                 <Button
@@ -310,8 +310,8 @@ export function UnifiedGroupCard({
           {/* Registration Requests Section */}
           {registrationRequests.length > 0 && (
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-semibold">
+              <div className="flex items-center justify-between bg-accent rounded-sm">
+                <h4 className="text-sm font-semibold text-primary">
                   {t('registration.registrationRequests')} ({registrationRequests.length})
                 </h4>
                 <Button
@@ -333,6 +333,14 @@ export function UnifiedGroupCard({
                   {registrationRequests.map((request) => {
                     const projectRegistrations = request.projectRegistrations || []
                     const isLoading = isLoadingAction?.(request.id, 'registration') || false
+                    // Deduplicate by project so the same project is only shown once per request
+                    const seenProjectIds = new Set<string>()
+                    const uniqueRegistrations = projectRegistrations.filter((registration) => {
+                      const projectId = registration?.project?.id ?? registration?.projectId
+                      if (!projectId || seenProjectIds.has(String(projectId))) return false
+                      seenProjectIds.add(String(projectId))
+                      return true
+                    })
 
                     return (
                       <div
@@ -348,7 +356,7 @@ export function UnifiedGroupCard({
                             <div className="flex items-center gap-2 mb-1">
                               <StatusBadge status={request.status || 'pending'} />
                               <span className="text-xs text-muted-foreground">
-                                {projectRegistrations.length} {t('registration.projects')}
+                                {uniqueRegistrations.length} {t('registration.projects')}
                               </span>
                             </div>
                             {request.submittedAt && (
@@ -361,9 +369,9 @@ export function UnifiedGroupCard({
                         </div>
 
                         {/* Projects in this request */}
-                        {projectRegistrations.length > 0 && (
+                        {uniqueRegistrations.length > 0 && (
                           <div className="mt-2 space-y-1.5">
-                            {projectRegistrations.map((registration) => {
+                            {uniqueRegistrations.map((registration) => {
                               const project = registration?.project
                               if (!project) return null
 

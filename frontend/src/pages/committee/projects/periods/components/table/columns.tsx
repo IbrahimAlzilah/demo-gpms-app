@@ -143,9 +143,19 @@ export function createPeriodColumns({
 
         return (
           <div className="flex items-center gap-2" title={tooltip}>
-            <StatusBadge
-              status={status === 'active' ? 'active' : status === 'scheduled' ? 'pending' : 'inactive'}
-            />
+            {status === 'expired' ? (
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-destructive/10 text-destructive border border-destructive/20">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-destructive"></span>
+                </span>
+                {t('committee.periods.expired')}
+              </div>
+            ) : (
+              <StatusBadge
+                status={status === 'active' ? 'active' : status === 'scheduled' ? 'pending' : 'inactive'}
+              />
+            )}
             {isScheduled && !period.isActive && (
               <Clock className="h-3.5 w-3.5 text-muted-foreground" />
             )}
@@ -168,26 +178,33 @@ export function createPeriodColumns({
         const period = row.original
         const actions: TableAction<TimePeriod>[] = []
 
-        // Activate action - only show when period is inactive
+        // Check if period is expired
+        const now = new Date()
+        const endDate = new Date(period.endDate)
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        const end = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate())
+        const isExpired = today > end
+
+        // Activate action - only show when period is inactive AND not expired
         if (onActivate) {
           actions.push({
             id: 'activate',
             label: t('committee.periods.activate'),
             icon: Power,
             onClick: () => onActivate(period),
-            hidden: () => period.isActive,
+            hidden: () => period.isActive || isExpired,
             variant: 'success',
           })
         }
 
-        // Deactivate action - only show when period is active
+        // Deactivate action - only show when period is active AND not expired
         if (onDeactivate) {
           actions.push({
             id: 'deactivate',
             label: t('committee.periods.deactivate'),
             icon: PowerOff,
             onClick: () => onDeactivate(period),
-            hidden: () => !period.isActive,
+            hidden: () => !period.isActive || isExpired,
             variant: 'warning',
           })
         }

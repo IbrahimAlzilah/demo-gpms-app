@@ -164,11 +164,13 @@ class ProposalController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Proposal submission is only allowed during the project registration period. Please check the active time windows.',
+                'error_key' => 'proposal.errors.periodClosed',
             ], 403);
         }
 
-        // During registration window, target_project_id is required (students must register for a project)
-        $targetProjectRule = 'required|exists:projects,id';
+        // During registration window, target_project_id is optional
+        // Students can submit general proposals OR target specific projects for registration
+        $targetProjectRule = 'nullable|exists:projects,id';
 
         $validated = $request->validate([
             'student_group_id' => 'required|exists:student_groups,id',
@@ -195,6 +197,7 @@ class ProposalController extends Controller
                 'success' => false,
                 'message' => 'You must join a group before submitting proposals. Please create or join a student group first.',
                 'code' => 'NO_GROUP',
+                'error_key' => 'proposal.groupRequiredMessage',
             ], 403);
         }
 
@@ -209,6 +212,7 @@ class ProposalController extends Controller
                 'success' => false,
                 'message' => 'Only group leaders can submit proposals. You must be the leader of an active student group.',
                 'code' => 'NOT_LEADER',
+                'error_key' => 'proposal.errors.onlyLeaderCanSubmit',
             ], 403);
         }
 
@@ -217,6 +221,7 @@ class ProposalController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'You can only submit proposals for your own group.',
+                'error_key' => 'proposal.errors.submitOwnGroupOnly',
             ], 403);
         }
 
@@ -226,6 +231,7 @@ class ProposalController extends Controller
                 'success' => false,
                 'message' => 'New proposal submissions are not allowed after the first submission.',
                 'code' => 'SUBMISSION_LOCKED',
+                'error_key' => 'proposal.errors.submissionLocked',
             ], 403);
         }
 
@@ -242,6 +248,8 @@ class ProposalController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => "Group must have at least {$minMembers} members to submit proposals during registration window",
+                    'error_key' => 'proposal.errors.groupMinMembersRegistration',
+                    'error_params' => ['count' => $minMembers],
                 ], 422);
             }
         }
@@ -251,6 +259,8 @@ class ProposalController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => "Group cannot have more than {$maxMembers} members",
+                'error_key' => 'proposal.errors.groupMaxMembers',
+                'error_params' => ['count' => $maxMembers],
             ], 422);
         }
 
@@ -299,10 +309,9 @@ class ProposalController extends Controller
             }
         }
 
-        // Dynamic validation: target_project_id is required during registration window, optional during proposal submission
-        $targetProjectRule = $isRegistrationWindow
-            ? 'required|exists:projects,id'
-            : 'nullable|exists:projects,id';
+        // Dynamic validation: target_project_id is optional in both windows
+        // Students can submit general proposals OR target specific projects
+        $targetProjectRule = 'nullable|exists:projects,id';
 
         $validated = $request->validate([
             'student_group_id' => 'nullable|exists:student_groups,id',
@@ -468,11 +477,13 @@ class ProposalController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Proposal submission is only allowed during the project registration period. Please check the active time windows.',
+                'error_key' => 'proposal.errors.periodClosed',
             ], 403);
         }
 
-        // During registration window, target_project_id is required (students must register for a project)
-        $targetProjectRule = 'required|exists:projects,id';
+        // During registration window, target_project_id is optional
+        // Students can submit general proposals OR target specific projects for registration
+        $targetProjectRule = 'nullable|exists:projects,id';
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -510,6 +521,7 @@ class ProposalController extends Controller
                 'success' => false,
                 'message' => 'Only group leaders can submit proposals. You must be the leader of an active student group.',
                 'code' => 'NOT_LEADER',
+                'error_key' => 'proposal.errors.onlyLeaderCanSubmit',
             ], 403);
         }
 
@@ -518,6 +530,7 @@ class ProposalController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'You can only submit proposals for your own group.',
+                'error_key' => 'proposal.errors.submitOwnGroupOnly',
             ], 403);
         }
 
@@ -528,6 +541,7 @@ class ProposalController extends Controller
                 'success' => false,
                 'message' => 'New proposal submissions are not allowed after the first submission. Please use the edit functionality to add new proposals to your existing submission.',
                 'code' => 'SUBMISSION_LOCKED',
+                'error_key' => 'proposal.errors.submissionLocked',
             ], 403);
         }
 
@@ -546,6 +560,8 @@ class ProposalController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => "Group must have at least {$minMembers} members to submit a proposal during registration window",
+                    'error_key' => 'proposal.errors.groupMinMembersRegistration',
+                    'error_params' => ['count' => $minMembers],
                 ], 422);
             }
         }
@@ -555,6 +571,8 @@ class ProposalController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => "Group cannot have more than {$maxMembers} members",
+                'error_key' => 'proposal.errors.groupMaxMembers',
+                'error_params' => ['count' => $maxMembers],
             ], 422);
         }
 
