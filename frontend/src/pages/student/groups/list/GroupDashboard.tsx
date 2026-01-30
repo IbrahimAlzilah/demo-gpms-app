@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Badge, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui'
+import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui'
 import { Users, Copy, CheckCircle2, LogOut, UserPlus, Briefcase } from 'lucide-react'
 import { useState } from 'react'
 import { GroupMembersList } from '../components/GroupMembersList'

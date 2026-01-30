@@ -103,7 +103,7 @@ export function GroupsList() {
   }
 
   return (
-    <div className="container mx-auto py-6">
+    <div className="container mx-auto">
       {!data.group ? (
         <NoGroupView
           invitations={data.invitations}

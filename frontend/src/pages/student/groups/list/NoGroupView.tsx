@@ -4,6 +4,8 @@ import { PlusCircle, UserPlus, Mail, CheckCircle2, XCircle, ArrowRight, Loader2 
 import { MyJoinRequestsList } from '../components/MyJoinRequestsList'
 import { formatRelativeTime } from '@/lib/utils/format'
 import type { GroupInvitation } from '@/types/project.types'
+import { BlockContent } from '@/components/common'
+import { useMemo } from 'react'
 
 interface NoGroupViewProps {
     invitations: GroupInvitation[] | undefined
@@ -26,11 +28,26 @@ export function NoGroupView({
 }: NoGroupViewProps) {
     const { t } = useTranslation()
 
+    const actions = useMemo(() => {
+        return (
+            <div className="flex items-center gap-3">
+                <Button onClick={onCreateClick} variant="default">
+                    <PlusCircle className="size-4" />
+                    {t('groups.createGroup')}
+                </Button>
+                <Button onClick={onJoinClick} variant="outline">
+                    <UserPlus className="size-4" />
+                    {t('groups.joinGroup')}
+                </Button>
+            </div>
+
+        )
+    }, [onCreateClick, onJoinClick])
+
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <BlockContent title={t('groups.management')}>
             {/* Hero / Welcome Section */}
             <div className="text-center space-y-4 py-8">
-                <h2 className="text-3xl font-bold tracking-tight">{t('groups.title')}</h2>
                 <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
                     {t('groups.noGroupDescription')}
                 </p>
@@ -69,7 +86,7 @@ export function NoGroupView({
                                 </li>
                             </ul>
                             <Button className="w-full" disabled={hasPendingJoinRequest}>
-                                {t('groups.create')} <ArrowRight className="w-4 h-4 ml-2" />
+                                {t('groups.createGroup')} <ArrowRight className="w-4 h-4 ml-2" />
                             </Button>
                         </CardContent>
                     </Card>
@@ -102,7 +119,7 @@ export function NoGroupView({
                                 </li>
                             </ul>
                             <Button variant="outline" className="w-full" disabled={hasPendingJoinRequest}>
-                                {t('groups.join')} <ArrowRight className="w-4 h-4 ml-2" />
+                                {t('groups.joinGroup')} <ArrowRight className="w-4 h-4 ml-2" />
                             </Button>
                         </CardContent>
                     </Card>
@@ -177,6 +194,6 @@ export function NoGroupView({
             <div className="max-w-4xl mx-auto pt-8">
                 <MyJoinRequestsList />
             </div>
-        </div>
+        </BlockContent>
     )
 }
