@@ -214,7 +214,7 @@ export function UnifiedGroupCard({
               </div>
 
               {expandedSection === 'proposals' && (
-                <div className="space-y-2 pl-4 border-l-2 border-primary/20">
+                <div className="space-y-2 ps-4 border-s-2 border-primary/20">
                   {proposals.map((proposal) => {
                     const isLoading = isLoadingAction?.(proposal.id, 'proposal') || false
                     const canReview = proposal.status === 'pending_review' || proposal.status === 'requires_modification'
@@ -329,7 +329,7 @@ export function UnifiedGroupCard({
               </div>
 
               {expandedSection === 'registrations' && (
-                <div className="space-y-2 pl-4 border-l-2 border-primary/20">
+                <div className="space-y-2 ps-4 border-s-2 border-primary/20">
                   {registrationRequests.map((request) => {
                     const projectRegistrations = request.projectRegistrations || []
                     const isLoading = isLoadingAction?.(request.id, 'registration') || false

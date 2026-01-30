@@ -138,7 +138,14 @@ export function ProposalsList() {
   const [showNoGroupModal, setShowNoGroupModal] = useState(false)
 
   const handleSubmitClick = async () => {
-    // First check if student has a group at all
+    // First check if current windows allow student submissions:
+    // Must be within project_registration window AND outside proposal_submission window
+    if (!isStudentSubmissionAllowed) {
+      toastError('proposal.studentSubmissionNotAllowedNow')
+      return
+    }
+
+    // Then check if student has a group at all
     if (!studentGroup) {
       setShowNoGroupModal(true)
       return
@@ -147,13 +154,6 @@ export function ProposalsList() {
     // Then check if user is a leader
     if (!canSubmit) {
       toastError('proposal.onlyLeaderCanSubmit')
-      return
-    }
-
-    // Then check if current windows allow student submissions:
-    // Must be within project_registration window AND outside proposal_submission window
-    if (!isStudentSubmissionAllowed) {
-      toastError('proposal.studentSubmissionNotAllowedNow')
       return
     }
 
@@ -224,12 +224,9 @@ export function ProposalsList() {
         <Button
           variant="default"
           onClick={handleSubmitClick}
-          disabled={isPeriodLoading || !isStudentSubmissionAllowed}
-          title={
-            !isStudentSubmissionAllowed
-              ? t('proposal.studentSubmissionNotAllowedNow')
-              : undefined
-          }
+          // disabled={!isSubmissionPeriodActive || isPeriodLoading}
+          disabled={isPeriodLoading}
+          title={!isStudentSubmissionAllowed ? t('proposal.studentSubmissionNotAllowedNow') : undefined}
         >
           <PlusCircle className="size-4" />
           {t('proposal.submitNew')}

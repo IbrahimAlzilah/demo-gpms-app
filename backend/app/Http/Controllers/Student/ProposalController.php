@@ -154,21 +154,22 @@ class ProposalController extends Controller
         $user = $request->user();
         $timeWindowService = app(\App\Services\TimeWindowService::class);
 
-        // Check if proposal submission window is active
+        // Check which time window is active
         $isProposalSubmissionWindow = $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::PROPOSAL_SUBMISSION);
         $isRegistrationWindow = $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::PROJECT_REGISTRATION);
-        
-        // Students can only submit proposals during the proposal submission window
-        if (!$isProposalSubmissionWindow) {
+
+        // Students (Group Leaders) can submit proposals during the Project Registration period
+        // This allows them to both register for projects AND submit proposals at the same time
+        if (!$isRegistrationWindow) {
             return response()->json([
                 'success' => false,
-                'message' => 'Proposal submission is only allowed during the proposal submission period. Please check the active time windows.',
+                'message' => 'Proposal submission is only allowed during the project registration period. Please check the active time windows.',
             ], 403);
         }
-        
-        // During proposal submission window, target_project_id is optional
-        $targetProjectRule = 'nullable|exists:projects,id';
-        
+
+        // During registration window, target_project_id is required (students must register for a project)
+        $targetProjectRule = 'required|exists:projects,id';
+
         $validated = $request->validate([
             'student_group_id' => 'required|exists:student_groups,id',
             'proposals' => 'required|array|min:1',
@@ -233,7 +234,7 @@ class ProposalController extends Controller
         // During registration window: enforce minimum member requirement
         $maxMembers = app(\App\Services\SettingsService::class)->getGroupMaxMembers();
         $totalMembers = $userGroup->getTotalMemberCount();
-        
+
         // Only enforce minimum members during registration window (not during proposal submission)
         if ($isRegistrationWindow) {
             $minMembers = app(\App\Services\SettingsService::class)->getGroupMinMembers();
@@ -244,7 +245,7 @@ class ProposalController extends Controller
                 ], 422);
             }
         }
-        
+
         // Always enforce maximum members
         if ($totalMembers > $maxMembers) {
             return response()->json([
@@ -271,14 +272,14 @@ class ProposalController extends Controller
     {
         $user = $request->user();
         $timeWindowService = app(\App\Services\TimeWindowService::class);
-        
+
         // Check which window is active
         $isProposalSubmissionWindow = $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::PROPOSAL_SUBMISSION);
         $isRegistrationWindow = $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::PROJECT_REGISTRATION);
-        
+
         // Students can update proposals during active windows OR when proposal requires modification
         $canUpdate = $isProposalSubmissionWindow || $isRegistrationWindow;
-        
+
         if (!$canUpdate) {
             // Check if any proposal requires modification (allows editing even outside windows)
             $proposalIds = $request->input('updates', []);
@@ -289,7 +290,7 @@ class ProposalController extends Controller
                     ->where('status', 'requires_modification')
                     ->exists();
             }
-            
+
             if (!$hasModificationRequired) {
                 return response()->json([
                     'success' => false,
@@ -299,10 +300,10 @@ class ProposalController extends Controller
         }
 
         // Dynamic validation: target_project_id is required during registration window, optional during proposal submission
-        $targetProjectRule = $isRegistrationWindow 
-            ? 'required|exists:projects,id' 
+        $targetProjectRule = $isRegistrationWindow
+            ? 'required|exists:projects,id'
             : 'nullable|exists:projects,id';
-        
+
         $validated = $request->validate([
             'student_group_id' => 'nullable|exists:student_groups,id',
             'updates' => 'required|array',
@@ -373,7 +374,7 @@ class ProposalController extends Controller
         // Validate updates - check authorization and ownership for each proposal
         foreach ($validated['updates'] as $updateData) {
             $proposal = Proposal::findOrFail($updateData['id']);
-            
+
             // Check if user can update this proposal (throws exception if unauthorized)
             try {
                 $this->authorize('update', $proposal);
@@ -457,21 +458,22 @@ class ProposalController extends Controller
         $user = $request->user();
         $timeWindowService = app(\App\Services\TimeWindowService::class);
 
-        // Check if proposal submission window is active
+        // Check which time window is active
         $isProposalSubmissionWindow = $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::PROPOSAL_SUBMISSION);
         $isRegistrationWindow = $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::PROJECT_REGISTRATION);
-        
-        // Students can only submit proposals during the proposal submission window
-        if (!$isProposalSubmissionWindow) {
+
+        // Students (Group Leaders) can submit proposals during the Project Registration period
+        // This allows them to both register for projects AND submit proposals at the same time
+        if (!$isRegistrationWindow) {
             return response()->json([
                 'success' => false,
-                'message' => 'Proposal submission is only allowed during the proposal submission period. Please check the active time windows.',
+                'message' => 'Proposal submission is only allowed during the project registration period. Please check the active time windows.',
             ], 403);
         }
-        
-        // During proposal submission window, target_project_id is optional
-        $targetProjectRule = 'nullable|exists:projects,id';
-        
+
+        // During registration window, target_project_id is required (students must register for a project)
+        $targetProjectRule = 'required|exists:projects,id';
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -536,7 +538,7 @@ class ProposalController extends Controller
         // During registration window: enforce minimum member requirement
         $maxMembers = app(\App\Services\SettingsService::class)->getGroupMaxMembers();
         $totalMembers = $studentGroup->getTotalMemberCount();
-        
+
         // Only enforce minimum members during registration window (not during proposal submission)
         if ($isRegistrationWindow) {
             $minMembers = app(\App\Services\SettingsService::class)->getGroupMinMembers();
@@ -547,7 +549,7 @@ class ProposalController extends Controller
                 ], 422);
             }
         }
-        
+
         // Always enforce maximum members
         if ($totalMembers > $maxMembers) {
             return response()->json([
@@ -569,7 +571,7 @@ class ProposalController extends Controller
 
         // Create proposal and set lock if this is the first submission
         $proposal = $this->proposalService->create($validated, $user);
-        
+
         // Set lock timestamp - this locks the group from future NEW submissions
         if (!$studentGroup->proposals_initial_submitted_at) {
             $studentGroup->update([
@@ -599,14 +601,14 @@ class ProposalController extends Controller
         $this->authorize('update', $proposal);
 
         $timeWindowService = app(\App\Services\TimeWindowService::class);
-        
+
         // Check which window is active
         $isProposalSubmissionWindow = $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::PROPOSAL_SUBMISSION);
         $isRegistrationWindow = $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::PROJECT_REGISTRATION);
-        
+
         // Students can update proposals during active windows OR when proposal requires modification
         $canUpdate = $isProposalSubmissionWindow || $isRegistrationWindow || $proposal->requiresModification();
-        
+
         if (!$canUpdate) {
             return response()->json([
                 'success' => false,

@@ -1,11 +1,11 @@
 import { useTranslation } from 'react-i18next'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button } from '@/components/ui'
-import { PlusCircle, UserPlus, Mail, CheckCircle2, XCircle, ArrowRight, Loader2 } from 'lucide-react'
+import { Card, Button } from '@/components/ui'
+import { PlusCircle, UserPlus, Mail, CheckCircle2, XCircle, Loader2 } from 'lucide-react'
 import { MyJoinRequestsList } from '../components/MyJoinRequestsList'
 import { formatRelativeTime } from '@/lib/utils/format'
 import type { GroupInvitation } from '@/types/project.types'
 import { BlockContent } from '@/components/common'
-import { useMemo } from 'react'
+import { Users } from 'lucide-react'
 
 interface NoGroupViewProps {
     invitations: GroupInvitation[] | undefined
@@ -24,164 +24,126 @@ export function NoGroupView({
     onJoinClick,
     onAcceptInvite,
     onRejectInvite,
-    isProcessingInvite
+    isProcessingInvite,
 }: NoGroupViewProps) {
     const { t } = useTranslation()
 
-    const actions = useMemo(() => {
-        return (
-            <div className="flex items-center gap-3">
-                <Button onClick={onCreateClick} variant="default">
+    const headerActions = (
+        <div className="flex items-center gap-3">
+            {!hasPendingJoinRequest && (
+                <Button onClick={onCreateClick} variant="default" className="gap-2">
                     <PlusCircle className="size-4" />
                     {t('groups.createGroup')}
                 </Button>
-                <Button onClick={onJoinClick} variant="outline">
-                    <UserPlus className="size-4" />
-                    {t('groups.joinGroup')}
-                </Button>
-            </div>
-
-        )
-    }, [onCreateClick, onJoinClick])
+            )}
+            <Button
+                onClick={onJoinClick}
+                variant="outline"
+                className="gap-2"
+                disabled={hasPendingJoinRequest}
+            >
+                <UserPlus className="size-4" />
+                {t('groups.joinGroup')}
+            </Button>
+        </div>
+    )
 
     return (
-        <BlockContent title={t('groups.management')}>
-            {/* Hero / Welcome Section */}
-            <div className="text-center space-y-4 py-8">
-                <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-                    {t('groups.noGroupDescription')}
-                </p>
-            </div>
-
-            {/* Main Actions Grid */}
+        <BlockContent title={t('groups.management')} actions={headerActions}>
+            {/* Centered empty state */}
             {!hasPendingJoinRequest && (
-                <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                    {/* Create Group Card */}
-                    <div className={`relative group ${hasPendingJoinRequest ? 'opacity-60 grayscale cursor-not-allowed' : ''}`}>
-                        <Card className={`h-full border-2 transition-all hover:border-primary/50 hover:shadow-md ${hasPendingJoinRequest ? '' : 'cursor-pointer'}`}
-                            onClick={!hasPendingJoinRequest ? onCreateClick : undefined}>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-3">
-                                    <div className="p-2 bg-primary/10 rounded-full text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-                                        <PlusCircle className="w-6 h-6" />
-                                    </div>
-                                    {t('groups.createGroup')}
-                                </CardTitle>
-                                <CardDescription className="text-base">
-                                    {t('groups.createGroupDescription')}
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <ul className="space-y-2 text-sm text-muted-foreground mb-6">
-                                    <li className="flex items-center gap-2">
-                                        <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                        Become the Group Leader
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                        Invite other students
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                        Manage project registration
-                                    </li>
-                                </ul>
-                                <Button className="w-full" disabled={hasPendingJoinRequest}>
-                                    {t('groups.createGroup')} <ArrowRight className="w-4 h-4 ml-2" />
-                                </Button>
-                            </CardContent>
-                        </Card>
+                <div className="flex flex-col items-center justify-center text-center py-12 px-4 min-h-[320px] border-b border-border/80">
+                    <div className="flex items-center justify-center w-20 h-20 rounded-full bg-muted/50 text-muted-foreground mb-6">
+                        <Users className="size-12 stroke-[1.5]" aria-hidden />
                     </div>
-
-                    {/* Join Group Card */}
-                    <div className={`relative group ${hasPendingJoinRequest ? 'opacity-60 grayscale cursor-not-allowed' : ''}`}>
-                        <Card className={`h-full border-2 transition-all hover:border-primary/50 hover:shadow-md ${hasPendingJoinRequest ? '' : 'cursor-pointer'}`}
-                            onClick={!hasPendingJoinRequest ? onJoinClick : undefined}>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-3">
-                                    <div className="p-2 bg-secondary/20 rounded-full text-secondary-foreground group-hover:bg-secondary group-hover:text-white transition-colors">
-                                        <UserPlus className="w-6 h-6" />
-                                    </div>
-                                    {t('groups.joinGroup')}
-                                </CardTitle>
-                                <CardDescription className="text-base">
-                                    {t('groups.joinGroupDescription')}
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <ul className="space-y-2 text-sm text-muted-foreground mb-6">
-                                    <li className="flex items-center gap-2">
-                                        <CheckCircle2 className="w-4 h-4 text-secondary-foreground/70" />
-                                        Join via Group Code
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <CheckCircle2 className="w-4 h-4 text-secondary-foreground/70" />
-                                        Browse available groups
-                                    </li>
-                                </ul>
-                                <Button variant="outline" className="w-full" disabled={hasPendingJoinRequest}>
-                                    {t('groups.joinGroup')} <ArrowRight className="w-4 h-4 ml-2" />
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    </div>
+                    <h2 className="text-xl font-semibold text-foreground mb-2">
+                        {t('groups.noGroup')}
+                    </h2>
+                    <p className="text-muted-foreground max-w-md mx-auto mb-6 text-sm">
+                        {t('groups.noGroupDescription')}
+                    </p>
+                    <Button
+                        onClick={onCreateClick}
+                        variant="default"
+                        className="gap-2"
+                        disabled={hasPendingJoinRequest}
+                    >
+                        <PlusCircle className="size-4" />
+                        {t('groups.createGroup')}
+                    </Button>
                 </div>
             )}
 
+            {/* Pending join request notice */}
             {hasPendingJoinRequest && (
-                <div className="max-w-2xl mx-auto p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-center text-sm">
-                    {t('groups.pendingRequestWarning')}
+                <div className="p-4 mt-4 mx-4 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 text-sm text-center">
+                    {t('group.pendingRequestWarning')}
                 </div>
             )}
 
-            {/* Invitations Section */}
+            {/* Invitations */}
             {invitations && invitations.length > 0 && (
-                <div className="max-w-4xl mx-auto pt-8 border-t">
-                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                        <Mail className="w-5 h-5" />
+                <div className="mt-6 px-4 pb-6">
+                    <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
+                        <Mail className="size-4" />
                         {t('groups.invitations')}
                     </h3>
-                    <div className="grid gap-4">
+                    <div className="space-y-3">
                         {invitations.map((invitation) => (
-                            <Card key={invitation.id} className="overflow-hidden border-l-4 border-l-blue-500">
+                            <Card
+                                key={invitation.id}
+                                className="overflow-hidden border border-border/80"
+                            >
                                 <div className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
-                                    <div className="flex items-start gap-4">
-                                        <div className="p-2 bg-blue-100 rounded-full text-blue-600">
-                                            <Mail className="w-5 h-5" />
+                                    <div className="flex items-start gap-3">
+                                        <div className="p-2 bg-primary/10 rounded-full text-primary shrink-0">
+                                            <Mail className="size-4" />
                                         </div>
                                         <div>
-                                            <h4 className="font-medium text-base">{t('groups.invitationFrom')}</h4>
+                                            <h4 className="font-medium text-sm">
+                                                {t('groups.invitationFrom')}
+                                            </h4>
                                             {invitation.inviter && (
-                                                <p className="text-sm text-muted-foreground">
-                                                    <span className="font-medium text-foreground">{invitation.inviter.name}</span> {t('groups.from')}
+                                                <p className="text-xs text-muted-foreground mt-0.5">
+                                                    {invitation.inviter.name} {t('groups.from')}
                                                 </p>
                                             )}
                                             {invitation.message && (
-                                                <p className="text-sm mt-1 p-2 bg-muted rounded-md italic">"{invitation.message}"</p>
+                                                <p className="text-xs mt-1 p-2 bg-muted rounded-md italic">
+                                                    {invitation.message}
+                                                </p>
                                             )}
                                             <p className="text-xs text-muted-foreground mt-1">
                                                 {formatRelativeTime(invitation.createdAt)}
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                                    <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
                                         <Button
                                             size="sm"
-                                            className="flex-1 sm:flex-none"
                                             onClick={() => onAcceptInvite(invitation.id)}
                                             disabled={isProcessingInvite}
+                                            className="gap-1.5"
                                         >
-                                            {isProcessingInvite ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
+                                            {isProcessingInvite ? (
+                                                <Loader2 className="size-4 animate-spin" />
+                                            ) : (
+                                                <CheckCircle2 className="size-4" />
+                                            )}
                                             {t('common.accept')}
                                         </Button>
                                         <Button
                                             size="sm"
                                             variant="outline"
-                                            className="flex-1 sm:flex-none text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20"
+                                            className="text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20 gap-1.5"
                                             onClick={() => onRejectInvite(invitation.id)}
                                             disabled={isProcessingInvite}
                                         >
-                                            {isProcessingInvite ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4 mr-2" />}
+                                            {isProcessingInvite ? (
+                                                <Loader2 className="size-4 animate-spin" />
+                                            ) : (
+                                                <XCircle className="size-4" />
+                                            )}
                                             {t('common.reject')}
                                         </Button>
                                     </div>
@@ -192,8 +154,8 @@ export function NoGroupView({
                 </div>
             )}
 
-            {/* My Sent Requests Section */}
-            <div className="max-w-4xl mx-auto pt-8">
+            {/* My sent join requests */}
+            <div className="mt-6 px-4 pb-6">
                 <MyJoinRequestsList />
             </div>
         </BlockContent>

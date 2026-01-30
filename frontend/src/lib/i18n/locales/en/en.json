@@ -548,9 +548,9 @@
       "rejected": "Rejected",
       "requiresModification": "Requires Modification"
     },
-    "periodClosed": "Submission period closed",
-    "periodClosedMessage": "Proposal submission period is not currently open",
-    "periodClosedDescription": "Please wait until the submission period is opened by the projects committee",
+    "periodClosed": "Registration period closed",
+    "periodClosedMessage": "Project registration period is not currently open",
+    "periodClosedDescription": "Students can submit proposals during the project registration period. Please wait until the registration period is opened by the projects committee.",
     "authRequired": "You must login first",
     "validation": {
       "titleRequired": "Proposal title is required",
@@ -594,6 +594,7 @@
     "submissionLockedDescription": "You have already submitted your initial proposals. You can edit existing proposals to add new ones.",
     "onlyLeaderCanSubmit": "Only group leaders can submit proposals",
     "onlyLeaderCanEdit": "Only group leaders can edit proposals",
+    "studentSubmissionNotAllowedNow": "Proposal submission is only allowed during the project registration period. Students can submit proposals when the registration period is active.",
     "addNewProposal": "Add New Proposal",
     "newProposal": "New Proposal",
     "editProposals": "Edit Proposals",
