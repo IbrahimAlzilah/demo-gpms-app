@@ -35,6 +35,10 @@ export interface Project extends BaseEntity {
   supervisorApprovalStatus?: "pending" | "approved" | "rejected";
   supervisorApprovalComments?: string;
   supervisorApprovalAt?: string;
+  /** Workflow summary (e.g. from discussion committee list) */
+  documentsCount?: number;
+  documentsApprovedCount?: number;
+  gradesCount?: number;
 }
 
 export interface Proposal extends BaseEntity {

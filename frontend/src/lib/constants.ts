@@ -166,6 +166,11 @@ export const NAV_MENU: Record<string, NavMenuItem[]> = {
       path: ROUTES.SUPERVISOR.PROJECTS,
       icon: "Briefcase",
     },
+    {
+      labelKey: "nav.evaluation",
+      path: ROUTES.SUPERVISOR.EVALUATION,
+      icon: "Award",
+    },
   ],
   discussion_committee: [
     {

@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useSubmitGrade } from '../../hooks/useEvaluationOperations'
-import { useEvaluationList } from '../../list/EvaluationList.hook'
+import { usePeriodCheck } from '@/hooks/usePeriodCheck'
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label, Textarea } from '@/components/ui'
 import { LoadingSpinner } from '@/components/common'
 import { useToast } from '@/components/common'
@@ -19,7 +19,7 @@ export function EvaluationForm({ projectId, studentId, onSuccess }: EvaluationFo
   const { t } = useTranslation()
   const { toastSuccess, toastError } = useToast()
   const submitGrade = useSubmitGrade()
-  const { data: { isPeriodActive, periodLoading } } = useEvaluationList()
+  const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('final_defense_phase_1')
 
   const {
     register,
@@ -52,7 +52,7 @@ export function EvaluationForm({ projectId, studentId, onSuccess }: EvaluationFo
         grade: {
           score: scoreNum,
           maxScore: maxScoreNum,
-          criteria: [], // required by backend; use empty array when no criteria
+          criteria: {}, // required by backend; use empty object when no criteria
           comments: data.comments || undefined,
         },
       })

@@ -19,6 +19,13 @@ class ProjectController extends Controller
             $q->where('users.id', $request->user()->id);
         })
         ->where('status', 'in_progress')
+        ->withCount([
+            'documents',
+            'grades',
+            'documents as documents_approved_count' => function ($q) {
+                $q->where('review_status', 'approved');
+            },
+        ])
         ->with(['supervisor', 'students', 'assignedGroup.leader', 'assignedGroup.members']);
 
         $query = $this->applyTableQuery($query, $request);
@@ -44,8 +51,8 @@ class ProjectController extends Controller
                 'students',
                 'assignedGroup.leader',
                 'assignedGroup.members',
-                'documents',
-                'grades',
+                'documents.submitter',
+                'grades.student',
                 'committeeMembers',
             ])),
         ]);

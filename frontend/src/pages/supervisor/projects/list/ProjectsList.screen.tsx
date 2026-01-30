@@ -10,9 +10,11 @@ import type { Project } from '@/types/project.types'
 
 interface ProjectsListProps {
   onProjectSelect?: (project: Project) => void
+  /** When provided (e.g. from Evaluation page), Evaluate action uses this instead of opening the legacy modal */
+  onEvaluate?: (project: Project) => void
 }
 
-export function ProjectsList({ onProjectSelect }: ProjectsListProps = {}) {
+export function ProjectsList({ onProjectSelect, onEvaluate: onEvaluateProp }: ProjectsListProps = {}) {
   const navigate = useNavigate()
   const {
     data,
@@ -38,9 +40,9 @@ export function ProjectsList({ onProjectSelect }: ProjectsListProps = {}) {
       t,
       onProjectSelect,
       navigate,
-      onEvaluate: openEvaluationModal
+      onEvaluate: onEvaluateProp ?? openEvaluationModal,
     }),
-    [t, onProjectSelect, navigate, openEvaluationModal]
+    [t, onProjectSelect, navigate, onEvaluateProp, openEvaluationModal]
   )
 
   const { evaluationModal } = state

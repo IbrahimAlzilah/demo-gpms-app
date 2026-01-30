@@ -1,8 +1,14 @@
-export interface EvaluationListState {
-  // Form state is managed by react-hook-form
+import type { SupervisorEvaluationProjectItem } from "../api/evaluation.service";
+
+export interface SupervisorEvaluationListState {
+  selectedProjectId: string | null;
+  showEvaluationModal: boolean;
 }
 
-export interface EvaluationListData {
-  isPeriodActive: boolean
-  periodLoading: boolean
+export interface SupervisorEvaluationListData {
+  items: SupervisorEvaluationProjectItem[];
+  isLoading: boolean;
+  error: Error | null;
 }
+
+export type { SupervisorEvaluationProjectItem };

@@ -22,6 +22,10 @@ class EvaluationService
             throw new \Exception('Unauthorized to grade this project');
         }
 
+        if (Grade::where('project_id', $project->id)->where('is_approved', true)->exists()) {
+            throw new \Exception('Evaluations are locked; grades have been approved by the Projects Committee.');
+        }
+
         return DB::transaction(function () use ($project, $student, $gradeData) {
             $grade = Grade::firstOrNew([
                 'project_id' => $project->id,
@@ -58,6 +62,10 @@ class EvaluationService
         User $evaluator,
         array $committeeMembers
     ): Grade {
+        if (Grade::where('project_id', $project->id)->where('is_approved', true)->exists()) {
+            throw new \Exception('Evaluations are locked; grades have been approved by the Projects Committee.');
+        }
+
         return DB::transaction(function () use ($project, $student, $gradeData, $evaluator, $committeeMembers) {
             $grade = Grade::firstOrNew([
                 'project_id' => $project->id,

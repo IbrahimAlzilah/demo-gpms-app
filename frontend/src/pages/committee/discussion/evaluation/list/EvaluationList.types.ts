@@ -1,12 +1,21 @@
 import type { Project } from '@/types/project.types'
 import type { User } from '@/types/user.types'
-import type { Grade } from '@/types/evaluation.types'
 
 export interface EvaluationListItem {
   project: Project
   student: User
   hasEvaluation: boolean
-  evaluation?: Grade
+  isLocked?: boolean
+  evaluation?: {
+    id: string
+    score: number | null
+    maxScore: number | null
+    supervisorScore?: number | null
+    supervisorMaxScore?: number | null
+    finalGrade?: number | null
+    isApproved: boolean
+    comments?: string | null
+  }
 }
 
 export interface EvaluationListState {

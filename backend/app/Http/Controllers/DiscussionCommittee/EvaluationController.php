@@ -4,6 +4,7 @@ namespace App\Http\Controllers\DiscussionCommittee;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\GradeResource;
+use App\Http\Resources\ProjectResource;
 use App\Http\Traits\HasTableQuery;
 use App\Models\Grade;
 use App\Models\Project;
@@ -27,6 +28,8 @@ class EvaluationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $userId = $request->user()->id;
+
         // If project_id is provided, return evaluations for that project only (backward compatibility)
         if ($request->has('project_id') && $request->project_id) {
             $validated = $request->validate([
@@ -36,7 +39,7 @@ class EvaluationController extends Controller
             $project = Project::findOrFail($validated['project_id']);
 
             // Verify user is assigned to this project's committee
-            $isAssigned = $project->committeeMembers()->where('users.id', $request->user()->id)->exists();
+            $isAssigned = $project->committeeMembers()->where('users.id', $userId)->exists();
 
             if (!$isAssigned) {
                 return response()->json([
@@ -56,8 +59,6 @@ class EvaluationController extends Controller
         }
 
         // Otherwise, return paginated list of all evaluation items (project + student combinations)
-        $userId = $request->user()->id;
-
         // Get all projects assigned to this committee member
         $projectsQuery = Project::whereHas('committeeMembers', function ($q) use ($userId) {
             $q->where('users.id', $userId);
@@ -91,6 +92,9 @@ class EvaluationController extends Controller
                     ->get()
                     ->keyBy('student_id');
 
+                // Check if any grade is approved (locked)
+                $isLocked = $grades->some(fn($g) => $g->is_approved);
+
                 foreach ($project->students as $student) {
                     $evaluation = $grades->get($student->id);
                     $items[] = [
@@ -118,14 +122,17 @@ class EvaluationController extends Controller
                             'role' => $student->role,
                             'status' => $student->status ?? 'active',
                         ],
-                        'hasEvaluation' => $evaluation !== null,
+                        'hasEvaluation' => $evaluation !== null && $evaluation->committee_grade !== null,
+                        'isLocked' => $isLocked,
                         'evaluation' => $evaluation ? [
                             'id' => $evaluation->id,
-                            'score' => $evaluation->score,
-                            'maxScore' => $evaluation->max_score,
+                            'score' => $evaluation->committee_grade['score'] ?? null,
+                            'maxScore' => $evaluation->committee_grade['maxScore'] ?? null,
+                            'supervisorScore' => $evaluation->supervisor_grade['score'] ?? null,
+                            'supervisorMaxScore' => $evaluation->supervisor_grade['maxScore'] ?? null,
                             'finalGrade' => $evaluation->final_grade,
                             'isApproved' => $evaluation->is_approved,
-                            'comments' => $evaluation->comments,
+                            'comments' => $evaluation->committee_grade['comments'] ?? null,
                         ] : null,
                     ];
                 }
@@ -154,6 +161,56 @@ class EvaluationController extends Controller
     }
 
     /**
+     * Get projects assigned to committee member for evaluation (grouped view)
+     * GET /discussion-committee/evaluations/projects
+     */
+    public function projects(Request $request): JsonResponse
+    {
+        $userId = $request->user()->id;
+
+        $projects = Project::whereHas('committeeMembers', function ($q) use ($userId) {
+            $q->where('users.id', $userId);
+        })
+        ->where('status', 'in_progress')
+        ->with(['supervisor', 'students', 'assignedGroup', 'committeeMembers'])
+        ->withCount('students')
+        ->get();
+
+        $items = [];
+        foreach ($projects as $project) {
+            // Get evaluation status
+            $grades = Grade::where('project_id', $project->id)->get();
+            $hasApprovedGrade = $grades->some(fn($g) => $g->is_approved);
+            $evaluatedCount = $grades->filter(fn($g) => $g->committee_grade !== null)->count();
+            $totalStudents = $project->students_count;
+
+            // Determine evaluation phase based on chapters submitted
+            $phase = 'phase_1'; // Default to Phase 1
+            // You could add logic here to determine if this is Phase 1 or 2 based on project documents
+
+            $items[] = [
+                'project' => new ProjectResource($project),
+                'studentsCount' => $totalStudents,
+                'evaluatedCount' => $evaluatedCount,
+                'isLocked' => $hasApprovedGrade,
+                'evaluationProgress' => $totalStudents > 0 
+                    ? round(($evaluatedCount / $totalStudents) * 100) 
+                    : 0,
+                'phase' => $phase,
+                'committeeMembers' => $project->committeeMembers->map(fn($m) => [
+                    'id' => $m->id,
+                    'name' => $m->first_name . ' ' . $m->last_name,
+                ]),
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $items,
+        ]);
+    }
+
+    /**
      * Apply search to query
      */
     protected function applySearch($query, string $search)
@@ -171,7 +228,7 @@ class EvaluationController extends Controller
     }
 
     /**
-     * Submit a grade/evaluation
+     * Submit a grade/evaluation for a single student
      * POST /discussion-committee/evaluations
      *
      * Accepts both payload formats:
@@ -230,6 +287,15 @@ class EvaluationController extends Controller
             ], 403);
         }
 
+        // Grade locking: once any grade is approved by Projects Committee, no further edits
+        $hasApprovedGrade = Grade::where('project_id', $project->id)->where('is_approved', true)->exists();
+        if ($hasApprovedGrade) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Evaluations are locked; grades have been approved by the Projects Committee.',
+            ], 403);
+        }
+
         // Derive committee members from database assignments (don't trust client)
         $committeeMembers = $project->committeeMembers()
             ->pluck('users.id')
@@ -237,7 +303,7 @@ class EvaluationController extends Controller
             ->toArray();
 
         // Ensure requesting user is in the committee (already verified above, but double-check)
-        if (!in_array($request->user()->id, $committeeMembers)) {
+        if (!in_array((string) $request->user()->id, $committeeMembers)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized - You are not a member of this project\'s discussion committee',
@@ -292,5 +358,121 @@ class EvaluationController extends Controller
             ], 400);
         }
     }
-}
 
+    /**
+     * Submit grades for all students in a project at once (group evaluation)
+     * POST /discussion-committee/evaluations/batch
+     */
+    public function batchStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'project_id' => 'required|exists:projects,id',
+            'score' => 'required|numeric|min:0',
+            'max_score' => 'required|numeric|min:0',
+            'criteria' => 'nullable|array',
+            'comments' => 'nullable|string',
+            'student_ids' => 'nullable|array',
+            'student_ids.*' => 'exists:users,id',
+        ]);
+
+        $validated['criteria'] = $validated['criteria'] ?? [];
+
+        $project = Project::with(['students', 'committeeMembers'])->findOrFail($validated['project_id']);
+
+        // Verify user is assigned to this project's committee
+        $isAssigned = $project->committeeMembers()->where('users.id', $request->user()->id)->exists();
+
+        if (!$isAssigned) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized - You are not assigned to this project\'s discussion committee',
+            ], 403);
+        }
+
+        // Grade locking check
+        $hasApprovedGrade = Grade::where('project_id', $project->id)->where('is_approved', true)->exists();
+        if ($hasApprovedGrade) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Evaluations are locked; grades have been approved by the Projects Committee.',
+            ], 403);
+        }
+
+        // Committee members
+        $committeeMembers = $project->committeeMembers()
+            ->pluck('users.id')
+            ->map(fn($id) => (string) $id)
+            ->toArray();
+
+        // Determine which students to grade
+        $studentIds = $validated['student_ids'] ?? $project->students->pluck('id')->toArray();
+
+        if (empty($studentIds)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No students found for this project',
+            ], 400);
+        }
+
+        try {
+            $grades = DB::transaction(function () use ($project, $studentIds, $validated, $request, $committeeMembers) {
+                $grades = [];
+                foreach ($studentIds as $studentId) {
+                    $student = \App\Models\User::findOrFail($studentId);
+                    $grades[] = $this->evaluationService->submitCommitteeGrade(
+                        $project,
+                        $student,
+                        [
+                            'score' => $validated['score'],
+                            'maxScore' => $validated['max_score'],
+                            'criteria' => $validated['criteria'],
+                            'comments' => $validated['comments'] ?? null,
+                        ],
+                        $request->user(),
+                        $committeeMembers
+                    );
+                }
+                return $grades;
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => GradeResource::collection(collect($grades)->map->load(['project', 'student'])),
+                'message' => count($grades) . ' grade(s) submitted successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Check if evaluation is locked for a project
+     * GET /discussion-committee/evaluations/locked/{project}
+     */
+    public function isLocked(Request $request, Project $project): JsonResponse
+    {
+        // Verify user is assigned to this project's committee
+        $isAssigned = $project->committeeMembers()->where('users.id', $request->user()->id)->exists();
+
+        if (!$isAssigned) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $hasApprovedGrade = Grade::where('project_id', $project->id)
+            ->where('is_approved', true)
+            ->exists();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'isLocked' => $hasApprovedGrade,
+            ],
+        ]);
+    }
+}

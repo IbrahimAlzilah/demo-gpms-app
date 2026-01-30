@@ -4,9 +4,12 @@ import type {
   TableQueryParams,
   TableResponse,
 } from "../../../../../types/table.types";
-import type { EvaluationListItem } from "../list/EvaluationList.types";
+import type { EvaluationListItem, EvaluationProjectItem } from "../types/Evaluation.types";
 
 export const committeeEvaluationService = {
+  /**
+   * Submit grade for a single student
+   */
   submitFinalGrade: async (data: {
     projectId: string;
     studentId: string;
@@ -29,6 +32,29 @@ export const committeeEvaluationService = {
     });
   },
 
+  /**
+   * Submit same grade for all students in a project (group evaluation)
+   */
+  submitBatchGrade: async (data: {
+    projectId: string;
+    score: number;
+    maxScore: number;
+    comments?: string;
+    studentIds?: string[];
+  }): Promise<void> => {
+    await apiClient.post("/discussion-committee/evaluations/batch", {
+      project_id: data.projectId,
+      score: data.score,
+      max_score: data.maxScore,
+      criteria: [],
+      comments: data.comments,
+      student_ids: data.studentIds,
+    });
+  },
+
+  /**
+   * Get evaluations/grades for a specific project
+   */
   getEvaluationsByProject: async (projectId: string): Promise<Grade[]> => {
     const response = await apiClient.get<Grade[]>(
       `/discussion-committee/evaluations?project_id=${projectId}`,
@@ -36,6 +62,29 @@ export const committeeEvaluationService = {
     return Array.isArray(response.data) ? response.data : [];
   },
 
+  /**
+   * Get projects assigned to committee member for evaluation (grouped view)
+   */
+  getProjects: async (): Promise<EvaluationProjectItem[]> => {
+    const response = await apiClient.get<EvaluationProjectItem[]>(
+      `/discussion-committee/evaluations/projects`,
+    );
+    return Array.isArray(response.data) ? response.data : [];
+  },
+
+  /**
+   * Check if grades are locked for a project
+   */
+  isLocked: async (projectId: string): Promise<boolean> => {
+    const response = await apiClient.get<{ isLocked: boolean }>(
+      `/discussion-committee/evaluations/locked/${projectId}`,
+    );
+    return response.data?.isLocked ?? false;
+  },
+
+  /**
+   * Get table data for evaluation list (flat student rows)
+   */
   getTableData: async (
     params?: TableQueryParams,
   ): Promise<TableResponse<EvaluationListItem>> => {

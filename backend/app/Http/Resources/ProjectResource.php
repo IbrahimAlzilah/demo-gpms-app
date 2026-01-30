@@ -54,6 +54,9 @@ class ProjectResource extends JsonResource
                 return $this->assignedGroup->name ?? $this->assignedGroup->group_code ?? null;
             }),
             'documents' => $this->whenLoaded('documents') ? DocumentResource::collection($this->documents) : [],
+            'documentsCount' => $this->when(isset($this->documents_count), fn () => $this->documents_count),
+            'documentsApprovedCount' => $this->when(isset($this->documents_approved_count), fn () => $this->documents_approved_count),
+            'gradesCount' => $this->when(isset($this->grades_count), fn () => $this->grades_count),
             'grades' => $this->whenLoaded('grades') ? GradeResource::collection($this->grades) : [],
             'committeeMembers' => $this->whenLoaded('committeeMembers') ? UserResource::collection($this->committeeMembers) : [],
             'createdAt' => $this->created_at?->toISOString(),

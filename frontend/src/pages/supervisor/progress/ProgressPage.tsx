@@ -17,12 +17,19 @@ export function ProgressPage() {
     )
   }
 
-  // Otherwise, show projects list with ability to select a project
+  // Otherwise, show projects list with ability to select a project or go to evaluation
   return (
     <MainLayout>
-      <ProjectsList onProjectSelect={(project) => {
-        navigate(`${ROUTES.SUPERVISOR.PROGRESS}/${project.id}`)
-      }} />
+      <ProjectsList
+        onProjectSelect={(project) => {
+          navigate(`${ROUTES.SUPERVISOR.PROGRESS}/${project.id}`)
+        }}
+        onEvaluate={(project) => {
+          if (project?.students?.length) {
+            navigate(`${ROUTES.SUPERVISOR.EVALUATION}/${project.id}`)
+          }
+        }}
+      />
     </MainLayout>
   )
 }

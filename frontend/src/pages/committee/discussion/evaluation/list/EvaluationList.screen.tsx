@@ -4,7 +4,7 @@ import { DataTable } from '@/components/ui'
 import { BlockContent, ModalDialog } from '@/components/common'
 import { AlertCircle } from 'lucide-react'
 import { createEvaluationColumns } from '../components/table'
-import { EvaluationNew } from '../new/EvaluationNew.screen'
+import { UnifiedEvaluationModal } from '../components/UnifiedEvaluationModal'
 import { useEvaluationList } from './EvaluationList.hook'
 
 export function EvaluationList() {
@@ -32,7 +32,6 @@ export function EvaluationList() {
           setState((prev) => ({
             ...prev,
             selectedProjectId: item.project.id,
-            selectedStudentId: item.student.id,
             showEvaluationForm: true,
           }))
         },
@@ -46,13 +45,12 @@ export function EvaluationList() {
       ...prev,
       showEvaluationForm: false,
       selectedProjectId: null,
-      selectedStudentId: null,
     }))
   }
 
   return (
     <>
-      <BlockContent title={t('nav.evaluation') || 'Evaluations'}>
+      <BlockContent title={t('nav.evaluation') || 'Evaluations'} variant="data-table">
         <DataTable
           columns={columns}
           data={data.items}
@@ -87,8 +85,8 @@ export function EvaluationList() {
         </BlockContent>
       )}
 
-      {/* Evaluation Form Modal */}
-      {state.selectedProjectId && state.selectedStudentId && (
+      {/* Unified Evaluation Modal – project group + individual/group grades */}
+      {state.selectedProjectId && (
         <ModalDialog
           open={state.showEvaluationForm}
           onOpenChange={(open) =>
@@ -96,14 +94,18 @@ export function EvaluationList() {
               ...prev,
               showEvaluationForm: open,
               selectedProjectId: open ? prev.selectedProjectId : null,
-              selectedStudentId: open ? prev.selectedStudentId : null,
             }))
           }
-          title={t('evaluation.evaluate') || 'Evaluate Student'}
+          title={t('evaluation.evaluate') || 'Evaluate Project'}
+          size="xl"
         >
-          <EvaluationNew
+          <UnifiedEvaluationModal
+            open={state.showEvaluationForm}
+            onOpenChange={(open) =>
+              setState((prev) => ({ ...prev, showEvaluationForm: open, selectedProjectId: open ? prev.selectedProjectId : null }))
+            }
             projectId={state.selectedProjectId}
-            studentId={state.selectedStudentId}
+            role="discussion_committee"
             onSuccess={handleEvaluationSuccess}
           />
         </ModalDialog>

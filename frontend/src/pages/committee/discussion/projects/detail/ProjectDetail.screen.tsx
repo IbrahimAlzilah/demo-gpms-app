@@ -2,22 +2,30 @@ import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { MainLayout } from '@/layouts/MainLayout'
-import { BlockContent } from '@/components/common'
+import { BlockContent, ModalDialog } from '@/components/common'
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge } from '@/components/ui'
 import { LoadingSpinner } from '@/components/common'
 import { ROUTES } from '@/lib/constants'
 import { discussionCommitteeProjectService } from '../api/project.service'
+import { UnifiedEvaluationModal } from '../../evaluation/components/UnifiedEvaluationModal'
+import { useState } from 'react'
 import {
   ChevronLeft,
   FileText,
   Users,
   User,
+  ClipboardCheck,
+  Download,
+  Loader2,
+  Award,
 } from 'lucide-react'
 import { formatDate } from '@/lib/utils/format'
 
 export function ProjectDetailScreen() {
   const { projectId } = useParams<{ projectId: string }>()
   const { t } = useTranslation()
+  const [downloadingId, setDownloadingId] = useState<string | null>(null)
+  const [showEvaluateModal, setShowEvaluateModal] = useState(false)
 
   const { data: project, isLoading, error } = useQuery({
     queryKey: ['discussion-committee-project', projectId],
@@ -64,7 +72,24 @@ export function ProjectDetailScreen() {
     )
   }
 
-  const documents = (project as { documents?: Array<{ id: string; file_name?: string; chapter_number?: number; type?: string; review_status?: string }> }).documents ?? []
+  const documents = (project as { documents?: Array<{ id: string; fileName?: string; file_name?: string; chapter_number?: number; chapterNumber?: number; type?: string; review_status?: string; reviewStatus?: string }> }).documents ?? []
+  const docsApproved = documents.filter((d: { review_status?: string; reviewStatus?: string }) => (d.review_status ?? d.reviewStatus) === 'approved').length
+  const gradesCount = (project as { grades?: unknown[] }).grades?.length ?? 0
+  const studentsCount = project.students?.length ?? 0
+
+  const handleDownload = async (doc: { id: string; file_name?: string; fileName?: string }) => {
+    if (!projectId) return
+    setDownloadingId(doc.id)
+    try {
+      await discussionCommitteeProjectService.downloadDocument(
+        projectId,
+        doc.id,
+        doc.file_name ?? doc.fileName ?? undefined
+      )
+    } finally {
+      setDownloadingId(null)
+    }
+  }
 
   return (
     <MainLayout>
@@ -91,6 +116,34 @@ export function ProjectDetailScreen() {
               </p>
             )}
           </CardHeader>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2 flex flex-row items-center justify-between gap-4">
+            <CardTitle className="text-sm">{t('discussion.workflowStatus')}</CardTitle>
+            {studentsCount > 0 && (
+              <Button
+                size="sm"
+                className="gap-1"
+                onClick={() => setShowEvaluateModal(true)}
+              >
+                <Award className="h-4 w-4" />
+                {t('discussion.evaluateProject')}
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-4 text-sm">
+              <span className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                {t('discussion.documentsPhase')}: {docsApproved}/{documents.length}
+              </span>
+              <span className="flex items-center gap-2">
+                <ClipboardCheck className="h-4 w-4 text-muted-foreground" />
+                {t('discussion.evaluationPhase')}: {gradesCount}/{studentsCount} {t('discussion.evaluated')}
+              </span>
+            </div>
+          </CardContent>
         </Card>
 
         <div className="grid gap-4 md:grid-cols-2">
@@ -153,33 +206,71 @@ export function ProjectDetailScreen() {
               <p className="text-sm text-muted-foreground">{t('discussion.noDocuments')}</p>
             ) : (
               <ul className="space-y-2">
-                {documents.map((doc: { id: string; file_name?: string; chapter_number?: number; type?: string; review_status?: string }) => (
-                  <li
-                    key={doc.id}
-                    className="flex items-center justify-between py-2 px-3 rounded-lg border bg-muted/30"
-                  >
-                    <div className="flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">
-                        {doc.type === 'chapters' && doc.chapter_number != null
-                          ? `${t('document.chapter')} ${doc.chapter_number}: `
-                          : ''}
-                        {doc.file_name ?? doc.id}
-                      </span>
-                    </div>
-                    <Badge variant="secondary" className="text-xs">
-                      {doc.review_status === 'approved'
-                        ? t('common.approved')
-                        : doc.review_status === 'pending'
-                          ? t('common.pending')
-                          : doc.review_status ?? '—'}
-                    </Badge>
-                  </li>
-                ))}
+                {documents.map((doc: { id: string; file_name?: string; fileName?: string; chapter_number?: number; chapterNumber?: number; type?: string; review_status?: string; reviewStatus?: string }) => {
+                  const status = doc.review_status ?? doc.reviewStatus
+                  const chapterNum = doc.chapter_number ?? doc.chapterNumber
+                  const fileName = doc.file_name ?? doc.fileName ?? doc.id
+                  return (
+                    <li
+                      key={doc.id}
+                      className="flex items-center justify-between gap-2 py-2 px-3 rounded-lg border bg-muted/30"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-sm font-medium truncate">
+                          {doc.type === 'chapters' && chapterNum != null
+                            ? `${t('document.chapter')} ${chapterNum}: `
+                            : ''}
+                          {fileName}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Badge variant="secondary" className="text-xs">
+                          {status === 'approved'
+                            ? t('common.approved')
+                            : status === 'pending'
+                              ? t('common.pending')
+                              : status ?? '—'}
+                        </Badge>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          onClick={() => handleDownload(doc)}
+                          disabled={downloadingId === doc.id}
+                          title={t('discussion.downloadDocument')}
+                        >
+                          {downloadingId === doc.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Download className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </li>
+                  )
+                })}
               </ul>
             )}
           </CardContent>
         </Card>
+
+        {showEvaluateModal && projectId && (
+          <ModalDialog
+            open={showEvaluateModal}
+            onOpenChange={setShowEvaluateModal}
+            title={t('evaluation.evaluate')}
+            size="xl"
+          >
+            <UnifiedEvaluationModal
+              open={showEvaluateModal}
+              onOpenChange={setShowEvaluateModal}
+              projectId={projectId}
+              role="discussion_committee"
+              onSuccess={() => setShowEvaluateModal(false)}
+            />
+          </ModalDialog>
+        )}
       </div>
     </MainLayout>
   )

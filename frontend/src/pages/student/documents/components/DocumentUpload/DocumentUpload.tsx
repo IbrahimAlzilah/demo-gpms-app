@@ -143,7 +143,8 @@ export function DocumentUpload({ projectId, onSuccess, initialChapterNumber, rep
         chapterNumber,
       })
 
-      toast.success(t('document.uploadSuccess'))
+      const isResubmit = initialChapterNumber !== undefined && !replaceMode
+      toast.success(isResubmit ? t('document.resubmitSuccess') : t('document.uploadSuccess'))
       reset()
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
@@ -361,7 +362,7 @@ export function DocumentUpload({ projectId, onSuccess, initialChapterNumber, rep
           ) : (
             <>
               <Upload className="size-4" />
-              {t('document.upload')}
+              {t('document.upload', { defaultValue: 'Upload File' })}
             </>
           )}
         </Button>

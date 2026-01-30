@@ -86,7 +86,15 @@
     "retry": "Retry",
     "notAssigned": "Not Assigned",
     "members": "Members",
-    "createdBy": "Created by"
+    "createdBy": "Created by",
+    "locked": "Locked",
+    "inProgress": "In Progress",
+    "totalProjects": "Total Projects",
+    "complete": "complete",
+    "evaluate": "Evaluate",
+    "individual": "Individual",
+    "group": "Group",
+    "pending": "Pending"
   },
   "app": {
     "name": "Graduation Project Management System",
@@ -761,6 +769,7 @@
     "upload": "Upload File",
     "uploading": "Uploading...",
     "uploadSuccess": "File uploaded successfully and will be reviewed by the supervisor",
+    "resubmitSuccess": "Chapter resubmitted successfully. It is now under review.",
     "uploadError": "Failed to upload file",
     "fileUploadHint": "You can upload PDF, Word, or archive files. Maximum 10MB",
     "noProject": "No registered project",
@@ -1172,12 +1181,34 @@
     "saveEvaluation": "Save Evaluation",
     "searchPlaceholder": "Search projects...",
     "loadError": "An error occurred while loading projects",
+    "workflowStatus": "Workflow status",
+    "documentsPhase": "Documents (approved/total)",
+    "evaluationPhase": "Evaluation (graded/students)",
+    "evaluated": "evaluated",
+    "projectDocuments": "Project documents",
+    "noDocuments": "No documents submitted yet",
+    "downloadDocument": "Download document",
     "validation": {
       "scoreRequired": "Score is required",
       "scoreInvalid": "Invalid score",
       "maxScoreRequired": "Max score is required",
       "maxScoreInvalid": "Invalid max score"
     }
+  },
+  "evaluation": {
+    "evaluate": "Evaluate Project",
+    "evaluateAll": "Evaluate All",
+    "applyGroupGrade": "Apply Group Grade",
+    "applyToAll": "Apply to All",
+    "individualGrades": "Individual Grades",
+    "studentGroupMembers": "Student group members",
+    "progress": "Progress",
+    "gradesLockedReadOnly": "Grades have been approved by the Projects Committee. Evaluations are read-only and cannot be modified.",
+    "groupGradeApplied": "Group grade applied to all students",
+    "enterGroupGrade": "Enter score and max score for group grade",
+    "enterAtLeastOneGrade": "Enter at least one student grade before saving",
+    "noEvaluations": "No evaluations found",
+    "loadError": "Error loading evaluations"
   },
   "committee": {
     "periodsDescription": "Manage project time periods (proposal submission, registration, document submission, evaluation, etc.)",
@@ -1558,6 +1589,7 @@
       "noApprovedToPublish": "No approved grades to publish",
       "viewDetails": "View Grade Details",
       "noGrades": "No grades",
+      "searchPlaceholder": "Search grades...",
       "noGradesDescription": "No grades pending review at the moment",
       "periodInactiveWarning": "Note: The grade approval time window is not currently active. You can proceed, but it's recommended to check the time window status."
     }
@@ -1944,5 +1976,42 @@
       "noProjectsDescription": "There are no projects matching your criteria"
     },
     "loadError": "Failed to load projects"
+  },
+  "discussion": {
+    "finalEvaluation": "Final Evaluation",
+    "evaluationDescription": "Grade students in your assigned projects",
+    "evaluationPeriodClosed": "Evaluation Period Not Active",
+    "evaluationPeriodClosedMessage": "The final evaluation period is not currently active. Please wait until the Projects Committee opens the evaluation window.",
+    "loadError": "Failed to load evaluation data",
+    "noProjects": "No Projects Assigned",
+    "noProjectsDescription": "You don't have any projects assigned for evaluation yet.",
+    "searchPlaceholder": "Search projects...",
+    "evaluated": "evaluated",
+    "evaluateProject": "Evaluate Project",
+    "score": "Score",
+    "maxScore": "Max Score",
+    "comments": "Comments",
+    "commentsPlaceholder": "Add evaluation comments...",
+    "evaluationSaved": "Evaluation saved successfully",
+    "evaluationError": "Failed to save evaluation",
+    "invalidScore": "Please enter a valid score"
+  },
+  "evaluation": {
+    "gradesLockedReadOnly": "Grades have been approved by the Projects Committee and cannot be modified.",
+    "applyGroupGrade": "Apply Group Grade",
+    "applyToAll": "Apply to All",
+    "groupGradeApplied": "Group grade applied to all students",
+    "enterGroupGrade": "Please enter a valid group grade",
+    "individualGrades": "Individual Student Grades",
+    "studentGroupMembers": "Review and modify grades for each student",
+    "enterAtLeastOneGrade": "Please enter at least one valid grade"
+  },
+  "supervisor": {
+    "evaluateProject": "Evaluate Projects",
+    "evaluationDescription": "Grade students in your supervised projects",
+    "searchPlaceholder": "Search projects...",
+    "noProjects": "No Projects",
+    "noProjectsDescription": "You don't have any projects assigned for supervision.",
+    "loadError": "Failed to load project data"
   }
 }

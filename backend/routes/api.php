@@ -154,6 +154,8 @@ Route::middleware('auth:sanctum')->group(function () {
         // Note: Supervisor grading is NOT restricted by time windows per specifications
         Route::get('evaluations', [App\Http\Controllers\Supervisor\EvaluationController::class, 'index']);
         Route::post('evaluations', [App\Http\Controllers\Supervisor\EvaluationController::class, 'store']);
+        Route::post('evaluations/batch', [App\Http\Controllers\Supervisor\EvaluationController::class, 'batchStore']);
+        Route::get('evaluations/locked/{project}', [App\Http\Controllers\Supervisor\EvaluationController::class, 'isLocked']);
         // Notes routes - custom routes to match frontend expectations (project-based)
         Route::get('projects/{project}/notes', [App\Http\Controllers\Supervisor\NoteController::class, 'index']);
         Route::post('projects/{project}/notes', [App\Http\Controllers\Supervisor\NoteController::class, 'store']);
@@ -232,10 +234,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('dashboard', [App\Http\Controllers\DiscussionCommittee\DashboardController::class, 'index']);
         Route::get('projects', [App\Http\Controllers\DiscussionCommittee\ProjectController::class, 'index']);
         Route::get('projects/{project}', [App\Http\Controllers\DiscussionCommittee\ProjectController::class, 'show']);
+        Route::get('projects/{project}/documents/{document}/download', [App\Http\Controllers\DiscussionCommittee\DocumentController::class, 'download']);
         // Custom evaluation routes (before apiResource to match frontend expectations)
         Route::get('evaluations', [App\Http\Controllers\DiscussionCommittee\EvaluationController::class, 'index']);
+        Route::get('evaluations/projects', [App\Http\Controllers\DiscussionCommittee\EvaluationController::class, 'projects']);
         Route::post('evaluations', [App\Http\Controllers\DiscussionCommittee\EvaluationController::class, 'store'])
             ->middleware('window:final_defense_phase_1,final_defense_phase_2');
+        Route::post('evaluations/batch', [App\Http\Controllers\DiscussionCommittee\EvaluationController::class, 'batchStore'])
+            ->middleware('window:final_defense_phase_1,final_defense_phase_2');
+        Route::get('evaluations/locked/{project}', [App\Http\Controllers\DiscussionCommittee\EvaluationController::class, 'isLocked']);
     });
 
     // Admin routes

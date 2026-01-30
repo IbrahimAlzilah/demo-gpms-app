@@ -72,25 +72,29 @@ class DocumentService
         $fileName = time() . '_' . $sanitized . ($extension ? '.' . $extension : '');
         $filePath = $file->storeAs('documents', $fileName, 'documents');
 
-        // When chapter is already pending, replace the file (edit while under review)
+        // For chapters: at most one document per (project, chapter_number). Update existing (pending or rejected) only; never create duplicate.
         if ($type === 'chapters' && $chapterNumber !== null) {
-            $existingPending = $project->documents()
+            $existing = $project->documents()
                 ->where('type', 'chapters')
                 ->where('chapter_number', $chapterNumber)
-                ->where('review_status', 'pending')
                 ->first();
 
-            if ($existingPending) {
-                if (Storage::disk('documents')->exists($existingPending->file_path)) {
-                    Storage::disk('documents')->delete($existingPending->file_path);
+            if ($existing) {
+                if ($existing->review_status === 'approved') {
+                    throw new \Exception('This chapter has already been approved. No resubmission is allowed.');
                 }
-                $existingPending->update([
+                if (Storage::disk('documents')->exists($existing->file_path)) {
+                    Storage::disk('documents')->delete($existing->file_path);
+                }
+                $existing->update([
                     'file_name' => $file->getClientOriginalName(),
                     'file_path' => $filePath,
                     'file_size' => $file->getSize(),
                     'mime_type' => $file->getMimeType(),
+                    'review_status' => 'pending',
+                    // Preserve review_comments, reviewed_by, reviewed_at for submission history
                 ]);
-                return $existingPending->fresh();
+                return $existing->fresh();
             }
         }
 

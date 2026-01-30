@@ -27,6 +27,7 @@ import {
   LazySupervisionRequestsPage,
   LazySupervisorProjectsPage,
   LazySupervisorProjectDetailsPage,
+  LazySupervisorEvaluationPage,
   // Discussion Committee
   LazyDiscussionCommitteeDashboardPage,
   LazyDiscussionProjectsPage,
@@ -168,6 +169,14 @@ export const supervisorRoutes: RouteConfig[] = [
   {
     path: 'projects',
     element: LazySupervisorProjectsPage,
+  },
+  {
+    path: 'evaluation/:projectId',
+    element: LazySupervisorEvaluationPage,
+  },
+  {
+    path: 'evaluation',
+    element: LazySupervisorEvaluationPage,
   },
 ]
 

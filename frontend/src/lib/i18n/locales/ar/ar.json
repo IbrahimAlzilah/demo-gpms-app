@@ -797,6 +797,7 @@
     "upload": "رفع الملف",
     "uploading": "جاري الرفع...",
     "uploadSuccess": "تم رفع الملف بنجاح وسيتم مراجعته من قبل المشرف",
+    "resubmitSuccess": "تم إعادة تسليم الفصل بنجاح. وهو الآن قيد المراجعة.",
     "uploadError": "فشل رفع الملف",
     "fileUploadHint": "يمكن رفع ملفات PDF, Word, أو أرشيف. الحد الأقصى 10MB",
     "noProject": "لا يوجد مشروع مسجل",
@@ -1259,12 +1260,34 @@
     "saveEvaluation": "حفظ التقييم",
     "searchPlaceholder": "البحث في المشاريع...",
     "loadError": "حدث خطأ أثناء تحميل المشاريع",
+    "workflowStatus": "حالة سير العمل",
+    "documentsPhase": "الوثائق (معتمدة/الإجمالي)",
+    "evaluationPhase": "التقييم (مقيّم/الطلاب)",
+    "evaluated": "مقيّم",
+    "projectDocuments": "وثائق المشروع",
+    "noDocuments": "لم يتم تسليم وثائق بعد",
+    "downloadDocument": "تحميل الوثيقة",
     "validation": {
       "scoreRequired": "الدرجة مطلوبة",
       "scoreInvalid": "الدرجة غير صالحة",
       "maxScoreRequired": "الدرجة الكاملة مطلوبة",
       "maxScoreInvalid": "الدرجة الكاملة غير صالحة"
     }
+  },
+  "evaluation": {
+    "evaluate": "تقييم المشروع",
+    "evaluateAll": "تقييم الكل",
+    "applyGroupGrade": "تطبيق درجة المجموعة",
+    "applyToAll": "تطبيق على الكل",
+    "individualGrades": "الدرجات الفردية",
+    "studentGroupMembers": "أعضاء مجموعة الطلاب",
+    "progress": "التقدم",
+    "gradesLockedReadOnly": "تم اعتماد الدرجات من قبل لجنة المشاريع. التقييمات للعرض فقط ولا يمكن تعديلها.",
+    "groupGradeApplied": "تم تطبيق درجة المجموعة على جميع الطلاب",
+    "enterGroupGrade": "أدخل الدرجة والدرجة الكاملة لدرجة المجموعة",
+    "enterAtLeastOneGrade": "أدخل درجة طالب واحد على الأقل قبل الحفظ",
+    "noEvaluations": "لا توجد تقييمات",
+    "loadError": "خطأ في تحميل التقييمات"
   },
   "committee": {
     "periodsDescription": "إدارة الفترات الزمنية للمشاريع (تقديم المقترحات، التسجيل، تسليم الوثائق، التقييم، إلخ)",
@@ -1645,6 +1668,7 @@
       "noApprovedToPublish": "لا توجد درجات معتمدة للإعلان",
       "viewDetails": "عرض تفاصيل الدرجة",
       "noGrades": "لا توجد درجات",
+      "searchPlaceholder": "البحث في الدرجات...",
       "noGradesDescription": "لا توجد درجات قيد المراجعة حالياً",
       "periodInactiveWarning": "ملاحظة: نافذة اعتماد الدرجات غير نشطة حالياً. يمكنك المتابعة، لكن يُنصح بالتحقق من حالة النافذة الزمنية."
     }

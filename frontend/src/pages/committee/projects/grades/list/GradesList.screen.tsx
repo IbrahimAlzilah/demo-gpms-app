@@ -4,7 +4,7 @@ import { useApproveGrade, usePublishGrades } from '../hooks/useGradeOperations'
 import { createGradeColumns } from '../components/table/columns'
 import { DataTable, Button, Alert, AlertDescription, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { LoadingSpinner, ConfirmDialog } from '@/components/common'
+import { LoadingSpinner, ConfirmDialog, BlockContent } from '@/components/common'
 import { Info, Send } from 'lucide-react'
 import type { Grade } from '@/types/evaluation.types'
 import { useGradesList } from './GradesList.hook'
@@ -100,7 +100,7 @@ export function GradesList() {
   }
 
   return (
-    <div className="space-y-4">
+    <BlockContent title={t('grades.management')} variant="data-table">
       {!periodLoading && !isPeriodActive && (
         <Alert variant="default" className="border-warning bg-warning/10">
           <Info className="h-4 w-4 text-warning" />
@@ -109,19 +109,17 @@ export function GradesList() {
           </AlertDescription>
         </Alert>
       )}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('grades.management')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-3 mb-4 items-center">
+
+      <DataTable
+        toolbarContent={
+          <>
             <Select
               value={state.approvalFilter}
               onValueChange={(value) =>
                 setState((prev) => ({ ...prev, approvalFilter: value as 'pending' | 'approved' | 'all' }))
               }
             >
-              <SelectTrigger id="approval-filter" className="w-[220px]">
+              <SelectTrigger id="approval-filter" className="w-[200px]">
                 <SelectValue placeholder={t('common.filterByStatus')} />
               </SelectTrigger>
               <SelectContent>
@@ -142,32 +140,30 @@ export function GradesList() {
                 {t('committee.grades.publishToStudents')}
               </Button>
             )}
-          </div>
-
-          <DataTable
-            columns={columns}
-            data={data.grades}
-            isLoading={data.isLoading}
-            error={data.error}
-            pageCount={pageCount}
-            totalCount={totalCount}
-            pageIndex={pagination.pageIndex}
-            pageSize={pagination.pageSize}
-            onPaginationChange={(pageIndex, pageSize) => {
-              setPagination({ pageIndex, pageSize })
-            }}
-            sorting={sorting}
-            onSortingChange={setSorting}
-            columnFilters={columnFilters}
-            onColumnFiltersChange={setColumnFilters}
-            searchValue={globalFilter}
-            onSearchChange={setGlobalFilter}
-            enableFiltering={true}
-            enableViews={true}
-            emptyMessage={t('grades.noGrades')}
-          />
-        </CardContent>
-      </Card>
+          </>
+        }
+        columns={columns}
+        data={data.grades}
+        isLoading={data.isLoading}
+        error={data.error}
+        pageCount={pageCount}
+        totalCount={totalCount}
+        pageIndex={pagination.pageIndex}
+        pageSize={pagination.pageSize}
+        onPaginationChange={(pageIndex, pageSize) => {
+          setPagination({ pageIndex, pageSize })
+        }}
+        sorting={sorting}
+        onSortingChange={setSorting}
+        columnFilters={columnFilters}
+        onColumnFiltersChange={setColumnFilters}
+        searchValue={globalFilter}
+        onSearchChange={setGlobalFilter}
+        searchPlaceholder={t('committee.grades.searchPlaceholder')}
+        enableFiltering={true}
+        enableViews={true}
+        emptyMessage={t('grades.noGrades')}
+      />
 
       <ConfirmDialog
         open={state.showDialog}
@@ -214,6 +210,6 @@ export function GradesList() {
           </div>
         )}
       </ConfirmDialog>
-    </div>
+    </BlockContent>
   )
 }
