@@ -14,6 +14,7 @@ class SupervisorController extends Controller
     {
         $supervisors = User::where('role', 'supervisor')
             ->where('status', 'active')
+            ->orderBy('name', 'asc')
             ->get();
 
         return response()->json([

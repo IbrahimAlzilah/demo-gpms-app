@@ -78,7 +78,8 @@ class EvaluationController extends Controller
         $totalProjects = $projectsQuery->count();
         $totalPages = ceil($totalProjects / $pageSize);
 
-        $projects = $projectsQuery->skip(($page - 1) * $pageSize)
+        $projects = $projectsQuery->orderBy('created_at', 'desc')
+            ->skip(($page - 1) * $pageSize)
             ->take($pageSize)
             ->get();
 
@@ -174,6 +175,7 @@ class EvaluationController extends Controller
         ->where('status', 'in_progress')
         ->with(['supervisor', 'students', 'assignedGroup', 'committeeMembers'])
         ->withCount('students')
+        ->orderBy('created_at', 'desc')
         ->get();
 
         $items = [];
@@ -193,8 +195,8 @@ class EvaluationController extends Controller
                 'studentsCount' => $totalStudents,
                 'evaluatedCount' => $evaluatedCount,
                 'isLocked' => $hasApprovedGrade,
-                'evaluationProgress' => $totalStudents > 0 
-                    ? round(($evaluatedCount / $totalStudents) * 100) 
+                'evaluationProgress' => $totalStudents > 0
+                    ? round(($evaluatedCount / $totalStudents) * 100)
                     : 0,
                 'phase' => $phase,
                 'committeeMembers' => $project->committeeMembers->map(fn($m) => [

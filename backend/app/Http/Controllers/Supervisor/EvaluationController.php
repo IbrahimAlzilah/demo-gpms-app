@@ -44,6 +44,7 @@ class EvaluationController extends Controller
 
             $grades = Grade::where('project_id', $project->id)
                 ->with(['student', 'project'])
+                ->orderBy('created_at', 'desc')
                 ->get();
 
             return response()->json([

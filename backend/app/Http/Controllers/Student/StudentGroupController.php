@@ -178,6 +178,7 @@ class StudentGroupController extends Controller
         $invitations = StudentGroupInvitation::where('invitee_id', $request->user()->id)
             ->where('status', 'pending')
             ->with(['group', 'inviter', 'invitee'])
+            ->orderBy('created_at', 'desc')
             ->get();
 
         return response()->json([

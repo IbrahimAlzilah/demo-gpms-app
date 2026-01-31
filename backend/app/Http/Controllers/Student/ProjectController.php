@@ -212,6 +212,7 @@ class ProjectController extends Controller
         // project_registrations records, so we only return real database records
         $registrations = ProjectRegistration::where('student_id', $student->id)
             ->with(['project', 'reviewer'])
+            ->orderBy('created_at', 'desc')
             ->get();
 
         return response()->json([

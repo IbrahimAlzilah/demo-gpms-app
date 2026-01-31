@@ -18,7 +18,8 @@ class GradeController extends Controller
         // UC-ST-08: Students can only view approved grades
         $query->where('is_approved', true);
 
-        $grades = $query->get();
+        // Order by most recent grades first
+        $grades = $query->orderBy('created_at', 'desc')->get();
 
         return response()->json([
             'success' => true,

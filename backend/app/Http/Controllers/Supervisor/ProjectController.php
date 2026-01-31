@@ -78,7 +78,7 @@ class ProjectController extends Controller
             ], 403);
         }
 
-        $grades = $project->grades()->with(['student', 'project'])->get();
+        $grades = $project->grades()->with(['student', 'project'])->orderBy('created_at', 'desc')->get();
 
         return response()->json([
             'success' => true,

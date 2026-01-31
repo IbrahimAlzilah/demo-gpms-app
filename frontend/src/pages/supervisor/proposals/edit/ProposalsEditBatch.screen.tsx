@@ -25,6 +25,7 @@ export function ProposalsEditBatch() {
     isSubmitting,
     editBlocked,
     blockReason,
+    canAddNew,
   } = useProposalsEditBatch(() => {
     navigate(ROUTES.SUPERVISOR.MY_PROPOSALS)
   })
@@ -129,7 +130,12 @@ export function ProposalsEditBatch() {
           <Button
             variant="outline"
             onClick={() => addNewProposal()}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !canAddNew}
+            title={
+              !canAddNew
+                ? t('proposal.submissionPeriodClosedMessage')
+                : undefined
+            }
           >
             <PlusCircle className="size-4" />
             {t('proposal.addNewProposal')}

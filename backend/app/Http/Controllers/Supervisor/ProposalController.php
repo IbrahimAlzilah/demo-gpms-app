@@ -165,11 +165,13 @@ class ProposalController extends Controller
     /**
      * Get submission context for editing (supervisor only)
      * Returns ALL proposals submitted by the supervisor (approved, rejected, pending).
-     * Supervisors can always add new proposals; only pending_review/requires_modification can be edited.
+     * Supervisors can add new proposals only when the submission period is open; only pending_review/requires_modification can be edited.
      */
     public function getSubmissionContext(Request $request): JsonResponse
     {
         $user = $request->user();
+        $timeWindowService = app(\App\Services\TimeWindowService::class);
+        $isSubmissionPeriodOpen = $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::PROPOSAL_SUBMISSION);
 
         // Get ALL proposals submitted by the supervisor (all statuses)
         $allProposals = Proposal::where('submitter_id', $user->id)
@@ -184,12 +186,18 @@ class ProposalController extends Controller
                 'group' => null, // Supervisors don't have groups
                 'proposals' => ProposalResource::collection($allProposals),
                 'can_edit' => true,
+                'can_add_new' => $isSubmissionPeriodOpen,
             ],
         ]);
     }
 
     /**
      * Update multiple proposals and optionally add new ones (supervisor only)
+     *
+     * Supervisors can:
+     * - Edit existing proposals that are pending_review or requires_modification (during active window or when requires_modification)
+     * - Add NEW proposals only when the proposal submission period is open and active
+     * - View all their proposals (approved, rejected, pending) on the Edit Proposals page
      */
     public function batchUpdate(Request $request): JsonResponse
     {
@@ -199,9 +207,17 @@ class ProposalController extends Controller
         // Check which window is active
         $isProposalSubmissionWindow = $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::PROPOSAL_SUBMISSION);
 
-        // Supervisors can update existing proposals during active window OR when proposal requires modification.
-        // Adding NEW proposals is always allowed via the Edit Proposals page (no window restriction).
         $hasNewProposals = !empty($request->input('new_proposals', []));
+
+        // Adding NEW proposals is only allowed when the proposal submission period is open and active
+        if ($hasNewProposals && !$isProposalSubmissionWindow) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Adding new proposals is only allowed during the proposal submission window. You can edit existing proposals that require modification at any time.',
+                'code' => 'SUBMISSION_WINDOW_CLOSED',
+            ], 403);
+        }
+
         $proposalIds = $request->input('updates', []);
         $hasModificationRequired = false;
         if (!empty($proposalIds)) {
@@ -219,7 +235,7 @@ class ProposalController extends Controller
         if (!$canUpdateExisting && !$hasNewProposals && !empty($proposalIds)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Proposal updates are only allowed during proposal submission window, or when revisions are requested. You can add new proposals at any time.',
+                'message' => 'Proposal updates are only allowed during proposal submission window, or when revisions are requested.',
             ], 403);
         }
 

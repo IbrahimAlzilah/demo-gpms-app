@@ -22,10 +22,13 @@ trait HasTableQuery
             $query = $this->applyFilters($query, $request->filters);
         }
 
-        // Apply sorting
+        // Apply sorting (default to created_at desc for newest first)
         if ($request->has('sortBy') && $request->sortBy) {
             $sortOrder = $request->get('sortOrder', 'asc');
             $query = $this->applySorting($query, $request->sortBy, $sortOrder);
+        } else {
+            // Default sorting: newest first (created_at desc)
+            $query = $query->orderBy('created_at', 'desc');
         }
 
         return $query;

@@ -187,16 +187,10 @@ export function useProposalsEditBatch(onSuccess?: () => void) {
       return;
     }
 
-    if (!isPeriodActive) {
-      // Check if any proposal requires modification (allows editing even outside windows)
-      // For supervisors, we check if any existing proposal has requires_modification status
-      // This is handled on the backend, but we can still show a warning
-      const hasModificationRequired = existingProposals.length > 0;
-
-      if (!hasModificationRequired && newProposals.length > 0) {
-        toastError(t("proposal.periodClosed"));
-        return;
-      }
+    // Adding new proposals is only allowed when the submission period is open
+    if (!isPeriodActive && newProposals.length > 0) {
+      toastError(t("proposal.errors.addNewPeriodClosed"));
+      return;
     }
 
     if (!validateProposals()) {
@@ -207,12 +201,16 @@ export function useProposalsEditBatch(onSuccess?: () => void) {
     setIsSubmitting(true);
     try {
       // Only send updates for proposals that are still editable (pending_review or requires_modification)
-      const editableStatuses = [
-        "pending_review",
-        "requires_modification",
-      ] as const;
       const updates = existingProposals
-        .filter((p) => p.status && editableStatuses.includes(p.status))
+        .filter(
+          (
+            p,
+          ): p is ProposalItem & {
+            status: "pending_review" | "requires_modification";
+          } =>
+            p.status === "pending_review" ||
+            p.status === "requires_modification",
+        )
         .map((p) => ({
           id: p.id,
           title: p.title.trim(),
@@ -250,5 +248,6 @@ export function useProposalsEditBatch(onSuccess?: () => void) {
     isSubmitting,
     editBlocked,
     blockReason,
+    canAddNew: isPeriodActive,
   };
 }

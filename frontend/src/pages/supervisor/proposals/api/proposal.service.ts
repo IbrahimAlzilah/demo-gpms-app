@@ -141,6 +141,7 @@ export const proposalService = {
   getSubmissionContext: async (): Promise<{
     proposals: Proposal[];
     can_edit?: boolean;
+    can_add_new?: boolean;
     has_approved_proposal?: boolean;
     message?: string;
   }> => {
@@ -161,6 +162,7 @@ export const proposalService = {
       return {
         proposals: response.data.data.proposals || [],
         can_edit: response.data.data.can_edit,
+        can_add_new: response.data.data.can_add_new,
         has_approved_proposal: response.data.data.has_approved_proposal,
       };
     }
@@ -168,6 +170,7 @@ export const proposalService = {
     return {
       proposals: response.data.proposals || [],
       can_edit: response.data.can_edit,
+      can_add_new: response.data.can_add_new,
       has_approved_proposal: response.data.has_approved_proposal,
       message: response.data.message,
     };

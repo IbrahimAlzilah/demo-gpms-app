@@ -96,7 +96,8 @@
     "evaluate": "Evaluate",
     "individual": "Individual",
     "group": "Group",
-    "pending": "Pending"
+    "pending": "Pending",
+    "cancelled": "Cancelled"
   },
   "app": {
     "name": "Graduation Project Management System",
@@ -662,6 +663,7 @@
       "submitOwnGroupOnly": "You can only submit proposals for your own group.",
       "submissionLocked": "New proposal submissions are not allowed after the first submission. Please use the edit functionality to add new proposals to your existing submission.",
       "periodClosed": "Proposal submission is only allowed during the project registration period. Please check the active time windows.",
+      "addNewPeriodClosed": "Adding new proposals is only allowed during the proposal submission period. Please check the active time windows.",
       "updatesOnlyInWindows": "Proposal updates are only allowed during proposal submission or project registration windows, or when revisions are requested.",
       "updateOwnGroupOnly": "You can only update proposals for your own group.",
       "editBlockedApproved": "Editing is not allowed. One or more proposals have already been approved by the Project Committee.",
@@ -783,6 +785,11 @@
     "cancelSuccess": "Request cancelled successfully",
     "cancelError": "Failed to cancel request",
     "loadError": "An error occurred while loading the request",
+    "requestDetails": "Request Details",
+    "requestInformation": "Request Information",
+    "project": "Project",
+    "additionalInformation": "Additional Information",
+    "awaitingDecision": "Awaiting Decision",
     "validation": {
       "reasonRequired": "Request reason is required",
       "reasonMinLength": "Reason must be at least 20 characters"
@@ -1441,6 +1448,8 @@
       "noRequests": "No requests pending processing at the moment",
       "noRequestsDescription": "No new requests need review",
       "student": "Student",
+      "studentInformation": "Student information for this request",
+      "awaitingCommitteeReview": "This request is awaiting committee review",
       "supervisorDecision": "Supervisor Decision",
       "needsSupervisorApproval": "This request requires supervisor approval first",
       "supervisorApproved": "Supervisor approved, ready for committee review",
@@ -1457,7 +1466,14 @@
       "confirmApprove": "Confirm Request Approval",
       "confirmReject": "Confirm Request Rejection",
       "confirmApproveDescription": "Are you sure you want to approve this request?",
-      "confirmRejectDescription": "Are you sure you want to reject this request?"
+      "confirmRejectDescription": "Are you sure you want to reject this request?",
+      "projectRegistrations": "Project Registrations",
+      "allStudentRegistrations": "All registrations for this student",
+      "noRegistrations": "No registrations found",
+      "projectId": "Project ID",
+      "submittedAt": "Submitted at",
+      "reviewedAt": "Reviewed at",
+      "reviewComments": "Review Comments"
     },
     "distribute": {
       "title": "Distribute Projects to Discussion Committees",
