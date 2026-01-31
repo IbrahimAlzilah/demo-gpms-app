@@ -176,6 +176,7 @@
     "distributeCommittees": "توزيع اللجان",
     "reports": "التقارير",
     "users": "إدارة المستخدمين",
+    "settings": "إعدادات النظام",
     "notifications": "الإشعارات",
     "announce": "إعلان المشاريع",
     "follow-up": "متابعة المشروع",
@@ -185,6 +186,22 @@
     "supervision-requests": "طلبات الإشراف",
     "my-proposals": "مقترحاتي",
     "approved-proposals": "المقترحات المعتمدة"
+  },
+  "settings": {
+    "title": "إعدادات النظام",
+    "save": "حفظ التغييرات",
+    "saveSuccess": "تم حفظ الإعدادات بنجاح",
+    "saveError": "فشل في حفظ الإعدادات",
+    "loadError": "فشل في تحميل الإعدادات",
+    "categories": {
+      "groups": "المجموعات الطلابية",
+      "proposals": "المقترحات",
+      "projects": "المشاريع",
+      "committees": "لجنة المناقشة",
+      "supervisors": "المشرفون",
+      "documents": "المستندات",
+      "other": "أخرى"
+    }
   },
   "dashboard": {
     "student": {
@@ -251,15 +268,32 @@
       "totalUsers": "إجمالي المستخدمين",
       "activeUsers": "{{count}} مستخدم نشط",
       "projects": "المشاريع",
-      "registeredProjects": "مشروع مسجل",
+      "registeredProjects": "مشاريع مسجلة",
       "proposals": "المقترحات",
-      "submittedProposals": "مقترح مقدم",
+      "submittedProposals": "مقترحات مقدمة",
       "systemStatus": "حالة النظام",
       "stable": "مستقر",
+      "operational": "يعمل",
+      "degraded": "متدهور",
       "allSystemsOperational": "جميع الأنظمة تعمل بشكل طبيعي",
+      "databaseDisconnected": "قاعدة البيانات غير متصلة",
+      "loadError": "فشل تحميل بيانات لوحة التحكم.",
+      "noData": "لا توجد بيانات متاحة",
+      "usersByRole": "المستخدمون حسب الدور",
+      "projectsByStatus": "المشاريع حسب الحالة",
+      "systemHealth": "صحة النظام",
+      "databaseStatus": "قاعدة البيانات",
+      "lastChecked": "آخر فحص",
+      "connected": "متصل",
+      "disconnected": "غير متصل",
       "quickActions": "إجراءات سريعة",
       "manageUsers": "إدارة المستخدمين",
-      "generateReports": "إنشاء التقارير"
+      "manageUsersDesc": "إضافة أو تعديل أو حذف المستخدمين",
+      "generateReports": "إنشاء التقارير",
+      "generateReportsDesc": "عرض تحليلات النظام",
+      "systemSettings": "إعدادات النظام",
+      "systemSettingsDesc": "تكوين الخيارات العامة",
+      "serverStatus": "حالة الخادم"
     },
     "discussion": {
       "assignedProjects": "المشاريع المعينة",
@@ -486,6 +520,7 @@
     "en": "English"
   },
   "user": {
+    "username": "اسم المستخدم",
     "role": "الدور",
     "status": {
       "active": "نشط",
@@ -520,6 +555,12 @@
     "confirmDelete": "تأكيد الحذف",
     "confirmDeleteDescription": "هل أنت متأكد من حذف المستخدم \"{{name}}\"؟ لا يمكن التراجع عن هذا الإجراء.",
     "managementDescription": "التحكم الكامل في حسابات المستخدمين وإدارة صلاحياتهم",
+    "emailPlaceholder": "البريد الإلكتروني (اختياري، لاستعادة كلمة المرور)",
+    "emailOptionalHelp": "البريد الإلكتروني اختياري ويستخدم فقط لاستعادة كلمة المرور",
+    "studentIdHelp": "سيتم استخدام رقم الطالب كاسم مستخدم لتسجيل الدخول",
+    "empId": "رقم الموظف",
+    "empIdPlaceholder": "رقم الموظف (مثال: EMP001)",
+    "empIdHelp": "سيتم استخدام رقم الموظف كاسم مستخدم لتسجيل الدخول",
     "validation": {
       "nameRequired": "الاسم مطلوب",
       "nameMinLength": "الاسم يجب أن يكون حرفين على الأقل",
@@ -818,6 +859,15 @@
     "awaitingDecision": "في انتظار القرار",
     "timeline": "الجدول الزمني",
     "project": "المشروع",
+    "student": "الطالب",
+    "statusLabel": "الحالة",
+    "type": "نوع الطلب",
+    "types": {
+      "change_supervisor": "تغيير المشرف",
+      "change_group": "تغيير المجموعة",
+      "change_project": "تغيير المشروع",
+      "other": "أخرى"
+    },
     "additionalInformation": "معلومات إضافية",
     "cancelSuccess": "تم إلغاء الطلب بنجاح",
     "cancelError": "فشل إلغاء الطلب",
@@ -1763,6 +1813,8 @@
     "projectNotFound": "المشروع غير موجود",
     "title": "عنوان المشروع",
     "description": "الوصف",
+    "status": "الحالة",
+    "phase": "المرحلة",
     "supervisor": "المشرف",
     "noSupervisor": "غير معين",
     "students": "الطلاب",

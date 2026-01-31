@@ -47,7 +47,7 @@ export function AdminRequestsTab({ filters }: AdminRequestsTabProps) {
     },
     {
       accessorKey: 'status',
-      header: t('request.status'),
+      header: t('request.statusLabel', { defaultValue: 'Status' }),
       cell: ({ row }: { row: { original: any } }) => <StatusBadge status={row.original.status} />,
     },
     {

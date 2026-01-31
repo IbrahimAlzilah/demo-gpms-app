@@ -178,11 +178,28 @@
     "distributeCommittees": "Distribute Committees",
     "reports": "Reports",
     "users": "User Management",
+    "settings": "System Settings",
     "notifications": "Notifications",
     "announce": "Announce Projects",
     "supervision-requests": "Supervision Requests",
     "my-proposals": "My Proposals",
     "approved-proposals": "Approved Proposals"
+  },
+  "settings": {
+    "title": "System Settings",
+    "save": "Save changes",
+    "saveSuccess": "Settings saved successfully",
+    "saveError": "Failed to save settings",
+    "loadError": "Failed to load settings",
+    "categories": {
+      "groups": "Student groups",
+      "proposals": "Proposals",
+      "projects": "Projects",
+      "committees": "Discussion committee",
+      "supervisors": "Supervisors",
+      "documents": "Documents",
+      "other": "Other"
+    }
   },
   "dashboard": {
     "student": {
@@ -254,10 +271,27 @@
       "submittedProposals": "submitted proposals",
       "systemStatus": "System Status",
       "stable": "Stable",
+      "operational": "Operational",
+      "degraded": "Degraded",
       "allSystemsOperational": "All systems operational",
+      "databaseDisconnected": "Database disconnected",
+      "loadError": "Failed to load dashboard data.",
+      "noData": "No data available",
+      "usersByRole": "Users by Role",
+      "projectsByStatus": "Projects by Status",
+      "systemHealth": "System Health",
+      "databaseStatus": "Database",
+      "lastChecked": "Last Checked",
+      "connected": "Connected",
+      "disconnected": "Disconnected",
       "quickActions": "Quick Actions",
       "manageUsers": "Manage Users",
-      "generateReports": "Generate Reports"
+      "manageUsersDesc": "Add, edit, or remove users",
+      "generateReports": "Generate Reports",
+      "generateReportsDesc": "View system analytics",
+      "systemSettings": "System Settings",
+      "systemSettingsDesc": "Configure global options",
+      "serverStatus": "Server Status"
     },
     "discussion": {
       "assignedProjects": "Assigned Projects",
@@ -474,6 +508,7 @@
     "en": "English"
   },
   "user": {
+    "username": "Username",
     "role": "Role",
     "status": {
       "active": "Active",
@@ -508,6 +543,12 @@
     "confirmDelete": "Confirm Deletion",
     "confirmDeleteDescription": "Are you sure you want to delete user \"{{name}}\"? This action cannot be undone.",
     "managementDescription": "Full control over user accounts and permission management",
+    "emailPlaceholder": "Email (optional, for password recovery)",
+    "emailOptionalHelp": "Email is optional and only used for password recovery",
+    "studentIdHelp": "Student ID will be used as username for login",
+    "empId": "Employee ID",
+    "empIdPlaceholder": "Employee ID (e.g., EMP001)",
+    "empIdHelp": "Employee ID will be used as username for login",
     "validation": {
       "nameRequired": "Name is required",
       "nameMinLength": "Name must be at least 2 characters",
@@ -805,6 +846,15 @@
     "project": "Project",
     "additionalInformation": "Additional Information",
     "awaitingDecision": "Awaiting Decision",
+    "student": "Student",
+    "statusLabel": "Status",
+    "type": "Request Type",
+    "types": {
+      "change_supervisor": "Change Supervisor",
+      "change_group": "Change Group",
+      "change_project": "Change Project",
+      "other": "Other"
+    },
     "validation": {
       "reasonRequired": "Request reason is required",
       "reasonMinLength": "Reason must be at least 20 characters"
@@ -1703,6 +1753,8 @@
     "projectNotFound": "Project not found",
     "title": "Project Title",
     "description": "Description",
+    "status": "Status",
+    "phase": "Phase",
     "supervisor": "Supervisor",
     "noSupervisor": "Not assigned",
     "students": "Students",
