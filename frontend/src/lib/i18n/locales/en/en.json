@@ -331,6 +331,8 @@
     "admin": {
       "totalUsers": "Total Users",
       "activeUsers": "{{count}} active users",
+      "activeUsers_one": "1 active user",
+      "activeUsers_other": "{{count}} active users",
       "projects": "Projects",
       "registeredProjects": "registered projects",
       "proposals": "Proposals",
@@ -406,11 +408,13 @@
   },
   "status": {
     "draft": "Draft",
+    "announced": "Announced",
     "pending_review": "Pending Review",
     "approved": "Approved",
     "rejected": "Rejected",
     "in_progress": "In Progress",
     "completed": "Completed",
+    "archived": "Archived",
     "available_for_registration": "Available for Registration",
     "pending": "Pending",
     "supervisor_approved": "Supervisor Approved",

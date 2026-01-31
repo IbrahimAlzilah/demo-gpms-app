@@ -82,9 +82,9 @@ export function Header({ className }: HeaderProps) {
             >
               <div className="ps-3 pe-3 py-2 border-b border-border">
                 <p className="text-sm font-medium text-popover-foreground">{user.name}</p>
-                <p className="text-xs text-muted-foreground">{user.email}</p>
+                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
               </div>
-              <DropdownMenuItem onClick={handleLogout}>
+              <DropdownMenuItem onClick={handleLogout} className='text-destructive'>
                 <LogOut className="h-4 w-4" />
                 <span>{t('auth.logout')}</span>
               </DropdownMenuItem>

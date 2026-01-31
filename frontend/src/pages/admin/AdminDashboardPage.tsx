@@ -13,15 +13,13 @@ import {
   RefreshCw,
   MoreVertical,
 } from 'lucide-react'
-import { StatsCard as StatsCardComponent, LoadingSpinner, BlockContent, DashboardHeader } from '@/components/common'
+import { StatsCard as StatsCardComponent, LoadingSpinner, BlockContent } from '@/components/common'
 import { useAdminDashboard } from './hooks/useAdminDashboard'
-import { useAuthStore } from '../../pages/auth/login'
 import { cn } from '@/lib/utils'
 
 export function AdminDashboardPage() {
   const { t } = useTranslation()
   const { data, isLoading, error, refetch } = useAdminDashboard()
-  const { user } = useAuthStore()
 
   // Loading state
   if (isLoading) {
@@ -83,7 +81,6 @@ export function AdminDashboardPage() {
             icon={Users}
             subValue={t('dashboard.admin.activeUsers', { count: stats.usersActive })}
             color="blue"
-            trend={{ value: stats.usersActive, label: "new this week", positive: true }}
           />
           <StatsCardComponent
             title={t('dashboard.admin.projects')}
@@ -91,7 +88,6 @@ export function AdminDashboardPage() {
             icon={Briefcase}
             subValue={t('dashboard.admin.registeredProjects')}
             color="green"
-            trend={{ value: stats.projectsTotal, label: "vs last month", positive: true }}
           />
           <StatsCardComponent
             title={t('dashboard.admin.proposals')}
@@ -99,7 +95,6 @@ export function AdminDashboardPage() {
             icon={FileText}
             subValue={t('dashboard.admin.submittedProposals')}
             color="purple"
-            trend={{ value: stats.proposalsTotal, label: "vs last month", positive: true }}
           />
         </div>
 
@@ -121,7 +116,7 @@ export function AdminDashboardPage() {
                     {Object.entries(stats.usersByRole).length > 0 ? (
                       Object.entries(stats.usersByRole).map(([role, count]) => (
                         <div key={role} className="flex items-center justify-between">
-                          <span className="text-sm font-medium capitalize">{role.replace('_', ' ')}</span>
+                          <span className="text-sm font-medium">{t(`roles.${role}`) || role}</span>
                           <span className="text-sm text-muted-foreground">{count as number}</span>
                         </div>
                       ))
@@ -144,7 +139,7 @@ export function AdminDashboardPage() {
                     {Object.entries(stats.projectsByStatus).length > 0 ? (
                       Object.entries(stats.projectsByStatus).map(([status, count]) => (
                         <div key={status} className="flex items-center justify-between">
-                          <span className="text-sm font-medium capitalize">{status.replace('_', ' ')}</span>
+                          <span className="text-sm font-medium">{t(`status.${status}`) || status}</span>
                           <span className="text-sm text-muted-foreground">{count as number}</span>
                         </div>
                       ))
@@ -185,7 +180,7 @@ export function AdminDashboardPage() {
                   color="green"
                 />
                 <QuickActionButton
-                  to="#"
+                  to={ROUTES.ADMIN.SETTINGS}
                   icon={Settings}
                   label={t('dashboard.admin.systemSettings', { defaultValue: 'System Settings' })}
                   description={t('dashboard.admin.systemSettingsDesc', { defaultValue: 'Configure global options' })}
