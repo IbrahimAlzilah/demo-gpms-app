@@ -18,6 +18,7 @@ class ReportFiltersRequest extends FormRequest
             'date_from' => 'nullable|date',
             'date_to' => 'nullable|date|after_or_equal:date_from',
             'status' => 'nullable|string',
+            'role' => 'nullable|in:student,supervisor,discussion_committee,projects_committee,admin',
             'supervisor_id' => 'nullable|exists:users,id',
             'project_specialization' => 'nullable|string',
             'department' => 'nullable|string',

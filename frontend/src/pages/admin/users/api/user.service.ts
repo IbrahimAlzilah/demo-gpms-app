@@ -74,7 +74,6 @@ export const userService = {
       password: data.password || 'password',
       role: data.role,
       department: data.department,
-      phone: data.phone,
       status: data.status,
     }
     // Include student_id or emp_id based on role
@@ -115,7 +114,6 @@ export const userService = {
       updateData.emp_id = (data as any).empId || null
     }
     if (data.department !== undefined) updateData.department = data.department
-    if (data.phone !== undefined) updateData.phone = data.phone
     if (data.status !== undefined) updateData.status = data.status
 
     const response = await apiClient.put<User>(`/admin/users/${id}`, updateData)

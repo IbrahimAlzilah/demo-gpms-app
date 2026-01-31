@@ -31,6 +31,7 @@
     "viewAll": "View All",
     "actions": "Actions",
     "status": "Status",
+    "statuses": "statuses",
     "date": "Date",
     "name": "Name",
     "email": "Email",
@@ -499,6 +500,11 @@
     "deleteError": "Failed to delete user",
     "loadError": "An error occurred while loading users",
     "searchPlaceholder": "Search by name or email...",
+    "filterByRole": "Filter by role",
+    "viewUser": "View User",
+    "userDetails": "User Details",
+    "specialization": "Specialization",
+    "academicLevel": "Academic Level",
     "confirmDelete": "Confirm Deletion",
     "confirmDeleteDescription": "Are you sure you want to delete user \"{{name}}\"? This action cannot be undone.",
     "managementDescription": "Full control over user accounts and permission management",
@@ -1657,7 +1663,13 @@
       "inGroups": "In Groups",
       "approvalRate": "Approval Rate",
       "onTime": "On Time",
+      "delayed": "Delayed",
       "avgDelay": "Average Delay",
+      "avgDelayDays": "Avg. Delay (days)",
+      "overdueMilestones": "Overdue Milestones",
+      "historicalTrends": "Historical Trends",
+      "periodDetails": "Period Details",
+      "evaluations": "Evaluations",
       "days": "days"
     },
     "grades": {
@@ -1871,7 +1883,39 @@
     "filterByProject": "Filter by Project"
   },
   "admin": {
-    "usersDescription": "Full control over user accounts and permission management"
+    "usersDescription": "Full control over user accounts and permission management",
+    "reports": {
+      "title": "System Reports",
+      "kpis": {
+        "users": "Users"
+      },
+      "roles": "roles",
+      "usersByRole": "Users by Role",
+      "usersTotal": "Total Users",
+      "byRole": "By Role",
+      "byStatus": "By Status",
+      "usersList": "Users List",
+      "totalPeriods": "Total Periods",
+      "activePeriods": "Active Periods",
+      "upcomingPeriods": "Upcoming Periods",
+      "currentlyActivePeriods": "Currently Active Periods",
+      "type": "Type",
+      "noPeriodsConfigured": "No time periods configured",
+      "tabs": {
+        "overview": "Overview",
+        "users": "Users",
+        "system": "System",
+        "projects": "Projects",
+        "supervisors": "Supervisors",
+        "students": "Students",
+        "requests": "Requests",
+        "deadlines": "Deadlines",
+        "history": "History"
+      },
+      "filters": {
+        "role": "Role"
+      }
+    }
   },
   "error": {
     "errorBoundary": {

@@ -32,11 +32,6 @@ export const userFormSchema = (t: (key: string) => string) => {
     studentId: z.string().optional(),
     empId: z.string().optional(),
     department: z.string().optional(),
-    phone: z
-      .string()
-      .regex(/^[0-9+\-\s()]+$/, t('user.validation.phoneInvalid'))
-      .optional()
-      .or(z.literal('')),
   })
 }
 

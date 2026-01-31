@@ -11,6 +11,7 @@ export function useUsersList() {
   const [state, setState] = useState<UsersListState>({
     selectedUser: null,
     showForm: false,
+    showView: false,
     userToDelete: null,
     showDeleteDialog: false,
   })

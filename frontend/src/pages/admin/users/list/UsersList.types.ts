@@ -3,6 +3,7 @@ import type { User } from '@/types/user.types'
 export interface UsersListState {
   selectedUser: User | null
   showForm: boolean
+  showView: boolean
   userToDelete: User | null
   showDeleteDialog: boolean
 }

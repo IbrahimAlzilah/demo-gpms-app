@@ -1,17 +1,19 @@
 import type { ColumnDef } from '@tanstack/react-table'
-import { Button } from '@/components/ui/button'
 import { DataTableColumnHeader } from '@/components/ui/data-table/data-table-column-header'
 import { StatusBadge } from '@/components/common/StatusBadge'
+import { ActionsDropdown } from '@/components/common/ActionsDropdown'
 import type { User } from '@/types/user.types'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Eye, Pencil, Trash2 } from 'lucide-react'
 
 export interface UserTableColumnsProps {
+  onView?: (user: User) => void
   onEdit: (user: User) => void
   onDelete: (user: User) => void
   t: (key: string) => string
 }
 
 export function createUserColumns({
+  onView,
   onEdit,
   onDelete,
   t,
@@ -38,21 +40,21 @@ export function createUserColumns({
         </div>
       ),
     },
-    {
-      accessorKey: 'email',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.email')} />
-      ),
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          {row.original.email ? (
-            <span className="text-sm">{row.original.email}</span>
-          ) : (
-            <span className="text-sm text-muted-foreground">-</span>
-          )}
-        </div>
-      ),
-    },
+    // {
+    //   accessorKey: 'email',
+    //   header: ({ column }) => (
+    //     <DataTableColumnHeader column={column} title={t('common.email')} />
+    //   ),
+    //   cell: ({ row }) => (
+    //     <div className="flex items-center gap-2">
+    //       {row.original.email ? (
+    //         <span className="text-sm">{row.original.email}</span>
+    //       ) : (
+    //         <span className="text-sm text-muted-foreground">-</span>
+    //       )}
+    //     </div>
+    //   ),
+    // },
     {
       accessorKey: 'username',
       header: ({ column }) => (
@@ -107,41 +109,67 @@ export function createUserColumns({
         ),
     },
     {
+      accessorKey: 'specialization',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('user.specialization')} />
+      ),
+      cell: ({ row }) =>
+        row.original.role === 'student' && row.original.specialization ? (
+          <span className="text-sm">{row.original.specialization}</span>
+        ) : (
+          <span className="text-muted-foreground text-sm">-</span>
+        ),
+    },
+    {
+      accessorKey: 'academicLevel',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('user.academicLevel')} />
+      ),
+      cell: ({ row }) =>
+        row.original.role === 'student' && row.original.academicLevel ? (
+          <span className="text-sm">{row.original.academicLevel}</span>
+        ) : (
+          <span className="text-muted-foreground text-sm">-</span>
+        ),
+    },
+    {
       id: 'actions',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('common.actions')} />
       ),
       cell: ({ row }) => {
         const user = row.original
-        const editLabel = t('common.edit')
-        const deleteLabel = t('common.delete')
 
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onEdit(user)}
-              className="h-8 w-8 p-0"
-              title={editLabel}
-              aria-label={editLabel}
-            >
-              <Pencil className="h-4 w-4" />
-              <span className="sr-only">{editLabel}</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onDelete(user)}
-              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-              title={deleteLabel}
-              aria-label={deleteLabel}
-            >
-              <Trash2 className="h-4 w-4" />
-              <span className="sr-only">{deleteLabel}</span>
-            </Button>
-          </div>
-        )
+        const actions = [
+          ...(onView
+            ? [
+              {
+                id: 'view',
+                label: t('common.view'),
+                icon: Eye,
+                onClick: () => onView(user),
+                variant: 'default' as const,
+              },
+            ]
+            : []),
+          {
+            id: 'edit',
+            label: t('common.edit'),
+            icon: Pencil,
+            onClick: () => onEdit(user),
+            variant: 'default' as const,
+          },
+          {
+            id: 'delete',
+            label: t('common.delete'),
+            icon: Trash2,
+            onClick: () => onDelete(user),
+            variant: 'destructive' as const,
+            separator: true,
+          },
+        ]
+
+        return <ActionsDropdown row={user} actions={actions} />
       },
     },
   ]

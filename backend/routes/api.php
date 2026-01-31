@@ -252,6 +252,17 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index']);
         Route::apiResource('users', App\Http\Controllers\Admin\UserController::class);
         Route::get('reports', [App\Http\Controllers\Admin\ReportController::class, 'index']);
+        Route::get('reports/overview', [App\Http\Controllers\Admin\ReportController::class, 'overview']);
+        Route::get('reports/users', [App\Http\Controllers\Admin\ReportController::class, 'users']);
+        Route::get('reports/system', [App\Http\Controllers\Admin\ReportController::class, 'system']);
+        Route::get('reports/projects', [App\Http\Controllers\Admin\ReportController::class, 'projects']);
+        Route::get('reports/supervisors', [App\Http\Controllers\Admin\ReportController::class, 'supervisors']);
+        Route::get('reports/students', [App\Http\Controllers\Admin\ReportController::class, 'students']);
+        Route::get('reports/requests', [App\Http\Controllers\Admin\ReportController::class, 'requests']);
+        Route::get('reports/deadlines', [App\Http\Controllers\Admin\ReportController::class, 'deadlines']);
+        Route::get('reports/history', [App\Http\Controllers\Admin\ReportController::class, 'history']);
+        Route::get('reports/export/pdf', [App\Http\Controllers\Admin\ReportExportController::class, 'pdf']);
+        Route::get('reports/export/excel', [App\Http\Controllers\Admin\ReportExportController::class, 'excel']);
     });
 
     // Notifications routes (available to all authenticated users)

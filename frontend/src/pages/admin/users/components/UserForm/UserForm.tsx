@@ -32,7 +32,6 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
         studentId: user.studentId,
         empId: user.empId,
         department: user.department,
-        phone: user.phone,
       }
       : {
         status: 'active',
@@ -230,23 +229,6 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             placeholder={t('user.departmentPlaceholder')}
           />
         </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="phone">{t('user.phone')}</Label>
-        <Input
-          id="phone"
-          type="tel"
-          {...register('phone')}
-          placeholder={t('user.phonePlaceholder')}
-          className={errors.phone ? 'border-destructive' : ''}
-        />
-        {errors.phone && (
-          <p className="text-xs text-destructive flex items-center gap-1">
-            <AlertCircle className="h-3 w-3" />
-            {errors.phone.message}
-          </p>
-        )}
       </div>
 
       <div className="flex gap-2 pt-4 border-t">

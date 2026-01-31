@@ -1,6 +1,6 @@
-import { useMemo } from 'react'
+import { useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { DataTable, Button } from '@/components/ui'
+import { DataTable, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import {
   BlockContent,
   ModalDialog,
@@ -10,6 +10,7 @@ import { useToast } from '@/components/common'
 import { AlertCircle, PlusCircle } from 'lucide-react'
 import { createUserColumns } from '../components/table'
 import { UserForm } from '../components/UserForm'
+import { UserViewDialog } from '../components/UserViewDialog'
 import { useUsersList } from './UsersList.hook'
 import { useDeleteUser } from '../hooks/useUserOperations'
 
@@ -34,9 +35,26 @@ export function UsersList() {
     setPagination,
   } = useUsersList()
 
+  const roleFilterValue = columnFilters.find((f) => f.id === 'role')?.value ?? 'all'
+
+  const handleRoleFilterChange = useCallback(
+    (value: string) => {
+      setColumnFilters((prev) => {
+        const rest = prev.filter((f) => f.id !== 'role')
+        if (value === 'all') return rest
+        return [...rest, { id: 'role', value }]
+      })
+      setPagination((prev) => ({ ...prev, pageIndex: 0 }))
+    },
+    [setColumnFilters, setPagination]
+  )
+
   const columns = useMemo(
     () =>
       createUserColumns({
+        onView: (user) => {
+          setState((prev) => ({ ...prev, selectedUser: user, showView: true }))
+        },
         onEdit: (user) => {
           setState((prev) => ({ ...prev, selectedUser: user, showForm: true }))
         },
@@ -103,6 +121,21 @@ export function UsersList() {
     <>
       <BlockContent title={t('user.userList')} actions={actions} variant="data-table">
         <DataTable
+          toolbarContent={
+            <Select value={roleFilterValue} onValueChange={handleRoleFilterChange}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder={t('user.filterByRole')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('common.all')}</SelectItem>
+                <SelectItem value="student">{t('roles.student')}</SelectItem>
+                <SelectItem value="supervisor">{t('roles.supervisor')}</SelectItem>
+                <SelectItem value="discussion_committee">{t('roles.discussion_committee')}</SelectItem>
+                <SelectItem value="projects_committee">{t('roles.projects_committee')}</SelectItem>
+                <SelectItem value="admin">{t('roles.admin')}</SelectItem>
+              </SelectContent>
+            </Select>
+          }
           columns={columns}
           data={data.users}
           isLoading={data.isLoading}
@@ -150,6 +183,12 @@ export function UsersList() {
           onCancel={handleFormCancel}
         />
       </ModalDialog>
+
+      <UserViewDialog
+        user={state.showView ? state.selectedUser : null}
+        open={state.showView}
+        onClose={() => setState((prev) => ({ ...prev, showView: false }))}
+      />
 
       <ConfirmDialog
         open={state.showDeleteDialog}

@@ -582,6 +582,123 @@ class ReportService
     }
 
     /**
+     * Generate users report (Admin - system management)
+     */
+    public function generateUsersReport(array $filters = []): array
+    {
+        $query = User::query();
+
+        $this->applyCommonFilters($query, $filters);
+
+        if (isset($filters['role'])) {
+            $query->where('role', $filters['role']);
+        }
+        if (isset($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        $users = $query->with(['studentProfile', 'supervisorProfile'])->get();
+
+        $byRole = $users->groupBy('role')->map->count()->toArray();
+        $byStatus = $users->groupBy('status')->map->count()->toArray();
+
+        return [
+            'summary' => [
+                'total' => $users->count(),
+                'byRole' => $byRole,
+                'byStatus' => $byStatus,
+            ],
+            'users' => $users->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'username' => $user->username,
+                    'role' => $user->role,
+                    'status' => $user->status,
+                    'student_id' => $user->studentProfile?->student_id,
+                    'emp_id' => $user->supervisorProfile?->emp_id,
+                    'department' => $user->studentProfile?->major ?? $user->supervisorProfile?->department,
+                    'created_at' => $user->created_at?->toISOString(),
+                ];
+            })->values(),
+        ];
+    }
+
+    /**
+     * Generate system configuration report (Admin - time periods, active windows)
+     */
+    public function generateSystemReport(): array
+    {
+        $periods = TimePeriod::with('creator')->orderBy('start_date', 'desc')->get();
+
+        $byType = $periods->groupBy('type')->map(function ($group) {
+            return [
+                'total' => $group->count(),
+                'active' => $group->filter(fn ($p) => $p->isCurrentlyActive())->count(),
+                'scheduled' => $group->filter(fn ($p) => $p->isScheduled())->count(),
+                'ended' => $group->filter(fn ($p) => $p->hasEnded())->count(),
+            ];
+        })->toArray();
+
+        $activePeriods = $periods->filter(fn ($p) => $p->isCurrentlyActive())->values();
+        $upcomingPeriods = $periods->filter(fn ($p) => $p->isScheduled())->sortBy('start_date')->take(5)->values();
+
+        return [
+            'summary' => [
+                'total_periods' => $periods->count(),
+                'active_periods' => $activePeriods->count(),
+                'upcoming_periods' => $upcomingPeriods->count(),
+                'byType' => $byType,
+            ],
+            'active_periods' => $activePeriods->map(fn ($p) => [
+                'id' => $p->id,
+                'name' => $p->name,
+                'type' => $p->type,
+                'start_date' => $p->start_date->format('Y-m-d'),
+                'end_date' => $p->end_date->format('Y-m-d'),
+                'academic_year' => $p->academic_year,
+                'semester' => $p->semester,
+            ])->values(),
+            'upcoming_periods' => $upcomingPeriods->map(fn ($p) => [
+                'id' => $p->id,
+                'name' => $p->name,
+                'type' => $p->type,
+                'start_date' => $p->start_date->format('Y-m-d'),
+                'end_date' => $p->end_date->format('Y-m-d'),
+            ])->values(),
+        ];
+    }
+
+    /**
+     * Generate admin overview report (extends committee overview with users)
+     */
+    public function generateAdminOverviewReport(array $filters = []): array
+    {
+        $overview = $this->generateOverviewReport($filters);
+
+        $usersByRole = \Illuminate\Support\Facades\DB::table('users')
+            ->select('role', \Illuminate\Support\Facades\DB::raw('count(*) as count'))
+            ->groupBy('role')
+            ->pluck('count', 'role')
+            ->toArray();
+
+        $usersByStatus = \Illuminate\Support\Facades\DB::table('users')
+            ->select('status', \Illuminate\Support\Facades\DB::raw('count(*) as count'))
+            ->groupBy('status')
+            ->pluck('count', 'status')
+            ->toArray();
+
+        $overview['kpis']['users'] = [
+            'total' => array_sum($usersByRole),
+            'byRole' => $usersByRole,
+            'byStatus' => $usersByStatus,
+        ];
+
+        return $overview;
+    }
+
+    /**
      * Generate historical comparison report
      */
     public function generateHistoryReport(int $periodsCount = 5): array

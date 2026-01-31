@@ -512,6 +512,11 @@
     "deleteError": "فشل حذف المستخدم",
     "loadError": "حدث خطأ أثناء تحميل المستخدمين",
     "searchPlaceholder": "البحث بالاسم أو البريد الإلكتروني...",
+    "filterByRole": "تصفية حسب الدور",
+    "viewUser": "عرض المستخدم",
+    "userDetails": "تفاصيل المستخدم",
+    "specialization": "التخصص",
+    "academicLevel": "المستوى الأكاديمي",
     "confirmDelete": "تأكيد الحذف",
     "confirmDeleteDescription": "هل أنت متأكد من حذف المستخدم \"{{name}}\"؟ لا يمكن التراجع عن هذا الإجراء.",
     "managementDescription": "التحكم الكامل في حسابات المستخدمين وإدارة صلاحياتهم",
@@ -1946,7 +1951,39 @@
     "projectsInRequestDescription": "قائمة المشاريع التي قمت بالتسجيل فيها ضمن هذا الطلب"
   },
   "admin": {
-    "usersDescription": "التحكم الكامل في حسابات المستخدمين وإدارة صلاحياتهم"
+    "usersDescription": "التحكم الكامل في حسابات المستخدمين وإدارة صلاحياتهم",
+    "reports": {
+      "title": "تقارير النظام",
+      "kpis": {
+        "users": "المستخدمون"
+      },
+      "roles": "أدوار",
+      "usersByRole": "المستخدمون حسب الدور",
+      "usersTotal": "إجمالي المستخدمين",
+      "byRole": "حسب الدور",
+      "byStatus": "حسب الحالة",
+      "usersList": "قائمة المستخدمين",
+      "totalPeriods": "إجمالي الفترات",
+      "activePeriods": "الفترات النشطة",
+      "upcomingPeriods": "الفترات القادمة",
+      "currentlyActivePeriods": "الفترات النشطة حالياً",
+      "type": "النوع",
+      "noPeriodsConfigured": "لم يتم تكوين فترات زمنية",
+      "tabs": {
+        "overview": "نظرة عامة",
+        "users": "المستخدمون",
+        "system": "النظام",
+        "projects": "المشاريع",
+        "supervisors": "المشرفون",
+        "students": "الطلاب",
+        "requests": "الطلبات",
+        "deadlines": "المواعيد النهائية",
+        "history": "السجل"
+      },
+      "filters": {
+        "role": "الدور"
+      }
+    }
   },
   "error": {
     "errorBoundary": {

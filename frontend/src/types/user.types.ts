@@ -18,6 +18,8 @@ export interface User extends BaseEntity {
   studentId?: string;
   empId?: string;
   department?: string;
+  specialization?: string | null;
+  academicLevel?: string | null;
   phone?: string;
 }
 
