@@ -58,12 +58,14 @@ class SupervisorDashboardService
         }
 
         // Upcoming meetings across all supervised projects
+        $settingsService = app(\App\Services\SettingsService::class);
+        $dashboardDisplayLimit = $settingsService->getDashboardDisplayLimit();
         $projectIds = $supervisedProjects->pluck('id')->toArray();
         $upcomingMeetings = ProjectMeeting::whereIn('project_id', $projectIds)
             ->where('scheduled_date', '>=', now())
             ->with(['project:id,title', 'scheduledBy:id,name'])
             ->orderBy('scheduled_date', 'asc')
-            ->limit(5)
+            ->limit($dashboardDisplayLimit)
             ->get()
             ->map(function ($meeting) {
                 return [
@@ -91,7 +93,7 @@ class SupervisorDashboardService
             ->where('due_date', '<', now()->toDateString())
             ->with(['project:id,title'])
             ->orderBy('due_date', 'asc')
-            ->limit(5)
+            ->limit($dashboardDisplayLimit)
             ->get()
             ->map(function ($milestone) {
                 $daysOverdue = now()->diffInDays($milestone->due_date, false);
@@ -110,14 +112,15 @@ class SupervisorDashboardService
             ->where('due_date', '<', now()->toDateString())
             ->count();
 
-        // Soon milestones (due within 7 days)
+        // Soon milestones (due within configurable days threshold)
+        $soonMilestoneDays = $settingsService->getDashboardSoonMilestoneDaysThreshold();
         $soonMilestones = ProjectMilestone::whereIn('project_id', $projectIds)
             ->where('completed', false)
             ->where('due_date', '>=', now()->toDateString())
-            ->where('due_date', '<=', now()->addDays(7)->toDateString())
+            ->where('due_date', '<=', now()->addDays($soonMilestoneDays)->toDateString())
             ->with(['project:id,title'])
             ->orderBy('due_date', 'asc')
-            ->limit(5)
+            ->limit($dashboardDisplayLimit)
             ->get()
             ->map(function ($milestone) {
                 $daysUntil = now()->diffInDays($milestone->due_date, false);
@@ -142,7 +145,7 @@ class SupervisorDashboardService
             'upcomingMeetings' => $upcomingMeetings,
             'overdueMilestones' => $overdueMilestones,
             'soonMilestones' => $soonMilestones,
-            'projectsNeedingAttention' => array_slice($projectsNeedingAttention, 0, 5),
+            'projectsNeedingAttention' => array_slice($projectsNeedingAttention, 0, $dashboardDisplayLimit),
         ];
     }
 }

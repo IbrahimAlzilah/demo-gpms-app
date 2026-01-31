@@ -24,10 +24,12 @@ class PeriodController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $settingsService = app(\App\Services\SettingsService::class);
+        $periodNameMaxLength = $settingsService->getPeriodNameMaxLength();
         $allowedTypes = \App\Enums\TimePeriodType::values();
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => "required|string|max:{$periodNameMaxLength}",
             'type' => [
                 'required',
                 'in:' . implode(',', $allowedTypes),
@@ -83,10 +85,12 @@ class PeriodController extends Controller
 
     public function update(Request $request, TimePeriod $period): JsonResponse
     {
+        $settingsService = app(\App\Services\SettingsService::class);
+        $periodNameMaxLength = $settingsService->getPeriodNameMaxLength();
         $allowedTypes = \App\Enums\TimePeriodType::values();
 
         $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
+            'name' => "sometimes|string|max:{$periodNameMaxLength}",
             'type' => 'sometimes|in:' . implode(',', $allowedTypes),
             'start_date' => 'sometimes|date',
             'end_date' => 'sometimes|date',

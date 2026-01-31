@@ -168,14 +168,18 @@ class ProposalController extends Controller
             ], 403);
         }
 
+        $settingsService = app(\App\Services\SettingsService::class);
+        $maxProposalsPerSubmission = $settingsService->getMaxProposalsPerGroupSubmission();
+        $proposalTitleMaxLength = $settingsService->getProposalTitleMaxLength();
+
         // During registration window, target_project_id is optional
         // Students can submit general proposals OR target specific projects for registration
         $targetProjectRule = 'nullable|exists:projects,id';
 
         $validated = $request->validate([
             'student_group_id' => 'required|exists:student_groups,id',
-            'proposals' => 'required|array|min:1',
-            'proposals.*.title' => 'required|string|max:255',
+            'proposals' => "required|array|min:1|max:{$maxProposalsPerSubmission}",
+            'proposals.*.title' => "required|string|max:{$proposalTitleMaxLength}",
             'proposals.*.description' => 'required|string',
             'proposals.*.target_project_id' => $targetProjectRule,
         ]);
@@ -311,16 +315,19 @@ class ProposalController extends Controller
 
         // Dynamic validation: target_project_id is optional in both windows
         // Students can submit general proposals OR target specific projects
+        $settingsService = app(\App\Services\SettingsService::class);
+        $maxProposalsPerSubmission = $settingsService->getMaxProposalsPerGroupSubmission();
+        $proposalTitleMaxLength = $settingsService->getProposalTitleMaxLength();
         $targetProjectRule = 'nullable|exists:projects,id';
 
         $validated = $request->validate([
             'student_group_id' => 'nullable|exists:student_groups,id',
             'updates' => 'required|array',
             'updates.*.id' => 'required|exists:proposals,id',
-            'updates.*.title' => 'required|string|max:255',
+            'updates.*.title' => "required|string|max:{$proposalTitleMaxLength}",
             'updates.*.description' => 'required|string',
             'new_proposals' => 'nullable|array',
-            'new_proposals.*.title' => 'required|string|max:255',
+            "new_proposals.*.title" => "required|string|max:{$proposalTitleMaxLength}",
             'new_proposals.*.description' => 'required|string',
             'new_proposals.*.target_project_id' => $targetProjectRule,
         ]);
@@ -378,6 +385,17 @@ class ProposalController extends Controller
                 'success' => false,
                 'message' => 'Editing is only allowed when all proposals are in pending review or requires modification status.',
             ], 403);
+        }
+
+        $newProposalsCount = count($validated['new_proposals'] ?? []);
+        $totalAfterUpdate = $allGroupProposals->count() + $newProposalsCount;
+        if ($totalAfterUpdate > $maxProposalsPerSubmission) {
+            return response()->json([
+                'success' => false,
+                'message' => "Total proposals cannot exceed {$maxProposalsPerSubmission}. Current: {$allGroupProposals->count()}, adding: {$newProposalsCount}.",
+                'error_key' => 'proposal.errors.maxProposalsExceeded',
+                'error_params' => ['max' => $maxProposalsPerSubmission],
+            ], 422);
         }
 
         // Validate updates - check authorization and ownership for each proposal

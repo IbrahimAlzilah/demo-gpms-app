@@ -45,9 +45,13 @@ class MilestoneController extends Controller
             ], 403);
         }
 
+        $settingsService = app(\App\Services\SettingsService::class);
+        $milestoneTitleMaxLength = $settingsService->getMilestoneTitleMaxLength();
+        $milestoneDescriptionMaxLength = $settingsService->getMilestoneDescriptionMaxLength();
+
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string|max:5000',
+            'title' => "required|string|max:{$milestoneTitleMaxLength}",
+            'description' => "nullable|string|max:{$milestoneDescriptionMaxLength}",
             'due_date' => 'required|date|after_or_equal:today',
             'type' => 'required|in:document_submission,meeting,discussion,other',
         ]);
@@ -82,9 +86,13 @@ class MilestoneController extends Controller
             ], 403);
         }
 
+        $settingsService = app(\App\Services\SettingsService::class);
+        $milestoneTitleMaxLength = $settingsService->getMilestoneTitleMaxLength();
+        $milestoneDescriptionMaxLength = $settingsService->getMilestoneDescriptionMaxLength();
+
         $validated = $request->validate([
-            'title' => 'sometimes|required|string|max:255',
-            'description' => 'nullable|string|max:5000',
+            'title' => "sometimes|required|string|max:{$milestoneTitleMaxLength}",
+            'description' => "nullable|string|max:{$milestoneDescriptionMaxLength}",
             'due_date' => 'sometimes|required|date',
             'type' => 'sometimes|required|in:document_submission,meeting,discussion,other',
             'completed' => 'sometimes|boolean',

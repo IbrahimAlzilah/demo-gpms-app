@@ -88,10 +88,13 @@ class RequestController extends Controller
             ], 403);
         }
 
+        $settingsService = app(\App\Services\SettingsService::class);
+        $requestReasonMinLength = $settingsService->getRequestReasonMinLength();
+
         $validated = $request->validate([
             'type' => 'sometimes|required|in:change_group,change_project,other',
             'project_id' => 'nullable|exists:projects,id',
-            'reason' => 'sometimes|required|string|min:20',
+            'reason' => "sometimes|required|string|min:{$requestReasonMinLength}",
             'additional_data' => 'nullable|array',
         ]);
 

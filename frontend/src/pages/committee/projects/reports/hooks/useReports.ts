@@ -34,7 +34,6 @@ export function useOverviewReport(filters?: ReportFilters) {
             evaluations: { total: 0, averageGrade: 0 },
             milestones: { total: 0, completed: 0, overdue: 0 },
           },
-          charts: [],
         };
       }
     },

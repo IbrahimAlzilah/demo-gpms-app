@@ -22,12 +22,13 @@ class ProjectService
      */
     public function createFromProposal(array $data, ?int $proposalId = null): Project
     {
+        $defaultMaxStudents = app(\App\Services\SettingsService::class)->getProjectDefaultMaxStudents();
         return Project::create([
             'title' => $data['title'],
             'description' => $data['description'],
             'status' => \App\Enums\ProjectStatus::DRAFT->value,
             'supervisor_id' => $data['supervisor_id'] ?? null,
-            'max_students' => $data['max_students'] ?? 4,
+            'max_students' => $data['max_students'] ?? $defaultMaxStudents,
             'current_students' => 0,
             'specialization' => $data['specialization'] ?? null,
             'keywords' => $data['keywords'] ?? [],
@@ -104,20 +105,14 @@ class ProjectService
      */
     public function validateGroupNotRegistered(\App\Models\StudentGroup $group): void
     {
-        // Check if group has any approved registration
-        $hasApprovedRegistration = ProjectRegistration::whereHas('student', function ($query) use ($group) {
-            $groupMembers = $group->members()->pluck('users.id')->push($group->leader_id)->unique();
-            $query->whereIn('id', $groupMembers);
-        })->where('status', 'approved')->exists();
+        $maxProjectsPerGroup = app(\App\Services\SettingsService::class)->getMaxProjectsPerGroup();
+        // Count projects assigned to this group (in progress or completed)
+        $assignedCount = Project::where('assigned_group_id', $group->id)
+            ->whereIn('status', [\App\Enums\ProjectStatus::IN_PROGRESS->value, \App\Enums\ProjectStatus::COMPLETED->value])
+            ->count();
 
-        if ($hasApprovedRegistration) {
-            throw new \Exception('Group already has an approved project registration');
-        }
-
-        // Check if group is assigned to any project
-        $assignedProject = Project::where('assigned_group_id', $group->id)->exists();
-        if ($assignedProject) {
-            throw new \Exception('Group is already assigned to a project');
+        if ($assignedCount >= $maxProjectsPerGroup) {
+            throw new \Exception("Group has reached the maximum number of projects allowed ({$maxProjectsPerGroup}).");
         }
     }
 
@@ -238,18 +233,20 @@ class ProjectService
                     });
             })->where('status', 'active')->first();
 
-            // Constraint: One project per group - check if group already has an approved project
+            // Constraint: Max projects per group (from system settings)
             if ($studentGroup) {
-                $existingApprovedProject = $studentGroup->assignedProjects()
-                    ->where('id', '!=', $project->id) // Exclude current project
-                    ->where(function ($q) {
-                        $q->where('status', \App\Enums\ProjectStatus::IN_PROGRESS->value)
-                            ->orWhere('status', \App\Enums\ProjectStatus::COMPLETED->value);
-                    })
-                    ->first();
+                $maxProjectsPerGroup = app(\App\Services\SettingsService::class)->getMaxProjectsPerGroup();
+                $approvedCount = $studentGroup->assignedProjects()
+                    ->where('id', '!=', $project->id)
+                    ->whereIn('status', [\App\Enums\ProjectStatus::IN_PROGRESS->value, \App\Enums\ProjectStatus::COMPLETED->value])
+                    ->count();
 
-                if ($existingApprovedProject) {
-                    throw new \Exception("Group already has an approved project: {$existingApprovedProject->title}. Only one project can be approved per group.");
+                if ($approvedCount >= $maxProjectsPerGroup) {
+                    $existing = $studentGroup->assignedProjects()
+                        ->where('id', '!=', $project->id)
+                        ->whereIn('status', [\App\Enums\ProjectStatus::IN_PROGRESS->value, \App\Enums\ProjectStatus::COMPLETED->value])
+                        ->first();
+                    throw new \Exception("Group already has the maximum allowed approved project(s) ({$maxProjectsPerGroup}). Only {$maxProjectsPerGroup} project(s) can be approved per group.");
                 }
             }
 
@@ -370,6 +367,15 @@ class ProjectService
 
         if ($project->supervisor_id && $project->supervisor_id !== $supervisor->id) {
             throw new \Exception('Project already has a supervisor assigned');
+        }
+
+        // Enforce max projects per supervisor (only when assigning a different supervisor)
+        if ($project->supervisor_id !== $supervisor->id) {
+            $maxProjects = app(\App\Services\SettingsService::class)->getSupervisorMaxProjects();
+            $currentCount = $supervisor->supervisedProjects()->where('projects.id', '!=', $project->id)->count();
+            if ($currentCount >= $maxProjects) {
+                throw new \Exception("Supervisor has reached the maximum number of projects ({$maxProjects}). They cannot be assigned to more projects.");
+            }
         }
 
         $project->update([

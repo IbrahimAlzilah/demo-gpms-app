@@ -49,6 +49,7 @@ import {
   // Admin
   LazyAdminDashboardPage,
   LazyUsersPage,
+  LazySettingsPage,
   LazyReportsPage,
 } from './lazy'
 
@@ -261,6 +262,10 @@ export const adminRoutes: RouteConfig[] = [
   {
     path: 'users',
     element: LazyUsersPage,
+  },
+  {
+    path: 'settings',
+    element: LazySettingsPage,
   },
   {
     path: 'reports',

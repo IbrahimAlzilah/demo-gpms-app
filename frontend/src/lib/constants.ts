@@ -74,6 +74,7 @@ export const ROUTES = {
   ADMIN: {
     DASHBOARD: "/dashboard",
     USERS: "/users",
+    SETTINGS: "/settings",
     REPORTS: "/reports",
   },
 } as const;
@@ -252,6 +253,11 @@ export const NAV_MENU: Record<string, NavMenuItem[]> = {
       labelKey: "nav.reports",
       path: ROUTES.ADMIN.REPORTS,
       icon: "FileBarChart",
+    },
+    {
+      labelKey: "nav.settings",
+      path: ROUTES.ADMIN.SETTINGS,
+      icon: "Settings",
     },
   ],
 };

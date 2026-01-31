@@ -38,7 +38,7 @@ export function OverviewTab({ filters }: OverviewTabProps) {
     )
   }
 
-  const { kpis, charts } = data
+  const { kpis } = data
 
   const renderKPI = (title: string, value: string | number, subtext: string | React.ReactNode, icon: React.ReactNode, colorClass: string) => (
     <Card>
@@ -184,54 +184,6 @@ export function OverviewTab({ filters }: OverviewTabProps) {
           </CardContent>
         </Card>
       </div>
-
-      {/* Advanced Chart Visualization */}
-      {charts && charts.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('committee.reports.projectsOverTime')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-8 mt-2">
-              {charts.map((chart, idx) => (
-                <div key={idx} className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-bold text-sm tracking-tight">{chart.label}</h4>
-                    <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded bg-opacity-50">{chart.month}</span>
-                  </div>
-
-                  <div className="relative pt-6 pb-2">
-                    <div className="flex gap-4 items-end h-32 w-full">
-                      {Object.entries(chart.data).map(([status, count]) => {
-                        const numericCount = count as number
-                        const maxValue = Math.max(...Object.values(chart.data).map(v => v as number), 1)
-                        const heightPercentage = maxValue > 0 ? (numericCount / maxValue) * 100 : 0
-
-                        return (
-                          <div key={status} className="flex-1 flex flex-col items-center gap-2 group relative">
-                            {/* Tooltip */}
-                            <div className="absolute -top-8 bg-popover text-popover-foreground text-xs px-2 py-1 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                              {status}: {numericCount}
-                            </div>
-
-                            <div className="w-full bg-secondary/20 rounded-t-sm h-full flex items-end relative overflow-hidden hover:bg-secondary/30 transition-colors cursor-pointer rounded-lg">
-                              <div
-                                className="w-full bg-primary/80 group-hover:bg-primary transition-all duration-500 rounded-t-lg"
-                                style={{ height: `${heightPercentage}%` }}
-                              />
-                            </div>
-                            <span className="text-xs text-muted-foreground truncate max-w-[100px] text-center" title={status}>{status}</span>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }

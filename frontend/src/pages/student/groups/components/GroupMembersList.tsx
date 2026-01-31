@@ -80,7 +80,8 @@ export function GroupMembersList({ group, onError, onSuccess, showHeading = true
         ))}
       </div>
       {!isLeader && (
-        <div className="mt-3 p-3 bg-info/10 border border-info/20 rounded-lg text-sm text-muted-foreground">
+        // <div className="mt-3 p-3 bg-info/10 border border-info/20 rounded-lg text-sm text-muted-foreground">
+        <div className="mt-3 text-sm text-muted-foreground">
           {t('groups.onlyLeaderCanRemoveMembers')}
         </div>
       )}

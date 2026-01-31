@@ -42,7 +42,7 @@ class DocumentController extends Controller
         $isWindowActive = $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::FINAL_PROJECT_DOCUMENT_SUBMISSION)
             || $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::CHAPTER_SUBMISSION_PHASE_1)
             || $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::CHAPTER_SUBMISSION_PHASE_2);
-        
+
         if (!$isWindowActive) {
             return response()->json([
                 'success' => false,
@@ -50,9 +50,12 @@ class DocumentController extends Controller
             ], 403);
         }
 
+        $settingsService = app(\App\Services\SettingsService::class);
+        $documentReviewCommentsMaxLength = $settingsService->getDocumentReviewCommentsMaxLength();
+
         $validated = $request->validate([
             'status' => 'required|in:approved,rejected',
-            'comments' => 'nullable|string|max:5000',
+            'comments' => "nullable|string|max:{$documentReviewCommentsMaxLength}",
         ]);
 
         try {

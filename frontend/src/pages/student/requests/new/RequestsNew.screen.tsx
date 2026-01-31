@@ -37,6 +37,11 @@ export function RequestsNew({ open, onClose, onSuccess }: RequestsNewProps) {
       icon: <Briefcase className="h-4 w-4" />,
     },
     {
+      value: 'change_supervisor',
+      label: t('requests.change_supervisor'),
+      icon: <User className="h-4 w-4" />,
+    },
+    {
       value: 'other',
       label: t('requests.other'),
       icon: <MoreHorizontal className="h-4 w-4" />,

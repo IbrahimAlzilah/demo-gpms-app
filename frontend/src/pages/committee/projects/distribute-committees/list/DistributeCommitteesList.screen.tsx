@@ -34,10 +34,14 @@ import {
 } from 'lucide-react'
 import type { CommitteeAssignment, CommitteeMemberProfile } from '../api/committee.service'
 import { useDistributeCommitteesList } from './DistributeCommitteesList.hook'
+import { usePublicSettings } from '@/pages/admin/settings/hooks/useSettings'
 
 export function DistributeCommitteesList() {
   const { t } = useTranslation()
   const { toastSuccess, toastError, toastWarning } = useToast()
+  const { data: systemSettings = {} } = usePublicSettings()
+  const committeeMin = Number(systemSettings.discussion_committee_min_members ?? 2)
+  const committeeMax = Number(systemSettings.discussion_committee_max_members ?? 3)
 
   const distributeProjects = useDistributeProjects()
   const removeAssignment = useRemoveCommitteeAssignment()
@@ -60,8 +64,7 @@ export function DistributeCommitteesList() {
         currentMembers.filter((id) => id !== memberId)
       )
     } else {
-      // Limit to 3 members per project
-      if (currentMembers.length >= 3) {
+      if (currentMembers.length >= committeeMax) {
         toastWarning(t('committee.distribute.maxMembersReached'))
         return
       }
@@ -77,9 +80,8 @@ export function DistributeCommitteesList() {
       return
     }
 
-    // Validate minimum 2 members per project
     for (const [_projectId, members] of state.assignments.entries()) {
-      if (members.length < 2) {
+      if (members.length < committeeMin) {
         toastWarning(t('committee.distribute.minMembersRequired'))
         return
       }

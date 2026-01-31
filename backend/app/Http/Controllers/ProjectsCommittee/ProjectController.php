@@ -33,7 +33,7 @@ class ProjectController extends Controller
         // Filter by status if provided
         if ($request->has('status')) {
             $query->where('status', $request->status);
-            
+
             // For draft status, only show projects from approved proposals
             if ($request->status === ProjectStatus::DRAFT->value) {
                 $query->whereHas('proposals', function ($q) {
@@ -103,13 +103,18 @@ class ProjectController extends Controller
      */
     public function update(Request $request, Project $project): JsonResponse
     {
+        $settingsService = app(\App\Services\SettingsService::class);
+        $proposalTitleMaxLength = $settingsService->getProposalTitleMaxLength();
+        $projectMaxStudentsLimit = $settingsService->getProjectMaxStudentsLimit();
+        $projectKeywordMaxLength = $settingsService->getProjectKeywordMaxLength();
+
         $validated = $request->validate([
-            'title' => 'sometimes|string|max:255',
+            'title' => "sometimes|string|max:{$proposalTitleMaxLength}",
             'description' => 'sometimes|string',
-            'max_students' => 'sometimes|integer|min:1|max:10',
-            'specialization' => 'sometimes|nullable|string|max:255',
+            'max_students' => "sometimes|integer|min:1|max:{$projectMaxStudentsLimit}",
+            'specialization' => "sometimes|nullable|string|max:{$proposalTitleMaxLength}",
             'keywords' => 'sometimes|nullable|array',
-            'keywords.*' => 'string|max:100',
+            'keywords.*' => "string|max:{$projectKeywordMaxLength}",
             'supervisor_id' => 'sometimes|nullable|exists:users,id',
         ]);
 
@@ -155,7 +160,7 @@ class ProjectController extends Controller
         try {
             $oldStatus = $project->status->value;
             $newStatus = $validated['status'];
-            
+
             $project->update(['status' => $newStatus]);
 
             // Notify relevant parties if requested
@@ -336,7 +341,7 @@ class ProjectController extends Controller
             if (!empty($students) && !empty($announcedProjects)) {
                 $projectTitles = $announcedProjects->pluck('title')->implode(', ');
                 $message = "تم إعلان مشاريع جديدة متاحة للتسجيل: {$projectTitles}";
-                
+
                 $this->notificationService->createForUsers(
                     $students,
                     $message,
@@ -391,7 +396,7 @@ class ProjectController extends Controller
             if (!empty($students) && !empty($unannouncedProjects)) {
                 $projectTitles = $unannouncedProjects->pluck('title')->implode(', ');
                 $message = "تم إلغاء إعلان المشاريع التالية: {$projectTitles}";
-                
+
                 $this->notificationService->createForUsers(
                     $students,
                     $message,
@@ -483,7 +488,7 @@ class ProjectController extends Controller
     {
         if (isset($filters['status'])) {
             $query->where('status', $filters['status']);
-            
+
             // For draft status, only show projects from approved proposals
             if ($filters['status'] === ProjectStatus::DRAFT->value) {
                 $query->whereHas('proposals', function ($q) {
@@ -615,10 +620,14 @@ class ProjectController extends Controller
             $this->getEvaluationPhaseStatus($project),
         ];
 
+        $settingsService = app(\App\Services\SettingsService::class);
+        $completedWeight = $settingsService->getProjectProgressCompletedWeight();
+        $inProgressWeight = $settingsService->getProjectProgressInProgressWeight();
+
         $completed = collect($phases)->filter(fn($s) => $s === 'completed')->count();
         $inProgress = collect($phases)->filter(fn($s) => $s === 'in_progress')->count();
 
-        return (int)(($completed * 100 + $inProgress * 50) / count($phases));
+        return (int)(($completed * $completedWeight + $inProgress * $inProgressWeight) / count($phases));
     }
 }
 

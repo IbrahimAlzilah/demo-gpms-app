@@ -47,11 +47,18 @@ class MeetingController extends Controller
             ], 403);
         }
 
+        $settingsService = app(\App\Services\SettingsService::class);
+        $meetingDurationMin = $settingsService->getMeetingDurationMin();
+        $meetingDurationMax = $settingsService->getMeetingDurationMax();
+        $meetingDurationDefault = $settingsService->getMeetingDurationDefault();
+        $meetingLocationMaxLength = $settingsService->getMeetingLocationMaxLength();
+        $meetingAgendaMaxLength = $settingsService->getMeetingAgendaMaxLength();
+
         $validated = $request->validate([
             'scheduled_date' => 'required|date|after_or_equal:now',
-            'duration' => 'nullable|integer|min:15|max:480',
-            'location' => 'nullable|string|max:255',
-            'agenda' => 'nullable|string|max:5000',
+            'duration' => "nullable|integer|min:{$meetingDurationMin}|max:{$meetingDurationMax}",
+            'location' => "nullable|string|max:{$meetingLocationMaxLength}",
+            'agenda' => "nullable|string|max:{$meetingAgendaMaxLength}",
             'attendee_ids' => 'nullable|array',
             'attendee_ids.*' => 'exists:users,id',
         ]);
@@ -60,7 +67,7 @@ class MeetingController extends Controller
             'project_id' => $project->id,
             'scheduled_by' => $request->user()->id,
             'scheduled_date' => $validated['scheduled_date'],
-            'duration' => $validated['duration'] ?? 60,
+            'duration' => $validated['duration'] ?? $meetingDurationDefault,
             'location' => $validated['location'] ?? null,
             'agenda' => $validated['agenda'] ?? null,
         ]);
@@ -70,7 +77,7 @@ class MeetingController extends Controller
             // Verify attendees are students in this project
             $projectStudentIds = $project->students()->pluck('users.id')->toArray();
             $validAttendeeIds = array_intersect($validated['attendee_ids'], $projectStudentIds);
-            
+
             if (!empty($validAttendeeIds)) {
                 $meeting->attendees()->attach($validAttendeeIds);
             }
@@ -97,12 +104,19 @@ class MeetingController extends Controller
             ], 403);
         }
 
+        $settingsService = app(\App\Services\SettingsService::class);
+        $meetingDurationMin = $settingsService->getMeetingDurationMin();
+        $meetingDurationMax = $settingsService->getMeetingDurationMax();
+        $meetingLocationMaxLength = $settingsService->getMeetingLocationMaxLength();
+        $meetingAgendaMaxLength = $settingsService->getMeetingAgendaMaxLength();
+        $meetingNotesMaxLength = $settingsService->getMeetingNotesMaxLength();
+
         $validated = $request->validate([
             'scheduled_date' => 'sometimes|required|date',
-            'duration' => 'nullable|integer|min:15|max:480',
-            'location' => 'nullable|string|max:255',
-            'agenda' => 'nullable|string|max:5000',
-            'notes' => 'nullable|string|max:5000',
+            'duration' => "nullable|integer|min:{$meetingDurationMin}|max:{$meetingDurationMax}",
+            'location' => "nullable|string|max:{$meetingLocationMaxLength}",
+            'agenda' => "nullable|string|max:{$meetingAgendaMaxLength}",
+            'notes' => "nullable|string|max:{$meetingNotesMaxLength}",
             'attendee_ids' => 'nullable|array',
             'attendee_ids.*' => 'exists:users,id',
         ]);

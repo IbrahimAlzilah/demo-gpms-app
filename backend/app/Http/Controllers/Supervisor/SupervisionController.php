@@ -135,8 +135,11 @@ class SupervisionController extends Controller
             ], 400);
         }
 
+        $settingsService = app(\App\Services\SettingsService::class);
+        $supervisorResponseMaxLength = $settingsService->getSupervisorResponseMaxLength();
+
         $validated = $request->validate([
-            'response' => 'nullable|string|max:1000',
+            'response' => "nullable|string|max:{$supervisorResponseMaxLength}",
         ]);
 
         try {
@@ -194,8 +197,11 @@ class SupervisionController extends Controller
             ], 400);
         }
 
+        $settingsService = app(\App\Services\SettingsService::class);
+        $supervisorResponseMaxLength = $settingsService->getSupervisorResponseMaxLength();
+
         $validated = $request->validate([
-            'response' => 'required|string|max:1000',
+            'response' => "required|string|max:{$supervisorResponseMaxLength}",
         ]);
 
         try {

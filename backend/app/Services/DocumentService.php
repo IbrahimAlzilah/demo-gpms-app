@@ -40,8 +40,9 @@ class DocumentService
                 throw new \Exception('Chapter number is required for chapter documents.');
             }
 
-            if ($chapterNumber < 1 || $chapterNumber > 6) {
-                throw new \Exception('Chapter number must be between 1 and 6.');
+            $maxChapters = app(\App\Services\SettingsService::class)->getDocumentMaxChapters();
+            if ($chapterNumber < 1 || $chapterNumber > $maxChapters) {
+                throw new \Exception("Chapter number must be between 1 and {$maxChapters}.");
             }
 
             $this->ensureChapterWindowIsActive($chapterNumber, $submitter);
@@ -66,8 +67,9 @@ class DocumentService
             $sanitized = 'document';
         }
 
-        // Limit length to 200 characters
-        $sanitized = mb_substr($sanitized, 0, 200);
+        // Limit length based on settings
+        $filenameMaxLength = app(\App\Services\SettingsService::class)->getDocumentFilenameMaxLength();
+        $sanitized = mb_substr($sanitized, 0, $filenameMaxLength);
 
         $fileName = time() . '_' . $sanitized . ($extension ? '.' . $extension : '');
         $filePath = $file->storeAs('documents', $fileName, 'documents');
@@ -118,8 +120,9 @@ class DocumentService
     {
         /** @var \App\Services\TimeWindowService $timeWindowService */
         $timeWindowService = app(TimeWindowService::class);
+        $phase1Chapters = app(\App\Services\SettingsService::class)->getDocumentPhase1Chapters();
 
-        $windowType = $chapterNumber <= 3
+        $windowType = $chapterNumber <= $phase1Chapters
             ? TimePeriodType::CHAPTER_SUBMISSION_PHASE_1
             : TimePeriodType::CHAPTER_SUBMISSION_PHASE_2;
 
@@ -177,8 +180,9 @@ class DocumentService
             }
         }
 
-        // Phase 2 chapters (4–6) additionally require Final Defense – 1 to be completed
-        if ($chapterNumber >= 4 && !$this->isFinalDefensePhaseOneCompleted($project)) {
+        // Phase 2 chapters additionally require Final Defense – 1 to be completed
+        $phase1Chapters = app(\App\Services\SettingsService::class)->getDocumentPhase1Chapters();
+        if ($chapterNumber > $phase1Chapters && !$this->isFinalDefensePhaseOneCompleted($project)) {
             throw new \Exception('Phase 2 chapters can only be submitted after Final Defense – 1 is completed.');
         }
     }

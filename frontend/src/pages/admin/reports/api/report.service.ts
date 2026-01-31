@@ -27,7 +27,6 @@ export interface AdminOverviewReport {
       byStatus: Record<string, number>;
     };
   };
-  charts: Array<{ month: string; label: string; data: Record<string, number> }>;
 }
 
 export interface UsersReport {

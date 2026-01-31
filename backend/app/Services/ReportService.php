@@ -132,7 +132,7 @@ class ReportService
     }
 
     /**
-     * Generate overview report with KPIs and chart data
+     * Generate overview report with KPIs
      */
     public function generateOverviewReport(array $filters = []): array
     {
@@ -222,9 +222,6 @@ class ReportService
         $overdueMilestones = $milestonesQuery->where('completed', false)
             ->where('due_date', '<', now())->count();
 
-        // Chart data - Projects by status over time (last 6 months)
-        $chartData = $this->getProjectsStatusChartData($dateRange);
-
         return [
             'kpis' => [
                 'projects' => [
@@ -254,42 +251,7 @@ class ReportService
                     'overdue' => $overdueMilestones,
                 ],
             ],
-            'charts' => $chartData,
         ];
-    }
-
-    /**
-     * Get projects status chart data
-     */
-    protected function getProjectsStatusChartData(?array $dateRange): array
-    {
-        $months = 6;
-        $chartData = [];
-
-        for ($i = $months - 1; $i >= 0; $i--) {
-            $monthStart = now()->subMonths($i)->startOfMonth();
-            $monthEnd = now()->subMonths($i)->endOfMonth();
-
-            if ($dateRange) {
-                if ($monthEnd < $dateRange['from'] || $monthStart > $dateRange['to']) {
-                    continue;
-                }
-            }
-
-            $monthProjects = Project::whereBetween('created_at', [$monthStart, $monthEnd])
-                ->groupBy('status')
-                ->selectRaw('status, count(*) as count')
-                ->pluck('count', 'status')
-                ->toArray();
-
-            $chartData[] = [
-                'month' => $monthStart->format('Y-m'),
-                'label' => $monthStart->format('M Y'),
-                'data' => $monthProjects,
-            ];
-        }
-
-        return $chartData;
     }
 
     /**

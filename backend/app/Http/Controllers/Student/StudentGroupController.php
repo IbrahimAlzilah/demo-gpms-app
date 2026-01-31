@@ -71,8 +71,11 @@ class StudentGroupController extends Controller
 
     public function create(Request $request): JsonResponse
     {
+        $settingsService = app(\App\Services\SettingsService::class);
+        $groupNameMaxLength = $settingsService->getGroupNameMaxLength();
+
         $validated = $request->validate([
-            'name' => 'nullable|string|max:255',
+            'name' => "nullable|string|max:{$groupNameMaxLength}",
             'member_ids' => 'nullable|array',
             'member_ids.*' => 'exists:users,id',
         ]);
@@ -103,8 +106,11 @@ class StudentGroupController extends Controller
      */
     public function searchStudentsForInvite(Request $request): JsonResponse
     {
+        $settingsService = app(\App\Services\SettingsService::class);
+        $searchQueryMaxLength = $settingsService->getSearchQueryMaxLength();
+
         $validated = $request->validate([
-            'query' => 'nullable|string|max:100',
+            'query' => "nullable|string|max:{$searchQueryMaxLength}",
             'group_id' => 'required|exists:student_groups,id',
         ]);
 
@@ -169,7 +175,7 @@ class StudentGroupController extends Controller
             })
             ->with('studentProfile')
             ->orderBy('name')
-            ->limit(50)
+            ->limit($settingsService->getSearchResultsLimit())
             ->get(['id', 'name', 'email'])
             ->map(function ($u) {
                 return [
@@ -376,9 +382,12 @@ class StudentGroupController extends Controller
 
     public function createJoinRequest(Request $request): JsonResponse
     {
+        $settingsService = app(\App\Services\SettingsService::class);
+        $joinRequestMessageMaxLength = $settingsService->getGroupJoinRequestMessageMaxLength();
+
         $validated = $request->validate([
             'group_id' => 'required|exists:student_groups,id',
-            'message' => 'nullable|string|max:500',
+            'message' => "nullable|string|max:{$joinRequestMessageMaxLength}",
         ]);
 
         try {
@@ -443,8 +452,11 @@ class StudentGroupController extends Controller
 
     public function rejectJoinRequest(Request $request, StudentGroupJoinRequest $joinRequest): JsonResponse
     {
+        $settingsService = app(\App\Services\SettingsService::class);
+        $joinRequestMessageMaxLength = $settingsService->getGroupJoinRequestMessageMaxLength();
+
         $validated = $request->validate([
-            'comments' => 'nullable|string|max:500',
+            'comments' => "nullable|string|max:{$joinRequestMessageMaxLength}",
         ]);
 
         try {

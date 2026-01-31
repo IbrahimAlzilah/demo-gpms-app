@@ -27,11 +27,17 @@ class UserController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $settingsService = app(\App\Services\SettingsService::class);
+        $userFullNameMaxLength = $settingsService->getUserFullNameMaxLength();
+        $emailMaxLength = $settingsService->getEmailMaxLength();
+        $usernameMaxLength = $settingsService->getUsernameMaxLength();
+        $passwordMinLength = $settingsService->getPasswordMinLength();
+
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'nullable|string|email|max:255|unique:users',
-            'username' => 'nullable|string|max:255|unique:users',
-            'password' => 'required|string|min:8',
+            'name' => "required|string|max:{$userFullNameMaxLength}",
+            'email' => "nullable|string|email|max:{$emailMaxLength}|unique:users",
+            'username' => "nullable|string|max:{$usernameMaxLength}|unique:users",
+            'password' => "required|string|min:{$passwordMinLength}",
             'role' => 'required|in:student,supervisor,discussion_committee,projects_committee,admin',
             'student_id' => 'nullable|string|unique:students,student_id',
             'emp_id' => 'nullable|string|unique:supervisors,emp_id',
@@ -94,11 +100,17 @@ class UserController extends Controller
 
     public function update(Request $request, User $user): JsonResponse
     {
+        $settingsService = app(\App\Services\SettingsService::class);
+        $userFullNameMaxLength = $settingsService->getUserFullNameMaxLength();
+        $emailMaxLength = $settingsService->getEmailMaxLength();
+        $usernameMaxLength = $settingsService->getUsernameMaxLength();
+        $passwordMinLength = $settingsService->getPasswordMinLength();
+
         $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => 'nullable|string|email|max:255|unique:users,email,' . $user->id,
-            'username' => 'nullable|string|max:255|unique:users,username,' . $user->id,
-            'password' => 'sometimes|string|min:8',
+            'name' => "sometimes|string|max:{$userFullNameMaxLength}",
+            'email' => "nullable|string|email|max:{$emailMaxLength}|unique:users,email," . $user->id,
+            'username' => "nullable|string|max:{$usernameMaxLength}|unique:users,username," . $user->id,
+            'password' => "sometimes|string|min:{$passwordMinLength}",
             'role' => 'sometimes|in:student,supervisor,discussion_committee,projects_committee,admin',
             'student_id' => 'nullable|string|unique:students,student_id,' . ($user->studentProfile?->id ?? 'NULL') . ',id',
             'emp_id' => 'nullable|string|unique:supervisors,emp_id,' . ($user->supervisorProfile?->id ?? 'NULL') . ',id',

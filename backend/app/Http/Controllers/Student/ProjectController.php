@@ -35,7 +35,7 @@ class ProjectController extends Controller
 
         // Check if requesting available projects via 'available' parameter or filters
         $filters = $request->filters ?? [];
-        $isRequestingAvailable = ($request->has('available') && $request->available) 
+        $isRequestingAvailable = ($request->has('available') && $request->available)
             || (isset($filters['status']) && $filters['status'] === ProjectStatus::AVAILABLE_FOR_REGISTRATION->value);
 
         if ($isRequestingAvailable) {
@@ -45,7 +45,7 @@ class ProjectController extends Controller
             // Show all visible projects published by Project Committee
             // Include projects with status: ANNOUNCED, AVAILABLE_FOR_REGISTRATION, IN_PROGRESS, COMPLETED
             // Also include projects linked to the student's group leader
-            
+
             // Get the student's group (if they are leader or member)
             $userGroup = \App\Models\StudentGroup::where(function ($q) use ($user) {
                 $q->where('leader_id', $user->id)
@@ -65,7 +65,7 @@ class ProjectController extends Controller
                     ProjectStatus::IN_PROGRESS->value,
                     ProjectStatus::COMPLETED->value,
                 ]);
-                
+
                 // Also include projects assigned to the student's group (if they have one)
                 if ($userGroup) {
                     $q->orWhere('assigned_group_id', $userGroup->id);
@@ -120,14 +120,14 @@ class ProjectController extends Controller
             $minMembers = app(\App\Services\SettingsService::class)->getGroupMinMembers();
             $maxMembers = app(\App\Services\SettingsService::class)->getGroupMaxMembers();
             $totalMembers = $studentGroup->getTotalMemberCount();
-            
+
             if ($totalMembers < $minMembers) {
                 return response()->json([
                     'success' => false,
                     'message' => "Group must have at least {$minMembers} members to register for a project",
                 ], 403);
             }
-            
+
             if ($totalMembers > $maxMembers) {
                 return response()->json([
                     'success' => false,
@@ -154,7 +154,7 @@ class ProjectController extends Controller
         // Check if any group member is already registered in this project
         $groupMembers = $studentGroup->members()->pluck('users.id')->push($studentGroup->leader_id)->unique();
         $alreadyRegistered = $project->students()->whereIn('users.id', $groupMembers)->exists();
-        
+
         if ($alreadyRegistered) {
             return response()->json([
                 'success' => false,
@@ -206,7 +206,7 @@ class ProjectController extends Controller
     public function getRegistrations(Request $request): JsonResponse
     {
         $student = $request->user();
-        
+
         // Get all ProjectRegistration records for the student
         // After migration backfill, all students in project_student should have corresponding
         // project_registrations records, so we only return real database records
@@ -228,7 +228,7 @@ class ProjectController extends Controller
     public function getGroupRegistrationRequest(Request $request): JsonResponse
     {
         $student = $request->user();
-        
+
         // Find student's active group
         $studentGroup = \App\Models\StudentGroup::where(function ($query) use ($student) {
             $query->where('leader_id', $student->id)
@@ -338,7 +338,7 @@ class ProjectController extends Controller
         }
 
         $groupRequest = $registration->groupRegistrationRequest;
-        
+
         // Only group leader can cancel
         if ($groupRequest->submitted_by !== $user->id) {
             return response()->json([
@@ -346,7 +346,7 @@ class ProjectController extends Controller
                 'message' => 'Only group leaders can cancel registration requests',
             ], 403);
         }
-        
+
         // Only allow cancellation if request is pending
         if (!$groupRequest->isPending()) {
             return response()->json([
@@ -354,12 +354,12 @@ class ProjectController extends Controller
                 'message' => 'Only pending registration requests can be cancelled',
             ], 403);
         }
-        
+
         try {
             // Cancel the entire request (all registrations)
             $groupRequest->update(['status' => 'cancelled']);
             $groupRequest->projectRegistrations()->update(['status' => 'cancelled']);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Registration request cancelled successfully',
@@ -425,8 +425,11 @@ class ProjectController extends Controller
             ], 400);
         }
 
+        $settingsService = app(\App\Services\SettingsService::class);
+        $noteReplyMaxLength = $settingsService->getProjectNoteReplyMaxLength();
+
         $validated = $request->validate([
-            'content' => 'required|string|max:5000',
+            'content' => "required|string|max:{$noteReplyMaxLength}",
         ]);
 
         $reply = \App\Models\NoteReply::create([

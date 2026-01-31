@@ -7,17 +7,11 @@ import {
   Users,
   Briefcase,
   FileText,
-  Activity,
-  TrendingUp,
-  Database,
-  Shield,
-  Server,
   Settings,
   FileBarChart,
   AlertCircle,
   RefreshCw,
   MoreVertical,
-  CheckCircle2
 } from 'lucide-react'
 import { StatsCard as StatsCardComponent, LoadingSpinner, BlockContent, DashboardHeader } from '@/components/common'
 import { useAdminDashboard } from './hooks/useAdminDashboard'
@@ -78,17 +72,11 @@ export function AdminDashboardPage() {
     requestsTotal: 0,
     requestsByStatus: {},
   }
-  const systemHealth = data?.systemHealth || {
-    status: 'unknown',
-    databaseConnected: false,
-    timestamp: new Date().toISOString(),
-  }
-
   return (
     <MainLayout>
       <div className="space-y-8 animate-in fade-in duration-500 pb-10">
         {/* Stats Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <StatsCardComponent
             title={t('dashboard.admin.totalUsers')}
             value={stats.usersTotal}
@@ -112,14 +100,6 @@ export function AdminDashboardPage() {
             subValue={t('dashboard.admin.submittedProposals')}
             color="purple"
             trend={{ value: stats.proposalsTotal, label: "vs last month", positive: true }}
-          />
-          <StatsCardComponent
-            title={t('dashboard.admin.systemStatus')}
-            value={systemHealth.status === 'operational' ? t('dashboard.admin.operational', { defaultValue: 'Operational' }) : t('dashboard.admin.degraded', { defaultValue: 'Degraded' })}
-            icon={Activity}
-            subValue={systemHealth.databaseConnected ? t('dashboard.admin.allSystemsOperational') : t('dashboard.admin.databaseDisconnected', { defaultValue: 'Database disconnected' })}
-            color={systemHealth.status === 'operational' ? 'green' : 'yellow'}
-            trend={systemHealth.status === 'operational' ? { value: systemHealth.databaseConnected ? 100 : 0, label: "uptime", positive: true } : undefined}
           />
         </div>
 
@@ -176,38 +156,6 @@ export function AdminDashboardPage() {
               </Card>
             </div>
 
-            {/* System Health Status */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between px-1">
-                <h2 className="text-lg font-semibold tracking-tight">{t('dashboard.admin.systemHealth', { defaultValue: 'System Health' })}</h2>
-              </div>
-              <Card className="border-border bg-card shadow-sm">
-                <CardContent className="pt-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">{t('dashboard.admin.databaseStatus', { defaultValue: 'Database' })}</span>
-                      <span className={cn(
-                        "text-xs font-medium px-2 py-1 rounded-full",
-                        systemHealth.databaseConnected
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
-                          : "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400"
-                      )}>
-                        {systemHealth.databaseConnected
-                          ? t('dashboard.admin.connected', { defaultValue: 'Connected' })
-                          : t('dashboard.admin.disconnected', { defaultValue: 'Disconnected' })}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">{t('dashboard.admin.lastChecked', { defaultValue: 'Last Checked' })}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(systemHealth.timestamp).toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
           </div>
 
           {/* Sidebar Area (1/3) */}
@@ -246,50 +194,6 @@ export function AdminDashboardPage() {
               </div>
             </Card>
 
-            {/* System Health Status Detailed */}
-            <Card className="border-border bg-card shadow-sm overflow-hidden">
-              <CardHeader className="border-b border-border/40 bg-muted/10 pb-4">
-                <CardTitle className="text-base font-medium flex items-center gap-2">
-                  <Server className="h-4 w-4 text-primary" />
-                  {t('dashboard.admin.serverStatus', { defaultValue: 'Server Status' })}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 pt-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">CPU Usage</span>
-                    <span className="text-xs text-muted-foreground font-mono">12%</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
-                    <div className="h-full bg-green-500 w-[12%] rounded-full" />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Memory</span>
-                    <span className="text-xs text-muted-foreground font-mono">34%</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-500 w-[34%] rounded-full" />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Storage</span>
-                    <span className="text-xs text-muted-foreground font-mono">45%</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
-                    <div className="h-full bg-purple-500 w-[45%] rounded-full" />
-                  </div>
-                </div>
-
-                <div className="pt-4 mt-2 border-t border-border/50">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <CheckCircle2 className="h-3 w-3 text-green-500" />
-                    Last backup: 2 hours ago
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
           </div>
         </div>
       </div>
@@ -317,10 +221,10 @@ function QuickActionButton({ to, icon: Icon, label, description, color = 'blue' 
   return (
     <Button asChild variant="outline" className="w-full justify-start h-auto py-3 px-4 bg-card hover:bg-accent hover:text-accent-foreground border-border shadow-none transition-all duration-200 group">
       <Link to={to} className="flex items-start">
-        <div className={cn("mt-0.5 mr-3 p-1.5 rounded-md transition-colors", colorStyles[color])}>
-          <Icon className="h-4 w-4" />
+        <div className={cn("mt-0.5 me-1 p-1.5 rounded-md transition-colors", colorStyles[color])}>
+          <Icon className="size-4" />
         </div>
-        <div className="text-left">
+        <div className="text-start">
           <span className="font-medium block">{label}</span>
           {description && <span className="text-xs text-muted-foreground font-normal mt-0.5 block">{description}</span>}
         </div>

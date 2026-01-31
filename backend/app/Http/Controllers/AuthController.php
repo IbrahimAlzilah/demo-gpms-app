@@ -36,7 +36,7 @@ class AuthController extends Controller
             }
 
             $identifier = trim($request->identifier);
-            
+
             // Find user by username
             $user = User::where('username', $identifier)->first();
 
@@ -84,11 +84,17 @@ class AuthController extends Controller
     public function register(Request $request): JsonResponse
     {
         try {
+            $settingsService = app(\App\Services\SettingsService::class);
+            $userFullNameMaxLength = $settingsService->getUserFullNameMaxLength();
+            $emailMaxLength = $settingsService->getEmailMaxLength();
+            $usernameMaxLength = $settingsService->getUsernameMaxLength();
+            $passwordMinLength = $settingsService->getPasswordMinLength();
+
             $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255',
-                'email' => 'nullable|string|email|max:255|unique:users',
-                'username' => 'nullable|string|max:255|unique:users',
-                'password' => 'required|string|min:8|confirmed',
+                'name' => "required|string|max:{$userFullNameMaxLength}",
+                'email' => "nullable|string|email|max:{$emailMaxLength}|unique:users",
+                'username' => "nullable|string|max:{$usernameMaxLength}|unique:users",
+                'password' => "required|string|min:{$passwordMinLength}|confirmed",
                 'role' => 'required|in:student,supervisor,discussion_committee,projects_committee,admin',
                 'student_id' => 'nullable|string|unique:students,student_id',
                 'emp_id' => 'nullable|string|unique:supervisors,emp_id',
@@ -241,10 +247,13 @@ class AuthController extends Controller
      */
     public function resetPassword(Request $request): JsonResponse
     {
+        $settingsService = app(\App\Services\SettingsService::class);
+        $passwordMinLength = $settingsService->getPasswordMinLength();
+
         $validator = Validator::make($request->all(), [
             'token' => 'required|string',
             'email' => 'required|email',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => "required|string|min:{$passwordMinLength}|confirmed",
         ]);
 
         if ($validator->fails()) {

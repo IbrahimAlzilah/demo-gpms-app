@@ -212,8 +212,11 @@ class ProposalController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        $settingsService = app(\App\Services\SettingsService::class);
+        $proposalTitleMaxLength = $settingsService->getProposalTitleMaxLength();
+
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => "required|string|max:{$proposalTitleMaxLength}",
             'description' => 'required|string',
             'proposed_supervisor_id' => 'nullable|exists:users,id',
             'target_project_id' => 'nullable|exists:projects,id',
@@ -341,8 +344,11 @@ class ProposalController extends Controller
         $this->authorize('update', $proposal);
 
         // Projects Committee can only edit title and description
+        $settingsService = app(\App\Services\SettingsService::class);
+        $proposalTitleMaxLength = $settingsService->getProposalTitleMaxLength();
+
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => "required|string|max:{$proposalTitleMaxLength}",
             'description' => 'required|string',
         ]);
 

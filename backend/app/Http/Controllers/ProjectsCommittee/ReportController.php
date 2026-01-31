@@ -32,7 +32,7 @@ class ReportController extends Controller
     }
 
     /**
-     * Get overview report with KPIs and charts
+     * Get overview report with KPIs
      */
     public function overview(ReportFiltersRequest $request): JsonResponse
     {
@@ -51,11 +51,11 @@ class ReportController extends Controller
     public function projects(ReportFiltersRequest $request): JsonResponse
     {
         $filters = $request->validated();
-        
+
         // Get base projects query with filters
         $baseQuery = Project::with(['supervisor', 'students']);
         $this->applyCommonFiltersToQuery($baseQuery, $filters);
-        
+
         // Apply search if provided
         if ($request->has('search') && $request->search) {
             $baseQuery = $this->applySearch($baseQuery, $request->search);
@@ -71,7 +71,7 @@ class ReportController extends Controller
 
         // Get summary first
         $summaryQuery = $this->reportService->generateProjectsReport($filters);
-        
+
         // Get paginated response
         $response = $this->getPaginatedResponse($baseQuery, $request);
 
@@ -95,13 +95,13 @@ class ReportController extends Controller
 
         // Apply pagination if needed
         $supervisors = collect($report['supervisors']);
-        
+
         if ($request->has('page') || $request->has('pageSize')) {
             $page = (int) $request->get('page', 1);
             $pageSize = (int) $request->get('pageSize', 10);
             $total = $supervisors->count();
             $totalPages = ceil($total / $pageSize);
-            
+
             $paginated = $supervisors->skip(($page - 1) * $pageSize)
                 ->take($pageSize)
                 ->values();
@@ -137,13 +137,13 @@ class ReportController extends Controller
 
         // Apply pagination if needed
         $students = collect($report['students']);
-        
+
         if ($request->has('page') || $request->has('pageSize')) {
             $page = (int) $request->get('page', 1);
             $pageSize = (int) $request->get('pageSize', 10);
             $total = $students->count();
             $totalPages = ceil($total / $pageSize);
-            
+
             $paginated = $students->skip(($page - 1) * $pageSize)
                 ->take($pageSize)
                 ->values();
@@ -175,14 +175,14 @@ class ReportController extends Controller
     public function requests(ReportFiltersRequest $request): JsonResponse
     {
         $filters = $request->validated();
-        
+
         $report = $this->reportService->generateRequestsReport($filters);
         $requests = collect($report['requests']);
 
         // Apply table query for pagination
         $baseQuery = \App\Models\ProjectRequest::query();
         $this->applyCommonFiltersToQuery($baseQuery, $filters);
-        
+
         if ($request->has('search') && $request->search) {
             $baseQuery = $this->applySearch($baseQuery, $request->search);
         }
@@ -216,13 +216,13 @@ class ReportController extends Controller
 
         // Apply pagination for overdue milestones
         $overdue = collect($report['overdue_milestones']);
-        
+
         if ($request->has('page') || $request->has('pageSize')) {
             $page = (int) $request->get('page', 1);
             $pageSize = (int) $request->get('pageSize', 10);
             $total = $overdue->count();
             $totalPages = ceil($total / $pageSize);
-            
+
             $paginated = $overdue->skip(($page - 1) * $pageSize)
                 ->take($pageSize)
                 ->values();

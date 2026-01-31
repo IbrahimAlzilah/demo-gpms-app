@@ -406,8 +406,11 @@ class RegistrationController extends Controller
         $this->authorize('approve', $registration);
 
         try {
+            $settingsService = app(\App\Services\SettingsService::class);
+            $committeeReviewCommentsMaxLength = $settingsService->getCommitteeReviewCommentsMaxLength();
+
             $validated = $request->validate([
-                'comments' => 'nullable|string|max:1000',
+                'comments' => "nullable|string|max:{$committeeReviewCommentsMaxLength}",
             ]);
 
             $approved = $this->projectService->approveRegistration(
@@ -482,8 +485,11 @@ class RegistrationController extends Controller
         $this->authorize('reject', $registration);
 
         try {
+            $settingsService = app(\App\Services\SettingsService::class);
+            $committeeReviewCommentsMaxLength = $settingsService->getCommitteeReviewCommentsMaxLength();
+
             $validated = $request->validate([
-                'comments' => 'required|string|max:1000',
+                'comments' => "required|string|max:{$committeeReviewCommentsMaxLength}",
             ]);
 
             // Check if this registration belongs to a group registration request

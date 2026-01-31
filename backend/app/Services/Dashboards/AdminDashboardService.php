@@ -18,7 +18,7 @@ class AdminDashboardService
         // Users statistics
         $usersTotal = User::count();
         $usersActive = User::where('status', 'active')->count();
-        
+
         $usersByRole = User::select('role', DB::raw('count(*) as count'))
             ->groupBy('role')
             ->pluck('count', 'role')
@@ -45,15 +45,6 @@ class AdminDashboardService
             ->pluck('count', 'status')
             ->toArray();
 
-        // System health
-        $databaseConnected = false;
-        try {
-            DB::connection()->getPdo();
-            $databaseConnected = true;
-        } catch (\Exception $e) {
-            // Database not connected
-        }
-
         return [
             'stats' => [
                 'usersTotal' => $usersTotal,
@@ -65,11 +56,6 @@ class AdminDashboardService
                 'proposalsByStatus' => $proposalsByStatus,
                 'requestsTotal' => $requestsTotal,
                 'requestsByStatus' => $requestsByStatus,
-            ],
-            'systemHealth' => [
-                'status' => $databaseConnected ? 'operational' : 'degraded',
-                'databaseConnected' => $databaseConnected,
-                'timestamp' => now()->toIso8601String(),
             ],
         ];
     }

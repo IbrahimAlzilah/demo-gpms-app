@@ -54,5 +54,6 @@ export const LazyCommitteeReportsPage = lazy(() => import('../pages/committee/pr
 // Admin pages
 export const LazyAdminDashboardPage = lazy(() => import('../pages/admin/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })))
 export const LazyUsersPage = lazy(() => import('../pages/admin/users/UsersPage').then(m => ({ default: m.UsersPage })))
+export const LazySettingsPage = lazy(() => import('../pages/admin/settings/SettingsPage').then(m => ({ default: m.SettingsPage })))
 export const LazyReportsPage = lazy(() => import('../pages/admin/reports/ReportsPage').then(m => ({ default: m.ReportsPage })))
 

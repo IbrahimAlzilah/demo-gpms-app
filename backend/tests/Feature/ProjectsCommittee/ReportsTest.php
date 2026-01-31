@@ -19,7 +19,7 @@ class ReportsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Create a projects committee user
         $this->committeeUser = User::create([
             'name' => 'Test Projects Committee',
@@ -51,7 +51,7 @@ class ReportsTest extends TestCase
     {
         $response = $this->actingAs($this->regularUser)
             ->getJson('/api/projects-committee/reports/overview');
-        
+
         $response->assertStatus(403);
     }
 
@@ -59,7 +59,7 @@ class ReportsTest extends TestCase
     {
         $response = $this->actingAs($this->committeeUser)
             ->getJson('/api/projects-committee/reports/overview');
-        
+
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'success',
@@ -72,7 +72,6 @@ class ReportsTest extends TestCase
                         'evaluations',
                         'milestones',
                     ],
-                    'charts',
                 ],
             ]);
     }
@@ -90,7 +89,7 @@ class ReportsTest extends TestCase
 
         $response = $this->actingAs($this->committeeUser)
             ->getJson("/api/projects-committee/reports/overview?period_id={$period->id}");
-        
+
         $response->assertStatus(200)
             ->assertJson(['success' => true]);
     }
@@ -108,7 +107,7 @@ class ReportsTest extends TestCase
 
         $response = $this->actingAs($this->committeeUser)
             ->getJson('/api/projects-committee/reports/projects');
-        
+
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'success',
@@ -136,7 +135,7 @@ class ReportsTest extends TestCase
 
         $response = $this->actingAs($this->committeeUser)
             ->getJson('/api/projects-committee/reports/supervisors');
-        
+
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'success',
@@ -157,7 +156,7 @@ class ReportsTest extends TestCase
     {
         $response = $this->actingAs($this->regularUser)
             ->getJson('/api/projects-committee/reports/export/pdf?report=overview');
-        
+
         $response->assertStatus(403);
     }
 
@@ -165,7 +164,7 @@ class ReportsTest extends TestCase
     {
         $response = $this->actingAs($this->committeeUser)
             ->get('/api/projects-committee/reports/export/pdf?report=overview');
-        
+
         $response->assertStatus(200)
             ->assertHeader('Content-Type', 'text/plain; charset=UTF-8')
             ->assertHeader('Content-Disposition');
@@ -175,7 +174,7 @@ class ReportsTest extends TestCase
     {
         $response = $this->actingAs($this->committeeUser)
             ->get('/api/projects-committee/reports/export/excel?report=overview');
-        
+
         $response->assertStatus(200)
             ->assertHeader('Content-Type', 'text/csv')
             ->assertHeader('Content-Disposition');

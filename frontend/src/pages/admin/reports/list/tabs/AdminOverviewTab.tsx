@@ -31,7 +31,7 @@ export function AdminOverviewTab({ filters }: AdminOverviewTabProps) {
 
   if (!data) return null
 
-  const { kpis, charts } = data
+  const { kpis } = data
 
   const renderKPI = (
     title: string,
@@ -190,46 +190,6 @@ export function AdminOverviewTab({ filters }: AdminOverviewTabProps) {
           </CardContent>
         </Card>
       </div>
-
-      {charts && charts.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('committee.reports.projectsOverTime')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-8 mt-2">
-              {charts.slice(-6).map((chart, idx) => (
-                <div key={idx} className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-bold text-sm tracking-tight">{chart.label}</h4>
-                    <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">{chart.month}</span>
-                  </div>
-                  <div className="flex gap-4 items-end h-32 w-full">
-                    {Object.entries(chart.data).map(([status, count]) => {
-                      const numericCount = Number(count)
-                      const maxValue = Math.max(...Object.values(chart.data).map(Number), 1)
-                      const heightPercentage = maxValue > 0 ? (numericCount / maxValue) * 100 : 0
-                      return (
-                        <div key={status} className="flex-1 flex flex-col items-center gap-2">
-                          <div className="w-full bg-secondary/20 rounded-t-sm h-full flex items-end">
-                            <div
-                              className="w-full bg-primary/80 transition-all duration-500 rounded-t-lg"
-                              style={{ height: `${heightPercentage}%` }}
-                            />
-                          </div>
-                          <span className="text-xs text-muted-foreground truncate max-w-[100px] text-center" title={status}>
-                            {status}
-                          </span>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }

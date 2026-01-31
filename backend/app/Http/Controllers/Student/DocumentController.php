@@ -46,11 +46,16 @@ class DocumentController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $settingsService = app(\App\Services\SettingsService::class);
+        $maxSizeMb = $settingsService->getDocumentUploadMaxSizeMb();
+        $maxSizeKb = $maxSizeMb * 1024;
+        $maxChapters = $settingsService->getDocumentMaxChapters();
+
         $validated = $request->validate([
             'project_id' => 'required|exists:projects,id',
-            'file' => 'required|file|max:10240', // 10MB max
+            'file' => "required|file|max:{$maxSizeKb}",
             'type' => 'required|in:proposal,chapters,final_report,code,presentation,other',
-            'chapter_number' => 'nullable|integer|min:1|max:6',
+            'chapter_number' => "nullable|integer|min:1|max:{$maxChapters}",
         ]);
 
         try {

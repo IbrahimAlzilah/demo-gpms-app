@@ -78,18 +78,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="flex items-center gap-2 pb-4 border-b">
-        {isEditing ? (
-          <UserCog className="h-5 w-5 text-primary" />
-        ) : (
-          <UserPlus className="h-5 w-5 text-primary" />
-        )}
-        <h3 className="text-lg font-semibold">
-          {isEditing ? t('user.editUser') : t('user.createUser')}
-        </h3>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-1">
         <div className="space-y-2">
           <Label htmlFor="name">
             {t('common.name')} <span className="text-destructive">*</span>
@@ -107,32 +96,9 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             </p>
           )}
         </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="email">
-            {t('common.email')} <span className="text-muted-foreground text-xs">({t('common.optional')})</span>
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            {...register('email')}
-            className={errors.email ? 'border-destructive' : ''}
-            aria-invalid={!!errors.email}
-            placeholder={t('user.emailPlaceholder') || 'Email (optional, for password recovery)'}
-          />
-          {errors.email && (
-            <p className="text-xs text-destructive flex items-center gap-1">
-              <AlertCircle className="h-3 w-3" />
-              {errors.email.message}
-            </p>
-          )}
-          <p className="text-xs text-muted-foreground">
-            {t('user.emailOptionalHelp') || 'Email is optional and only used for password recovery'}
-          </p>
-        </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-1">
         <div className="space-y-2">
           <Label htmlFor="role">
             {t('user.role')} <span className="text-destructive">*</span>
@@ -194,7 +160,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-1">
         {selectedRole === 'student' ? (
           <div className="space-y-2">
             <Label htmlFor="studentId">{t('user.studentId')}</Label>
@@ -228,6 +194,26 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             {...register('department')}
             placeholder={t('user.departmentPlaceholder')}
           />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="email">
+            {t('common.email')} <span className="text-muted-foreground text-xs">({t('common.optional')})</span>
+          </Label>
+          <Input
+            id="email"
+            type="email"
+            {...register('email')}
+            className={errors.email ? 'border-destructive' : ''}
+            aria-invalid={!!errors.email}
+            placeholder={t('common.email')}
+          />
+          {errors.email && (
+            <p className="text-xs text-destructive flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" />
+              {errors.email.message}
+            </p>
+          )}
         </div>
       </div>
 

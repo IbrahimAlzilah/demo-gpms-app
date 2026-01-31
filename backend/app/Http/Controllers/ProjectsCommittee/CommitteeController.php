@@ -178,10 +178,14 @@ class CommitteeController extends Controller
      */
     public function distribute(Request $request): JsonResponse
     {
+        $settingsService = app(\App\Services\SettingsService::class);
+        $minMembers = $settingsService->getDiscussionCommitteeMinMembers();
+        $maxMembers = $settingsService->getDiscussionCommitteeMaxMembers();
+
         $validated = $request->validate([
             'assignments' => 'required|array',
             'assignments.*.project_id' => 'required|exists:projects,id',
-            'assignments.*.committee_member_ids' => 'required|array|min:2|max:3',
+            "assignments.*.committee_member_ids" => "required|array|min:{$minMembers}|max:{$maxMembers}",
             'assignments.*.committee_member_ids.*' => 'exists:users,id',
         ]);
 
@@ -284,9 +288,12 @@ class CommitteeController extends Controller
      */
     private function calculateAvailability(int $currentAssignments): string
     {
+        $settingsService = app(\App\Services\SettingsService::class);
+        $moderateThreshold = $settingsService->getCommitteeAvailabilityModerateThreshold();
+
         if ($currentAssignments === 0) {
             return 'available';
-        } elseif ($currentAssignments <= 2) {
+        } elseif ($currentAssignments <= $moderateThreshold) {
             return 'moderate';
         } else {
             return 'busy';

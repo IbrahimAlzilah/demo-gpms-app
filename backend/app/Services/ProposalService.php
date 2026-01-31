@@ -91,14 +91,17 @@ class ProposalService
                 $studentGroup = \App\Models\StudentGroup::find($proposal->student_group_id);
 
                 if ($studentGroup) {
-                    // Constraint 1: One project per group - check if group already has an approved project
-                    $existingApprovedProject = $studentGroup->assignedProjects()
-                        ->where('status', \App\Enums\ProjectStatus::IN_PROGRESS->value)
-                        ->orWhere('status', \App\Enums\ProjectStatus::COMPLETED->value)
-                        ->first();
+                    // Constraint: Max projects per group (from system settings)
+                    $maxProjectsPerGroup = app(\App\Services\SettingsService::class)->getMaxProjectsPerGroup();
+                    $approvedCount = $studentGroup->assignedProjects()
+                        ->whereIn('status', [\App\Enums\ProjectStatus::IN_PROGRESS->value, \App\Enums\ProjectStatus::COMPLETED->value])
+                        ->count();
 
-                    if ($existingApprovedProject) {
-                        throw new \Exception("Group already has an approved project: {$existingApprovedProject->title}. Only one project can be approved per group.");
+                    if ($approvedCount >= $maxProjectsPerGroup) {
+                        $existingApprovedProject = $studentGroup->assignedProjects()
+                            ->whereIn('status', [\App\Enums\ProjectStatus::IN_PROGRESS->value, \App\Enums\ProjectStatus::COMPLETED->value])
+                            ->first();
+                        throw new \Exception("Group already has the maximum allowed approved project(s) ({$maxProjectsPerGroup}). Only {$maxProjectsPerGroup} project(s) can be approved per group.");
                     }
 
                     // Constraint 2: During registration period, only one approved proposal per group
@@ -121,12 +124,13 @@ class ProposalService
             $targetProjectId = $projectId ?? $proposal->target_project_id;
 
             if (!$targetProjectId) {
+                $maxStudents = app(\App\Services\SettingsService::class)->getProjectDefaultMaxStudents();
                 // Create a new project from the proposal
                 $project = $this->projectService->createFromProposal([
                     'title' => $proposal->title,
                     'description' => $proposal->description,
                     'supervisor_id' => null, // Will be assigned later
-                    'max_students' => 4,
+                    'max_students' => $maxStudents,
                     'specialization' => null,
                     'keywords' => [],
                 ], $proposal->id);

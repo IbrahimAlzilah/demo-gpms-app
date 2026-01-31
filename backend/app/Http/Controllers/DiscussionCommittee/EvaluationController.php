@@ -312,11 +312,14 @@ class EvaluationController extends Controller
             ], 403);
         }
 
-        // Validate committee has 2-3 members as per requirements
-        if (count($committeeMembers) < 2 || count($committeeMembers) > 3) {
+        // Validate committee size from system settings
+        $settingsService = app(\App\Services\SettingsService::class);
+        $minMembers = $settingsService->getDiscussionCommitteeMinMembers();
+        $maxMembers = $settingsService->getDiscussionCommitteeMaxMembers();
+        if (count($committeeMembers) < $minMembers || count($committeeMembers) > $maxMembers) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid committee composition. Committee must have 2-3 members.',
+                'message' => "Invalid committee composition. Committee must have between {$minMembers} and {$maxMembers} members.",
             ], 400);
         }
 

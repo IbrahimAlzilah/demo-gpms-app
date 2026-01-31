@@ -24,11 +24,6 @@ export function RequestsEdit({ open, onClose, onSuccess, request }: RequestsEdit
 
   const requestTypes: { value: string; label: string; icon: React.ReactNode }[] = [
     {
-      value: 'change_supervisor',
-      label: t('requests.change_supervisor'),
-      icon: <User className="h-4 w-4" />,
-    },
-    {
       value: 'change_group',
       label: t('requests.change_group'),
       icon: <Users className="h-4 w-4" />,
@@ -37,6 +32,11 @@ export function RequestsEdit({ open, onClose, onSuccess, request }: RequestsEdit
       value: 'change_project',
       label: t('requests.change_project'),
       icon: <Briefcase className="h-4 w-4" />,
+    },
+    {
+      value: 'change_supervisor',
+      label: t('requests.change_supervisor'),
+      icon: <User className="h-4 w-4" />,
     },
     {
       value: 'other',

@@ -42,6 +42,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [App\Http\Controllers\AuthController::class, 'logout']);
     });
 
+    // System settings (read-only for display; any authenticated user)
+    Route::get('settings', [App\Http\Controllers\SettingsController::class, 'index']);
+
     // Time Windows routes (available to all authenticated users)
     Route::prefix('time-windows')->group(function () {
         Route::get('/active', [App\Http\Controllers\TimeWindowController::class, 'activeWindows']);
@@ -250,6 +253,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Admin routes
     Route::prefix('admin')->middleware('role:admin')->group(function () {
         Route::get('dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index']);
+        Route::get('settings', [App\Http\Controllers\Admin\SystemSettingsController::class, 'index']);
+        Route::put('settings', [App\Http\Controllers\Admin\SystemSettingsController::class, 'update']);
         Route::apiResource('users', App\Http\Controllers\Admin\UserController::class);
         Route::get('reports', [App\Http\Controllers\Admin\ReportController::class, 'index']);
         Route::get('reports/overview', [App\Http\Controllers\Admin\ReportController::class, 'overview']);
