@@ -20,7 +20,7 @@ class StudentGroupController extends Controller
     public function show(Request $request): JsonResponse
     {
         $user = $request->user();
-        
+
         // Get group where user is leader or member
         $group = StudentGroup::where(function ($query) use ($user) {
             $query->where('leader_id', $user->id)
@@ -97,6 +97,95 @@ class StudentGroupController extends Controller
         }
     }
 
+    /**
+     * Search students for group invitation (group leaders only)
+     * Returns students that can be invited: active, not in a group, not already invited
+     */
+    public function searchStudentsForInvite(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'query' => 'nullable|string|max:100',
+            'group_id' => 'required|exists:student_groups,id',
+        ]);
+
+        $group = StudentGroup::with('members')->findOrFail($validated['group_id']);
+        $user = $request->user();
+
+        // Only group leaders can search for students to invite
+        if ($group->leader_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only the group leader can invite members',
+            ], 403);
+        }
+
+        // Do not allow searching when group is full
+        if ($group->isFull()) {
+            return response()->json([
+                'success' => true,
+                'data' => [],
+            ]);
+        }
+
+        $search = trim($validated['query'] ?? '');
+
+        // Get user IDs to exclude: current user, group leader, group members, already invited
+        $excludeIds = collect([$user->id, $group->leader_id])
+            ->merge($group->members->pluck('id'))
+            ->merge(
+                StudentGroupInvitation::where('group_id', $group->id)
+                    ->where('status', 'pending')
+                    ->pluck('invitee_id')
+            )
+            ->unique()
+            ->filter()
+            ->values()
+            ->toArray();
+
+        // Get IDs of users who are in any active group (leader or member)
+        $leaderIds = StudentGroup::where('status', 'active')
+            ->whereNotNull('leader_id')
+            ->pluck('leader_id');
+        $memberIds = \Illuminate\Support\Facades\DB::table('student_group_members')
+            ->join('student_groups', 'student_group_members.group_id', '=', 'student_groups.id')
+            ->where('student_groups.status', 'active')
+            ->pluck('student_group_members.student_id');
+        $inGroupIds = $leaderIds->merge($memberIds)->unique()->filter()->values()->toArray();
+
+        $allExcludeIds = array_unique(array_merge($excludeIds, $inGroupIds));
+
+        $students = \App\Models\User::query()
+            ->where('role', 'student')
+            ->where('status', 'active')
+            ->when(!empty($allExcludeIds), fn ($q) => $q->whereNotIn('id', $allExcludeIds))
+            ->when($search !== '', function ($q) use ($search) {
+                $q->where(function ($subQ) use ($search) {
+                    $subQ->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhereHas('studentProfile', function ($profileQ) use ($search) {
+                            $profileQ->where('student_id', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->with('studentProfile')
+            ->orderBy('name')
+            ->limit(50)
+            ->get(['id', 'name', 'email'])
+            ->map(function ($u) {
+                return [
+                    'id' => (string) $u->id,
+                    'name' => $u->name,
+                    'email' => $u->email,
+                    'studentId' => $u->studentProfile?->student_id ?? $u->username ?? null,
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $students,
+        ]);
+    }
+
     public function invite(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -107,7 +196,7 @@ class StudentGroupController extends Controller
 
         try {
             $group = StudentGroup::findOrFail($validated['group_id']);
-            
+
             // Verify user is leader
             if ($group->leader_id !== $request->user()->id) {
                 return response()->json([
@@ -203,7 +292,7 @@ class StudentGroupController extends Controller
 
         try {
             $newLeader = \App\Models\User::findOrFail($validated['leader_id']);
-            
+
             // Verify new leader is a member of the group
             if (!$group->hasMember($newLeader->id)) {
                 return response()->json([
@@ -436,14 +525,14 @@ class StudentGroupController extends Controller
     /**
      * Leave group (DISABLED - members cannot leave groups)
      * DELETE /student/groups/{group}/leave
-     * 
+     *
      * Note: Student members are not allowed to leave groups.
      * Only group leaders can delete the group, which removes all members.
      */
     public function leave(Request $request, StudentGroup $group): JsonResponse
     {
         $user = $request->user();
-        
+
         // Prevent members (non-leaders) from leaving the group
         if ($group->leader_id !== $user->id) {
             return response()->json([

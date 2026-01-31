@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
-import { Button, Input, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
-import { ModalDialog, LoadingSpinner, useToast } from '@/components/common'
+import { Button, Input, Label, Textarea } from '@/components/ui'
+import { ModalDialog, useToast } from '@/components/common'
 import { AlertCircle, Loader2 } from 'lucide-react'
 import { useProposalsNew } from './ProposalsNew.hook'
 
@@ -12,13 +12,8 @@ interface ProposalsNewProps {
 
 export function ProposalsNew({ open, onClose, onSuccess }: ProposalsNewProps) {
   const { t } = useTranslation()
-  const { toastError } = useToast()
   const {
     form,
-    students,
-    loadingStudents,
-    studentSearch,
-    handleSearchChange,
     handleSubmit,
     isSubmitting,
     resetForm,
@@ -28,14 +23,13 @@ export function ProposalsNew({ open, onClose, onSuccess }: ProposalsNewProps) {
     onClose()
   })
 
-  const { register, formState: { errors }, watch, setValue } = form
-  const submitterId = watch('submitterId')
+  const { register, formState: { errors } } = form
 
   return (
     <ModalDialog
       open={open}
-      onOpenChange={(open) => {
-        if (!open) {
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
           resetForm()
           onClose()
         }
@@ -44,55 +38,6 @@ export function ProposalsNew({ open, onClose, onSuccess }: ProposalsNewProps) {
       size="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Student Selection */}
-        <div className="space-y-2">
-          <Label htmlFor="submitterId">
-            {t('committee.proposal.studentSearch')} <span className="text-destructive">*</span>
-          </Label>
-          <Select
-            value={submitterId}
-            onValueChange={(value) => setValue('submitterId', value, { shouldValidate: true })}
-          >
-            <SelectTrigger
-              id="submitterId"
-              className={errors.submitterId ? 'border-destructive' : ''}
-            >
-              <SelectValue placeholder={t('committee.proposal.searchStudentPlaceholder')} />
-            </SelectTrigger>
-            <SelectContent>
-              <div className="p-2">
-                <Input
-                  placeholder={t('common.search')}
-                  value={studentSearch}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  className="mb-2"
-                />
-              </div>
-              {loadingStudents ? (
-                <div className="p-2 flex justify-center">
-                  <LoadingSpinner size="sm" />
-                </div>
-              ) : students?.length === 0 ? (
-                <div className="p-2 text-center text-muted-foreground text-sm">
-                  {t('common.noResults')}
-                </div>
-              ) : (
-                students?.map((student) => (
-                  <SelectItem key={student.id} value={String(student.id)}>
-                    {student.name} ({student.university_id})
-                  </SelectItem>
-                ))
-              )}
-            </SelectContent>
-          </Select>
-          {errors.submitterId && (
-            <p className="text-xs text-destructive flex items-center gap-1">
-              <AlertCircle className="h-3 w-3" />
-              {errors.submitterId.message}
-            </p>
-          )}
-        </div>
-
         {/* Title */}
         <div className="space-y-2">
           <Label htmlFor="title">

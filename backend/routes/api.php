@@ -86,6 +86,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('projects/{project}/progress', [App\Http\Controllers\Student\ProjectController::class, 'getProgress']);
         Route::get('groups', [App\Http\Controllers\Student\StudentGroupController::class, 'show']);
         Route::get('groups/lookup', [App\Http\Controllers\Student\StudentGroupController::class, 'findByCode']);
+        Route::get('groups/students/search', [App\Http\Controllers\Student\StudentGroupController::class, 'searchStudentsForInvite']);
         Route::post('groups', [App\Http\Controllers\Student\StudentGroupController::class, 'create']);
         Route::post('groups/invite', [App\Http\Controllers\Student\StudentGroupController::class, 'invite']);
         Route::get('groups/invitations', [App\Http\Controllers\Student\StudentGroupController::class, 'getInvitations']);
@@ -181,7 +182,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('proposals/{proposal}/approve', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'approve']);
         Route::post('proposals/{proposal}/reject', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'reject']);
         Route::post('proposals/{proposal}/request-modification', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'requestModification']);
-        Route::get('proposals/students/search', [App\Http\Controllers\ProjectsCommittee\ProposalController::class, 'searchStudents']);
         // apiResource automatically includes POST /proposals for store() method
         Route::apiResource('proposals', App\Http\Controllers\ProjectsCommittee\ProposalController::class);
         Route::get('projects/statistics', [App\Http\Controllers\ProjectsCommittee\ProjectController::class, 'statistics']);

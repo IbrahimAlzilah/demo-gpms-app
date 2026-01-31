@@ -27,16 +27,20 @@ class ProposalSubmissionResource extends JsonResource
         // Add origin-specific data
         if ($this->resource['origin'] === 'student_group') {
             $data['studentGroupId'] = $this->resource['studentGroupId'] ?? null;
-            $data['studentGroup'] = $this->resource['studentGroup'] 
+            $data['studentGroup'] = $this->resource['studentGroup']
                 ? new StudentGroupResource($this->resource['studentGroup'])
                 : null;
             $data['submitter'] = $this->resource['submitter']
                 ? new UserResource($this->resource['submitter'])
                 : null;
-        } else if ($this->resource['origin'] === 'supervisor') {
+        } elseif ($this->resource['origin'] === 'supervisor') {
             $data['supervisorId'] = $this->resource['supervisorId'];
             $data['supervisor'] = $this->resource['supervisor']
                 ? new UserResource($this->resource['supervisor'])
+                : null;
+        } elseif ($this->resource['origin'] === 'committee') {
+            $data['submitter'] = $this->resource['submitter']
+                ? new UserResource($this->resource['submitter'])
                 : null;
         }
 

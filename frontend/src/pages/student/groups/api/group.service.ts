@@ -1,69 +1,74 @@
-import { apiClient } from '../../../../lib/axios'
+import { apiClient } from "../../../../lib/axios";
 import type {
   ProjectGroup,
   StudentGroup,
   GroupInvitation,
   GroupJoinRequest,
-} from '../../../../types/project.types'
-import type { User } from '../../../../types/user.types'
+} from "../../../../types/project.types";
+import type { User } from "../../../../types/user.types";
 
 /**
  * Extract error message from API error response
  */
 const getErrorMessage = (error: any): string => {
   if (error.response?.data?.message) {
-    return error.response.data.message
+    return error.response.data.message;
   }
   if (error.message) {
-    return error.message
+    return error.message;
   }
-  return 'An unexpected error occurred'
-}
+  return "An unexpected error occurred";
+};
 
 export const groupService = {
   getByProjectId: async (projectId: string): Promise<ProjectGroup | null> => {
     try {
-      const response = await apiClient.get<ProjectGroup>(`/student/groups?project_id=${projectId}`)
+      const response = await apiClient.get<ProjectGroup>(
+        `/student/groups?project_id=${projectId}`,
+      );
       // Backend returns null when no group exists - this is a valid response
-      return response.data
+      return response.data;
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error));
     }
   },
 
   getByStudentId: async (_studentId: string): Promise<StudentGroup | null> => {
     try {
-      const response = await apiClient.get<StudentGroup>('/student/groups')
+      const response = await apiClient.get<StudentGroup>("/student/groups");
       // Backend returns null when no group exists - this is a valid response
-      return response.data
+      return response.data;
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error));
     }
   },
 
   lookupByCode: async (code: string): Promise<StudentGroup> => {
     try {
-      const response = await apiClient.get<StudentGroup>('/student/groups/lookup', {
-        params: { code },
-      })
-      return response.data
+      const response = await apiClient.get<StudentGroup>(
+        "/student/groups/lookup",
+        {
+          params: { code },
+        },
+      );
+      return response.data;
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error));
     }
   },
 
   create: async (
     name: string | null,
-    members: User[]
+    members: User[],
   ): Promise<StudentGroup> => {
     try {
-      const response = await apiClient.post<StudentGroup>('/student/groups', {
+      const response = await apiClient.post<StudentGroup>("/student/groups", {
         name: name || null,
-        member_ids: members.map(m => m.id),
-      })
-      return response.data
+        member_ids: members.map((m) => m.id),
+      });
+      return response.data;
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error));
     }
   },
 
@@ -71,41 +76,64 @@ export const groupService = {
     try {
       const response = await apiClient.post<StudentGroup>(
         `/student/groups/${groupId}/members`,
-        { member_id: member.id }
-      )
-      return response.data
+        { member_id: member.id },
+      );
+      return response.data;
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error));
     }
   },
 
   removeMember: async (
     groupId: string,
-    memberId: string
+    memberId: string,
   ): Promise<StudentGroup> => {
     try {
       const response = await apiClient.delete<StudentGroup>(
-        `/student/groups/${groupId}/members/${memberId}`
-      )
-      return response.data
+        `/student/groups/${groupId}/members/${memberId}`,
+      );
+      return response.data;
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error));
     }
   },
 
   updateLeader: async (
     groupId: string,
-    newLeaderId: string
+    newLeaderId: string,
   ): Promise<StudentGroup> => {
     try {
       const response = await apiClient.put<StudentGroup>(
         `/student/groups/${groupId}/leader`,
-        { leader_id: newLeaderId }
-      )
-      return response.data
+        { leader_id: newLeaderId },
+      );
+      return response.data;
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error));
     }
+  },
+
+  /**
+   * Search students for group invitation (group leaders only)
+   * Returns students that can be invited - searchable by name, email, or student ID
+   */
+  searchStudentsForInvite: async (
+    groupId: string,
+    query: string,
+  ): Promise<
+    Array<{ id: string; name: string; email: string; studentId: string | null }>
+  > => {
+    const response = await apiClient.get<
+      Array<{
+        id: string;
+        name: string;
+        email: string;
+        studentId: string | null;
+      }>
+    >("/student/groups/students/search", {
+      params: { group_id: groupId, query },
+    });
+    return Array.isArray(response.data) ? response.data : [];
   },
 
   // Group invitation methods
@@ -113,51 +141,58 @@ export const groupService = {
     groupId: string,
     _inviterId: string,
     inviteeId: string,
-    message?: string
+    message?: string,
   ): Promise<GroupInvitation> => {
     try {
-      const response = await apiClient.post<GroupInvitation>('/student/groups/invite', {
-        group_id: groupId,
-        invitee_id: inviteeId,
-        message,
-      })
-      return response.data
+      const response = await apiClient.post<GroupInvitation>(
+        "/student/groups/invite",
+        {
+          group_id: groupId,
+          invitee_id: inviteeId,
+          message,
+        },
+      );
+      return response.data;
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error));
     }
   },
 
   getInvitations: async (_studentId: string): Promise<GroupInvitation[]> => {
     try {
-      const response = await apiClient.get<GroupInvitation[]>('/student/groups/invitations')
-      return Array.isArray(response.data) ? response.data : []
+      const response = await apiClient.get<GroupInvitation[]>(
+        "/student/groups/invitations",
+      );
+      return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error));
     }
   },
 
   acceptInvitation: async (
     invitationId: string,
-    _studentId: string
+    _studentId: string,
   ): Promise<StudentGroup> => {
     try {
       const response = await apiClient.post<StudentGroup>(
-        `/student/groups/invitations/${invitationId}/accept`
-      )
-      return response.data
+        `/student/groups/invitations/${invitationId}/accept`,
+      );
+      return response.data;
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error));
     }
   },
 
   rejectInvitation: async (
     invitationId: string,
-    _studentId: string
+    _studentId: string,
   ): Promise<void> => {
     try {
-      await apiClient.post(`/student/groups/invitations/${invitationId}/reject`)
+      await apiClient.post(
+        `/student/groups/invitations/${invitationId}/reject`,
+      );
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error));
     }
   },
 
@@ -165,97 +200,105 @@ export const groupService = {
     try {
       const response = await apiClient.post<StudentGroup>(
         `/student/groups/${groupId}/members`,
-        { member_id: userId }
-      )
-      return response.data
+        { member_id: userId },
+      );
+      return response.data;
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error));
     }
   },
 
   // Group join request methods
   createJoinRequest: async (
     groupId: string,
-    message?: string
+    message?: string,
   ): Promise<GroupJoinRequest> => {
     try {
-      const response = await apiClient.post<GroupJoinRequest>('/student/groups/join-request', {
-        group_id: groupId,
-        message,
-      })
-      return response.data
+      const response = await apiClient.post<GroupJoinRequest>(
+        "/student/groups/join-request",
+        {
+          group_id: groupId,
+          message,
+        },
+      );
+      return response.data;
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error));
     }
   },
 
   getJoinRequests: async (groupId: string): Promise<GroupJoinRequest[]> => {
     try {
       const response = await apiClient.get<GroupJoinRequest[]>(
-        `/student/groups/${groupId}/join-requests`
-      )
-      return Array.isArray(response.data) ? response.data : []
+        `/student/groups/${groupId}/join-requests`,
+      );
+      return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error));
     }
   },
 
   approveJoinRequest: async (requestId: string): Promise<StudentGroup> => {
     try {
       const response = await apiClient.post<StudentGroup>(
-        `/student/groups/join-requests/${requestId}/approve`
-      )
-      return response.data
+        `/student/groups/join-requests/${requestId}/approve`,
+      );
+      return response.data;
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error));
     }
   },
 
   rejectJoinRequest: async (
     requestId: string,
-    comments?: string
+    comments?: string,
   ): Promise<void> => {
     try {
-      await apiClient.post(`/student/groups/join-requests/${requestId}/reject`, {
-        comments,
-      })
+      await apiClient.post(
+        `/student/groups/join-requests/${requestId}/reject`,
+        {
+          comments,
+        },
+      );
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error));
     }
   },
 
   getMyJoinRequests: async (): Promise<GroupJoinRequest[]> => {
     try {
       const response = await apiClient.get<GroupJoinRequest[]>(
-        '/student/groups/join-requests/my'
-      )
-      return Array.isArray(response.data) ? response.data : []
+        "/student/groups/join-requests/my",
+      );
+      return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error));
     }
   },
 
   cancelJoinRequest: async (requestId: string): Promise<void> => {
     try {
-      await apiClient.delete(`/student/groups/join-requests/${requestId}/cancel`)
+      await apiClient.delete(
+        `/student/groups/join-requests/${requestId}/cancel`,
+      );
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error));
     }
   },
 
   leave: async (groupId: string): Promise<void> => {
     try {
-      await apiClient.delete(`/student/groups/${groupId}/leave`)
+      await apiClient.delete(`/student/groups/${groupId}/leave`);
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error));
     }
   },
 
   delete: async (groupId: string): Promise<void> => {
     try {
-      await apiClient.delete(`/student/groups/${groupId}`)
+      await apiClient.delete(`/student/groups/${groupId}`);
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      throw new Error(getErrorMessage(error));
     }
   },
-}
+};

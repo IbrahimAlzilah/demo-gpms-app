@@ -52,6 +52,7 @@ export function GroupDashboard({
                         <Button
                             onClick={onInviteMember}
                             disabled={memberCount >= maxMembers}
+                            title={memberCount >= maxMembers ? t('groups.groupFull') : undefined}
                             className="gap-2"
                         >
                             <UserPlus className="size-4" />

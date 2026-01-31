@@ -20,31 +20,6 @@ class ProposalController extends Controller
         protected ProposalService $proposalService
     ) {}
 
-    /**
-     * Search students for proposal submission
-     */
-    public function searchStudents(Request $request): JsonResponse
-    {
-        $search = $request->input('query');
-        
-        $students = \App\Models\User::where('role', 'student')
-            ->where('status', 'active')
-            ->when($search, function ($q) use ($search) {
-                return $q->where(function ($subQ) use ($search) {
-                    $subQ->where('name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%")
-                        ->orWhere('university_id', 'like', "%{$search}%");
-                });
-            })
-            ->limit(20)
-            ->get(['id', 'name', 'email', 'university_id']);
-
-        return response()->json([
-            'success' => true,
-            'data' => $students,
-        ]);
-    }
-
     public function index(Request $request): JsonResponse
     {
         $query = Proposal::with(['submitter', 'reviewer', 'project', 'studentGroup', 'targetProject']);
@@ -91,20 +66,20 @@ class ProposalController extends Controller
 
         // Group proposals by origin
         $groupedSubmissions = [];
-        
+
         // Group 1: Student groups (by student_group_id)
         $studentGroupProposals = $allProposals->whereNotNull('student_group_id')
             ->groupBy('student_group_id');
-        
+
         foreach ($studentGroupProposals as $groupId => $proposals) {
             $firstProposal = $proposals->first();
             $statuses = $proposals->pluck('status')->unique();
             $status = $statuses->count() === 1 ? $statuses->first() : 'mixed';
-            
+
             // Get the earliest and latest dates
             $minCreatedAt = $proposals->min('created_at');
             $maxUpdatedAt = $proposals->max('updated_at');
-            
+
             $groupedSubmissions[] = [
                 'id' => "group_{$groupId}",
                 'origin' => 'student_group',
@@ -123,21 +98,21 @@ class ProposalController extends Controller
         // Exclude proposals that belong to student groups (they're already grouped above)
         $supervisorProposals = $allProposals
             ->filter(function ($proposal) {
-                return !$proposal->student_group_id 
-                    && $proposal->submitter 
+                return !$proposal->student_group_id
+                    && $proposal->submitter
                     && $proposal->submitter->isSupervisor();
             })
             ->groupBy('submitter_id');
-        
+
         foreach ($supervisorProposals as $submitterId => $proposals) {
             $firstProposal = $proposals->first();
             $statuses = $proposals->pluck('status')->unique();
             $status = $statuses->count() === 1 ? $statuses->first() : 'mixed';
-            
+
             // Get the earliest and latest dates
             $minCreatedAt = $proposals->min('created_at');
             $maxUpdatedAt = $proposals->max('updated_at');
-            
+
             $groupedSubmissions[] = [
                 'id' => "supervisor_{$submitterId}",
                 'origin' => 'supervisor',
@@ -151,13 +126,42 @@ class ProposalController extends Controller
             ];
         }
 
-        // Group 3: Individual student proposals (no group, not supervisor)
+        // Group 3: Committee-added proposals (submitter is projects_committee)
+        $committeeProposals = $allProposals
+            ->filter(function ($proposal) {
+                return !$proposal->student_group_id
+                    && $proposal->submitter
+                    && $proposal->submitter->isProjectsCommittee();
+            })
+            ->groupBy('submitter_id');
+
+        foreach ($committeeProposals as $submitterId => $proposals) {
+            $firstProposal = $proposals->first();
+            $statuses = $proposals->pluck('status')->unique();
+            $status = $statuses->count() === 1 ? $statuses->first() : 'mixed';
+            $minCreatedAt = $proposals->min('created_at');
+            $maxUpdatedAt = $proposals->max('updated_at');
+
+            $groupedSubmissions[] = [
+                'id' => "committee_{$submitterId}",
+                'origin' => 'committee',
+                'submitter' => $firstProposal->submitter ?? null,
+                'proposals' => $proposals->sortBy('created_at')->values(),
+                'status' => $status,
+                'submittedAt' => $minCreatedAt ? $minCreatedAt->toISOString() : now()->toISOString(),
+                'lastUpdatedAt' => $maxUpdatedAt ? $maxUpdatedAt->toISOString() : now()->toISOString(),
+                'totalProposals' => $proposals->count(),
+            ];
+        }
+
+        // Group 4: Individual student proposals (no group, not supervisor, not committee)
         $individualProposals = $allProposals
             ->filter(function ($proposal) {
-                return !$proposal->student_group_id 
-                    && (!$proposal->submitter || !$proposal->submitter->isSupervisor());
+                return !$proposal->student_group_id
+                    && (!$proposal->submitter
+                        || (!$proposal->submitter->isSupervisor() && !$proposal->submitter->isProjectsCommittee()));
             });
-        
+
         foreach ($individualProposals as $proposal) {
             $groupedSubmissions[] = [
                 'id' => "individual_{$proposal->id}",
@@ -202,8 +206,9 @@ class ProposalController extends Controller
     }
 
     /**
-     * Create a proposal on behalf of a student or student group
-     * Project Committee is not restricted by time windows
+     * Create a proposal directly (committee adds proposals themselves).
+     * Project Committee is not restricted by time windows.
+     * The committee member creating the proposal is recorded as the submitter.
      */
     public function store(Request $request): JsonResponse
     {
@@ -211,32 +216,10 @@ class ProposalController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'proposed_supervisor_id' => 'nullable|exists:users,id',
-            'submitter_id' => 'required|exists:users,id',
-            'student_group_id' => 'nullable|exists:student_groups,id',
             'target_project_id' => 'nullable|exists:projects,id',
         ]);
 
-        // Validate that submitter_id is a student
-        $submitter = \App\Models\User::findOrFail($validated['submitter_id']);
-        if (!$submitter->isStudent()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Submitter must be a student',
-            ], 422);
-        }
-
-        // If student_group_id is provided, validate submitter is a member
-        if (isset($validated['student_group_id'])) {
-            $studentGroup = \App\Models\StudentGroup::findOrFail($validated['student_group_id']);
-            if (!$studentGroup->hasMember($submitter->id) && $studentGroup->leader_id !== $submitter->id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Submitter must be a member of the selected group',
-                ], 422);
-            }
-        }
-
-        // Validate that proposed_supervisor_id is actually a supervisor
+        // Validate that proposed_supervisor_id is actually a supervisor if provided
         if (isset($validated['proposed_supervisor_id'])) {
             $supervisor = \App\Models\User::find($validated['proposed_supervisor_id']);
             if (!$supervisor || !$supervisor->isSupervisor()) {
@@ -248,7 +231,11 @@ class ProposalController extends Controller
         }
 
         try {
-            $proposal = $this->proposalService->create($validated, $submitter);
+            // Committee member creating the proposal is the submitter (committee adds directly)
+            $proposal = $this->proposalService->create(
+                array_merge($validated, ['student_group_id' => null]),
+                $request->user()
+            );
 
             return response()->json([
                 'success' => true,

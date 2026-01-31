@@ -3,6 +3,7 @@ import type {
   Submission,
   StudentGroupSubmission,
   SupervisorSubmission,
+  CommitteeSubmission,
 } from "../types/GroupedSubmissions.types";
 
 /**
@@ -201,7 +202,20 @@ export function getSubmissionDisplayName(
     return t
       ? t("committee.proposal.studentGroupSubmission")
       : "Student Group Submission";
-  } else {
+  }
+  if (submission.origin === "committee") {
+    const committeeSubmission = submission as CommitteeSubmission;
+    if (committeeSubmission.submitter?.name && t) {
+      return t("committee.proposal.committeeProposals", {
+        name: committeeSubmission.submitter.name,
+        defaultValue: `Committee (${committeeSubmission.submitter.name})`,
+      });
+    }
+    return t
+      ? t("committee.proposal.committeeSubmission")
+      : "Committee Submission";
+  }
+  if (submission.origin === "supervisor") {
     if (submission.supervisor?.name && t) {
       return t("committee.proposal.supervisorProposals", {
         name: submission.supervisor.name,
@@ -214,6 +228,7 @@ export function getSubmissionDisplayName(
       ? t("committee.proposal.supervisorSubmission")
       : "Supervisor Submission";
   }
+  return t ? t("committee.proposal.submission") : "Submission";
 }
 
 /**
@@ -230,6 +245,9 @@ export function getSubmissionDescription(
       : t("committee.proposal.submissionDescriptionProposals", { count })
     : `${count} proposal${count !== 1 ? "s" : ""}`;
 
+  if (submission.origin === "committee") {
+    return proposalPart;
+  }
   if (submission.origin === "student_group") {
     if (submission.studentGroup && t) {
       const memberCount =

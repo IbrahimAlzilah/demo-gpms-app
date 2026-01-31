@@ -61,6 +61,9 @@ export function GroupJoinRequestsList({
   }
 
   const pendingRequests = joinRequests?.filter((r) => r.status === 'pending') || []
+  const memberCount = group.members?.length ?? 0
+  const maxMembers = group.maxMembers ?? 5
+  const isGroupFull = memberCount >= maxMembers
 
   if (pendingRequests.length === 0) {
     return null
@@ -74,7 +77,9 @@ export function GroupJoinRequestsList({
           {t('groups.joinRequests')}
         </CardTitle>
         <CardDescription>
-          {t('groups.joinRequestsDescription', { count: pendingRequests.length })}
+          {isGroupFull
+            ? t('groups.groupFullCannotAccept')
+            : t('groups.joinRequestsDescription', { count: pendingRequests.length })}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -106,7 +111,8 @@ export function GroupJoinRequestsList({
                 <Button
                   size="sm"
                   onClick={() => handleApprove(request.id)}
-                  disabled={approveRequest.isPending || rejectRequest.isPending}
+                  disabled={approveRequest.isPending || rejectRequest.isPending || isGroupFull}
+                  title={isGroupFull ? t('groups.groupFull') : undefined}
                   className="bg-success text-white hover:bg-success/90"
                 >
                   {approveRequest.isPending ? (

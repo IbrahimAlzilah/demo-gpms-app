@@ -156,14 +156,16 @@ export function useProposalsList() {
           state.statusFilter === "all" ? undefined : state.statusFilter,
           globalFilter || undefined,
         );
-      // Filter to only supervisor submissions
-      const supervisorSubmissions = allSubmissions.data.filter(
-        (submission) => submission.origin === "supervisor",
+      // Filter to supervisor and committee submissions (exclude student_group - those are in unifiedGroups)
+      const supervisorAndCommitteeSubmissions = allSubmissions.data.filter(
+        (submission) =>
+          submission.origin === "supervisor" ||
+          submission.origin === "committee",
       );
       return {
         ...allSubmissions,
-        data: supervisorSubmissions,
-        totalCount: supervisorSubmissions.length,
+        data: supervisorAndCommitteeSubmissions,
+        totalCount: supervisorAndCommitteeSubmissions.length,
       };
     },
     enabled: isGroupedView && !!supervisorSubmissionsQueryParams,

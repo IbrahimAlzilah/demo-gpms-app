@@ -17,11 +17,12 @@ import {
   Trash2,
   Loader2,
   Mail,
-  CheckCircle2
+  CheckCircle2,
+  Building2
 } from 'lucide-react'
 import { formatDate, formatRelativeTime } from '@/lib/utils/format'
 import { cn } from '@/lib/utils'
-import type { Submission, StudentGroupSubmission, SupervisorSubmission } from '../types/GroupedSubmissions.types'
+import type { Submission, StudentGroupSubmission, SupervisorSubmission, CommitteeSubmission } from '../types/GroupedSubmissions.types'
 import type { Proposal } from '@/types/project.types'
 import { getSubmissionDisplayName, getSubmissionDescription } from '../utils/groupProposals'
 
@@ -54,8 +55,10 @@ export function GroupedSubmissionCard({
   const displayName = getSubmissionDisplayName(submission, translate)
   const description = getSubmissionDescription(submission, translate)
   const isStudentGroup = submission.origin === 'student_group'
+  const isCommittee = submission.origin === 'committee'
   const studentGroupSubmission = submission as StudentGroupSubmission
   const supervisorSubmission = submission as SupervisorSubmission
+  const committeeSubmission = submission as CommitteeSubmission
 
   const getStatusColor = (status: Submission['status']) => {
     switch (status) {
@@ -93,10 +96,14 @@ export function GroupedSubmissionCard({
               'p-2 rounded-lg shrink-0',
               isStudentGroup
                 ? 'bg-primary/10 text-primary'
-                : 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
+                : isCommittee
+                  ? 'bg-slate-500/10 text-slate-600 dark:text-slate-400'
+                  : 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
             )}>
               {isStudentGroup ? (
                 <Users className="h-5 w-5" />
+              ) : isCommittee ? (
+                <Building2 className="h-5 w-5" />
               ) : (
                 <User className="h-5 w-5" />
               )}
@@ -175,7 +182,16 @@ export function GroupedSubmissionCard({
                   </div>
                 )}
 
-                {!isStudentGroup && supervisorSubmission.supervisor && (
+                {isCommittee && committeeSubmission.submitter && (
+                  <div className="flex items-center gap-1.5">
+                    <Building2 className="h-3.5 w-3.5" />
+                    <span className="truncate max-w-[150px]">
+                      {translate('committee.proposal.addedBy', { defaultValue: 'Added by' })}: {committeeSubmission.submitter.name || committeeSubmission.submitter.email || 'Unknown'}
+                    </span>
+                  </div>
+                )}
+
+                {!isStudentGroup && !isCommittee && supervisorSubmission.supervisor && (
                   <div className="flex items-center gap-1.5">
                     <Mail className="h-3.5 w-3.5" />
                     <span className="truncate max-w-[150px]">
