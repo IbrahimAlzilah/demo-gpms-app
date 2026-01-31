@@ -8,6 +8,7 @@ use App\Models\ProjectRequest;
 use App\Models\Grade;
 use App\Models\ProjectMilestone;
 use App\Models\ProjectMeeting;
+use App\Models\SupervisorAssignmentRequest;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -22,9 +23,9 @@ class SupervisorDashboardService
 
         $supervisedProjectsCount = $supervisedProjects->count();
 
-        // Pending supervision requests (projects waiting for supervisor approval)
-        $pendingSupervisionRequests = Project::where('supervisor_id', $supervisor->id)
-            ->where('supervisor_approval_status', 'pending')
+        // Pending supervision requests: committee assignment requests awaiting supervisor response
+        $pendingSupervisionRequests = SupervisorAssignmentRequest::where('supervisor_id', $supervisor->id)
+            ->where('status', 'pending')
             ->count();
 
         // Pending evaluations: projects with students missing supervisor_grade

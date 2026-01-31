@@ -332,6 +332,7 @@
     "committee_approved": "موافق عليه من اللجنة",
     "committee_rejected": "مرفوض من اللجنة",
     "cancelled": "ملغي",
+    "canceled": "ملغي (من اللجنة)",
     "requires_modification": "يتطلب تعديل",
     "reviewStatus_pending": "قيد المراجعة",
     "reviewStatus_approved": "معتمد",
@@ -1127,6 +1128,7 @@
   "supervision": {
     "pageDescription": "مراجعة المشاريع المعينة لك من قبل لجنة المشاريع وقبولها أو رفضها",
     "manageRequestsDescription": "إدارة طلبات الإشراف من الطلاب ولجنة المشاريع",
+    "mySupervisedProjects": "مشاريعي تحت إشرافي",
     "noRequests": "لا توجد مشاريع معينة للمراجعة",
     "noRequestsDescription": "لا توجد مشاريع جديدة معينة لك في الوقت الحالي",
     "currentProjects": "عدد المشاريع الحالية",
@@ -1235,7 +1237,11 @@
     "responseRequired": "الرد مطلوب للرفض",
     "studentRequests": "طلبات الطلاب",
     "committeeRequests": "طلبات اللجنة",
+    "committeeAssignmentRequests": "طلبات التعيين من اللجنة",
     "noCommitteeRequests": "لا توجد طلبات معلقة من لجنة المشاريع",
+    "noPendingRequests": "لا توجد طلبات تعيين معلقة",
+    "noApprovedRequests": "لا توجد طلبات تعيين معتمدة",
+    "noRejectedRequests": "لا توجد طلبات تعيين مرفوضة",
     "approveRequest": "قبول الطلب",
     "rejectRequest": "رفض الطلب",
     "approveRequestConfirm": "هل أنت متأكد من قبول الإشراف على \"{{title}}\"؟",
@@ -1261,6 +1267,7 @@
     "directAssignment": "تعيين مباشر",
     "directAssignmentDesc": "تعيين فوري دون موافقة",
     "notesForSupervisor": "ملاحظات للمشرف",
+    "assignmentNotesPlaceholder": "أضف أي ملاحظات...",
     "name": "المشرف"
   },
   "discussion": {
@@ -1494,6 +1501,7 @@
       "requested": "مطلوب",
       "previouslyRequested": "مطلوب سابقاً",
       "noProjectsEmpty": "لا توجد مشاريع",
+      "changeSupervisor": "تغيير المشرف",
       "unassignSupervisor": "إزالة المشرف",
       "confirmUnassign": "إزالة المشرف؟",
       "confirmUnassignDescription": "إزالة المشرف من \"{{title}}\"؟ يمكنك تعيين مشرف آخر لاحقاً.",
@@ -1970,7 +1978,7 @@
   },
   "notifications": {
     "title": "الإشعارات",
-    "markAllAsRead": "tمييز الكل كمقروء",
+    "markAllAsRead": "تمييز الكل كمقروء",
     "deleteAll": "حذف الكل",
     "noNotifications": "لا توجد إشعارات",
     "loading": "جاري التحميل...",
@@ -1978,12 +1986,16 @@
     "types": {
       "proposal_approved": "تم قبول مقترح المشروع",
       "proposal_rejected": "تم رفض المقترح",
+      "proposal_submitted": "تم تقديم مقترح جديد",
+      "proposal_modification_required": "مقترح يتطلب تعديلات",
       "request_approved": "تم قبول الطلب",
       "request_rejected": "تم رفض الطلب",
+      "request_submitted": "تم تقديم طلب جديد",
       "deadline_approaching": "موعد تسليم قريب",
       "registration_approved": "تم قبول التسجيل",
       "registration_rejected": "تم رفض التسجيل",
       "grade_approved": "تم اعتماد الدرجة",
+      "grade_published": "تم إعلان الدرجة النهائية",
       "announcement_created": "إعلان جديد",
       "period_announcement": "إعلان فترة زمنية",
       "group_invitation": "دعوة انضمام لمجموعة",
@@ -1991,7 +2003,10 @@
       "group_invitation_rejected": "تم رفض الدعوة",
       "group_join_request": "طلب انضمام جديد",
       "group_join_request_approved": "تم قبول طلب الانضمام",
-      "group_join_request_rejected": "تم رفض طلب الانضمام"
+      "group_join_request_rejected": "تم رفض طلب الانضمام",
+      "supervisor_assignment_request": "طلب إشراف على مشروع",
+      "supervisor_assigned": "تم تعيينك مشرفاً",
+      "supervisor_assignment_cancelled": "تم إلغاء طلب الإشراف"
     },
     "groups": {
       "invitation_received": "تم دعوتك للانضمام إلى المجموعة '{{group_name}}' بواسطة {{inviter_name}}",

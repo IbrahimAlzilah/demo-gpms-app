@@ -90,17 +90,23 @@ class SupervisionController extends Controller
     }
 
     /**
-     * Get list of pending supervisor assignment requests
+     * Get list of supervisor assignment requests (all statuses or filtered by status).
+     * Optional query param: status = pending | approved | rejected (omit for all).
      */
     public function listAssignmentRequests(Request $request): JsonResponse
     {
         $supervisor = $request->user();
 
-        $requests = \App\Models\SupervisorAssignmentRequest::where('supervisor_id', $supervisor->id)
-            ->where('status', 'pending')
-            ->with(['project', 'requestedBy'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $query = \App\Models\SupervisorAssignmentRequest::where('supervisor_id', $supervisor->id)
+            ->with(['project', 'requestedBy', 'respondedBy'])
+            ->orderBy('created_at', 'desc');
+
+        $statusFilter = $request->query('status');
+        if ($statusFilter && in_array($statusFilter, ['pending', 'approved', 'rejected', 'canceled'], true)) {
+            $query->where('status', $statusFilter);
+        }
+
+        $requests = $query->get();
 
         return response()->json([
             'success' => true,

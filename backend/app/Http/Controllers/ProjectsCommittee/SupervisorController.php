@@ -42,7 +42,8 @@ class SupervisorController extends Controller
 
     /**
      * Request supervisor assignment for a project
-     * Creates a pending request that requires supervisor approval
+     * Creates a pending request that requires supervisor approval.
+     * If project already has a supervisor or a pending request, cancels the previous one(s) first.
      */
     public function requestAssignment(Request $request): JsonResponse
     {
@@ -64,29 +65,29 @@ class SupervisorController extends Controller
                 ], 400);
             }
 
-            // Single-supervisor constraint: block if project already has a supervisor
+            // If project has a supervisor (change flow): cancel their request(s) and unassign
             if ($project->supervisor_id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Project already has a supervisor assigned',
-                    'error_key' => 'committee.supervisors.errorAlreadyHasSupervisor',
-                ], 400);
+                $this->cancelAssignmentRequestsForProject($project->id, $project->supervisor_id, $project->title);
+                $this->projectService->removeSupervisor($project);
+                $project->refresh();
+            } else {
+                // Cancel any existing pending (or other) request for this project
+                $existing = SupervisorAssignmentRequest::where('project_id', $project->id)
+                    ->whereIn('status', ['pending', 'approved'])
+                    ->get();
+                foreach ($existing as $req) {
+                    $req->update(['status' => 'canceled']);
+                    $this->notificationService->create(
+                        $req->supervisor,
+                        "تم إلغاء طلب الإشراف على المشروع: {$project->title} من قبل اللجنة.",
+                        'supervisor_assignment_cancelled',
+                        'project',
+                        $project->id
+                    );
+                }
             }
 
-            // Check if there's already a pending request for this project
-            $existingRequest = SupervisorAssignmentRequest::where('project_id', $project->id)
-                ->where('status', 'pending')
-                ->first();
-
-            if ($existingRequest) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'There is already a pending assignment request for this project',
-                    'error_key' => 'committee.supervisors.errorPendingRequestExists',
-                ], 400);
-            }
-
-            // Create the assignment request
+            // Create the new assignment request
             $assignmentRequest = SupervisorAssignmentRequest::create([
                 'project_id' => $project->id,
                 'supervisor_id' => $supervisor->id,
@@ -119,7 +120,8 @@ class SupervisorController extends Controller
 
     /**
      * Direct assign (without approval requirement)
-     * Used for emergency cases or when supervisor has already verbally agreed
+     * Used for emergency cases or when supervisor has already verbally agreed.
+     * If project already has a different supervisor, cancels their request(s) and replaces.
      */
     public function assign(Request $request): JsonResponse
     {
@@ -140,13 +142,11 @@ class SupervisorController extends Controller
                 ], 400);
             }
 
-            // Single-supervisor constraint: block if project already has a supervisor
-            if ($project->supervisor_id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Project already has a supervisor assigned',
-                    'error_key' => 'committee.supervisors.errorAlreadyHasSupervisor',
-                ], 400);
+            // If project has a different supervisor: cancel their request(s) and unassign first
+            if ($project->supervisor_id && (int) $project->supervisor_id !== (int) $supervisor->id) {
+                $this->cancelAssignmentRequestsForProject($project->id, $project->supervisor_id, $project->title);
+                $this->projectService->removeSupervisor($project);
+                $project->refresh();
             }
 
             // Direct assignment - no approval required
@@ -176,11 +176,15 @@ class SupervisorController extends Controller
 
     /**
      * Unassign supervisor from project (committee remove).
-     * After unassign, project has no supervisor and committee can assign another.
+     * Marks the previous supervisor's assignment request(s) as canceled so they see it on their requests page.
      */
     public function unassign(Request $request, Project $project): JsonResponse
     {
         try {
+            $previousSupervisorId = $project->supervisor_id;
+            if ($previousSupervisorId) {
+                $this->cancelAssignmentRequestsForProject($project->id, $previousSupervisorId, $project->title);
+            }
             $updated = $this->projectService->removeSupervisor($project);
 
             return response()->json([
@@ -198,6 +202,31 @@ class SupervisorController extends Controller
                     ? 'committee.supervisors.errorNoSupervisorToRemove'
                     : null,
             ], $code);
+        }
+    }
+
+    /**
+     * Mark assignment request(s) for a project + supervisor as canceled and notify the supervisor.
+     */
+    private function cancelAssignmentRequestsForProject(int $projectId, int $supervisorId, string $projectTitle): void
+    {
+        $requests = SupervisorAssignmentRequest::where('project_id', $projectId)
+            ->where('supervisor_id', $supervisorId)
+            ->whereIn('status', ['pending', 'approved'])
+            ->get();
+
+        $supervisor = User::find($supervisorId);
+        foreach ($requests as $req) {
+            $req->update(['status' => 'canceled']);
+            if ($supervisor) {
+                $this->notificationService->create(
+                    $supervisor,
+                    "تم إلغاء الإشراف على المشروع: {$projectTitle} من قبل اللجنة.",
+                    'supervisor_assignment_cancelled',
+                    'project',
+                    $projectId
+                );
+            }
         }
     }
 
@@ -229,7 +258,7 @@ class SupervisorController extends Controller
     }
 
     /**
-     * Cancel a pending assignment request
+     * Cancel a pending assignment request (mark as canceled so supervisor sees it on their page).
      */
     public function cancelRequest(Request $request, SupervisorAssignmentRequest $assignmentRequest): JsonResponse
     {
@@ -241,6 +270,8 @@ class SupervisorController extends Controller
         }
 
         try {
+            $assignmentRequest->update(['status' => 'canceled']);
+
             // Notify the supervisor about cancellation
             $this->notificationService->create(
                 $assignmentRequest->supervisor,
@@ -250,10 +281,9 @@ class SupervisorController extends Controller
                 $assignmentRequest->project_id
             );
 
-            $assignmentRequest->delete();
-
             return response()->json([
                 'success' => true,
+                'data' => new SupervisorAssignmentRequestResource($assignmentRequest->fresh()->load(['project', 'supervisor', 'requestedBy', 'respondedBy'])),
                 'message' => 'Assignment request cancelled successfully',
             ]);
         } catch (\Exception $e) {
@@ -306,7 +336,7 @@ class SupervisorController extends Controller
                 \App\Enums\ProjectStatus::IN_PROGRESS->value,
             ])
             ->with(['supervisor', 'assignedGroup.leader'])
-            ->with(['supervisorAssignmentRequests' => fn ($q) => $q->latest()->limit(1)]);
+            ->with(['supervisorAssignmentRequests' => fn ($q) => $q->orderBy('updated_at', 'desc')->limit(1)]);
 
         // Filter by assignment status
         if ($statusFilter !== 'all') {

@@ -82,10 +82,18 @@ class SupervisorAssignmentRequest extends Model
     }
 
     /**
-     * Check if request is final (approved or rejected)
+     * Check if request was canceled by the committee (e.g. supervisor changed/removed)
+     */
+    public function isCanceled(): bool
+    {
+        return $this->status === 'canceled';
+    }
+
+    /**
+     * Check if request is final (approved, rejected, or canceled)
      */
     public function isFinal(): bool
     {
-        return in_array($this->status, ['approved', 'rejected']);
+        return in_array($this->status, ['approved', 'rejected', 'canceled']);
     }
 }

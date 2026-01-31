@@ -96,6 +96,7 @@ export function SupervisorsList() {
     () =>
       createSupervisorAssignmentColumns({
         onAssign: (project: Project) => setState((prev) => ({ ...prev, selectedProject: project })),
+        onChangeSupervisor: (project: Project) => setState((prev) => ({ ...prev, selectedProject: project })),
         onCancelRequest: handleCancelRequestClick,
         onUnassign: (project: Project) => setUnassignProject(project),
         t,

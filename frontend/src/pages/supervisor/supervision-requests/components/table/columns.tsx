@@ -1,117 +1,121 @@
-import type { ColumnDef } from "@tanstack/react-table"
-import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
-import { ActionsDropdown } from "@/components/common/ActionsDropdown"
-import type { Project } from "@/types/project.types"
-import { CheckCircle2, XCircle, Eye, Briefcase, Tag, Users } from "lucide-react"
-import { formatRelativeTime } from "@/lib/utils/format"
-import type { SupervisionRequestTableColumnsProps } from '../../types/SupervisionRequests.types'
+import type { ColumnDef } from '@tanstack/react-table'
+import { DataTableColumnHeader } from '@/components/ui'
+import { StatusBadge, ActionsDropdown, type TableAction } from '@/components/common'
+import type { SupervisorAssignmentRequest } from '../../types/SupervisionRequests.types'
+import { CheckCircle2, XCircle } from 'lucide-react'
+import { formatDate } from '@/lib/utils/format'
 
-export function createSupervisionRequestColumns({
-  onView,
+export interface AssignmentRequestTableColumnsProps {
+  onApprove: (request: SupervisorAssignmentRequest) => void
+  onReject: (request: SupervisorAssignmentRequest) => void
+  t: (key: string) => string
+}
+
+export function createAssignmentRequestColumns({
   onApprove,
   onReject,
-  canAcceptMore,
   t,
-}: SupervisionRequestTableColumnsProps): ColumnDef<Project>[] {
+}: AssignmentRequestTableColumnsProps): ColumnDef<SupervisorAssignmentRequest>[] {
   return [
     {
-      accessorKey: "title",
+      accessorKey: 'project.title',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('supervision.projectTitle')} />
+        <DataTableColumnHeader column={column} title={t('project.title')} />
       ),
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <Briefcase className="h-4 w-4 text-muted-foreground" />
-          <span className="font-medium max-w-[250px] truncate">{row.original.title}</span>
+        <div className="font-medium max-w-[300px] truncate">
+          {row.original.project?.title ?? '—'}
         </div>
       ),
+      enableSorting: false,
     },
     {
-      accessorKey: "description",
+      id: 'sender',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('supervision.description')} />
+        <DataTableColumnHeader column={column} title={t('committee.sender')} />
       ),
-      cell: ({ row }) => (
-        <div className="max-w-[300px] truncate text-muted-foreground text-sm">
-          {row.original.description}
-        </div>
-      ),
+      cell: ({ row }) => {
+        const request = row.original
+        const name =
+          request.requestedBy?.name ??
+          request.requested_by_user?.name ??
+          t('committee.sender')
+        return <div className="text-sm font-medium">{name}</div>
+      },
+      enableSorting: false,
     },
     {
-      accessorKey: "specialization",
+      accessorKey: 'committee_notes',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('supervision.specialization')} />
+        <DataTableColumnHeader column={column} title={t('committee.notes')} />
       ),
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <Tag className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm">{row.original.specialization || '-'}</span>
-        </div>
-      ),
+      cell: ({ row }) => {
+        const notes = row.original.committee_notes
+        if (!notes) return <span className="text-muted-foreground">—</span>
+        return (
+          <div
+            className="max-w-[200px] truncate text-muted-foreground text-sm"
+            title={notes}
+          >
+            {notes}
+          </div>
+        )
+      },
+      enableSorting: false,
     },
     {
-      accessorKey: "maxStudents",
+      accessorKey: 'created_at',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('supervision.maxStudents')} />
-      ),
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <Users className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm">{row.original.maxStudents}</span>
-        </div>
-      ),
-    },
-    {
-      accessorKey: "createdAt",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('supervision.assignedAt')} />
+        <DataTableColumnHeader column={column} title={t('common.date')} />
       ),
       cell: ({ row }) => (
         <div className="text-sm text-muted-foreground">
-          {formatRelativeTime(row.original.createdAt)}
+          {formatDate(row.original.created_at)}
         </div>
       ),
+      enableSorting: false,
     },
     {
-      id: "actions",
+      accessorKey: 'status',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('common.status')} />
+      ),
+      cell: ({ row }) => (
+        <StatusBadge status={row.original.status} />
+      ),
+      enableSorting: false,
+    },
+    {
+      id: 'actions',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('common.actions')} />
       ),
       cell: ({ row }) => {
-        const project = row.original
-        const isPending = project.supervisorApprovalStatus === 'pending'
-        const canApprove = isPending && canAcceptMore
-        const canReject = isPending
-
-        const actions = [
-          {
-            id: 'view',
-            label: t('common.view'),
-            icon: Eye,
-            onClick: () => onView(project),
-            variant: 'default' as const,
-          },
-          {
+        const request = row.original
+        const isPending = request.status === 'pending'
+        const actions: TableAction<SupervisorAssignmentRequest>[] = []
+        if (isPending) {
+          actions.push({
             id: 'approve',
-            label: t('common.accept'),
+            label: t('common.approve'),
             icon: CheckCircle2,
-            onClick: () => onApprove(project),
-            disabled: !canApprove,
-            variant: 'success' as const,
-            separator: true,
-          },
-          {
+            onClick: () => onApprove(request),
+            variant: 'default',
+          })
+          actions.push({
             id: 'reject',
             label: t('common.reject'),
             icon: XCircle,
-            onClick: () => onReject(project),
-            disabled: !canReject,
-            variant: 'destructive' as const,
-          },
-        ]
-
-        return <ActionsDropdown row={project} actions={actions} />
+            onClick: () => onReject(request),
+            variant: 'destructive',
+          })
+        }
+        return (
+          <ActionsDropdown row={request} actions={actions} />
+        )
       },
+      enableSorting: false,
+      enableHiding: false,
     },
   ]
 }

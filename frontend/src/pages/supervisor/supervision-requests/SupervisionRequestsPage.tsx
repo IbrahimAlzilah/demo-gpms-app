@@ -1,10 +1,10 @@
 import { MainLayout } from '@/layouts/MainLayout'
-import { SupervisionRequestsList } from './list/SupervisionRequestsList.screen'
+import { AssignmentRequestsList } from './list/AssignmentRequestsList.screen'
 
 export function SupervisionRequestsPage() {
   return (
     <MainLayout>
-      <SupervisionRequestsList />
+      <AssignmentRequestsList />
     </MainLayout>
   )
 }

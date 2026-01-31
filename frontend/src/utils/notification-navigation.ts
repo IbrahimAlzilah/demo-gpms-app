@@ -96,7 +96,7 @@ export function getNotificationTarget(
   }
 
   // Handle grade notifications
-  if (type === 'grade_approved') {
+  if (type === 'grade_approved' || type === 'grade_published') {
     if (userRole === 'student') {
       return {
         path: ROUTES.STUDENT.GRADES,
@@ -108,6 +108,54 @@ export function getNotificationTarget(
          path: ROUTES.PROJECTS_COMMITTEE.GRADES,
          label: 'عرض الدرجات',
        }
+    }
+  }
+
+  // Handle supervisor assignment notifications
+  if (type === 'supervisor_assignment_request' || type === 'supervisor_assigned' || type === 'supervisor_assignment_cancelled') {
+    if (userRole === 'supervisor') {
+      return {
+        path: ROUTES.SUPERVISOR.SUPERVISION_REQUESTS,
+        label: 'عرض طلبات الإشراف',
+      }
+    }
+    if (userRole === 'projects_committee') {
+      return {
+        path: ROUTES.PROJECTS_COMMITTEE.ASSIGN_SUPERVISORS,
+        label: 'إدارة المشرفين',
+      }
+    }
+    return {
+      path: getProjectsRoute(userRole),
+      label: 'عرض المشروع',
+    }
+  }
+
+  // Handle group invitation notifications
+  if (type === 'group_invitation' || type === 'group_invitation_accepted' || type === 'group_invitation_rejected') {
+    if (userRole === 'student') {
+      return {
+        path: ROUTES.STUDENT.GROUPS,
+        label: 'عرض مجموعتي',
+      }
+    }
+  }
+
+  // Handle group join request notifications
+  if (type === 'group_join_request' || type === 'group_join_request_approved' || type === 'group_join_request_rejected') {
+    if (userRole === 'student') {
+      return {
+        path: ROUTES.STUDENT.GROUPS,
+        label: 'عرض مجموعتي',
+      }
+    }
+  }
+
+  // Handle period announcements
+  if (type === 'period_announcement') {
+    return {
+      path: getDashboardRoute(userRole),
+      label: 'عرض التفاصيل',
     }
   }
 
@@ -189,10 +237,13 @@ export function getNotificationIconType(notification: NotificationDto): 'success
   // Success types
   if (
     type.includes('approved') ||
+    type.includes('accepted') ||
     type === 'proposal_approved' ||
     type === 'request_approved' ||
     type === 'registration_approved' ||
-    type === 'grade_approved'
+    type === 'grade_approved' ||
+    type === 'grade_published' ||
+    type === 'supervisor_assigned'
   ) {
     return 'success'
   }
@@ -207,8 +258,8 @@ export function getNotificationIconType(notification: NotificationDto): 'success
     return 'error'
   }
 
-  // Warning types (deadlines, modifications)
-  if (type.includes('deadline') || type.includes('modification') || type.includes('requires')) {
+  // Warning types (deadlines, modifications, cancellations)
+  if (type.includes('deadline') || type.includes('modification') || type.includes('requires') || type.includes('cancelled')) {
     return 'warning'
   }
 

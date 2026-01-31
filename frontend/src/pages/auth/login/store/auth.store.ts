@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { User } from "../types/auth.types";
+import { queryClient } from "@/context/query-provider";
 
 interface AuthState {
   user: User | null;
@@ -83,6 +84,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ user, token, isAuthenticated: true, permissions });
   },
   logout: () => {
+    // Clear all cached data (notifications, etc.) to prevent stale data across sessions
+    queryClient.clear();
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     set({ user: null, token: null, isAuthenticated: false, permissions: [] });

@@ -1,1 +1,2 @@
-export { createSupervisionRequestColumns } from './columns'
+export { createAssignmentRequestColumns } from "./columns";
+export type { AssignmentRequestTableColumnsProps } from "./columns";

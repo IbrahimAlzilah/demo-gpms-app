@@ -18,7 +18,7 @@ const statusVariants: Record<string, { labelKey: string; variant: StatusBadgePro
   in_progress: { labelKey: 'status.in_progress', variant: 'info' },
   completed: { labelKey: 'status.completed', variant: 'success' },
   available_for_registration: { labelKey: 'status.available_for_registration', variant: 'success' },
-  
+
   // Request statuses
   pending: { labelKey: 'status.pending', variant: 'warning' },
   supervisor_approved: { labelKey: 'status.supervisor_approved', variant: 'info' },
@@ -26,15 +26,16 @@ const statusVariants: Record<string, { labelKey: string; variant: StatusBadgePro
   committee_approved: { labelKey: 'status.committee_approved', variant: 'success' },
   committee_rejected: { labelKey: 'status.committee_rejected', variant: 'error' },
   cancelled: { labelKey: 'status.cancelled', variant: 'default' },
-  
+  canceled: { labelKey: 'status.canceled', variant: 'default' },
+
   // Proposal statuses
   requires_modification: { labelKey: 'status.requires_modification', variant: 'warning' },
-  
+
   // Document statuses
   reviewStatus_pending: { labelKey: 'status.reviewStatus_pending', variant: 'warning' },
   reviewStatus_approved: { labelKey: 'status.reviewStatus_approved', variant: 'success' },
   reviewStatus_rejected: { labelKey: 'status.reviewStatus_rejected', variant: 'error' },
-  
+
   // User statuses
   active: { labelKey: 'status.active', variant: 'success' },
   inactive: { labelKey: 'status.inactive', variant: 'default' },
@@ -53,7 +54,7 @@ export function StatusBadge({ status, variant, children, className }: StatusBadg
   const { t } = useTranslation()
   const statusInfo = statusVariants[status] || { labelKey: `status.${status}`, variant: variant || 'default' }
   const badgeVariant = variant || statusInfo.variant || 'default'
-  
+
   return (
     <span
       className={cn(

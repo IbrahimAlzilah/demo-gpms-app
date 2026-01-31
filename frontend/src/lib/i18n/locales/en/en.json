@@ -328,6 +328,7 @@
     "committee_approved": "Committee Approved",
     "committee_rejected": "Committee Rejected",
     "cancelled": "Cancelled",
+    "canceled": "Canceled (by committee)",
     "requires_modification": "Requires Modification",
     "reviewStatus_pending": "Pending Review",
     "reviewStatus_approved": "Approved",
@@ -1048,6 +1049,7 @@
   "supervision": {
     "pageDescription": "Review incoming supervision requests and approve or reject them",
     "manageRequestsDescription": "Manage supervision requests from students and the project committee.",
+    "mySupervisedProjects": "My Supervised Projects",
     "noRequests": "No supervision requests to review",
     "noRequestsDescription": "No new supervision requests at the moment",
     "currentProjects": "Current number of projects",
@@ -1160,7 +1162,11 @@
     "responseRequired": "Response is required for rejection",
     "studentRequests": "Student Requests",
     "committeeRequests": "Committee Requests",
+    "committeeAssignmentRequests": "Committee Assignment Requests",
     "noCommitteeRequests": "No pending requests from project committee",
+    "noPendingRequests": "No pending assignment requests",
+    "noApprovedRequests": "No approved assignment requests",
+    "noRejectedRequests": "No rejected assignment requests",
     "approveRequest": "Approve Request",
     "rejectRequest": "Reject Request",
     "approveRequestConfirm": "Are you sure you want to approve being a supervisor for \"{{title}}\"?",
@@ -1186,6 +1192,7 @@
     "directAssignment": "Direct Assignment",
     "directAssignmentDesc": "Assign immediately without approval",
     "notesForSupervisor": "Notes for Supervisor",
+    "assignmentNotesPlaceholder": "Add any notes...",
     "name": "Supervisor"
   },
   "discussion": {
@@ -1420,6 +1427,7 @@
       "requested": "Requested",
       "previouslyRequested": "Previously requested",
       "noProjectsEmpty": "No projects found",
+      "changeSupervisor": "Change Supervisor",
       "unassignSupervisor": "Remove Supervisor",
       "confirmUnassign": "Remove Supervisor?",
       "confirmUnassignDescription": "Remove the supervisor from \"{{title}}\"? You can assign a different supervisor afterward.",
@@ -1896,12 +1904,16 @@
     "types": {
       "proposal_approved": "Proposal Approved",
       "proposal_rejected": "Proposal Rejected",
+      "proposal_submitted": "New Proposal Submitted",
+      "proposal_modification_required": "Proposal Requires Modification",
       "request_approved": "Request Approved",
       "request_rejected": "Request Rejected",
+      "request_submitted": "New Request Submitted",
       "deadline_approaching": "Deadline Approaching",
       "registration_approved": "Registration Approved",
       "registration_rejected": "Registration Rejected",
       "grade_approved": "Grade Approved",
+      "grade_published": "Final Grade Published",
       "announcement_created": "New Announcement",
       "period_announcement": "Period Announcement",
       "group_invitation": "Group Invitation",
@@ -1909,7 +1921,10 @@
       "group_invitation_rejected": "Invitation Rejected",
       "group_join_request": "Join Request",
       "group_join_request_approved": "Join Request Approved",
-      "group_join_request_rejected": "Join Request Rejected"
+      "group_join_request_rejected": "Join Request Rejected",
+      "supervisor_assignment_request": "Supervisor Assignment Request",
+      "supervisor_assigned": "Assigned as Supervisor",
+      "supervisor_assignment_cancelled": "Assignment Request Cancelled"
     },
     "groups": {
       "invitation_received": "You have been invited to join group '{{group_name}}' by {{inviter_name}}",
@@ -2061,13 +2076,5 @@
     "individualGrades": "Individual Student Grades",
     "studentGroupMembers": "Review and modify grades for each student",
     "enterAtLeastOneGrade": "Please enter at least one valid grade"
-  },
-  "supervisor": {
-    "evaluateProject": "Evaluate Projects",
-    "evaluationDescription": "Grade students in your supervised projects",
-    "searchPlaceholder": "Search projects...",
-    "noProjects": "No Projects",
-    "noProjectsDescription": "You don't have any projects assigned for supervision.",
-    "loadError": "Failed to load project data"
   }
 }

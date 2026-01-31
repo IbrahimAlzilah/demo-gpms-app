@@ -1,26 +1,20 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import {
+  Button,
+  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+  Textarea,
+  RadioGroup,
+  RadioGroupItem,
+} from '@/components/ui'
 import type { Project } from '@/types/project.types'
 import type { User } from '@/types/user.types'
+import { ModalDialog } from '@/components/common'
 
 interface SupervisorAssignmentDialogProps {
   open: boolean
@@ -55,9 +49,7 @@ export function SupervisorAssignmentDialog({
 
   const handleSubmit = async () => {
     if (!project || !selectedSupervisor) return
-    // Single-supervisor constraint: do not assign if project already has a supervisor
-    if (project.supervisor?.id) return
-
+    // Allow change: backend will cancel previous request and assign/request the new supervisor
     try {
       await onAssign(project.id, selectedSupervisor, assignmentType === 'request', notes)
       onOpenChange(false)
@@ -68,91 +60,83 @@ export function SupervisorAssignmentDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>{t('supervisor.assignSupervisor', { defaultValue: 'Assign Supervisor' })}</DialogTitle>
-          <DialogDescription>
-            {project?.title}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4 py-4">
-          {/* Supervisor Selection */}
-          <div className="space-y-2">
-            <Label>{t('supervisor.selectSupervisor', { defaultValue: 'Select Supervisor' })}</Label>
-            <Select value={selectedSupervisor} onValueChange={setSelectedSupervisor}>
-              <SelectTrigger>
-                <SelectValue placeholder={t('supervisor.selectSupervisor', { defaultValue: 'Select Supervisor' })} />
-              </SelectTrigger>
-              <SelectContent>
-                {supervisors.map((supervisor) => (
-                  <SelectItem key={supervisor.id} value={supervisor.id}>
-                    {supervisor.name} ({supervisor.email})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Assignment Type */}
-          <div className="space-y-2">
-            <Label>{t('supervisor.assignmentType', { defaultValue: 'Assignment Type' })}</Label>
-            <RadioGroup value={assignmentType} onValueChange={(value) => setAssignmentType(value as 'direct' | 'request')}>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="request" id="request" />
-                <Label htmlFor="request" className="font-normal">
-                  {t('supervisor.requestApproval', { defaultValue: 'Request Approval (Recommended)' })}
-                  <p className="text-xs text-muted-foreground">
-                    {t('supervisor.requestApprovalDesc', { defaultValue: 'Send request to supervisor for approval' })}
-                  </p>
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="direct" id="direct" />
-                <Label htmlFor="direct" className="font-normal">
-                  {t('supervisor.directAssignment', { defaultValue: 'Direct Assignment' })}
-                  <p className="text-xs text-muted-foreground">
-                    {t('supervisor.directAssignmentDesc', { defaultValue: 'Assign immediately without approval' })}
-                  </p>
-                </Label>
-              </div>
-            </RadioGroup>
-          </div>
-
-          {/* Notes */}
-          <div className="space-y-2">
-            <Label htmlFor="notes">
-              {assignmentType === 'request'
-                ? t('supervisor.notesForSupervisor', { defaultValue: 'Notes for Supervisor' })
-                : t('supervisor.notes', { defaultValue: 'Notes' })}
-            </Label>
-            <Textarea
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder={t('supervisor.notesPlaceholder', { defaultValue: 'Add any notes...' })}
-              rows={3}
-            />
-          </div>
+    <ModalDialog open={open} onOpenChange={onOpenChange} title={t('supervisor.assignSupervisor', { defaultValue: 'Assign Supervisor' })} description={project?.title}>
+      <div className="space-y-6 py-4">
+        {/* Supervisor Selection */}
+        <div className="space-y-2">
+          <Label>{t('supervisor.selectSupervisor', { defaultValue: 'Select Supervisor' })}</Label>
+          <Select value={selectedSupervisor} onValueChange={setSelectedSupervisor}>
+            <SelectTrigger>
+              <SelectValue placeholder={t('supervisor.selectSupervisor', { defaultValue: 'Select Supervisor' })} />
+            </SelectTrigger>
+            <SelectContent>
+              {supervisors.map((supervisor) => (
+                <SelectItem key={supervisor.id} value={supervisor.id}>
+                  {/* {supervisor.name} ({supervisor.email}) */}
+                  {supervisor.name} <span className="text-xs text-muted-foreground">({supervisor?.department})</span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-            {t('common.cancel', { defaultValue: 'Cancel' })}
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={!selectedSupervisor || loading || !!project?.supervisor?.id}
-          >
-            {loading ? t('common.loading', { defaultValue: 'Loading...' }) : 
-              assignmentType === 'request' 
-                ? t('supervisor.sendRequest', { defaultValue: 'Send Request' })
-                : t('supervisor.assign', { defaultValue: 'Assign' })
-            }
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        {/* Assignment Type */}
+        <div className="space-y-3">
+          <Label>{t('supervisor.assignmentType', { defaultValue: 'Assignment Type' })}</Label>
+          <RadioGroup value={assignmentType} onValueChange={(value) => setAssignmentType(value as 'direct' | 'request')} className="bg-muted/30 p-3 rounded-lg border gap-3">
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="request" id="request" />
+              <Label htmlFor="request" className="font-normal">
+                {t('supervisor.requestApproval', { defaultValue: 'Request Approval (Recommended)' })}
+                <p className="text-xs text-muted-foreground">
+                  {t('supervisor.requestApprovalDesc', { defaultValue: 'Send request to supervisor for approval' })}
+                </p>
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="direct" id="direct" />
+              <Label htmlFor="direct" className="font-normal">
+                {t('supervisor.directAssignment', { defaultValue: 'Direct Assignment' })}
+                <p className="text-xs text-muted-foreground">
+                  {t('supervisor.directAssignmentDesc', { defaultValue: 'Assign immediately without approval' })}
+                </p>
+              </Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        {/* Notes */}
+        <div className="space-y-2">
+          <Label htmlFor="notes">
+            {assignmentType === 'request'
+              ? t('supervisor.notesForSupervisor', { defaultValue: 'Notes for Supervisor' })
+              : t('supervisor.notes', { defaultValue: 'Notes' })}
+          </Label>
+          <Textarea
+            id="notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder={t('supervisor.assignmentNotesPlaceholder', { defaultValue: 'Add any notes...' })}
+            rows={3}
+          />
+        </div>
+      </div>
+
+      <div className="flex gap-3 justify-end pt-4 border-t">
+        <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+          {t('common.cancel', { defaultValue: 'Cancel' })}
+        </Button>
+        <Button
+          onClick={handleSubmit}
+          disabled={!selectedSupervisor || loading}
+        >
+          {loading ? t('common.loading', { defaultValue: 'Loading...' }) :
+            assignmentType === 'request'
+              ? t('supervisor.sendRequest', { defaultValue: 'Send Request' })
+              : t('supervisor.assign', { defaultValue: 'Assign' })
+          }
+        </Button>
+      </div>
+    </ModalDialog>
   )
 }

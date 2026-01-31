@@ -218,8 +218,8 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
                   >
                     <div className="flex items-start gap-3">
                       {/* Icon */}
-                      <div className={cn('shrink-0 w-8 h-8 rounded-full flex items-center justify-center', bgColor)}>
-                        <Icon className={cn('h-5 w-5', iconColor)} />
+                      <div className={cn('shrink-0 w-7 h-7 rounded-full flex items-center justify-center', bgColor)}>
+                        <Icon className={cn('size-4', iconColor)} />
                       </div>
 
                       {/* Content */}
