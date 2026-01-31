@@ -51,8 +51,8 @@ export function GroupedSubmissionCard({
   const { t: translate } = useTranslation()
   const [isExpanded, setIsExpanded] = useState(false)
 
-  const displayName = getSubmissionDisplayName(submission)
-  const description = getSubmissionDescription(submission)
+  const displayName = getSubmissionDisplayName(submission, translate)
+  const description = getSubmissionDescription(submission, translate)
   const isStudentGroup = submission.origin === 'student_group'
   const studentGroupSubmission = submission as StudentGroupSubmission
   const supervisorSubmission = submission as SupervisorSubmission
@@ -125,7 +125,7 @@ export function GroupedSubmissionCard({
                         status === 'pending_review' && 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
                       )}
                     >
-                      {count} {t(`proposal.status.${status}`) || status}
+                      {count} {translate(`proposal.status.${status}`, { defaultValue: status })}
                     </span>
                   ))}
                 </div>
@@ -136,7 +136,13 @@ export function GroupedSubmissionCard({
                 <div className="flex items-center gap-1.5">
                   <FileText className="h-3.5 w-3.5" />
                   <span className="font-medium">
-                    {submission.totalProposals} {submission.totalProposals === 1 ? t('proposal.proposal') : t('common.proposals')}
+                    {translate('committee.proposal.submissionDescriptionProposals', {
+                      count: submission.totalProposals,
+                      defaultValue:
+                        submission.totalProposals === 1
+                          ? '1 proposal'
+                          : `${submission.totalProposals} proposals`,
+                    })}
                   </span>
                 </div>
 

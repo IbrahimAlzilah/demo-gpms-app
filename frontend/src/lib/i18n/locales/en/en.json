@@ -86,6 +86,8 @@
     "retry": "Retry",
     "notAssigned": "Not Assigned",
     "members": "Members",
+    "oneMember": "1 member",
+    "oneProposal": "1 proposal",
     "createdBy": "Created by",
     "locked": "Locked",
     "inProgress": "In Progress",
@@ -544,9 +546,11 @@
     "reviewInformation": "Review Information",
     "status": {
       "pendingReview": "Pending Review",
+      "pending_review": "Pending Review",
       "approved": "Approved",
       "rejected": "Rejected",
-      "requiresModification": "Requires Modification"
+      "requiresModification": "Requires Modification",
+      "requires_modification": "Requires Modification"
     },
     "periodClosed": "Registration period closed",
     "periodClosedMessage": "Project registration period is not currently open",
@@ -577,6 +581,7 @@
     "updating": "Updating...",
     "updateSuccess": "Proposal updated successfully",
     "updateError": "An error occurred while updating the proposal",
+    "updatesOnlyInWindowCanAddNew": "Proposal updates are only allowed during proposal submission window, or when revisions are requested. You can add new proposals at any time.",
     "cannotEdit": "This proposal cannot be edited. Only proposals with pending_review or requires_modification status can be edited.",
     "cannotEditApproved": "Editing is not allowed. One or more proposals have already been approved by the Project Committee. You can only edit proposals when all proposals in your group are in pending review status.",
     "cannotEditNotAllPending": "Editing is only allowed when all proposals in your group are in pending review or requires modification status. Please ensure all proposals are in the correct status before editing.",
@@ -1307,7 +1312,16 @@
       "groupId": "Group ID",
       "proposalsInSubmission": "Proposals in this submission",
       "noProposalsInSubmission": "No proposals found in this submission",
-      "allProposalsVisible": "All proposals are listed below. Each proposal can be reviewed independently."
+      "allProposalsVisible": "All proposals are listed below. Each proposal can be reviewed independently.",
+      "supervisorProposals": "{{name}}'s Proposals",
+      "supervisorSubmission": "Supervisor Submission",
+      "studentSubmission": "{{name}}'s Submission",
+      "studentGroupSubmission": "Student Group Submission",
+      "submissionDescriptionProposals": "{{count}} proposals",
+      "submissionDescriptionProposals_one": "1 proposal",
+      "submissionDescriptionWithMembers": "{{members}} members • {{count}} proposals",
+      "submissionDescriptionWithMembers_one": "1 member • {{count}} proposals",
+      "submissionDescriptionWithMembers_one_proposal": "1 member • 1 proposal"
     },
     "periods": {
       "createNew": "Announce New Time Period",
@@ -1397,7 +1411,23 @@
       "noSupervisorsDescription": "No supervisors available for assignment",
       "selectProjectFirst": "Please select a project first",
       "assigning": "Assigning...",
-      "assignSupervisor": "Assign Supervisor"
+      "assignSupervisor": "Assign Supervisor",
+      "pageTitle": "Supervisor Assignment",
+      "statusNeedsSupervisor": "Needs Supervisor",
+      "statusPendingApproval": "Pending Supervisor Approval",
+      "statusApproved": "Approved",
+      "statusRejected": "Rejected",
+      "requested": "Requested",
+      "previouslyRequested": "Previously requested",
+      "noProjectsEmpty": "No projects found",
+      "unassignSupervisor": "Remove Supervisor",
+      "confirmUnassign": "Remove Supervisor?",
+      "confirmUnassignDescription": "Remove the supervisor from \"{{title}}\"? You can assign a different supervisor afterward.",
+      "unassignSuccess": "Supervisor removed successfully",
+      "errorAlreadyHasSupervisor": "This project already has a supervisor assigned.",
+      "errorPendingRequestExists": "There is already a pending assignment request for this project.",
+      "errorNotSupervisor": "The selected user is not a supervisor.",
+      "errorNoSupervisorToRemove": "This project has no supervisor to remove."
     },
     "requests": {
       "noRequests": "No requests pending processing at the moment",

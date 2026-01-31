@@ -431,6 +431,26 @@ class ProjectService
     }
 
     /**
+     * Remove supervisor from project (committee unassign).
+     * Ensures single-supervisor constraint: after unassign, project has none and can be assigned another.
+     */
+    public function removeSupervisor(Project $project): Project
+    {
+        if (!$project->supervisor_id) {
+            throw new \Exception('Project has no supervisor assigned');
+        }
+
+        $project->update([
+            'supervisor_id' => null,
+            'supervisor_approval_status' => null,
+            'supervisor_approval_comments' => null,
+            'supervisor_approval_at' => null,
+        ]);
+
+        return $project->fresh();
+    }
+
+    /**
      * Get projects without supervisor
      */
     public function getProjectsWithoutSupervisor(): \Illuminate\Database\Eloquent\Collection

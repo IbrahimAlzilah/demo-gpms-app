@@ -12,6 +12,7 @@ use App\Models\Grade;
 use App\Models\ProjectRequest;
 use App\Models\ProjectRegistration;
 use App\Models\GroupRegistrationRequest;
+use App\Models\SupervisorAssignmentRequest;
 use App\Policies\ProposalPolicy;
 use App\Policies\DocumentPolicy;
 use App\Policies\ProjectPolicy;
@@ -35,6 +36,7 @@ class AppServiceProvider extends ServiceProvider
         ProjectRequest::class => ProjectRequestPolicy::class,
         ProjectRegistration::class => ProjectRegistrationPolicy::class,
         GroupRegistrationRequest::class => GroupRegistrationRequestPolicy::class,
+        SupervisorAssignmentRequest::class => \App\Policies\SupervisorAssignmentRequestPolicy::class,
     ];
 
     /**

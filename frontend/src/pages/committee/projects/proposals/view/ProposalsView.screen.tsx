@@ -35,8 +35,8 @@ export function ProposalsView({
           <StatusBadge status={proposal.status} />
           {proposal.createdAt && (
             <div className="flex items-center gap-2 text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              <span>{t('proposal.submittedAt')} {formatDate(proposal.createdAt)}</span>
+              <Calendar className="size-3" />
+              <span>{t('proposal.submittedAt')}: {formatDate(proposal.createdAt)}</span>
             </div>
           )}
           {proposal.updatedAt && proposal.updatedAt !== proposal.createdAt && (

@@ -196,42 +196,44 @@ export function ProposalsList() {
             />
           </div>
 
-          {/* Project Filter - Middle (optional, for requirement #3: multiple groups per project) */}
-          {availableProjects && availableProjects.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Project Filter - Middle (optional, for requirement #3: multiple groups per project) */}
+            {availableProjects && availableProjects.length > 0 && (
+              <Select
+                value={projectFilter || 'all'}
+                onValueChange={(value) => setProjectFilter(value === 'all' ? '' : value)}
+              >
+                <SelectTrigger id="project-filter" className="w-[200px]">
+                  <SelectValue placeholder={t('registration.filterByProject') || 'Filter by Project'} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('common.all')} {t('registration.projects')}</SelectItem>
+                  {availableProjects.map((project) => (
+                    <SelectItem key={project.id} value={project.id}>
+                      {project.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
+            {/* Status Filter - Right side */}
             <Select
-              value={projectFilter || 'all'}
-              onValueChange={(value) => setProjectFilter(value === 'all' ? '' : value)}
+              value={state.statusFilter}
+              onValueChange={(value) => setState((prev) => ({ ...prev, statusFilter: value as typeof prev.statusFilter }))}
             >
-              <SelectTrigger id="project-filter" className="w-[200px]">
-                <SelectValue placeholder={t('registration.filterByProject') || 'Filter by Project'} />
+              <SelectTrigger id="status-filter" className="w-[200px]">
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t('common.all')} {t('registration.projects')}</SelectItem>
-                {availableProjects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.title}
-                  </SelectItem>
-                ))}
+                <SelectItem value="all">{t('committee.proposal.allProposals')}</SelectItem>
+                <SelectItem value="pending_review">{t('proposal.status.pendingReview')}</SelectItem>
+                <SelectItem value="approved">{t('proposal.status.approved')}</SelectItem>
+                <SelectItem value="rejected">{t('proposal.status.rejected')}</SelectItem>
+                <SelectItem value="requires_modification">{t('proposal.status.requiresModification')}</SelectItem>
               </SelectContent>
             </Select>
-          )}
-
-          {/* Status Filter - Right side */}
-          <Select
-            value={state.statusFilter}
-            onValueChange={(value) => setState((prev) => ({ ...prev, statusFilter: value as typeof prev.statusFilter }))}
-          >
-            <SelectTrigger id="status-filter" className="w-[200px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t('committee.proposal.allProposals')}</SelectItem>
-              <SelectItem value="pending_review">{t('proposal.status.pendingReview')}</SelectItem>
-              <SelectItem value="approved">{t('proposal.status.approved')}</SelectItem>
-              <SelectItem value="rejected">{t('proposal.status.rejected')}</SelectItem>
-              <SelectItem value="requires_modification">{t('proposal.status.requiresModification')}</SelectItem>
-            </SelectContent>
-          </Select>
+          </div>
         </div>
 
         {/* Unified Groups View - Student Groups with Proposals + Registrations */}

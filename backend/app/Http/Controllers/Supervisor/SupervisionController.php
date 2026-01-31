@@ -152,16 +152,7 @@ class SupervisionController extends Controller
                 'supervisor_approval_at' => now(),
             ]);
 
-            // Notify projects committee
-            $requester = $assignmentRequest->requestedBy;
-            $notificationService = app(\App\Services\NotificationService::class);
-            $notificationService->create(
-                $requester,
-                "قبل المشرف {$supervisor->name} الإشراف على المشروع: {$project->title}",
-                'supervisor_assignment_approved',
-                'project',
-                $project->id
-            );
+            // Do not notify projects committee - status is visible on refresh (per requirements)
 
             return response()->json([
                 'success' => true,
@@ -210,16 +201,7 @@ class SupervisionController extends Controller
                 'responded_at' => now(),
             ]);
 
-            // Notify projects committee
-            $requester = $assignmentRequest->requestedBy;
-            $notificationService = app(\App\Services\NotificationService::class);
-            $notificationService->create(
-                $requester,
-                "رفض المشرف {$supervisor->name} الإشراف على المشروع: {$assignmentRequest->project->title}\nالسبب: {$validated['response']}",
-                'supervisor_assignment_rejected',
-                'project',
-                $assignmentRequest->project_id
-            );
+            // Do not notify projects committee - status is visible on refresh (per requirements)
 
             return response()->json([
                 'success' => true,

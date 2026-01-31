@@ -164,65 +164,25 @@ class ProposalController extends Controller
 
     /**
      * Get submission context for editing (supervisor only)
-     * Returns all editable proposals submitted by the supervisor
+     * Returns ALL proposals submitted by the supervisor (approved, rejected, pending).
+     * Supervisors can always add new proposals; only pending_review/requires_modification can be edited.
      */
     public function getSubmissionContext(Request $request): JsonResponse
     {
         $user = $request->user();
 
-        // Get ALL proposals submitted by the supervisor (to check statuses)
+        // Get ALL proposals submitted by the supervisor (all statuses)
         $allProposals = Proposal::where('submitter_id', $user->id)
             ->whereNull('student_group_id') // Only supervisor proposals
             ->with(['submitter', 'reviewer', 'project'])
             ->orderBy('created_at', 'asc')
             ->get();
 
-        // Check if ANY proposal is approved - if so, editing is not allowed
-        $hasApprovedProposal = $allProposals->contains(function ($proposal) {
-            return $proposal->status === \App\Enums\ProposalStatus::APPROVED;
-        });
-
-        if ($hasApprovedProposal) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Editing is not allowed. One or more proposals have already been approved by the Project Committee.',
-                'can_edit' => false,
-                'has_approved_proposal' => true,
-            ], 403);
-        }
-
-        // Check if ALL proposals are in pending_review status
-        // Only allow editing if ALL proposals are pending_review (or requires_modification)
-        $allPendingReview = $allProposals->every(function ($proposal) {
-            return in_array($proposal->status, [
-                \App\Enums\ProposalStatus::PENDING_REVIEW,
-                \App\Enums\ProposalStatus::REQUIRES_MODIFICATION
-            ]);
-        });
-
-        if (!$allPendingReview) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Editing is only allowed when all proposals are in pending review or requires modification status.',
-                'can_edit' => false,
-                'has_approved_proposal' => false,
-            ], 403);
-        }
-
-        // Get only editable proposals for this supervisor
-        // Only proposals with status 'pending_review' or 'requires_modification' can be edited
-        $proposals = $allProposals->filter(function ($proposal) {
-            return in_array($proposal->status, [
-                \App\Enums\ProposalStatus::PENDING_REVIEW,
-                \App\Enums\ProposalStatus::REQUIRES_MODIFICATION
-            ]);
-        });
-
         return response()->json([
             'success' => true,
             'data' => [
                 'group' => null, // Supervisors don't have groups
-                'proposals' => ProposalResource::collection($proposals),
+                'proposals' => ProposalResource::collection($allProposals),
                 'can_edit' => true,
             ],
         ]);
@@ -239,31 +199,32 @@ class ProposalController extends Controller
         // Check which window is active
         $isProposalSubmissionWindow = $timeWindowService->isWindowActive(\App\Enums\TimePeriodType::PROPOSAL_SUBMISSION);
 
-        // Supervisors can update proposals during active window OR when proposal requires modification
-        $canUpdate = $isProposalSubmissionWindow;
+        // Supervisors can update existing proposals during active window OR when proposal requires modification.
+        // Adding NEW proposals is always allowed via the Edit Proposals page (no window restriction).
+        $hasNewProposals = !empty($request->input('new_proposals', []));
+        $proposalIds = $request->input('updates', []);
+        $hasModificationRequired = false;
+        if (!empty($proposalIds)) {
+            $ids = array_column($proposalIds, 'id');
+            $hasModificationRequired = Proposal::whereIn('id', $ids)
+                ->where('submitter_id', $user->id)
+                ->whereNull('student_group_id')
+                ->where('status', 'requires_modification')
+                ->exists();
+        }
 
-        if (!$canUpdate) {
-            // Check if any proposal requires modification (allows editing even outside windows)
-            $proposalIds = $request->input('updates', []);
-            $hasModificationRequired = false;
-            if (!empty($proposalIds)) {
-                $ids = array_column($proposalIds, 'id');
-                $hasModificationRequired = Proposal::whereIn('id', $ids)
-                    ->where('submitter_id', $user->id)
-                    ->where('status', 'requires_modification')
-                    ->exists();
-            }
+        $canUpdateExisting = $isProposalSubmissionWindow || $hasModificationRequired;
 
-            if (!$hasModificationRequired) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Proposal updates are only allowed during proposal submission window, or when revisions are requested.',
-                ], 403);
-            }
+        // Block only when: no window, no modification required, no new proposals, and they are trying to update existing
+        if (!$canUpdateExisting && !$hasNewProposals && !empty($proposalIds)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Proposal updates are only allowed during proposal submission window, or when revisions are requested. You can add new proposals at any time.',
+            ], 403);
         }
 
         $validated = $request->validate([
-            'updates' => 'required|array',
+            'updates' => 'nullable|array',
             'updates.*.id' => 'required|exists:proposals,id',
             'updates.*.title' => 'required|string|max:255',
             'updates.*.description' => 'required|string',
@@ -272,40 +233,10 @@ class ProposalController extends Controller
             'new_proposals.*.description' => 'required|string',
         ]);
 
-        // CRITICAL: Check if ALL proposals in the supervisor's submission are in pending_review status
-        // If ANY proposal is approved, editing is not allowed
-        $allSupervisorProposals = Proposal::where('submitter_id', $user->id)
-            ->whereNull('student_group_id') // Only supervisor proposals
-            ->get();
-
-        $hasApprovedProposal = $allSupervisorProposals->contains(function ($proposal) {
-            return $proposal->status === \App\Enums\ProposalStatus::APPROVED;
-        });
-
-        if ($hasApprovedProposal) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Editing is not allowed. One or more proposals have already been approved by the Project Committee.',
-            ], 403);
-        }
-
-        // Check if ALL proposals are in pending_review or requires_modification status
-        $allPendingReview = $allSupervisorProposals->every(function ($proposal) {
-            return in_array($proposal->status, [
-                \App\Enums\ProposalStatus::PENDING_REVIEW,
-                \App\Enums\ProposalStatus::REQUIRES_MODIFICATION
-            ]);
-        });
-
-        if (!$allPendingReview) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Editing is only allowed when all proposals are in pending review or requires modification status.',
-            ], 403);
-        }
+        $updates = $validated['updates'] ?? [];
 
         // Validate updates - check authorization and ownership for each proposal
-        foreach ($validated['updates'] as $updateData) {
+        foreach ($updates as $updateData) {
             $proposal = Proposal::findOrFail($updateData['id']);
 
             // Check if user can update this proposal
@@ -344,9 +275,22 @@ class ProposalController extends Controller
             }
         }
 
+        // When outside submission window, only apply updates to proposals that require modification
+        // (adding new proposals is always allowed; editing pending_review is restricted to the window)
+        $updatesToApply = $updates;
+        if (!$isProposalSubmissionWindow) {
+            $updatesToApply = array_values(array_filter($updates, function ($updateData) use ($user) {
+                $proposal = Proposal::find($updateData['id']);
+                return $proposal
+                    && $proposal->submitter_id === $user->id
+                    && $proposal->student_group_id === null
+                    && $proposal->status === \App\Enums\ProposalStatus::REQUIRES_MODIFICATION;
+            }));
+        }
+
         // Perform batch update
         $result = $this->proposalService->updateBatch(
-            $validated['updates'],
+            $updatesToApply,
             $validated['new_proposals'] ?? [],
             $user,
             null // Supervisors don't have student_group_id

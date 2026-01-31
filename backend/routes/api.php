@@ -187,11 +187,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('projects/statistics', [App\Http\Controllers\ProjectsCommittee\ProjectController::class, 'statistics']);
         Route::get('projects/{project}/workflow', [App\Http\Controllers\ProjectsCommittee\ProjectController::class, 'workflow']);
         Route::put('projects/{project}/status', [App\Http\Controllers\ProjectsCommittee\ProjectController::class, 'updateStatus']);
+        Route::delete('projects/{project}/supervisor', [App\Http\Controllers\ProjectsCommittee\SupervisorController::class, 'unassign']);
         Route::apiResource('projects', App\Http\Controllers\ProjectsCommittee\ProjectController::class);
         Route::post('projects/announce', [App\Http\Controllers\ProjectsCommittee\ProjectController::class, 'announce']);
         Route::post('projects/unannounce', [App\Http\Controllers\ProjectsCommittee\ProjectController::class, 'unannounce']);
         Route::apiResource('periods', App\Http\Controllers\ProjectsCommittee\PeriodController::class);
         Route::get('supervisors', [App\Http\Controllers\ProjectsCommittee\SupervisorController::class, 'index']);
+        Route::get('supervisors/assignment-table', [App\Http\Controllers\ProjectsCommittee\SupervisorController::class, 'listForAssignment']);
         Route::post('supervisors/assign', [App\Http\Controllers\ProjectsCommittee\SupervisorController::class, 'assign']);
         Route::post('supervisors/request-assignment', [App\Http\Controllers\ProjectsCommittee\SupervisorController::class, 'requestAssignment']);
         Route::get('supervisors/assignment-requests', [App\Http\Controllers\ProjectsCommittee\SupervisorController::class, 'listRequests']);

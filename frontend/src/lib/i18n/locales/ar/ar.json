@@ -92,6 +92,8 @@
     "retry": "إعادة المحاولة",
     "notAssigned": "غير معين",
     "members": "أعضاء",
+    "oneMember": "عضو واحد",
+    "oneProposal": "مقترح واحد",
     "createdBy": "انشأ بواسطة",
     "proposals": "المقترحات"
   },
@@ -556,9 +558,11 @@
     "reviewInformation": "معلومات المراجعة",
     "status": {
       "pendingReview": "قيد المراجعة",
+      "pending_review": "قيد المراجعة",
       "approved": "معتمد",
       "rejected": "مرفوض",
-      "requiresModification": "يتطلب تعديل"
+      "requiresModification": "يتطلب تعديل",
+      "requires_modification": "يتطلب تعديل"
     },
     "periodClosed": "فترة التسجيل مغلقة",
     "periodClosedMessage": "فترة تسجيل المشاريع غير مفتوحة حالياً",
@@ -598,6 +602,7 @@
     "updating": "جاري التحديث...",
     "updateSuccess": "تم تحديث المقترح بنجاح",
     "updateError": "حدث خطأ أثناء تحديث المقترح",
+    "updatesOnlyInWindowCanAddNew": "تحديث المقترحات مسموح فقط خلال فترة تقديم المقترحات أو عند طلب التعديلات. يمكنك إضافة مقترحات جديدة في أي وقت.",
     "cannotEdit": "لا يمكن تعديل هذا المقترح. يمكن تعديل المقترحات ذات الحالة 'قيد المراجعة' أو 'يتطلب تعديلات' فقط.",
     "cannotEditApproved": "التعديل غير مسموح. تم اعتماد واحد أو أكثر من المقترحات من قبل لجنة المشاريع. يمكنك تعديل المقترحات فقط عندما تكون جميع المقترحات في مجموعتك في حالة قيد المراجعة.",
     "cannotEditNotAllPending": "التعديل مسموح فقط عندما تكون جميع المقترحات في مجموعتك في حالة قيد المراجعة أو تتطلب تعديلات. يرجى التأكد من أن جميع المقترحات في الحالة الصحيحة قبل التعديل.",
@@ -1383,7 +1388,15 @@
       "proposalsInSubmission": "المقترحات في هذا التقديم",
       "noProposalsInSubmission": "لا توجد مقترحات في هذا التقديم",
       "allProposalsVisible": "جميع المقترحات مدرجة أدناه. يمكن مراجعة كل مقترح بشكل مستقل.",
-      "allProposalsVisible": "جميع المقترحات مدرجة أدناه. يمكن مراجعة كل مقترح بشكل مستقل."
+      "supervisorProposals": "مقترحات {{name}}",
+      "supervisorSubmission": "تقديم مشرف",
+      "studentSubmission": "تقديم {{name}}",
+      "studentGroupSubmission": "تقديم مجموعة طلاب",
+      "submissionDescriptionProposals": "{{count}} مقترحات",
+      "submissionDescriptionProposals_one": "مقترح واحد",
+      "submissionDescriptionWithMembers": "{{members}} أعضاء • {{count}} مقترحات",
+      "submissionDescriptionWithMembers_one": "عضو واحد • {{count}} مقترحات",
+      "submissionDescriptionWithMembers_one_proposal": "عضو واحد • مقترح واحد"
     },
     "periods": {
       "createNew": "إعلان فترة زمنية جديدة",
@@ -1472,7 +1485,23 @@
       "noSupervisorsDescription": "لا يوجد مشرفين متاحين للتعيين",
       "selectProjectFirst": "يرجى اختيار مشروع أولاً",
       "assigning": "جاري التعيين...",
-      "assignSupervisor": "تعيين المشرف"
+      "assignSupervisor": "تعيين المشرف",
+      "pageTitle": "تعيين المشرفين",
+      "statusNeedsSupervisor": "يحتاج مشرف",
+      "statusPendingApproval": "في انتظار موافقة المشرف",
+      "statusApproved": "معتمد",
+      "statusRejected": "مرفوض",
+      "requested": "مطلوب",
+      "previouslyRequested": "مطلوب سابقاً",
+      "noProjectsEmpty": "لا توجد مشاريع",
+      "unassignSupervisor": "إزالة المشرف",
+      "confirmUnassign": "إزالة المشرف؟",
+      "confirmUnassignDescription": "إزالة المشرف من \"{{title}}\"؟ يمكنك تعيين مشرف آخر لاحقاً.",
+      "unassignSuccess": "تمت إزالة المشرف بنجاح",
+      "errorAlreadyHasSupervisor": "هذا المشروع لديه مشرف معين بالفعل.",
+      "errorPendingRequestExists": "يوجد بالفعل طلب تعيين قيد الانتظار لهذا المشروع.",
+      "errorNotSupervisor": "المستخدم المحدد ليس مشرفاً.",
+      "errorNoSupervisorToRemove": "هذا المشروع لا يملك مشرفاً لإزالته."
     },
     "requests": {
       "noRequests": "لا توجد طلبات قيد المعالجة حالياً",

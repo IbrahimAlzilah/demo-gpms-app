@@ -19,7 +19,6 @@ import { useResubmitProposal, useDeleteProposal } from '../hooks/useProposalOper
 import { useAuthStore } from '@/pages/auth/login'
 import { ROUTES } from '@/lib/constants'
 import { cn } from '@/lib/utils'
-import { proposalService } from '../api/proposal.service'
 import { AssignmentDialog } from '../components/AssignmentDialog'
 import type { Proposal } from '@/types/project.types'
 
@@ -61,38 +60,9 @@ export function ProposalsList() {
         onView: (proposal) => {
           navigate(`${ROUTES.SUPERVISOR.PROPOSALS_VIEW}/${proposal.id}`)
         },
-        onEdit: async (proposal) => {
-          // Check if proposal status allows editing (individual proposal check)
-          if (proposal.status !== 'pending_review' && proposal.status !== 'requires_modification') {
-            toastError('proposal.cannotEdit')
-            return
-          }
-
-          // Use getSubmissionContext API to validate ALL proposals
-          // This ensures we check ALL proposals, not just paginated ones
-          try {
-            const context = await proposalService.getSubmissionContext()
-
-            // Check if editing is not allowed
-            if (context.can_edit === false) {
-              const errorMessage = context.message ||
-                (context.has_approved_proposal
-                  ? 'proposal.cannotEditApproved'
-                  : 'proposal.cannotEditNotAllPending')
-              toastError(errorMessage)
-              return
-            }
-
-            // If can_edit is true or undefined (legacy support), allow navigation
-            // The edit page will also validate via getSubmissionContext
-            navigate(ROUTES.SUPERVISOR.PROPOSALS_EDIT)
-          } catch (error: any) {
-            // Handle API errors
-            const errorMessage = error.response?.data?.message ||
-              error.message ||
-              'proposal.loadError'
-            toastError(errorMessage)
-          }
+        onEdit: (proposal) => {
+          // Navigate to edit page: all proposals are shown; approved/rejected are read-only, new ones can be added
+          navigate(ROUTES.SUPERVISOR.PROPOSALS_EDIT)
         },
         onAssign: (proposal) => {
           setAssignmentProposal(proposal)

@@ -69,6 +69,15 @@ export function ProposalsEditBatch() {
 
   const allProposals = [...existingProposals, ...newProposals]
 
+  // Only pending_review and requires_modification (or new) can be edited; approved/rejected are read-only
+  const isProposalEditable = (p: (typeof allProposals)[0]) =>
+    p.isNew === true || p.status === 'pending_review' || p.status === 'requires_modification'
+
+  const hasEditableExisting = existingProposals.some(
+    p => p.status === 'pending_review' || p.status === 'requires_modification'
+  )
+  const canSave = hasEditableExisting || newProposals.length > 0
+
   return (
     <BlockContent
       title={t('proposal.edit')}
@@ -81,31 +90,39 @@ export function ProposalsEditBatch() {
     >
       <div className="space-y-6">
         <div className="space-y-4">
-          {allProposals.map((proposal, index) => (
-            <div key={proposal.id} className="border rounded-lg p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">
-                  {proposal.isNew ? t('proposal.newProposal') : `${t('proposal.proposal')} ${index + 1}`}
-                </h3>
-                {proposal.isNew && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeNewProposal(proposal.id)}
-                    disabled={isSubmitting}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
+          {allProposals.map((proposal, index) => {
+            const editable = isProposalEditable(proposal)
+            return (
+              <div key={proposal.id} className="border rounded-lg p-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold">
+                    {proposal.isNew ? t('proposal.newProposal') : `${t('proposal.proposal')} ${index + 1}`}
+                    {!proposal.isNew && proposal.status && (
+                      <span className="ml-2 text-sm font-normal text-muted-foreground">
+                        ({proposal.status === 'pending_review' ? t('proposal.status.pendingReview') : proposal.status === 'requires_modification' ? t('proposal.status.requiresModification') : t(`proposal.status.${proposal.status}`)})
+                      </span>
+                    )}
+                  </h3>
+                  {proposal.isNew && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeNewProposal(proposal.id)}
+                      disabled={isSubmitting}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                <ProposalFields
+                  proposal={proposal}
+                  onChange={(data) => updateProposal(proposal.id, data)}
+                  errors={proposal.errors}
+                  disabled={isSubmitting || !editable}
+                />
               </div>
-              <ProposalFields
-                proposal={proposal}
-                onChange={(data) => updateProposal(proposal.id, data)}
-                errors={proposal.errors}
-                disabled={isSubmitting}
-              />
-            </div>
-          ))}
+            )
+          })}
         </div>
 
         <div className="flex gap-2">
@@ -129,7 +146,7 @@ export function ProposalsEditBatch() {
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={isSubmitting || allProposals.length === 0}
+            disabled={isSubmitting || !canSave}
             className="gap-2"
           >
             {isSubmitting ? (

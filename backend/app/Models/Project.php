@@ -154,6 +154,14 @@ class Project extends Model
     }
 
     /**
+     * Get supervisor assignment requests for this project
+     */
+    public function supervisorAssignmentRequests(): HasMany
+    {
+        return $this->hasMany(SupervisorAssignmentRequest::class);
+    }
+
+    /**
      * Time periods this project spans.
      */
     public function timePeriods(): BelongsToMany
@@ -171,7 +179,7 @@ class Project extends Model
         if ($this->assigned_group_id) {
             return false;
         }
-        
+
         return $this->status === ProjectStatus::AVAILABLE_FOR_REGISTRATION
             && $this->current_students < $this->max_students;
     }

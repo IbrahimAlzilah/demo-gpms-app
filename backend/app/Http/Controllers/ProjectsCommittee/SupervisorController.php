@@ -60,14 +60,16 @@ class SupervisorController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'User is not a supervisor',
+                    'error_key' => 'committee.supervisors.errorNotSupervisor',
                 ], 400);
             }
 
-            // Check if project already has a supervisor
+            // Single-supervisor constraint: block if project already has a supervisor
             if ($project->supervisor_id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Project already has a supervisor assigned',
+                    'error_key' => 'committee.supervisors.errorAlreadyHasSupervisor',
                 ], 400);
             }
 
@@ -80,6 +82,7 @@ class SupervisorController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'There is already a pending assignment request for this project',
+                    'error_key' => 'committee.supervisors.errorPendingRequestExists',
                 ], 400);
             }
 
@@ -133,14 +136,16 @@ class SupervisorController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'User is not a supervisor',
+                    'error_key' => 'committee.supervisors.errorNotSupervisor',
                 ], 400);
             }
 
-            // Check if project already has a supervisor
+            // Single-supervisor constraint: block if project already has a supervisor
             if ($project->supervisor_id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Project already has a supervisor assigned',
+                    'error_key' => 'committee.supervisors.errorAlreadyHasSupervisor',
                 ], 400);
             }
 
@@ -166,6 +171,33 @@ class SupervisorController extends Controller
                 'success' => false,
                 'message' => $e->getMessage(),
             ], 400);
+        }
+    }
+
+    /**
+     * Unassign supervisor from project (committee remove).
+     * After unassign, project has no supervisor and committee can assign another.
+     */
+    public function unassign(Request $request, Project $project): JsonResponse
+    {
+        try {
+            $updated = $this->projectService->removeSupervisor($project);
+
+            return response()->json([
+                'success' => true,
+                'data' => new ProjectResource($updated->load(['supervisor'])),
+                'message' => 'Supervisor removed successfully',
+            ]);
+        } catch (\Exception $e) {
+            $code = $e->getMessage() === 'Project has no supervisor assigned' ? 400 : 400;
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'error_key' => $e->getMessage() === 'Project has no supervisor assigned'
+                    ? 'committee.supervisors.errorNoSupervisorToRemove'
+                    : null,
+            ], $code);
         }
     }
 
@@ -251,6 +283,94 @@ class SupervisorController extends Controller
             $query->where('status', $filters['status']);
         }
         return $query;
+    }
+
+    /**
+     * List projects for supervisor assignment with status filter.
+     * Returns projects with assignment_status: needs_supervisor | pending_approval | approved | rejected.
+     */
+    public function listForAssignment(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', SupervisorAssignmentRequest::class);
+
+        $statusFilter = $request->get('status', 'all');
+        $page = (int) $request->get('page', 1);
+        $pageSize = (int) $request->get('pageSize', 10);
+        $search = $request->get('search');
+
+        // Scope: projects in workflow statuses relevant for supervisor assignment
+        $baseQuery = Project::query()
+            ->whereIn('status', [
+                \App\Enums\ProjectStatus::DRAFT->value,
+                \App\Enums\ProjectStatus::AVAILABLE_FOR_REGISTRATION->value,
+                \App\Enums\ProjectStatus::IN_PROGRESS->value,
+            ])
+            ->with(['supervisor', 'assignedGroup.leader'])
+            ->with(['supervisorAssignmentRequests' => fn ($q) => $q->latest()->limit(1)]);
+
+        // Filter by assignment status
+        if ($statusFilter !== 'all') {
+            switch ($statusFilter) {
+                case 'needs_supervisor':
+                    $baseQuery->whereNull('supervisor_id')
+                        ->whereDoesntHave('supervisorAssignmentRequests', fn ($q) => $q->where('status', 'pending'));
+                    break;
+                case 'pending_approval':
+                    $baseQuery->whereHas('supervisorAssignmentRequests', fn ($q) => $q->where('status', 'pending'));
+                    break;
+                case 'approved':
+                    $baseQuery->whereNotNull('supervisor_id');
+                    break;
+                case 'rejected':
+                    $baseQuery->whereNull('supervisor_id')
+                        ->whereHas('supervisorAssignmentRequests', fn ($q) => $q->where('status', 'rejected'))
+                        ->whereDoesntHave('supervisorAssignmentRequests', fn ($q) => $q->where('status', 'pending'));
+                    break;
+            }
+        }
+
+        if ($search) {
+            $baseQuery->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhereHas('supervisor', fn ($sq) => $sq->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%"));
+            });
+        }
+
+        $baseQuery->orderBy('updated_at', 'desc');
+
+        $total = $baseQuery->count();
+        $projects = $baseQuery->skip(($page - 1) * $pageSize)->take($pageSize)->get();
+
+        $rows = $projects->map(function (Project $project) {
+            $latestRequest = $project->supervisorAssignmentRequests->first();
+            $assignmentStatus = $project->supervisor_id
+                ? 'approved'
+                : ($latestRequest
+                    ? $latestRequest->status === 'pending'
+                        ? 'pending_approval'
+                        : ($latestRequest->status === 'rejected' ? 'rejected' : 'needs_supervisor')
+                    : 'needs_supervisor');
+
+            return [
+                'project' => new ProjectResource($project->load('supervisor')),
+                'assignmentStatus' => $assignmentStatus,
+                'latestRequest' => $latestRequest ? new SupervisorAssignmentRequestResource($latestRequest->load(['supervisor', 'requestedBy', 'respondedBy'])) : null,
+            ];
+        })->values()->all();
+
+        $totalPages = (int) ceil($total / $pageSize);
+
+        return response()->json([
+            'success' => true,
+            'data' => $rows,
+            'pagination' => [
+                'page' => $page,
+                'pageSize' => $pageSize,
+                'total' => $total,
+                'totalPages' => $totalPages,
+            ],
+        ]);
     }
 }
 

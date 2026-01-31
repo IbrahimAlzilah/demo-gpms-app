@@ -175,7 +175,7 @@ export function ActionsDropdown<T = unknown>({
                 onClick={() => !isDisabled && action.onClick(row)}
                 disabled={isDisabled}
                 className={cn(
-                  "cursor-pointer",
+                  "cursor-pointer gap-2",
                   variantStyles[action.variant ?? "default"],
                   action.className
                 )}

@@ -16,9 +16,6 @@ import {
   AlertCircle,
   AlertTriangle,
   FileEdit,
-  Edit,
-  Trash2,
-  Mail
 } from 'lucide-react'
 import { formatDate, formatRelativeTime } from '@/lib/utils/format'
 import { cn } from '@/lib/utils'

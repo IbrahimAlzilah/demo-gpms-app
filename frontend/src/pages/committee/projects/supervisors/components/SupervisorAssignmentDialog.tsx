@@ -55,6 +55,8 @@ export function SupervisorAssignmentDialog({
 
   const handleSubmit = async () => {
     if (!project || !selectedSupervisor) return
+    // Single-supervisor constraint: do not assign if project already has a supervisor
+    if (project.supervisor?.id) return
 
     try {
       await onAssign(project.id, selectedSupervisor, assignmentType === 'request', notes)
@@ -139,7 +141,10 @@ export function SupervisorAssignmentDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
             {t('common.cancel', { defaultValue: 'Cancel' })}
           </Button>
-          <Button onClick={handleSubmit} disabled={!selectedSupervisor || loading}>
+          <Button
+            onClick={handleSubmit}
+            disabled={!selectedSupervisor || loading || !!project?.supervisor?.id}
+          >
             {loading ? t('common.loading', { defaultValue: 'Loading...' }) : 
               assignmentType === 'request' 
                 ? t('supervisor.sendRequest', { defaultValue: 'Send Request' })

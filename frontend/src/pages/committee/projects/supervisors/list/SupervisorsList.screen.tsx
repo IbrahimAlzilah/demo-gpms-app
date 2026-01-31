@@ -1,28 +1,42 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
-import { useAssignSupervisor } from '../hooks/useSupervisorOperations'
-import { Card, CardContent, Button, Badge, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui'
-import { LoadingSpinner, EmptyState } from '@/components/common'
+import { DataTable, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui'
+import { BlockContent, ConfirmDialog } from '@/components/common'
 import { useToast } from '@/components/common'
-import { Briefcase, UserCheck, Loader2, AlertCircle, ListChecks } from 'lucide-react'
+import { getApiErrorMessage } from '@/lib/utils'
+import { useAssignSupervisor } from '../hooks/useSupervisorOperations'
 import { useSupervisorsList } from './SupervisorsList.hook'
 import { SupervisorAssignmentDialog } from '../components/SupervisorAssignmentDialog'
-import { AssignmentRequestsList } from '../components/AssignmentRequestsList'
+import { createSupervisorAssignmentColumns } from '../components/table'
 import { supervisorAssignmentService } from '../api/supervisor.service'
+import type { SupervisorAssignmentViewStatus } from './SupervisorsList.types'
+import type { Project } from '@/types/project.types'
 
 export function SupervisorsList() {
   const { t } = useTranslation()
-  const { toastSuccess, toastError } = useToast()
   const queryClient = useQueryClient()
+  const { toastSuccess, toastError } = useToast()
   const assignSupervisor = useAssignSupervisor()
-  const [tab, setTab] = useState<'projects' | 'requests'>('projects')
+  const [cancelRequestId, setCancelRequestId] = useState<number | null>(null)
+  const [unassignProject, setUnassignProject] = useState<Project | null>(null)
 
   const {
     data,
     state,
     setState,
-    pagination
+    viewStatus,
+    setViewStatus,
+    totalCount,
+    pageCount,
+    sorting,
+    setSorting,
+    columnFilters,
+    setColumnFilters,
+    globalFilter,
+    setGlobalFilter,
+    pagination,
+    setPagination,
   } = useSupervisorsList()
 
   const handleAssign = async (
@@ -33,150 +47,153 @@ export function SupervisorsList() {
   ) => {
     try {
       if (requiresApproval) {
-        // Send request for approval
         await supervisorAssignmentService.requestAssignment(projectId, supervisorId, notes)
-        // Invalidate queries to refresh the lists
+        queryClient.invalidateQueries({ queryKey: ['supervisor-assignment-table'] })
         queryClient.invalidateQueries({ queryKey: ['supervisor-assignment-requests'] })
-        queryClient.invalidateQueries({ queryKey: ['projects-without-supervisor'] })
         toastSuccess('supervisor.requestSent')
       } else {
-        // Direct assignment
-        await assignSupervisor.mutateAsync({
-          projectId,
-          supervisorId,
-        })
+        await assignSupervisor.mutateAsync({ projectId, supervisorId })
         toastSuccess('committee.supervisors.assignmentSuccess')
       }
-      setState((prev) => ({ ...prev, selectedProject: null, selectedSupervisor: '' }))
-    } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || err?.message || 'committee.supervisors.assignmentError'
-      toastError(errorMessage)
+      setState((prev) => ({ ...prev, selectedProject: null }))
+    } catch (err: unknown) {
+      const message = getApiErrorMessage(err, t, 'committee.supervisors.assignmentError')
+      toastError(message)
     }
   }
 
-  const handleCloseModal = (open: boolean) => {
-    if (!open) {
-      setState(prev => ({ ...prev, selectedProject: null, selectedSupervisor: '' }))
+  const handleCancelRequestClick = (requestId: number) => {
+    setCancelRequestId(requestId)
+  }
+
+  const handleCancelRequestConfirm = async () => {
+    if (cancelRequestId == null) return
+    try {
+      await supervisorAssignmentService.cancelAssignmentRequest(cancelRequestId)
+      toastSuccess('supervisor.requestCancelled')
+      queryClient.invalidateQueries({ queryKey: ['supervisor-assignment-table'] })
+      queryClient.invalidateQueries({ queryKey: ['supervisor-assignment-requests'] })
+      setCancelRequestId(null)
+    } catch {
+      toastError('common.error')
     }
   }
 
-  if (data.isLoading && data.projects.length === 0) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <LoadingSpinner />
-      </div>
-    )
+  const handleUnassignConfirm = async () => {
+    if (unassignProject?.id == null) return
+    try {
+      await supervisorAssignmentService.unassignSupervisor(String(unassignProject.id))
+      toastSuccess('committee.supervisors.unassignSuccess')
+      queryClient.invalidateQueries({ queryKey: ['supervisor-assignment-table'] })
+      setUnassignProject(null)
+    } catch (err: unknown) {
+      const message = getApiErrorMessage(err, t, 'common.error')
+      toastError(message)
+    }
   }
 
-  if (!data.isLoading && data.projects.length === 0) {
-    return (
-      <EmptyState
-        icon={Briefcase}
-        title={t('committee.supervisors.noProjects')}
-        description={t('committee.supervisors.noProjectsDescription')}
-        className="animate-in fade-in zoom-in-50 duration-500"
-      />
-    )
-  }
+  const columns = useMemo(
+    () =>
+      createSupervisorAssignmentColumns({
+        onAssign: (project: Project) => setState((prev) => ({ ...prev, selectedProject: project })),
+        onCancelRequest: handleCancelRequestClick,
+        onUnassign: (project: Project) => setUnassignProject(project),
+        t,
+      }),
+    [t, setState]
+  )
+
+  const statusOptions: { value: SupervisorAssignmentViewStatus; labelKey: string }[] = [
+    { value: 'all', labelKey: 'common.all' },
+    { value: 'needs_supervisor', labelKey: 'committee.supervisors.statusNeedsSupervisor' },
+    { value: 'pending_approval', labelKey: 'committee.supervisors.statusPendingApproval' },
+    { value: 'approved', labelKey: 'committee.supervisors.statusApproved' },
+    { value: 'rejected', labelKey: 'committee.supervisors.statusRejected' },
+  ]
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-muted/30 p-4 rounded-xl border border-border/50 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <AlertCircle className="w-5 h-5 text-primary" />
-          </div>
-          <h3 className="font-semibold text-lg tracking-tight text-foreground">
-            {t('committee.supervisors.projectsWithoutSupervisor')}
-          </h3>
-        </div>
-        <Badge variant="secondary" className="w-fit px-3 py-1 text-sm font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80">
-          {pagination.totalProjects} {t('project.label')}
-        </Badge>
-      </div>
-
-      <Tabs value={tab} onValueChange={(v) => setTab(v as 'projects' | 'requests')} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="projects">
-            <Briefcase className="w-4 h-4 mr-2" />
-            {t('supervisor.projectsNeedingSupervisor', { defaultValue: 'Projects' })}
-          </TabsTrigger>
-          <TabsTrigger value="requests">
-            <ListChecks className="w-4 h-4 mr-2" />
-            {t('supervisor.assignmentRequests', { defaultValue: 'Requests' })}
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="projects" className="space-y-4 mt-6">
-          <div className="grid gap-4">
-            {data.projects.map((project) => (
-              <Card key={project.id} className="group overflow-hidden border-border bg-card/50 hover:bg-card hover:shadow-md hover:border-primary/20 transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-                    <div className="space-y-3 flex-1">
-                      <div>
-                        <h4 className="text-lg font-bold text-foreground leading-tight group-hover:text-primary transition-colors">
-                          {project.title}
-                        </h4>
-                        {project.specialization && (
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1.5">
-                            <Badge variant="outline" className="text-xs font-normal bg-background/50">
-                              {project.specialization}
-                            </Badge>
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground line-clamp-2 max-w-3xl leading-relaxed">
-                        {project.description}
-                      </p>
-                    </div>
-
-                    <Button
-                      onClick={() => setState(prev => ({ ...prev, selectedProject: project, selectedSupervisor: '' }))}
-                      className="shrink-0 md:w-auto w-full shadow-sm hover:-translate-y-px transition-all"
-                    >
-                      <UserCheck className="w-4 h-4 mr-2 rtl:ml-2 rtl:mr-0" />
-                      {t('committee.supervisors.assignSupervisor')}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {pagination.hasNextPage && (
-            <div className="flex justify-center pt-8">
-              <Button
-                variant="outline"
-                onClick={() => pagination.fetchNextPage()}
-                disabled={pagination.isFetchingNextPage}
-                className="w-full md:w-auto min-w-[150px]"
-              >
-                {pagination.isFetchingNextPage ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {t('common.loading')}
-                  </>
-                ) : (
-                  t('common.loadMore')
-                )}
-              </Button>
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="requests" className="mt-6">
-          <AssignmentRequestsList />
-        </TabsContent>
-      </Tabs>
+    <>
+      <BlockContent
+        title={t('committee.supervisors.pageTitle')}
+        variant="data-table"
+      >
+        <DataTable
+          toolbarContent={
+            <Select
+              value={viewStatus}
+              onValueChange={(value) => setViewStatus(value as SupervisorAssignmentViewStatus)}
+            >
+              <SelectTrigger className="w-[220px]">
+                <SelectValue placeholder={t('common.filterByStatus')} />
+              </SelectTrigger>
+              <SelectContent>
+                {statusOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {t(opt.labelKey)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          }
+          columns={columns}
+          data={data.rows}
+          isLoading={data.isLoading}
+          error={data.error}
+          pageCount={pageCount}
+          totalCount={totalCount}
+          pageIndex={pagination.pageIndex}
+          pageSize={pagination.pageSize}
+          onPaginationChange={(pageIndex, pageSize) => {
+            setPagination({ pageIndex, pageSize })
+          }}
+          sorting={sorting}
+          onSortingChange={setSorting}
+          columnFilters={columnFilters}
+          onColumnFiltersChange={setColumnFilters}
+          searchValue={globalFilter}
+          onSearchChange={setGlobalFilter}
+          enableFiltering={true}
+          enableViews={true}
+          emptyMessage={t('committee.supervisors.noProjectsEmpty')}
+        />
+      </BlockContent>
 
       <SupervisorAssignmentDialog
         open={!!state.selectedProject}
-        onOpenChange={handleCloseModal}
+        onOpenChange={(open) => {
+          if (!open) setState((prev) => ({ ...prev, selectedProject: null }))
+        }}
         project={state.selectedProject}
         supervisors={data.supervisors}
         onAssign={handleAssign}
         loading={assignSupervisor.isPending}
       />
-    </div>
+
+      <ConfirmDialog
+        open={cancelRequestId !== null}
+        onOpenChange={(open) => {
+          if (!open) setCancelRequestId(null)
+        }}
+        onConfirm={handleCancelRequestConfirm}
+        title={t('supervisor.cancelRequest')}
+        description={t('supervisor.cancelRequestConfirm')}
+        confirmLabel={t('common.confirm')}
+        cancelLabel={t('common.cancel')}
+      />
+
+      <ConfirmDialog
+        open={unassignProject !== null}
+        onOpenChange={(open) => {
+          if (!open) setUnassignProject(null)
+        }}
+        onConfirm={handleUnassignConfirm}
+        title={t('committee.supervisors.confirmUnassign')}
+        description={t('committee.supervisors.confirmUnassignDescription', {
+          title: unassignProject?.title ?? '',
+        })}
+        confirmLabel={t('common.confirm')}
+        cancelLabel={t('common.cancel')}
+      />
+    </>
   )
 }
