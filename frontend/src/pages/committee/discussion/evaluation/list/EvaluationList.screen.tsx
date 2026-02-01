@@ -50,7 +50,7 @@ export function EvaluationList() {
 
   return (
     <>
-      <BlockContent title={t('nav.evaluation') || 'Evaluations'} variant="data-table">
+      <BlockContent title={t('nav.evaluations')} variant="data-table">
         <DataTable
           columns={columns}
           data={data.items}
@@ -69,10 +69,10 @@ export function EvaluationList() {
           onColumnFiltersChange={setColumnFilters}
           searchValue={globalFilter}
           onSearchChange={setGlobalFilter}
-          searchPlaceholder={t('discussion.searchPlaceholder') || 'Search evaluations...'}
+          searchPlaceholder={t('evaluation.searchPlaceholder')}
           enableFiltering={true}
           enableViews={true}
-          emptyMessage={t('evaluation.noEvaluations') || 'No evaluations found'}
+          emptyMessage={t('evaluation.noEvaluations')}
         />
       </BlockContent>
 
@@ -80,7 +80,7 @@ export function EvaluationList() {
         <BlockContent variant="container" className="border-destructive">
           <div className="flex items-center gap-2 text-destructive">
             <AlertCircle className="h-5 w-5" />
-            <span>{t('evaluation.loadError') || 'Error loading evaluations'}</span>
+            <span>{t('evaluation.loadError')}</span>
           </div>
         </BlockContent>
       )}
@@ -96,7 +96,7 @@ export function EvaluationList() {
               selectedProjectId: open ? prev.selectedProjectId : null,
             }))
           }
-          title={t('evaluation.evaluate') || 'Evaluate Project'}
+          title={t('evaluation.evaluate')}
           size="xl"
         >
           <UnifiedEvaluationModal

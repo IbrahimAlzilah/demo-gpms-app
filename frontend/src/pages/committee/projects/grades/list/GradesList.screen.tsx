@@ -41,7 +41,7 @@ export function GradesList() {
       await approveGrade.mutateAsync({
         gradeId: state.selectedGrade.id,
       })
-      toastSuccess('grades.approveSuccess')
+      toastSuccess(t('committee.grades.approveSuccess'))
       setState((prev) => ({
         ...prev,
         showDialog: false,
@@ -49,7 +49,7 @@ export function GradesList() {
         action: null,
       }))
     } catch (err) {
-      toastError(err instanceof Error ? err.message : 'grades.approveError')
+      toastError(err instanceof Error ? err.message : t('committee.grades.approveError'))
     }
   }
 
@@ -100,15 +100,15 @@ export function GradesList() {
   }
 
   return (
-    <BlockContent title={t('grades.management')} variant="data-table">
-      {!periodLoading && !isPeriodActive && (
+    <BlockContent title={t('committee.grades.management')} variant="data-table">
+      {/* {!periodLoading && !isPeriodActive && (
         <Alert variant="default" className="border-warning bg-warning/10">
           <Info className="h-4 w-4 text-warning" />
           <AlertDescription className="text-warning-foreground">
-            {t('grades.periodInactiveWarning')}
+            {t('committee.grades.periodInactiveWarning')}
           </AlertDescription>
         </Alert>
-      )}
+      )} */}
 
       <DataTable
         toolbarContent={
@@ -123,8 +123,8 @@ export function GradesList() {
                 <SelectValue placeholder={t('common.filterByStatus')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pending">{t('grades.pending')}</SelectItem>
-                <SelectItem value="approved">{t('grades.approved')}</SelectItem>
+                <SelectItem value="pending">{t('committee.grades.pending')}</SelectItem>
+                <SelectItem value="approved">{t('committee.grades.approved')}</SelectItem>
                 <SelectItem value="all">{t('common.all')}</SelectItem>
               </SelectContent>
             </Select>
@@ -162,14 +162,14 @@ export function GradesList() {
         searchPlaceholder={t('committee.grades.searchPlaceholder')}
         enableFiltering={true}
         enableViews={true}
-        emptyMessage={t('grades.noGrades')}
+        emptyMessage={t('committee.grades.noGrades')}
       />
 
       <ConfirmDialog
         open={state.showDialog}
         onOpenChange={(open) => setState((prev) => ({ ...prev, showDialog: open }))}
-        title={t('grades.approveTitle')}
-        description={t('grades.approveDescription')}
+        title={t('committee.grades.approveTitle')}
+        description={t('committee.grades.approveDescription')}
         confirmLabel={t('committee.grades.approveGrade')}
         cancelLabel={t('common.cancel')}
         onConfirm={handleApprove}
@@ -178,16 +178,16 @@ export function GradesList() {
         {state.selectedGrade && (
           <div className="space-y-4 mt-4">
             <div>
-              <p className="text-sm font-medium mb-2">{t('grades.student')}</p>
+              <p className="text-sm font-medium mb-2">{t('committee.grades.student')}</p>
               <p className="text-sm">{state.selectedGrade.student?.name || state.selectedGrade.studentId}</p>
             </div>
             <div>
-              <p className="text-sm font-medium mb-2">{t('grades.project')}</p>
+              <p className="text-sm font-medium mb-2">{t('committee.grades.project')}</p>
               <p className="text-sm">{state.selectedGrade.project?.title || state.selectedGrade.projectId}</p>
             </div>
             {state.selectedGrade.supervisorGrade && (
               <div>
-                <p className="text-sm font-medium mb-2">{t('grades.supervisorGrade')}</p>
+                <p className="text-sm font-medium mb-2">{t('committee.grades.supervisorGrade')}</p>
                 <p className="text-sm">
                   {state.selectedGrade.supervisorGrade.score} / {state.selectedGrade.supervisorGrade.maxScore}
                 </p>
@@ -195,7 +195,7 @@ export function GradesList() {
             )}
             {state.selectedGrade.committeeGrade && (
               <div>
-                <p className="text-sm font-medium mb-2">{t('grades.committeeGrade')}</p>
+                <p className="text-sm font-medium mb-2">{t('committee.grades.committeeGrade')}</p>
                 <p className="text-sm">
                   {state.selectedGrade.committeeGrade.score} / {state.selectedGrade.committeeGrade.maxScore}
                 </p>
@@ -203,7 +203,7 @@ export function GradesList() {
             )}
             {state.selectedGrade.finalGrade && (
               <div>
-                <p className="text-sm font-medium mb-2">{t('grades.finalGrade')}</p>
+                <p className="text-sm font-medium mb-2">{t('committee.grades.finalGrade')}</p>
                 <p className="text-sm font-bold text-lg">{state.selectedGrade.finalGrade.toFixed(2)}</p>
               </div>
             )}

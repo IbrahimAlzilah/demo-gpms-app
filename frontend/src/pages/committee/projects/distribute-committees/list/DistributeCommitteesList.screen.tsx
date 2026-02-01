@@ -175,7 +175,7 @@ export function DistributeCommitteesList() {
       <BlockContent title={t('committee.distribute.title')} actions={actions}>
         {/* Filter Section */}
         <div className="mb-6 space-y-4">
-          <div className="flex flex-wrap gap-3 items-center">
+          <div className="flex flex-wrap gap-3 items-center justify-between">
             {/* Search Input */}
             <div className="relative flex-1 min-w-[200px] max-w-md">
               <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -187,45 +187,47 @@ export function DistributeCommitteesList() {
               />
             </div>
 
-            {/* Status Filter Dropdown */}
-            <div className="flex items-center gap-2 min-w-[200px] max-w-[280px]">
-              <Select
-                value={state.filterStatus}
-                onValueChange={(value) =>
-                  setState((prev) => ({ ...prev, filterStatus: value as typeof prev.filterStatus }))
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={t('committee.distribute.filterByStatus')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {filterOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {t(option.labelKey)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {/* Defense Phase Filter – Final Defense 1 vs 2 */}
-            <div className="flex items-center gap-2 min-w-[200px] max-w-[280px]">
-              <Select
-                value={state.defensePhase}
-                onValueChange={(value) =>
-                  setState((prev) => ({ ...prev, defensePhase: value as typeof prev.defensePhase }))
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={t('committee.distribute.filterByDefensePhase')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {defensePhaseOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {t(option.labelKey)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex flex-wrap gap-3 items-center">
+              {/* Status Filter Dropdown */}
+              <div className="flex items-center gap-2 min-w-[150px] max-w-[280px]">
+                <Select
+                  value={state.filterStatus}
+                  onValueChange={(value) =>
+                    setState((prev) => ({ ...prev, filterStatus: value as typeof prev.filterStatus }))
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={t('committee.distribute.filterByStatus')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filterOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {t(option.labelKey)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {/* Defense Phase Filter – Final Defense 1 vs 2 */}
+              <div className="flex items-center gap-2 min-w-[200px] max-w-[280px]">
+                <Select
+                  value={state.defensePhase}
+                  onValueChange={(value) =>
+                    setState((prev) => ({ ...prev, defensePhase: value as typeof prev.defensePhase }))
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={t('committee.distribute.filterByDefensePhase')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {defensePhaseOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {t(option.labelKey)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 

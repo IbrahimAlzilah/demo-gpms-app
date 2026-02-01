@@ -10,6 +10,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Settings2 } from "lucide-react"
+import { useDirection } from "@/hooks/use-direction"
 
 interface DataTableViewOptionsProps<TData> {
     table: ReturnType<typeof useReactTable<TData>>
@@ -19,9 +20,9 @@ export function DataTableViewOptions<TData>({
     table,
 }: DataTableViewOptionsProps<TData>) {
     const { t } = useTranslation()
-
+    const isRTL = useDirection()
     return (
-        <DropdownMenu>
+        <DropdownMenu dir={isRTL ? "rtl" : "ltr"}>
             <DropdownMenuTrigger asChild>
                 <Button
                     variant="outline"
@@ -32,7 +33,7 @@ export function DataTableViewOptions<TData>({
                     {t('dataTable.view')}
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-[150px]">
+            <DropdownMenuContent align="start" className="w-[200px]">
                 <DropdownMenuLabel>{t('dataTable.toggleColumns')}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {table
@@ -42,6 +43,12 @@ export function DataTableViewOptions<TData>({
                             typeof column.accessorFn !== "undefined" && column.getCanHide()
                     )
                     .map((column) => {
+                        const labelKey = (column.columnDef.meta as { labelKey?: string })?.labelKey
+                        const columnLabel = labelKey
+                            ? t(labelKey)
+                            : t(`dataTable.columns.${column.id}`) !== `dataTable.columns.${column.id}`
+                                ? t(`dataTable.columns.${column.id}`)
+                                : column.id.replace(/[_\.]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
                         return (
                             <DropdownMenuCheckboxItem
                                 key={column.id}
@@ -51,7 +58,7 @@ export function DataTableViewOptions<TData>({
                                     column.toggleVisibility(!!value)
                                 }
                             >
-                                {column.id}
+                                {columnLabel}
                             </DropdownMenuCheckboxItem>
                         )
                     })}

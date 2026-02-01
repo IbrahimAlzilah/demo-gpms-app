@@ -45,19 +45,30 @@ export function createRequestColumns({
               <User className="h-4 w-4 text-muted-foreground" />
               <span className="font-medium">{student.name}</span>
             </div>
-            {student.studentId && (
+            {/* {student.studentId && (
               <span className="text-xs text-muted-foreground ml-6">
                 ID: {student.studentId}
               </span>
-            )}
-            {student.email && (
+            )} */}
+            {/* {student.email && (
               <span className="text-xs text-muted-foreground ml-6 truncate max-w-[200px]">
                 {student.email}
               </span>
-            )}
+            )} */}
           </div>
         )
       },
+    },
+    {
+      accessorKey: "department",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('common.department')} />
+      ),
+      cell: ({ row }) => <div className="text-sm text-muted-foreground">{row.original.student?.department ?? '-'}</div>,
+      filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id))
+      },
+      enableSorting: false,
     },
     {
       accessorKey: "type",
@@ -70,6 +81,7 @@ export function createRequestColumns({
       filterFn: (row, id, value) => {
         return value.includes(row.getValue(id))
       },
+      enableSorting: false,
     },
     {
       accessorKey: "reason",

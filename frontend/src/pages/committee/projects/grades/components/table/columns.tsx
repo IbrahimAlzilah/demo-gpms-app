@@ -21,7 +21,7 @@ export function createGradeColumns({
     {
       accessorKey: 'student',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('grades.student')} />
+        <DataTableColumnHeader column={column} title={t('committee.grades.student')} />
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
@@ -35,7 +35,7 @@ export function createGradeColumns({
     {
       accessorKey: 'project',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('grades.project')} />
+        <DataTableColumnHeader column={column} title={t('committee.grades.project')} />
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
@@ -47,7 +47,7 @@ export function createGradeColumns({
     {
       accessorKey: 'supervisorGrade',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('grades.supervisorGrade')} />
+        <DataTableColumnHeader column={column} title={t('committee.grades.supervisorGrade')} />
       ),
       cell: ({ row }) => {
         const grade = row.original.supervisorGrade
@@ -63,7 +63,7 @@ export function createGradeColumns({
     {
       accessorKey: 'committeeGrade',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('grades.committeeGrade')} />
+        <DataTableColumnHeader column={column} title={t('committee.grades.committeeGrade')} />
       ),
       cell: ({ row }) => {
         const grade = row.original.committeeGrade
@@ -79,7 +79,7 @@ export function createGradeColumns({
     {
       accessorKey: 'finalGrade',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('grades.finalGrade')} />
+        <DataTableColumnHeader column={column} title={t('committee.grades.finalGrade')} />
       ),
       cell: ({ row }) => {
         const finalGrade = row.original.finalGrade
@@ -104,7 +104,7 @@ export function createGradeColumns({
     {
       accessorKey: 'approvedAt',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('grades.approvedAt')} />
+        <DataTableColumnHeader column={column} title={t('committee.grades.approvedAt')} />
       ),
       cell: ({ row }) => {
         if (!row.original.approvedAt) return <span className="text-muted-foreground">-</span>
@@ -122,7 +122,7 @@ export function createGradeColumns({
         const actions = [
           {
             id: 'view',
-            label: t('grades.viewDetails'),
+            label: t('committee.grades.viewDetails'),
             icon: Eye,
             onClick: () => onView(grade),
             variant: 'default' as const,

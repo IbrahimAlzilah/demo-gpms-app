@@ -29,6 +29,7 @@
     "all": "الكل",
     "view": "عرض",
     "viewAll": "عرض الكل",
+    "viewCalendar": "عرض التقويم الكامل",
     "actions": "الإجراءات",
     "status": "الحالة",
     "statuses": "حالات",
@@ -96,7 +97,8 @@
     "oneMember": "عضو واحد",
     "oneProposal": "مقترح واحد",
     "createdBy": "انشأ بواسطة",
-    "proposals": "المقترحات"
+    "proposals": "المقترحات",
+    "evaluate": "تقييم"
   },
   "app": {
     "name": "نظام إدارة تقييم مشاريع التخرج",
@@ -143,6 +145,10 @@
       "error": "حدث خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى."
     },
     "loginRequired": "يجب تسجيل الدخول أولاً"
+  },
+  "student": {
+    "name": "الطالب",
+    "id": "رقم الطالب"
   },
   "roles": {
     "student": "طالب",
@@ -351,6 +357,9 @@
       "generateReportsDesc": "عرض تحليلات النظام",
       "systemSettings": "إعدادات النظام",
       "systemSettingsDesc": "تكوين الخيارات العامة"
+    },
+    "supervisor": {
+      "loadError": "فشل تحميل بيانات لوحة التحكم."
     },
     "discussion": {
       "assignedProjects": "المشاريع المعينة",
@@ -1442,7 +1451,8 @@
     "enterGroupGrade": "أدخل الدرجة والدرجة الكاملة لدرجة المجموعة",
     "enterAtLeastOneGrade": "أدخل درجة طالب واحد على الأقل قبل الحفظ",
     "noEvaluations": "لا توجد تقييمات",
-    "loadError": "خطأ في تحميل التقييمات"
+    "loadError": "خطأ في تحميل التقييمات",
+    "searchPlaceholder": "البحث في التقييمات..."
   },
   "committee": {
     "periodsDescription": "إدارة الفترات الزمنية للمشاريع (تقديم المقترحات، التسجيل، تسليم الوثائق، التقييم، إلخ)",
@@ -1842,6 +1852,7 @@
     },
     "grades": {
       "management": "إدارة الدرجات النهائية",
+      "approveGrade": "اعتماد الدرجة",
       "student": "الطالب",
       "project": "المشروع",
       "supervisorGrade": "درجة المشرف",
@@ -2129,9 +2140,65 @@
     "resetFilters": "إعادة تعيين",
     "sortAscending": "تصاعدي",
     "sortDescending": "تنازلي",
-    "hideColumn": "إخفاء",
-    "view": "عرض",
+    "hideColumn": "إخفاء العمود",
+    "view": "العرض",
     "toggleColumns": "تبديل الأعمدة",
+    "columns": {
+      "name": "الاسم",
+      "username": "اسم المستخدم",
+      "email": "البريد الإلكتروني",
+      "role": "الدور",
+      "status": "الحالة",
+      "department": "القسم",
+      "specialization": "التخصص",
+      "academicLevel": "المستوى الأكاديمي",
+      "title": "العنوان",
+      "description": "الوصف",
+      "type": "النوع",
+      "reason": "السبب",
+      "createdAt": "تاريخ الإنشاء",
+      "created_at": "تاريخ الإنشاء",
+      "startDate": "تاريخ البداية",
+      "endDate": "تاريخ النهاية",
+      "createdBy": "أنشئ بواسطة",
+      "isActive": "نشط",
+      "fileName": "اسم الملف",
+      "chapterNumber": "الفصل",
+      "reviewStatus": "حالة المراجعة",
+      "fileSize": "حجم الملف",
+      "submitter": "المقدم",
+      "supervisor": "المشرف",
+      "student": "الطالب",
+      "project": "المشروع",
+      "project.title": "عنوان المشروع",
+      "project.description": "وصف المشروع",
+      "submitter.department": "القسم",
+      "student.name": "اسم الطالب",
+      "student.studentId": "رقم الطالب",
+      "studentGroup.groupCode": "رمز المجموعة",
+      "currentGroups": "المجموعات",
+      "assignmentStatus": "حالة التعيين",
+      "updatedAt": "آخر تحديث",
+      "committee_notes": "ملاحظات اللجنة",
+      "sender": "المرسل",
+      "studentsCount": "عدد الطلاب",
+      "evaluationProgress": "تقدم التقييم",
+      "isLocked": "مقفل",
+      "groupCode": "رمز المجموعة",
+      "reviewedAt": "تاريخ المراجعة",
+      "workflow": "سير العمل",
+      "registrationStatus": "حالة التسجيل",
+      "supervisorGrade": "درجة المشرف",
+      "committeeGrade": "درجة اللجنة",
+      "finalGrade": "الدرجة النهائية",
+      "isApproved": "معتمد",
+      "approvedAt": "تاريخ الاعتماد",
+      "submittedAt": "تاريخ التقديم",
+      "studentId": "رقم الطالب",
+      "score": "الدرجة",
+      "hasEvaluation": "تم التقييم",
+      "actions": "إجراءات"
+    },
     "rowsPerPage": "صفوف لكل صفحة",
     "pageInfo": "صفحة {{page}} من {{total}}",
     "rowsInfo": "عرض {{start}} إلى {{end}} من {{total}} صف",

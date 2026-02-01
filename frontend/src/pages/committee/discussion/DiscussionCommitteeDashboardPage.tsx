@@ -186,28 +186,6 @@ export function DiscussionCommitteeDashboardPage() {
               </div>
             </div>
 
-          </div>
-
-          {/* Sidebar Area (1/3) */}
-          <div className="space-y-8">
-
-            {/* Quick Actions */}
-            <div className="space-y-4">
-              <h3 className="text-base font-semibold tracking-tight">{t('dashboard.discussion.quickActions')}</h3>
-              <div className="grid grid-cols-1 gap-2">
-                <QuickActionButton
-                  to={ROUTES.DISCUSSION_COMMITTEE.PROJECTS}
-                  icon={Briefcase}
-                  label={t('dashboard.discussion.viewProjects')}
-                />
-                <QuickActionButton
-                  to={ROUTES.DISCUSSION_COMMITTEE.EVALUATION}
-                  icon={ClipboardCheck}
-                  label={t('dashboard.discussion.finalEvaluation')}
-                />
-              </div>
-            </div>
-
             {/* Defense Schedule Widget */}
             <Card className="border-border bg-card shadow-sm overflow-hidden">
               <CardHeader className="border-b border-border/40 bg-muted/10 pb-4">
@@ -280,7 +258,27 @@ export function DiscussionCommitteeDashboardPage() {
                 </div>
               </CardContent>
             </Card>
+          </div>
 
+          {/* Sidebar Area (1/3) */}
+          <div className="space-y-8">
+
+            {/* Quick Actions */}
+            <div className="space-y-4">
+              <h3 className="text-base font-semibold tracking-tight">{t('dashboard.discussion.quickActions')}</h3>
+              <div className="grid grid-cols-1 gap-2">
+                <QuickActionButton
+                  to={ROUTES.DISCUSSION_COMMITTEE.PROJECTS}
+                  icon={Briefcase}
+                  label={t('dashboard.discussion.viewProjects')}
+                />
+                <QuickActionButton
+                  to={ROUTES.DISCUSSION_COMMITTEE.EVALUATION}
+                  icon={ClipboardCheck}
+                  label={t('dashboard.discussion.finalEvaluation')}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -293,14 +291,14 @@ function QuickActionButton({ to, icon: Icon, label, description }: any) {
   return (
     <Button asChild variant="outline" className="w-full justify-start h-auto py-3 px-4 bg-card hover:bg-accent hover:text-accent-foreground border-border shadow-none transition-all duration-200 group">
       <Link to={to} className="flex items-center">
-        <div className="p-2 rounded-md bg-muted group-hover:bg-primary/10 text-muted-foreground group-hover:text-primary transition-colors mr-3">
+        <div className="p-2 rounded-md bg-muted group-hover:bg-primary/10 text-muted-foreground group-hover:text-primary transition-colors me-1">
           <Icon className="h-4 w-4" />
         </div>
-        <div className="text-left">
+        <div className="text-start">
           <span className="font-medium block">{label}</span>
           {description && <span className="text-xs text-muted-foreground font-normal mt-0.5 block">{description}</span>}
         </div>
-        <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground/50 group-hover:text-primary/50 transition-colors" />
+        <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground/50 group-hover:text-primary/50 transition-colors rtl:rotate-180" />
       </Link>
     </Button>
   )

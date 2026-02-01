@@ -68,7 +68,7 @@ export function SupervisorDashboardPage() {
               <div className="text-center space-y-2">
                 <h3 className="font-semibold text-destructive">{t('common.error', { defaultValue: 'Error' })}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {error.message || t('dashboard.supervisor.loadError', { defaultValue: 'Failed to load dashboard data.' })}
+                  {error.message || t('dashboard.supervisor.loadError')}
                 </p>
               </div>
               <Button onClick={() => refetch()} variant="outline" className="mt-2">
@@ -116,7 +116,7 @@ export function SupervisorDashboardPage() {
             icon={UserCheck}
             subValue={t('supervisor.pendingRequests')}
             color="yellow"
-            trend={stats.pendingSupervisionRequests > 0 ? { value: stats.pendingSupervisionRequests, label: "pending actions", positive: false } : undefined}
+            trend={stats.pendingSupervisionRequests > 0 ? { value: stats.pendingSupervisionRequests, label: t('supervisor.pendingActions'), positive: false } : undefined}
           />
           <StatsCardComponent
             title={t('nav.meetings')}
@@ -131,7 +131,7 @@ export function SupervisorDashboardPage() {
             icon={ClipboardCheck}
             subValue={t('supervisor.pendingEvaluations')}
             color="purple"
-            trend={stats.pendingEvaluations > 0 ? { value: stats.pendingEvaluations, label: "needs grading", positive: false } : undefined}
+            trend={stats.pendingEvaluations > 0 ? { value: stats.pendingEvaluations, label: t('supervisor.needsGrading'), positive: false } : undefined}
           />
         </div>
 
@@ -148,7 +148,7 @@ export function SupervisorDashboardPage() {
                   <TaskRow
                     icon={UserCheck}
                     title={t('supervisor.pendingRequests')}
-                    description={t('supervisor.youHavePendingRequests', { count: stats.pendingSupervisionRequests, defaultValue: `You have ${stats.pendingSupervisionRequests} pending supervision requests.` })}
+                    description={t('supervisor.youHavePendingRequests', { count: stats.pendingSupervisionRequests })}
                     actionLabel={t('supervisor.review')}
                     actionLink={ROUTES.SUPERVISOR.SUPERVISION_REQUESTS}
                     type="warning"
@@ -160,7 +160,7 @@ export function SupervisorDashboardPage() {
                   <TaskRow
                     icon={ClipboardCheck}
                     title={t('supervisor.pendingEvaluations')}
-                    description={t('supervisor.youHavePendingEvaluations', { count: stats.pendingEvaluations, defaultValue: `You have ${stats.pendingEvaluations} pending evaluations.` })}
+                    description={t('supervisor.youHavePendingEvaluations', { count: stats.pendingEvaluations })}
                     actionLabel={t('nav.projects')}
                     actionLink={ROUTES.SUPERVISOR.PROJECTS}
                     type="error"
@@ -171,8 +171,8 @@ export function SupervisorDashboardPage() {
                 {stats.overdueMilestonesCount > 0 && (
                   <TaskRow
                     icon={AlertCircle}
-                    title={t('supervisor.overdueMilestones', { defaultValue: 'Overdue Milestones' })}
-                    description={t('supervisor.youHaveOverdueMilestones', { count: stats.overdueMilestonesCount, defaultValue: `You have ${stats.overdueMilestonesCount} overdue milestones.` })}
+                    title={t('supervisor.overdueMilestones')}
+                    description={t('supervisor.youHaveOverdueMilestones', { count: stats.overdueMilestonesCount })}
                     actionLabel={t('nav.projects')}
                     actionLink={ROUTES.SUPERVISOR.PROJECTS}
                     type="error"
@@ -186,9 +186,9 @@ export function SupervisorDashboardPage() {
                     <div className="bg-green-100 dark:bg-green-900/20 p-4 rounded-full mb-4 ring-4 ring-white dark:ring-background shadow-sm">
                       <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
                     </div>
-                    <h3 className="font-semibold text-lg">{t('supervisor.allCaughtUp', { defaultValue: 'All caught up!' })}</h3>
+                    <h3 className="font-semibold text-lg">{t('supervisor.allCaughtUp')}</h3>
                     <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
-                      {t('supervisor.noUrgentTasks', { defaultValue: 'You have no pending requests or evaluations. Great job!' })}
+                      {t('supervisor.noUrgentTasks')}
                     </p>
                   </div>
                 )}
@@ -200,7 +200,7 @@ export function SupervisorDashboardPage() {
               <div className="space-y-4">
                 <h2 className="text-lg font-semibold tracking-tight flex items-center gap-2">
                   <Target className="h-5 w-5 text-muted-foreground" />
-                  {t('supervisor.milestones', { defaultValue: 'Milestones' })}
+                  {t('supervisor.milestones')}
                 </h2>
                 <div className="space-y-3">
                   {overdueMilestones.map((milestone) => (
@@ -215,7 +215,7 @@ export function SupervisorDashboardPage() {
                         <h3 className="font-semibold text-sm">{milestone.title}</h3>
                         <p className="text-xs text-muted-foreground mt-1">{milestone.projectTitle}</p>
                         <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                          {t('supervisor.daysOverdue', { count: milestone.daysOverdue, defaultValue: `${milestone.daysOverdue} days overdue` })}
+                          {t('supervisor.daysOverdue', { count: milestone.daysOverdue })}
                         </p>
                       </div>
                     </div>
@@ -232,7 +232,7 @@ export function SupervisorDashboardPage() {
                         <h3 className="font-semibold text-sm">{milestone.title}</h3>
                         <p className="text-xs text-muted-foreground mt-1">{milestone.projectTitle}</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {t('supervisor.dueIn', { count: milestone.daysUntil, defaultValue: `Due in ${milestone.daysUntil} days` })}
+                          {t('supervisor.dueIn', { count: milestone.daysUntil })}
                         </p>
                       </div>
                     </div>
@@ -243,14 +243,14 @@ export function SupervisorDashboardPage() {
 
             {/* Quick Actions Grid for Supervisor */}
             <div>
-              <h2 className="text-lg font-semibold tracking-tight mb-4">{t('supervisor.management', { defaultValue: 'Management' })}</h2>
+              <h2 className="text-lg font-semibold tracking-tight mb-4">{t('supervisor.management')}</h2>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="group rounded-xl border border-border bg-card p-6 transition-all hover:shadow-md hover:border-primary/20 cursor-pointer">
                   <div className="mb-4 inline-flex p-3 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 group-hover:scale-110 transition-transform">
                     <Users className="h-6 w-6" />
                   </div>
                   <h3 className="font-semibold text-base mb-1 group-hover:text-primary transition-colors">{t('nav.projects')}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Monitor student progress and view project details.</p>
+                  <p className="text-sm text-muted-foreground mb-4">{t('supervisor.projectsCardDesc')}</p>
                   <Button variant="outline" size="sm" asChild className="w-full">
                     <Link to={ROUTES.SUPERVISOR.PROJECTS}>{t('common.viewAll')}</Link>
                   </Button>
@@ -261,7 +261,7 @@ export function SupervisorDashboardPage() {
                     <UserCheck className="h-6 w-6" />
                   </div>
                   <h3 className="font-semibold text-base mb-1 group-hover:text-primary transition-colors">{t('nav.supervisionRequests')}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Review and approve new supervision requests.</p>
+                  <p className="text-sm text-muted-foreground mb-4">{t('supervisor.supervisionRequestsCardDesc')}</p>
                   <Button variant="outline" size="sm" asChild className="w-full">
                     <Link to={ROUTES.SUPERVISOR.SUPERVISION_REQUESTS}>{t('supervisor.review')}</Link>
                   </Button>
@@ -315,14 +315,14 @@ export function SupervisorDashboardPage() {
                   ) : (
                     <div className="flex flex-col items-center justify-center py-12 text-center">
                       <Calendar className="h-10 w-10 text-muted-foreground/30 mb-3" />
-                      <p className="text-sm text-muted-foreground">{t('supervisor.noMeetings', { defaultValue: 'No upcoming meetings scheduled.' })}</p>
+                      <p className="text-sm text-muted-foreground">{t('supervisor.noMeetings')}</p>
                     </div>
                   )}
 
                   <div className="pt-4 pb-2">
                     <Button variant="outline" className="w-full text-xs h-9" size="sm" asChild>
                       <Link to={ROUTES.SUPERVISOR.PROJECTS}>
-                        {t('common.viewCalendar', { defaultValue: 'View Full Calendar' })}
+                        {t('common.viewCalendar')}
                       </Link>
                     </Button>
                   </div>
