@@ -4,6 +4,7 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Briefcase } from 'lucide-react'
 import { useFollowUpList } from './FollowUpList.hook'
+import { BlockContent } from '@/components/common/BlockContent'
 
 export function FollowUpList() {
   const { t } = useTranslation()
@@ -15,18 +16,13 @@ export function FollowUpList() {
 
   if (!data.project) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            {t('nav.followUp')}
-          </h1>
-        </div>
+      <BlockContent title={t('nav.followUp')}>
         <EmptyState
           icon={Briefcase}
           title={t('followUp.noProject')}
           description={t('followUp.noProjectDescription')}
         />
-      </div>
+      </BlockContent>
     )
   }
 

@@ -1,45 +1,84 @@
-# تشغيل المشروع محلياً
+# دليل التشغيل والتطوير خطوة بخطوة
 
-## المتطلبات الأساسية (Prerequisites)
-
-| المتطلب             | الإصدار     | ملاحظات                   |
-| ------------------- | ----------- | ------------------------- |
-| **PHP**             | 8.2 أو أحدث | للتشغيل على الخادم المحلي |
-| **Composer**        | 2.x         | إدارة حزم PHP             |
-| **Node.js**         | 18+         | لتشغيل الواجهة الأمامية   |
-| **npm** أو **pnpm** | أحدث        | إدارة حزم JavaScript      |
-| **MySQL**           | 5.7+ أو 8.x | قاعدة البيانات            |
-| **Git**             | -           | لنسخ المشروع              |
+هذا المستند يشرح **كيفية تشغيل المشروع محلياً** بشكل تدريجي ومناسب للمبتدئين.
 
 ---
 
-## إعداد البيئة
+## 1. المتطلبات الأساسية (Required Tools)
 
-### 1. نسخ المشروع
+يجب تثبيت الأدوات التالية على جهازك قبل البدء:
+
+| المتطلب      | الإصدار     | الغرض                                  | رابط التثبيت                                 |
+| ------------ | ----------- | -------------------------------------- | -------------------------------------------- |
+| **PHP**      | 8.2 أو أحدث | تشغيل الـ Backend                      | [php.net](https://php.net)                   |
+| **Composer** | 2.x         | إدارة حزم PHP                          | [getcomposer.org](https://getcomposer.org)   |
+| **Node.js**  | 18+         | تشغيل الـ Frontend                     | [nodejs.org](https://nodejs.org)             |
+| **npm**      | أحدث        | إدارة حزم JavaScript (يأتي مع Node.js) | -                                            |
+| **MySQL**    | 5.7+ أو 8.x | قاعدة البيانات                         | [mysql.com](https://mysql.com) أو XAMPP/WAMP |
+| **Git**      | -           | نسخ المشروع                            | [git-scm.com](https://git-scm.com)           |
+
+**ملاحظة للمبتدئين:** إذا كنت تستخدم Windows، يمكنك استخدام **XAMPP** أو **Laragon** الذي يوفر PHP و MySQL معاً.
+
+---
+
+## 2. إعداد البيئة خطوة بخطوة
+
+### الخطوة 1: نسخ المشروع
+
+افتح الطرفية (Terminal) واكتب:
 
 ```bash
 git clone <رابط-المستودع>
 cd demo-gpms-app
 ```
 
-### 2. إعداد الـ Backend
+(استبدل `<رابط-المستودع>` بالرابط الفعلي من Git.)
+
+---
+
+### الخطوة 2: إعداد الـ Backend
+
+1. انتقل إلى مجلد الـ Backend:
 
 ```bash
 cd backend
+```
+
+2. ثبّت حزم PHP:
+
+```bash
 composer install
+```
+
+3. أنشئ ملف البيئة من المثال:
+
+```bash
+# في Windows (PowerShell أو CMD):
+copy .env.example .env
+
+# في Linux/Mac:
 cp .env.example .env
+```
+
+4. أنشئ مفتاح التشفير للتطبيق:
+
+```bash
 php artisan key:generate
 ```
 
-### 3. إعداد قاعدة البيانات
+---
 
-1. إنشاء قاعدة بيانات في MySQL:
+### الخطوة 3: إعداد قاعدة البيانات
+
+1. **شغّل MySQL** (إذا كنت تستخدم XAMPP، شغّل Apache و MySQL).
+
+2. **أنشئ قاعدة بيانات جديدة** عبر phpMyAdmin أو الطرفية:
 
 ```sql
 CREATE DATABASE backend CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-2. تحديث ملف `backend/.env`:
+3. **عدّل ملف `backend/.env`** وحدّث إعدادات قاعدة البيانات:
 
 ```
 DB_CONNECTION=mysql
@@ -47,28 +86,54 @@ DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=backend
 DB_USERNAME=root
-DB_PASSWORD=كلمة_مرور_MySQL
+DB_PASSWORD=
 ```
 
-3. تشغيل الـ migrations والـ seeders:
+(إذا كان لديك كلمة مرور لـ MySQL، ضعها في `DB_PASSWORD`.)
+
+4. **نفّذ الـ migrations والـ seeders** لإنشاء الجداول وملءها ببيانات تجريبية:
 
 ```bash
 cd backend
 php artisan migrate --seed
 ```
 
-أو إعادة إنشاء كل شيء مع البيانات التجريبية:
+أو لإعادة بناء كل شيء من الصفر:
 
 ```bash
 php artisan migrate:fresh --seed
 ```
 
-### 4. إعداد الـ Frontend
+---
+
+### الخطوة 4: إعداد الـ Frontend
+
+1. انتقل إلى مجلد الـ Frontend:
 
 ```bash
 cd frontend
+```
+
+2. ثبّت حزم JavaScript:
+
+```bash
 npm install
+```
+
+3. أنشئ ملف البيئة:
+
+```bash
+# في Windows:
+copy .env.example .env
+
+# في Linux/Mac:
 cp .env.example .env
+```
+
+4. **عدّل ملف `frontend/.env`** وأضف رابط الـ API:
+
+```
+VITE_API_BASE_URL=http://localhost:8000/api
 ```
 
 ---
@@ -102,54 +167,69 @@ cp .env.example .env
 
 ---
 
-## خطوات التشغيل محلياً
+## 3. خطوات التشغيل محلياً (How to Run Locally)
 
-### الطريقة 1: تشغيل Backend و Frontend بشكل منفصل
+يجب تشغيل **الـ Backend أولاً** ثم **الـ Frontend** لأن الواجهة تتصل بالـ API.
 
-**1. تشغيل الـ Backend**
+---
+
+### تشغيل الـ Backend (الخادم)
+
+1. افتح **طرفية جديدة** (Terminal).
+
+2. انتقل إلى مجلد الـ Backend:
 
 ```bash
-cd backend
+cd demo-gpms-app/backend
+```
+
+3. شغّل خادم Laravel:
+
+```bash
 php artisan serve
 ```
 
-يعمل عادةً على: `http://localhost:8000`
+4. عند ظهور رسالة مثل: `Server running on [http://127.0.0.1:8000]`، يعني أن الـ Backend يعمل على: **http://localhost:8000**
 
-**2. تشغيل قائمة الانتظار (Queue) — اختياري للإشعارات والمهام المؤجلة**
+5. **اختياري** — لتفعيل الإشعارات والمهام المؤجلة، افتح طرفية ثانية ونفّذ:
 
 ```bash
-cd backend
+cd demo-gpms-app/backend
 php artisan queue:listen --tries=1
 ```
 
-**3. تشغيل الـ Frontend**
+---
+
+### تشغيل الـ Frontend (الواجهة)
+
+1. افتح **طرفية جديدة** (يُفضّل ترك الـ Backend يعمل في الطرفية الأولى).
+
+2. انتقل إلى مجلد الـ Frontend:
 
 ```bash
-cd frontend
+cd demo-gpms-app/frontend
+```
+
+3. شغّل واجهة التطوير:
+
+```bash
 npm run dev
 ```
 
-يعمل عادةً على: `http://localhost:5173` أو `http://localhost:3000`
+4. عند ظهور رسالة مثل: `Local: http://localhost:5173/`، افتح المتصفح وانتقل إلى: **http://localhost:5173**
 
-**4. ضبط رابط الـ API في الواجهة**
+5. تأكد أن `VITE_API_BASE_URL=http://localhost:8000/api` في ملف `frontend/.env` حتى تتصل الواجهة بالـ Backend بشكل صحيح.
 
-في `frontend/.env`:
+---
 
-```
-VITE_API_BASE_URL=http://localhost:8000/api
-```
+### ملخص الترتيب
 
-ثم أعد تشغيل `npm run dev`.
+| الخطوة | الأمر                             | المنفذ | الرابط                |
+| ------ | --------------------------------- | ------ | --------------------- |
+| 1      | `cd backend && php artisan serve` | 8000   | http://localhost:8000 |
+| 2      | `cd frontend && npm run dev`      | 5173   | http://localhost:5173 |
 
-### الطريقة 2: تشغيل Backend فقط (باستخدام السكربت المدمج)
-
-من مجلد `backend`:
-
-```bash
-composer run dev
-```
-
-هذا يشغّل الخادم، Queue، و Vite للـ Backend معاً (إذا كان مهيأ في `composer.json`).
+**ملاحظة:** يمكنك استخدام `composer run dev` من مجلد `backend` إذا كان مهيأ ليشغّل الخادم و Queue و Vite معاً.
 
 ---
 

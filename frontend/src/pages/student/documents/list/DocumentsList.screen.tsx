@@ -63,15 +63,15 @@ export function DocumentsList() {
   // Show empty state only after loading is complete and no project exists
   if (!userProject) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-center">
+      <BlockContent title={t('nav.documents')}>
+        <div className="text-center p-8">
           <FolderOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <p className="text-lg font-medium">{t('document.noProject')}</p>
           <p className="text-sm text-muted-foreground mt-2">
             {t('document.noProjectDescription')}
           </p>
         </div>
-      </div>
+      </BlockContent>
     )
   }
 
