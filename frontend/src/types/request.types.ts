@@ -6,6 +6,7 @@ export type RequestType =
   | "change_supervisor"
   | "change_group"
   | "change_project"
+  | "change_project_title"
   | "other";
 
 export type RequestStatus =

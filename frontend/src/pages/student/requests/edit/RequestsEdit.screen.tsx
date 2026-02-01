@@ -1,8 +1,10 @@
 import { useTranslation } from 'react-i18next'
 import { ModalDialog } from '@/components/common'
 import { Button, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
-import { AlertCircle, Loader2, User, Users, Briefcase, MoreHorizontal, Edit } from 'lucide-react'
+import { AlertCircle, Edit, Loader2, User, Users, Briefcase, MoreHorizontal, Type } from 'lucide-react'
 import { useRequestsEdit } from './RequestsEdit.hook'
+import { useRequestContext } from '../hooks/useRequestContext'
+import { isLeaderOnlyRequestType } from '../types/Requests.types'
 import type { Request } from '@/types/request.types'
 
 interface RequestsEditProps {
@@ -14,6 +16,7 @@ interface RequestsEditProps {
 
 export function RequestsEdit({ open, onClose, onSuccess, request }: RequestsEditProps) {
   const { t } = useTranslation()
+  const { data: context } = useRequestContext()
   const { form, isLoading, handleSubmit } = useRequestsEdit(request, () => {
     onSuccess?.()
     onClose()
@@ -22,28 +25,22 @@ export function RequestsEdit({ open, onClose, onSuccess, request }: RequestsEdit
   const selectedType = watch('type')
   const reason = watch('reason')
 
-  const requestTypes: { value: string; label: string; icon: React.ReactNode }[] = [
-    {
-      value: 'change_group',
-      label: t('requests.change_group'),
-      icon: <Users className="h-4 w-4" />,
-    },
-    {
-      value: 'change_project',
-      label: t('requests.change_project'),
-      icon: <Briefcase className="h-4 w-4" />,
-    },
-    {
-      value: 'change_supervisor',
-      label: t('requests.change_supervisor'),
-      icon: <User className="h-4 w-4" />,
-    },
-    {
-      value: 'other',
-      label: t('requests.other'),
-      icon: <MoreHorizontal className="h-4 w-4" />,
-    },
+  const isGroupLeader = context?.isGroupLeader ?? true
+
+  const allRequestTypes: { value: string; label: string; icon: React.ReactNode }[] = [
+    { value: 'change_supervisor', label: t('requests.change_supervisor'), icon: <User className="h-4 w-4" /> },
+    { value: 'change_group', label: t('requests.change_group'), icon: <Users className="h-4 w-4" /> },
+    { value: 'change_project', label: t('requests.change_project'), icon: <Briefcase className="h-4 w-4" /> },
+    { value: 'change_project_title', label: t('requests.change_project_title'), icon: <Type className="h-4 w-4" /> },
+    { value: 'other', label: t('requests.other'), icon: <MoreHorizontal className="h-4 w-4" /> },
   ]
+
+  const requestTypes = allRequestTypes.filter((type) => {
+    if (isLeaderOnlyRequestType(type.value)) {
+      return isGroupLeader || (request && request.type === type.value)
+    }
+    return true
+  })
 
   return (
     <ModalDialog open={open} onOpenChange={onClose} title={t('request.editRequest')}>

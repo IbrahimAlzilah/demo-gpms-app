@@ -70,12 +70,15 @@ class ProjectRequestPolicy
     }
 
     /**
-     * @deprecated Supervisor approval is no longer used. All requests must go through Projects Committee.
+     * Supervisor can approve/reject change_supervisor requests for their project.
      */
     public function supervisorApprove(User $user, ProjectRequest $request): bool
     {
-        // Supervisors can no longer approve requests directly
-        return false;
+        return $user->isSupervisor()
+            && $request->type === 'change_supervisor'
+            && $request->project
+            && $request->project->supervisor_id === $user->id
+            && $request->status === 'pending';
     }
 
     /**

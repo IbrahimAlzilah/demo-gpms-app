@@ -113,6 +113,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('documents', [App\Http\Controllers\Student\DocumentController::class, 'index']);
         Route::get('documents/{document}', [App\Http\Controllers\Student\DocumentController::class, 'show']);
         Route::delete('documents/{document}', [App\Http\Controllers\Student\DocumentController::class, 'destroy']);
+        Route::get('requests/context', [App\Http\Controllers\Student\RequestController::class, 'context']);
         Route::apiResource('requests', App\Http\Controllers\Student\RequestController::class);
         Route::post('requests/{request}/cancel', [App\Http\Controllers\Student\RequestController::class, 'cancel']);
         Route::get('grades', [App\Http\Controllers\Student\GradeController::class, 'index']);
@@ -150,6 +151,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('supervision-requests', [App\Http\Controllers\Supervisor\SupervisionController::class, 'index']);
         Route::post('supervision-requests/{project}/approve', [App\Http\Controllers\Supervisor\SupervisionController::class, 'approve']);
         Route::post('supervision-requests/{project}/reject', [App\Http\Controllers\Supervisor\SupervisionController::class, 'reject']);
+        // Student change_supervisor requests (approve/reject by current supervisor)
+        Route::get('student-requests', [App\Http\Controllers\Supervisor\StudentRequestController::class, 'index']);
+        Route::post('student-requests/{projectRequest}/approve', [App\Http\Controllers\Supervisor\StudentRequestController::class, 'approve']);
+        Route::post('student-requests/{projectRequest}/reject', [App\Http\Controllers\Supervisor\StudentRequestController::class, 'reject']);
         // New assignment request routes
         Route::get('assignment-requests', [App\Http\Controllers\Supervisor\SupervisionController::class, 'listAssignmentRequests']);
         Route::post('assignment-requests/{assignmentRequest}/approve', [App\Http\Controllers\Supervisor\SupervisionController::class, 'approveAssignmentRequest']);

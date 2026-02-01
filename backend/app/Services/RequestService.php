@@ -17,54 +17,57 @@ class RequestService
     }
 
     /**
-     * Create a new request
-     * 
-     * NOTE: change_supervisor requests are BLOCKED for students.
-     * Supervisor assignment is handled exclusively by the Project Committee.
+     * Create a new request.
+     * change_supervisor: sent first to current supervisor; after supervisor approval, goes to committee.
+     * Other types: sent directly to Projects Committee.
      */
     public function create(array $data, User $student): ProjectRequest
     {
-        // BLOCK: Students cannot create supervision requests
-        if ($data['type'] === 'change_supervisor') {
-            throw new \Exception('Students cannot request supervisor changes. Supervisor assignment is handled by the Project Committee.');
-        }
-
-        // Get project_id from data or from student's group (for other request types)
         $projectId = $data['project_id'] ?? null;
-
-        $finalProjectId = $projectId;
 
         $request = ProjectRequest::create([
             'type' => $data['type'],
             'student_id' => $student->id,
-            'project_id' => $finalProjectId,
+            'project_id' => $projectId,
             'reason' => $data['reason'],
             'status' => 'pending',
             'additional_data' => $data['additional_data'] ?? null,
         ]);
 
-        // UC-ST-05: Notify Projects Committee when request is submitted
-        if ($this->notificationService) {
-            $requestTypeLabel = match($request->type) {
-                'change_supervisor' => 'تغيير مشرف',
-                'change_group' => 'تغيير مجموعة',
-                'change_project' => 'تغيير مشروع',
-                default => 'طلب آخر',
-            };
-            
-            $projectTitle = $request->project_id 
-                ? (\App\Models\Project::find($request->project_id)?->title ?? '')
-                : '';
-            
-            $message = $projectTitle 
-                ? "طلب جديد من الطالب {$student->name}: {$requestTypeLabel} - {$projectTitle}"
-                : "طلب جديد من الطالب {$student->name}: {$requestTypeLabel}";
-            
-            // Notify all Projects Committee members
+        if (!$this->notificationService) {
+            return $request;
+        }
+
+        $requestTypeLabel = match($request->type) {
+            'change_supervisor' => 'تغيير مشرف',
+            'change_group' => 'تغيير مجموعة',
+            'change_project' => 'تغيير مشروع',
+            'change_project_title' => 'تغيير عنوان المشروع',
+            default => 'طلب آخر',
+        };
+
+        $projectTitle = $request->project_id
+            ? (\App\Models\Project::find($request->project_id)?->title ?? '')
+            : '';
+        $message = $projectTitle
+            ? "طلب جديد من الطالب {$student->name}: {$requestTypeLabel} - {$projectTitle}"
+            : "طلب جديد من الطالب {$student->name}: {$requestTypeLabel}";
+
+        if ($request->type === 'change_supervisor' && $request->project_id) {
+            $project = \App\Models\Project::find($request->project_id);
+            if ($project && $project->supervisor_id) {
+                $this->notificationService->create(
+                    $project->supervisor,
+                    $message,
+                    'request_submitted',
+                    'request',
+                    $request->id
+                );
+            }
+        } else {
             $committeeMembers = User::where('role', 'projects_committee')
                 ->where('status', 'active')
                 ->get();
-            
             foreach ($committeeMembers as $member) {
                 $this->notificationService->create(
                     $member,
@@ -80,80 +83,139 @@ class RequestService
     }
 
     /**
-     * @deprecated Supervisor approval is no longer used. All requests must go through Projects Committee.
-     * This method is kept for backward compatibility but should not be used in new code.
+     * Approve request by current supervisor (change_supervisor only).
+     * Forwards the request to the Projects Committee for final decision.
      */
     public function approveBySupervisor(ProjectRequest $request, User $supervisor, ?string $comments = null): ProjectRequest
     {
-        throw new \Exception('Supervisor approval is no longer supported. All requests must be processed by the Projects Committee.');
-    }
-
-    /**
-     * @deprecated Supervisor rejection is no longer used. All requests must go through Projects Committee.
-     * This method is kept for backward compatibility but should not be used in new code.
-     */
-    public function rejectBySupervisor(ProjectRequest $request, User $supervisor, ?string $comments = null): ProjectRequest
-    {
-        throw new \Exception('Supervisor rejection is no longer supported. All requests must be processed by the Projects Committee.');
-    }
-
-    /**
-     * Approve request by committee
-     */
-    public function approveByCommittee(ProjectRequest $request, User $committeeMember, ?string $comments = null): ProjectRequest
-    {
+        if ($request->type !== 'change_supervisor') {
+            throw new \Exception('Only change_supervisor requests can be approved by supervisor.');
+        }
         if ($request->status !== RequestStatus::PENDING) {
             throw new \Exception('Request must be in pending status');
         }
+        if (!$request->project_id || $request->project->supervisor_id !== $supervisor->id) {
+            throw new \Exception('You are not the current supervisor of this project.');
+        }
+
+        $request->update([
+            'status' => RequestStatus::SUPERVISOR_APPROVED->value,
+            'supervisor_approval' => [
+                'approved' => true,
+                'comments' => $comments,
+                'approved_at' => now()->toISOString(),
+                'approved_by' => $supervisor->id,
+            ],
+        ]);
+
+        $committeeMembers = User::where('role', 'projects_committee')->where('status', 'active')->get();
+        $student = $request->student;
+        $message = "طلب تغيير مشرف من الطالب {$student->name} تمت موافقته من المشرف الحالي وينتظر قرار اللجنة.";
+        foreach ($committeeMembers as $member) {
+            $this->notificationService?->create($member, $message, 'request_submitted', 'request', $request->id);
+        }
+
+        return $request->fresh();
+    }
+
+    /**
+     * Reject request by current supervisor (change_supervisor only).
+     */
+    public function rejectBySupervisor(ProjectRequest $request, User $supervisor, ?string $comments = null): ProjectRequest
+    {
+        if ($request->type !== 'change_supervisor') {
+            throw new \Exception('Only change_supervisor requests can be rejected by supervisor.');
+        }
+        if ($request->status !== RequestStatus::PENDING) {
+            throw new \Exception('Request must be in pending status');
+        }
+        if (!$request->project_id || $request->project->supervisor_id !== $supervisor->id) {
+            throw new \Exception('You are not the current supervisor of this project.');
+        }
+
+        $request->update([
+            'status' => RequestStatus::SUPERVISOR_REJECTED->value,
+            'supervisor_approval' => [
+                'approved' => false,
+                'comments' => $comments,
+                'approved_at' => now()->toISOString(),
+                'approved_by' => $supervisor->id,
+            ],
+        ]);
+
+        if ($this->notificationService && $request->student) {
+            $this->notificationService->create(
+                $request->student,
+                'تم رفض طلب تغيير المشرف من قبل المشرف الحالي.' . ($comments ? "\nملاحظات: {$comments}" : ''),
+                'request_rejected',
+                'request',
+                $request->id
+            );
+        }
+
+        return $request->fresh();
+    }
+
+    /**
+     * Approve request by committee.
+     * Allowed when status is pending (direct committee requests) or supervisor_approved (change_supervisor flow).
+     */
+    public function approveByCommittee(ProjectRequest $request, User $committeeMember, ?string $comments = null): ProjectRequest
+    {
+        $allowedStatuses = [RequestStatus::PENDING->value, RequestStatus::SUPERVISOR_APPROVED->value];
+        if (!in_array($request->status, $allowedStatuses, true)) {
+            throw new \Exception('Request must be in pending or supervisor_approved status');
+        }
 
         return DB::transaction(function () use ($request, $committeeMember, $comments) {
-            $request->update([
-                'status' => RequestStatus::COMMITTEE_APPROVED->value,
-                'committee_approval' => [
-                    'approved' => true,
-                    'comments' => $comments,
-                    'approved_at' => now()->toISOString(),
-                    'approved_by' => $committeeMember->id,
-                ],
-            ]);
+        $request->update([
+            'status' => RequestStatus::COMMITTEE_APPROVED->value,
+            'committee_approval' => [
+                'approved' => true,
+                'comments' => $comments,
+                'approved_at' => now()->toISOString(),
+                'approved_by' => $committeeMember->id,
+            ],
+        ]);
 
-            // Process the request based on type
-            $this->processRequest($request);
+        $this->processRequest($request);
 
-            // Notify student about approval
-            if ($this->notificationService && $request->student) {
-                $requestTypeLabel = match($request->type) {
-                    'change_supervisor' => 'تغيير المشرف',
-                    'change_group' => 'تغيير المجموعة',
-                    'change_project' => 'تغيير المشروع',
-                    default => 'الطلب',
-                };
-                
+        if ($this->notificationService && $request->student) {
+            $requestTypeLabel = match($request->type) {
+                'change_supervisor' => 'تغيير المشرف',
+                'change_group' => 'تغيير المجموعة',
+                'change_project' => 'تغيير المشروع',
+                'change_project_title' => 'تغيير عنوان المشروع',
+                default => 'الطلب',
+            };
+
                 $message = "تم قبول {$requestTypeLabel}";
                 if ($comments) {
                     $message .= "\nملاحظات: {$comments}";
                 }
 
-                $this->notificationService->create(
-                    $request->student,
-                    $message,
-                    'request_approved',
-                    'request',
-                    $request->id
-                );
-            }
+            $this->notificationService->create(
+                $request->student,
+                $message,
+                'request_approved',
+                'request',
+                $request->id
+            );
+        }
 
             return $request->fresh();
         });
     }
 
     /**
-     * Reject request by committee
+     * Reject request by committee.
+     * Allowed when status is pending or supervisor_approved.
      */
     public function rejectByCommittee(ProjectRequest $request, User $committeeMember, ?string $comments = null): ProjectRequest
     {
-        if ($request->status !== RequestStatus::PENDING) {
-            throw new \Exception('Request must be in pending status');
+        $allowedStatuses = [RequestStatus::PENDING->value, RequestStatus::SUPERVISOR_APPROVED->value];
+        if (!in_array($request->status, $allowedStatuses, true)) {
+            throw new \Exception('Request must be in pending or supervisor_approved status');
         }
 
         $request->update([
@@ -172,9 +234,10 @@ class RequestService
                 'change_supervisor' => 'تغيير المشرف',
                 'change_group' => 'تغيير المجموعة',
                 'change_project' => 'تغيير المشروع',
+                'change_project_title' => 'تغيير عنوان المشروع',
                 default => 'الطلب',
             };
-            
+
             $message = "تم رفض {$requestTypeLabel}";
             if ($comments) {
                 $message .= "\nملاحظات: {$comments}";
@@ -273,13 +336,13 @@ class RequestService
             'change_supervisor' => $this->processChangeSupervisorRequest($request),
             'change_group' => $this->processChangeGroupRequest($request),
             'change_project' => $this->processChangeProjectRequest($request),
+            'change_project_title' => null, // Committee may apply title manually from additional_data
             default => null,
         };
     }
 
     /**
-     * Process change supervisor request - remove supervisor from project
-     * The project will then be available for supervisor assignment through the Supervisor Assignment flow
+     * Process change supervisor request: assign proposed supervisor if present, else remove current supervisor.
      */
     private function processChangeSupervisorRequest(ProjectRequest $request): void
     {
@@ -292,13 +355,24 @@ class RequestService
             return;
         }
 
-        // Remove supervisor from project - this makes it available for reassignment
-        $project->update([
-            'supervisor_id' => null,
-            'supervisor_approval_status' => null,
-            'supervisor_approval_comments' => null,
-            'supervisor_approval_at' => null,
-        ]);
+        $additional = $request->additional_data ?? [];
+        $proposedId = $additional['proposed_supervisor_id'] ?? null;
+
+        if ($proposedId) {
+            $project->update([
+                'supervisor_id' => $proposedId,
+                'supervisor_approval_status' => null,
+                'supervisor_approval_comments' => null,
+                'supervisor_approval_at' => null,
+            ]);
+        } else {
+            $project->update([
+                'supervisor_id' => null,
+                'supervisor_approval_status' => null,
+                'supervisor_approval_comments' => null,
+                'supervisor_approval_at' => null,
+            ]);
+        }
     }
 
     /**

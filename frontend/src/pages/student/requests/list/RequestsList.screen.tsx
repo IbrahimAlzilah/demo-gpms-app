@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { DataTable, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { BlockContent, ConfirmDialog } from '@/components/common'
 import { useToast } from '@/components/common'
-import { AlertCircle, PlusCircle } from 'lucide-react'
+import { AlertCircle, PlusCircle, Users } from 'lucide-react'
+import { useRequestContext } from '../hooks/useRequestContext'
 import { createRequestColumns } from '../components/table'
 import { StatisticsCards } from '../components/StatisticsCards'
 import { RequestsNew } from '../new/RequestsNew.screen'
@@ -15,6 +16,7 @@ import { useCancelRequest, useDeleteRequest } from '../hooks/useRequestOperation
 export function RequestsList() {
   const { t } = useTranslation()
   const { toastSuccess, toastError } = useToast()
+  const { data: context } = useRequestContext()
 
   const cancelRequest = useCancelRequest()
   const deleteRequest = useDeleteRequest()
@@ -97,8 +99,9 @@ export function RequestsList() {
           }))
         },
         t,
+        isGroupLeader: context?.isGroupLeader ?? true,
       }),
-    [t, setState]
+    [t, setState, context?.isGroupLeader]
   )
 
   const handleFormSuccess = () => {
@@ -137,6 +140,8 @@ export function RequestsList() {
               <SelectContent>
                 <SelectItem value="all">{t('common.all')}</SelectItem>
                 <SelectItem value="pending">{t('common.pending')}</SelectItem>
+                <SelectItem value="supervisor_approved">{t('status.supervisor_approved')}</SelectItem>
+                <SelectItem value="supervisor_rejected">{t('status.supervisor_rejected')}</SelectItem>
                 <SelectItem value="committee_approved">{t('common.approved')}</SelectItem>
                 <SelectItem value="committee_rejected">{t('common.rejected')}</SelectItem>
                 <SelectItem value="cancelled">{t('common.cancelled')}</SelectItem>

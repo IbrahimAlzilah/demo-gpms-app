@@ -33,14 +33,12 @@ class RequestController extends Controller
             $request->merge(['filters' => $filters]);
         }
 
-        // Apply status filter only if a specific status is selected (not 'all' and not null)
+        // Apply status filter: default shows pending + supervisor_approved (change_supervisor awaiting committee)
         if ($statusFilter && $statusFilter !== 'all') {
             $query->where('status', $statusFilter);
         } elseif (!$statusFilter) {
-            // Default to pending if no filter is specified
-            $query->where('status', 'pending');
+            $query->whereIn('status', ['pending', 'supervisor_approved']);
         }
-        // If statusFilter is 'all', don't apply any status filter
 
         $query = $this->applyTableQuery($query, $request);
 

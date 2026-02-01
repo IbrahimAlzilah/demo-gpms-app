@@ -5,7 +5,7 @@ import { ActionsDropdown } from "@/components/common/ActionsDropdown"
 import type { Request } from "@/types/request.types"
 import { Eye, X, Edit, Trash2, User, Users, Briefcase, FileCheck, CheckCircle2, XCircle, Clock } from "lucide-react"
 import { formatRelativeTime } from "@/lib/utils/format"
-import type { RequestTableColumnsProps } from '../../types/Requests.types'
+import { type RequestTableColumnsProps, isLeaderOnlyRequestType } from '../../types/Requests.types'
 
 export function createRequestColumns({
   onView,
@@ -13,12 +13,14 @@ export function createRequestColumns({
   onEdit,
   onDelete,
   t,
+  isGroupLeader = true,
 }: RequestTableColumnsProps): ColumnDef<Request>[] {
   const getRequestTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
       change_supervisor: t('requests.change_supervisor'),
       change_group: t('requests.change_group'),
       change_project: t('requests.change_project'),
+      change_project_title: t('requests.change_project_title'),
       other: t('requests.other'),
     }
     return labels[type] || type
@@ -32,6 +34,8 @@ export function createRequestColumns({
         return <Users className="h-4 w-4" />
       case 'change_project':
         return <Briefcase className="h-4 w-4" />
+      case 'change_project_title':
+        return <FileCheck className="h-4 w-4" />
       default:
         return <FileCheck className="h-4 w-4" />
     }
@@ -81,27 +85,41 @@ export function createRequestColumns({
       ),
       cell: ({ row }) => {
         const request = row.original
-        return (
-          <div className="flex items-center gap-2 text-xs">
-            {request.committeeApproval ? (
-              <div className={`flex items-center gap-1 px-2 py-1 rounded ${
-                request.committeeApproval.approved
-                  ? 'bg-success/10 text-success'
-                  : 'bg-destructive/10 text-destructive'
+        if (request.committeeApproval) {
+          return (
+            <div className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${request.committeeApproval.approved
+              ? 'bg-success/10 text-success'
+              : 'bg-destructive/10 text-destructive'
               }`}>
-                {request.committeeApproval.approved ? (
-                  <CheckCircle2 className="h-3 w-3" />
-                ) : (
-                  <XCircle className="h-3 w-3" />
-                )}
-                {t('request.committeeDecision')}
-              </div>
-            ) : (
-              <div className="flex items-center gap-1 px-2 py-1 rounded bg-muted text-muted-foreground">
-                <Clock className="h-3 w-3" />
-                {t('request.awaitingCommittee')}
-              </div>
-            )}
+              {request.committeeApproval.approved ? (
+                <CheckCircle2 className="h-3 w-3" />
+              ) : (
+                <XCircle className="h-3 w-3" />
+              )}
+              {t('request.committeeDecision')}
+            </div>
+          )
+        }
+        if (request.status === 'supervisor_rejected') {
+          return (
+            <div className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-destructive/10 text-destructive">
+              <XCircle className="h-3 w-3" />
+              {t('committee.requests.supervisorRejected')}
+            </div>
+          )
+        }
+        if (request.status === 'supervisor_approved') {
+          return (
+            <div className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-info/10 text-info">
+              <Clock className="h-3 w-3" />
+              {t('committee.requests.supervisorApproved')}
+            </div>
+          )
+        }
+        return (
+          <div className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-muted text-muted-foreground">
+            <Clock className="h-3 w-3" />
+            {request.type === 'change_supervisor' ? t('request.awaitingSupervisor') : t('request.awaitingCommittee')}
           </div>
         )
       },
@@ -139,7 +157,10 @@ export function createRequestColumns({
             label: t('common.edit'),
             icon: Edit,
             onClick: () => onEdit?.(request),
-            hidden: () => !isPending || !onEdit,
+            hidden: () =>
+              !isPending ||
+              !onEdit ||
+              (isLeaderOnlyRequestType(request.type) && !isGroupLeader),
           },
           {
             id: 'delete',

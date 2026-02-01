@@ -443,6 +443,7 @@
     "change_supervisor": "Change Supervisor",
     "change_group": "Change Group",
     "change_project": "Change Project",
+    "change_project_title": "Change Project Title",
     "other": "Other Request",
     "errorNoGroup": "You must be a member of a group to submit this request",
     "errorNoProject": "You must have an approved project to submit this request",
@@ -919,11 +920,41 @@
       "change_supervisor": "Change Supervisor",
       "change_group": "Change Group",
       "change_project": "Change Project",
+      "change_project_title": "Change Project Title",
       "other": "Other"
     },
+    "currentSupervisor": "Current Supervisor",
+    "noCurrentSupervisor": "No supervisor assigned",
+    "proposedSupervisor": "Proposed New Supervisor",
+    "selectProposedSupervisor": "Select new supervisor",
+    "currentGroup": "Current Group",
+    "noCurrentGroup": "You are not in a group",
+    "myGroup": "My group",
+    "groupMembers": "Members",
+    "targetGroup": "Target Group",
+    "selectTargetGroup": "Select target group",
+    "members": "Members",
+    "currentProject": "Current Project",
+    "noCurrentProject": "No project assigned",
+    "targetProject": "Target Project",
+    "selectTargetProject": "Select target project",
+    "requestTitle": "Request Title",
+    "newProjectTitle": "New Project Title",
+    "requestTitlePlaceholder": "Enter a title for your request",
+    "newProjectTitlePlaceholder": "Enter the new project title",
     "validation": {
+      "typeRequired": "Please select a request type",
       "reasonRequired": "Request reason is required",
-      "reasonMinLength": "Reason must be at least 20 characters"
+      "reasonMinLength": "Reason must be at least 20 characters",
+      "proposedSupervisorRequired": "Please select a proposed supervisor",
+      "targetGroupRequired": "Please select a target group",
+      "targetProjectRequired": "Please select a target project",
+      "titleRequired": "Title is required"
+    },
+    "conditions": {
+      "submissionPeriodClosed": "The request submission period is not currently open. Please check the time windows for when you can submit requests.",
+      "groupMustHaveApprovedProject": "Your group must be registered in an approved project to submit this type of request.",
+      "noSupervisorAssigned": "Your project has no supervisor assigned. Change Supervisor requests are only available when a supervisor is already assigned."
     }
   },
   "document": {
