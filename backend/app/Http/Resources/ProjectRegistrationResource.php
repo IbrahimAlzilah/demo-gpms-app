@@ -23,9 +23,9 @@ class ProjectRegistrationResource extends JsonResource
             'reviewedAt' => $this->reviewed_at?->toISOString(),
             'reviewedBy' => $this->reviewed_by ? (string) $this->reviewed_by : null,
             'reviewComments' => $this->review_comments,
-            'project' => new ProjectResource($this->whenLoaded('project')),
-            'student' => new UserResource($this->whenLoaded('student')),
-            'reviewer' => new UserResource($this->whenLoaded('reviewer')),
+            'project' => $this->when($this->relationLoaded('project') && $this->project !== null, fn () => new ProjectResource($this->project)),
+            'student' => $this->when($this->relationLoaded('student') && $this->student !== null, fn () => new UserResource($this->student)),
+            'reviewer' => $this->when($this->relationLoaded('reviewer') && $this->reviewer !== null, fn () => new UserResource($this->reviewer)),
             'createdAt' => $this->created_at?->toISOString(),
             'updatedAt' => $this->updated_at?->toISOString(),
         ];

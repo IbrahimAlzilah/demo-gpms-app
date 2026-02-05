@@ -317,7 +317,7 @@ export function ProcessRequestModal({
 
                 {/* Change Project: current project/group, target project (enriched) */}
                 {request.type === 'change_project' && (request.currentGroup != null || request.currentProject != null || request.targetProject != null) && (
-                    <Card className="border-l-4 border-l-indigo-500">
+                    <Card>
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm flex items-center gap-2 text-muted-foreground">
                                 <Briefcase className="h-4 w-4" />
@@ -372,7 +372,7 @@ export function ProcessRequestModal({
                 )}
 
                 {request.type === 'change_supervisor' && request.additionalData && (
-                    <Card className="border-l-4 border-l-green-500">
+                    <Card>
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm flex items-center gap-2 text-muted-foreground">
                                 <User className="h-4 w-4" />
@@ -403,7 +403,7 @@ export function ProcessRequestModal({
                 )}
 
                 {request.type === 'change_project_title' && request.additionalData?.title && (
-                    <Card className="border-l-4 border-l-orange-500">
+                    <Card>
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm flex items-center gap-2 text-muted-foreground">
                                 <Type className="h-4 w-4" />

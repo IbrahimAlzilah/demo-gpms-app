@@ -14,8 +14,15 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        // Load profile relationships if not already loaded
-        $this->loadMissing(['studentProfile', 'supervisorProfile']);
+        $model = $this->resource;
+        if ($model === null) {
+            return [];
+        }
+
+        // Load profile relationships on the underlying model (not on the Resource)
+        if (is_object($model) && method_exists($model, 'loadMissing')) {
+            $model->loadMissing(['studentProfile', 'supervisorProfile']);
+        }
 
         return [
             'id' => (string) $this->id,

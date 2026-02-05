@@ -1,6 +1,10 @@
 import type { BaseEntity } from "./common.types";
 import type { User } from "./user.types";
-import type { Project, StudentGroup } from "./project.types";
+import type {
+  Project,
+  ProjectRegistration,
+  StudentGroup,
+} from "./project.types";
 
 export type RequestType =
   | "change_supervisor"
@@ -47,6 +51,8 @@ export interface Request extends BaseEntity {
   targetGroup?: StudentGroup | null;
   /** Enriched for committee: target project (change_project only) */
   targetProject?: Project | null;
+  /** Enriched for committee: student's project registrations (when loading request details) */
+  studentRegistrations?: ProjectRegistration[];
 }
 
 export type DocumentType =

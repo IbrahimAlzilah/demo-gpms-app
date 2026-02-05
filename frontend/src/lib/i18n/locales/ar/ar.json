@@ -102,7 +102,10 @@
     "evaluate": "تقييم",
     "note": "ملاحظة",
     "select": "اختر",
-    "inProgress": "قيد التنفيذ"
+    "inProgress": "قيد التنفيذ",
+    "ofTotal": "من الإجمالي",
+    "clearFilters": "مسح المرشحات",
+    "completionRate": "نسبة الإنجاز"
   },
   "app": {
     "name": "نظام إدارة تقييم مشاريع التخرج",
@@ -1933,12 +1936,15 @@
       "studentsCount": "عدد الطلاب",
       "totalSupervisors": "إجمالي المشرفين",
       "totalStudents": "إجمالي الطلاب",
+      "pendingEvaluations": "التقييمات المعلقة",
       "inGroup": "في مجموعة",
       "inGroups": "في مجموعات",
       "approvalRate": "معدل الموافقة",
       "onTime": "في الوقت المحدد",
       "avgDelay": "متوسط التأخير",
-      "days": "أيام"
+      "days": "أيام",
+      "historicalTrends": "الاتجاهات التاريخية",
+      "periodDetails": "تفاصيل الفترة"
     },
     "grades": {
       "management": "إدارة الدرجات النهائية",
@@ -2397,8 +2403,12 @@
     },
     "status": {
       "draft": "مسودة",
+      "pending_review": "قيد المراجعة",
+      "pendingReview": "قيد المراجعة",
       "available_for_registration": "متاح للتسجيل",
+      "approved": "معتمد",
       "in_progress": "قيد التنفيذ",
+      "inProgress": "قيد التنفيذ",
       "completed": "مكتمل",
       "archived": "مؤرشف"
     },

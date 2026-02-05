@@ -4,9 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { CheckCircle2, XCircle, Clock, User, FileText, Calendar, MessageSquare, Briefcase, Mail, Phone, Building2, IdCard, ClipboardList, Users } from 'lucide-react'
 import { formatDate, formatRelativeTime } from '@/lib/utils/format'
 import { useRequest } from '../hooks/useRequests'
-import { useQuery } from '@tanstack/react-query'
-import { registrationService } from '../../registrations/api/registration.service'
-import type { ProjectRegistration } from '@/types/project.types'
 
 interface RequestDetailsViewProps {
     requestId: string
@@ -18,17 +15,8 @@ export function RequestDetailsView({ requestId, open, onClose }: RequestDetailsV
     const { t } = useTranslation()
     const { data: request, isLoading, error } = useRequest(requestId)
 
-    // Fetch student registrations if student is available
-    const { data: registrationsData } = useQuery<ProjectRegistration[]>({
-        queryKey: ['student-registrations', request?.studentId],
-        queryFn: () => {
-            if (!request?.studentId) return []
-            return registrationService.getByStudentId(request.studentId)
-        },
-        enabled: !!request?.studentId && !!request,
-    })
-
-    const registrations = registrationsData || []
+    // Use studentRegistrations from request details (enriched by backend); fallback to empty
+    const registrations = request?.studentRegistrations ?? []
 
     if (isLoading) {
         return (
@@ -55,6 +43,7 @@ export function RequestDetailsView({ requestId, open, onClose }: RequestDetailsV
             change_supervisor: t('requests.change_supervisor'),
             change_group: t('requests.change_group'),
             change_project: t('requests.change_project'),
+            change_project_title: t('requests.change_project_title'),
             other: t('requests.other'),
         }
         return labels[type] || type
@@ -200,7 +189,7 @@ export function RequestDetailsView({ requestId, open, onClose }: RequestDetailsV
 
                 {/* Change Group: current project, current group, target group (enriched) */}
                 {request.type === 'change_group' && (request.currentGroup != null || request.targetGroup != null || request.currentProject) && (
-                    <Card className="border-l-4 border-l-purple-500">
+                    <Card>
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2">
                                 <Users className="h-5 w-5 text-primary" />
@@ -249,7 +238,7 @@ export function RequestDetailsView({ requestId, open, onClose }: RequestDetailsV
 
                 {/* Change Project: current project/group, target project (enriched) */}
                 {request.type === 'change_project' && (request.currentProject != null || request.targetProject != null) && (
-                    <Card className="border-l-4 border-l-indigo-500">
+                    <Card>
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2">
                                 <Briefcase className="h-5 w-5 text-primary" />
@@ -287,7 +276,7 @@ export function RequestDetailsView({ requestId, open, onClose }: RequestDetailsV
 
                 {/* Change Supervisor: note that request was first sent to supervisor */}
                 {request.type === 'change_supervisor' && (
-                    <Card className="border-l-4 border-l-green-500">
+                    <Card>
                         <CardContent className="pt-4">
                             <p className="text-sm text-muted-foreground">
                                 {request.status === 'supervisor_approved'

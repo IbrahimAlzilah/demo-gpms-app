@@ -158,14 +158,12 @@ class RequestService
 
     /**
      * Approve request by committee.
-     * Allowed when status is pending (direct committee requests) or supervisor_approved (change_supervisor flow).
+     * Change Supervisor: allowed only when pending or supervisor_approved (supervisor must approve first).
+     * All other types: allowed when request is not yet final (not approved/rejected by committee, not cancelled).
      */
     public function approveByCommittee(ProjectRequest $request, User $committeeMember, ?string $comments = null): ProjectRequest
     {
-        $allowedStatuses = [RequestStatus::PENDING->value, RequestStatus::SUPERVISOR_APPROVED->value];
-        if (!in_array($request->status, $allowedStatuses, true)) {
-            throw new \Exception('Request must be in pending or supervisor_approved status');
-        }
+        $this->assertCommitteeCanActOnRequest($request, 'approve');
 
         return DB::transaction(function () use ($request, $committeeMember, $comments) {
         $request->update([
@@ -209,14 +207,12 @@ class RequestService
 
     /**
      * Reject request by committee.
-     * Allowed when status is pending or supervisor_approved.
+     * Change Supervisor: allowed only when pending or supervisor_approved.
+     * All other types: allowed when request is not yet final (not cancelled, not already decided by committee).
      */
     public function rejectByCommittee(ProjectRequest $request, User $committeeMember, ?string $comments = null): ProjectRequest
     {
-        $allowedStatuses = [RequestStatus::PENDING->value, RequestStatus::SUPERVISOR_APPROVED->value];
-        if (!in_array($request->status, $allowedStatuses, true)) {
-            throw new \Exception('Request must be in pending or supervisor_approved status');
-        }
+        $this->assertCommitteeCanActOnRequest($request, 'reject');
 
         $request->update([
             'status' => RequestStatus::COMMITTEE_REJECTED->value,
@@ -255,6 +251,36 @@ class RequestService
         }
 
         return $request->fresh();
+    }
+
+    /**
+     * Ensure the committee can approve or reject this request.
+     * Change Supervisor: only when status is pending or supervisor_approved (supervisor must act first).
+     * All other types: whenever the request is not final (not committee_approved, committee_rejected, cancelled).
+     */
+    private function assertCommitteeCanActOnRequest(ProjectRequest $request, string $action): void
+    {
+        $status = $request->status;
+        if ($status === null) {
+            throw new \Exception('Request has no status');
+        }
+
+        $statusEnum = $status instanceof RequestStatus ? $status : RequestStatus::tryFrom((string) $status);
+        if ($statusEnum === null) {
+            throw new \Exception('Invalid request status');
+        }
+
+        if ($request->type === 'change_supervisor') {
+            $allowed = [RequestStatus::PENDING, RequestStatus::SUPERVISOR_APPROVED];
+            if (! in_array($statusEnum, $allowed, true)) {
+                throw new \Exception('Change Supervisor requests can only be processed by the committee after they are pending or approved by the current supervisor.');
+            }
+            return;
+        }
+
+        if ($statusEnum->isFinal()) {
+            throw new \Exception('This request has already been processed or cancelled.');
+        }
     }
 
     /**

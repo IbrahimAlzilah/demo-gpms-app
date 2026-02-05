@@ -1,72 +1,89 @@
-import { apiClient } from '../../../../../lib/axios'
-import type { Request } from '../../../../../types/request.types'
-import type { TableQueryParams, TableResponse } from '../../../../../types/table.types'
+import { apiClient } from "../../../../../lib/axios";
+import type { Request } from "../../../../../types/request.types";
+import type {
+  TableQueryParams,
+  TableResponse,
+} from "../../../../../types/table.types";
 
 export const committeeRequestService = {
   getPendingRequests: async (): Promise<Request[]> => {
-    const response = await apiClient.get<Request[]>('/projects-committee/requests')
-    return Array.isArray(response.data) ? response.data : []
+    const response = await apiClient.get<Request[]>(
+      "/projects-committee/requests",
+    );
+    return Array.isArray(response.data) ? response.data : [];
   },
 
-  getTableData: async (params?: TableQueryParams): Promise<TableResponse<Request>> => {
-    const queryParams = new URLSearchParams()
-    
-    if (params?.page) queryParams.append('page', params.page.toString())
-    if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString())
-    if (params?.sortBy) queryParams.append('sortBy', params.sortBy)
-    if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder)
-    if (params?.search) queryParams.append('search', params.search)
+  getTableData: async (
+    params?: TableQueryParams,
+  ): Promise<TableResponse<Request>> => {
+    const queryParams = new URLSearchParams();
+
+    if (params?.page) queryParams.append("page", params.page.toString());
+    if (params?.pageSize)
+      queryParams.append("pageSize", params.pageSize.toString());
+    if (params?.sortBy) queryParams.append("sortBy", params.sortBy);
+    if (params?.sortOrder) queryParams.append("sortOrder", params.sortOrder);
+    if (params?.search) queryParams.append("search", params.search);
     if (params?.filters) {
       Object.entries(params.filters).forEach(([key, value]) => {
-        if (value !== null && value !== undefined && value !== '') {
-          queryParams.append(`filters[${key}]`, String(value))
+        if (value !== null && value !== undefined && value !== "") {
+          queryParams.append(`filters[${key}]`, String(value));
         }
-      })
+      });
     }
 
-    const response = await apiClient.get<Request[]>(
-      `/projects-committee/requests?${queryParams.toString()}`
-    )
-    
+    const response = await apiClient.get<Request[] | { data?: Request[] }>(
+      `/projects-committee/requests?${queryParams.toString()}`,
+    );
+    // Backend may return data as Resource collection { data: [...] }; interceptor preserves it
+    const rawData = response.data;
+    const dataArray = Array.isArray(rawData)
+      ? rawData
+      : Array.isArray((rawData as { data?: Request[] })?.data)
+        ? (rawData as { data: Request[] }).data
+        : [];
+
     return {
-      data: Array.isArray(response.data) ? response.data : [],
-      totalCount: response.pagination?.total || 0,
-      page: response.pagination?.page || 1,
-      pageSize: response.pagination?.pageSize || 10,
-      totalPages: response.pagination?.totalPages || 0,
-    }
+      data: dataArray,
+      totalCount: response.pagination?.total ?? 0,
+      page: response.pagination?.page ?? 1,
+      pageSize: response.pagination?.pageSize ?? 10,
+      totalPages: response.pagination?.totalPages ?? 0,
+    };
   },
 
   getById: async (id: string): Promise<Request | null> => {
     try {
-      const response = await apiClient.get<Request>(`/projects-committee/requests/${id}`)
-      return response.data
+      const response = await apiClient.get<Request>(
+        `/projects-committee/requests/${id}`,
+      );
+      return response.data;
     } catch {
-      return null
+      return null;
     }
   },
 
   approve: async (
     id: string,
     _approvedBy: string,
-    comments?: string
+    comments?: string,
   ): Promise<Request> => {
     const response = await apiClient.post<Request>(
       `/projects-committee/requests/${id}/approve`,
-      { comments }
-    )
-    return response.data
+      { comments },
+    );
+    return response.data;
   },
 
   reject: async (
     id: string,
     _rejectedBy: string,
-    comments?: string
+    comments?: string,
   ): Promise<Request> => {
     const response = await apiClient.post<Request>(
       `/projects-committee/requests/${id}/reject`,
-      { comments }
-    )
-    return response.data
+      { comments },
+    );
+    return response.data;
   },
-}
+};

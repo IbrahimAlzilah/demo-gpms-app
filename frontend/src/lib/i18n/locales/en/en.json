@@ -102,7 +102,11 @@
     "pending": "Pending",
     "cancelled": "Cancelled",
     "select": "Select",
-    "leader": "Leader"
+    "leader": "Leader",
+    "ofTotal": "of total",
+    "print": "Print",
+    "clearFilters": "Clear filters",
+    "completionRate": "Completion rate"
   },
   "app": {
     "name": "Graduation Project Management System",
@@ -1863,6 +1867,7 @@
       "totalSupervisors": "Total Supervisors",
       "totalProjects": "Total Projects",
       "totalStudents": "Total Students",
+      "pendingEvaluations": "Pending Evaluations",
       "inGroup": "In Group",
       "inGroups": "In Groups",
       "approvalRate": "Approval Rate",
@@ -2326,8 +2331,12 @@
     },
     "status": {
       "draft": "Draft",
+      "pending_review": "Pending Review",
+      "pendingReview": "Pending Review",
       "available_for_registration": "Available for Registration",
+      "approved": "Approved",
       "in_progress": "In Progress",
+      "inProgress": "In Progress",
       "completed": "Completed",
       "archived": "Archived"
     },

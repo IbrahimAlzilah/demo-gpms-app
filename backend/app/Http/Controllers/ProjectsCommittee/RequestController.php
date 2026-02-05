@@ -5,9 +5,11 @@ namespace App\Http\Controllers\ProjectsCommittee;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\RequestResource;
 use App\Http\Resources\ProjectResource;
+use App\Http\Resources\ProjectRegistrationResource;
 use App\Http\Resources\StudentGroupResource;
 use App\Http\Traits\HasTableQuery;
 use App\Models\ProjectRequest;
+use App\Models\ProjectRegistration;
 use App\Models\StudentGroup;
 use App\Models\Project;
 use App\Services\RequestService;
@@ -37,11 +39,9 @@ class RequestController extends Controller
             $request->merge(['filters' => $filters]);
         }
 
-        // Apply status filter: default shows pending + supervisor_approved (change_supervisor awaiting committee)
+        // Apply status filter only when a specific status is selected (not "all" or empty)
         if ($statusFilter && $statusFilter !== 'all') {
             $query->where('status', $statusFilter);
-        } elseif (!$statusFilter) {
-            $query->whereIn('status', ['pending', 'supervisor_approved']);
         }
 
         $query = $this->applyTableQuery($query, $request);
@@ -93,6 +93,15 @@ class RequestController extends Controller
                     ? (new ProjectResource($targetProject->load(['supervisor', 'assignedGroup'])))->toArray(request())
                     : null;
             }
+
+            // Include student's project registrations for committee context
+            $studentRegistrations = ProjectRegistration::where('student_id', $student->id)
+                ->with(['project.supervisor', 'reviewer'])
+                ->orderBy('submitted_at', 'desc')
+                ->get();
+            $data['studentRegistrations'] = $studentRegistrations->map(
+                fn ($reg) => (new ProjectRegistrationResource($reg))->toArray(request())
+            )->values()->all();
         }
 
         return response()->json([
