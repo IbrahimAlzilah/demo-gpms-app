@@ -61,7 +61,7 @@ export function RequestDetailsView({ requestId, open, onClose }: RequestDetailsV
     }
 
     return (
-        <ModalDialog open={open} onOpenChange={onClose} title={t('request.requestDetails')} size="xl">
+        <ModalDialog open={open} onOpenChange={onClose} title={t('request.requestDetails')} size="xl" className="lg:max-w-3xl">
             <div className="max-w-4xl space-y-4">
                 {/* Request Header */}
                 <div className="flex items-center justify-between pb-4 border-b">

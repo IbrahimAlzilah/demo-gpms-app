@@ -172,201 +172,204 @@ export function DocumentUpload({ projectId, onSuccess, initialChapterNumber, rep
 
   return (
     <div className="space-y-6">
-      {/* Guidance Section */}
-      <DocumentGuidance
-        isPhase1Active={isPhase1Active}
-        isPhase2Active={isPhase2Active}
-        isFinalActive={isFinalActive}
-        hasProject={hasProject}
-        t={t}
-      />
-
       {!isPeriodActive && (
-        <div className="p-6 text-center border rounded-lg bg-muted/30">
-          <Clock className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-          <h3 className="font-semibold text-lg mb-2">{t('document.windowClosed')}</h3>
-          <p className="text-muted-foreground">{t('document.windowClosedDesc')}</p>
-        </div>
+        <>
+          {/* Guidance Section */}
+          <DocumentGuidance
+            isPhase1Active={isPhase1Active}
+            isPhase2Active={isPhase2Active}
+            isFinalActive={isFinalActive}
+            hasProject={hasProject}
+            t={t}
+          />
+          <div className="p-6 text-center border rounded-lg bg-muted/30">
+            <Clock className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+            <h3 className="font-semibold text-lg mb-2">{t('document.windowClosed')}</h3>
+            <p className="text-muted-foreground">{t('document.windowClosedDesc')}</p>
+          </div>
+        </>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        {errors.file && (
-          <div className="flex items-start gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
-            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-            <span>{errors.file.message}</span>
-          </div>
-        )}
+      {isPeriodActive && (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {errors.file && (
+            <div className="flex items-start gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
+              <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+              <span>{errors.file.message}</span>
+            </div>
+          )}
 
-        <div className="space-y-2">
-          <Label htmlFor="documentType">
-            {t('document.documentType')} <span className="text-destructive">*</span>
-          </Label>
-          <Select
-            value={documentType}
-            onValueChange={(value) =>
-              setValue('documentType', value as DocumentUploadSchema['documentType'])
-            }
-            disabled={!isPeriodActive || !hasProject || isResubmission}
-          >
-            <SelectTrigger
-              id="documentType"
-              className={errors.documentType ? 'border-destructive' : ''}
+          <div className="space-y-2">
+            <Label htmlFor="documentType">
+              {t('document.documentType')} <span className="text-destructive">*</span>
+            </Label>
+            <Select
+              value={documentType}
+              onValueChange={(value) =>
+                setValue('documentType', value as DocumentUploadSchema['documentType'])
+              }
               disabled={!isPeriodActive || !hasProject || isResubmission}
             >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {documentTypeOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {documentType === 'chapters' && nextAllowedChapter && (
-            <div className={cn(
-              'p-3 rounded-lg border',
-              initialChapterNumber !== undefined
-                ? replaceMode
-                  ? 'bg-blue-500/10 border-blue-500/30'
-                  : 'bg-amber-500/10 border-amber-500/30'
-                : 'bg-primary/5 border-primary/20'
-            )}>
-              {initialChapterNumber !== undefined ? (
-                replaceMode ? (
-                  <>
-                    <p className="text-sm font-medium text-blue-700 dark:text-blue-400">
-                      {t('document.uploadChapters.replaceChapter', { chapter: nextAllowedChapter })}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {t('document.uploadChapters.replaceChapterDesc')}
-                    </p>
-                  </>
+              <SelectTrigger
+                id="documentType"
+                className={errors.documentType ? 'border-destructive' : ''}
+                disabled={!isPeriodActive || !hasProject || isResubmission}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {documentTypeOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {documentType === 'chapters' && nextAllowedChapter && (
+              <div className={cn(
+                'p-3 rounded-lg border',
+                initialChapterNumber !== undefined
+                  ? replaceMode
+                    ? 'bg-blue-500/10 border-blue-500/30'
+                    : 'bg-amber-500/10 border-amber-500/30'
+                  : 'bg-primary/5 border-primary/20'
+              )}>
+                {initialChapterNumber !== undefined ? (
+                  replaceMode ? (
+                    <>
+                      <p className="text-sm font-medium text-blue-700 dark:text-blue-400">
+                        {t('document.uploadChapters.replaceChapter', { chapter: nextAllowedChapter })}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {t('document.uploadChapters.replaceChapterDesc')}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
+                        {t('document.uploadChapters.resubmittingChapter', { chapter: nextAllowedChapter })}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {t('document.uploadChapters.resubmittingChapterDesc')}
+                      </p>
+                    </>
+                  )
                 ) : (
                   <>
-                    <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
-                      {t('document.uploadChapters.resubmittingChapter', { chapter: nextAllowedChapter })}
+                    <p className="text-sm font-medium text-primary">
+                      {t('document.uploadChapters.chapterWillSubmit', { chapter: nextAllowedChapter })}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {t('document.uploadChapters.resubmittingChapterDesc')}
+                      {t('document.uploadChapters.chapterWillSubmitDesc')}
                     </p>
                   </>
-                )
-              ) : (
-                <>
-                  <p className="text-sm font-medium text-primary">
-                    {t('document.uploadChapters.chapterWillSubmit', { chapter: nextAllowedChapter })}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {t('document.uploadChapters.chapterWillSubmitDesc')}
-                  </p>
-                </>
-              )}
-            </div>
-          )}
-          {documentType === 'chapters' && !nextAllowedChapter && (
-            <div className="p-3 rounded-lg bg-muted border border-muted-foreground/20">
-              <p className="text-sm text-muted-foreground">
-                {t('document.uploadChapters.allChaptersCompleted')}
+                )}
+              </div>
+            )}
+            {documentType === 'chapters' && !nextAllowedChapter && (
+              <div className="p-3 rounded-lg bg-muted border border-muted-foreground/20">
+                <p className="text-sm text-muted-foreground">
+                  {t('document.uploadChapters.allChaptersCompleted')}
+                </p>
+              </div>
+            )}
+            {errors.documentType && (
+              <p className="text-xs text-destructive flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors.documentType.message}
               </p>
-            </div>
-          )}
-          {errors.documentType && (
-            <p className="text-xs text-destructive flex items-center gap-1">
-              <AlertCircle className="h-3 w-3" />
-              {errors.documentType.message}
-            </p>
-          )}
-        </div>
+            )}
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="file">
-            {t('document.selectFile')} <span className="text-destructive">*</span>
-          </Label>
+          <div className="space-y-2">
+            <Label htmlFor="file">
+              {t('document.selectFile')} <span className="text-destructive">*</span>
+            </Label>
 
-          <Controller
-            name="file"
-            control={control}
-            render={({ field: { onChange, name, onBlur, value } }) => (
-              <>
-                <div
-                  className={cn(
-                    "border-2 border-dashed rounded-lg p-8 text-center transition-all cursor-pointer",
-                    isDragActive ? "border-primary bg-primary/5" : "border-muted-foreground/25 hover:bg-muted/50",
-                    errors.file && "border-destructive/50 bg-destructive/5",
-                    value && "border-success/50 bg-success/5"
-                  )}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    setIsDragActive(true);
-                  }}
-                  onDragLeave={() => setIsDragActive(false)}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    setIsDragActive(false);
-                    if (e.dataTransfer.files?.[0]) {
-                      onChange(e.dataTransfer.files[0]);
-                    }
-                  }}
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <input
-                    name={name}
-                    onBlur={onBlur}
-                    ref={fileInputRef}
-                    id="file"
-                    type="file"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) onChange(file)
+            <Controller
+              name="file"
+              control={control}
+              render={({ field: { onChange, name, onBlur, value } }) => (
+                <>
+                  <div
+                    className={cn(
+                      "border-2 border-dashed rounded-lg p-8 text-center transition-all cursor-pointer",
+                      isDragActive ? "border-primary bg-primary/5" : "border-muted-foreground/25 hover:bg-muted/50",
+                      errors.file && "border-destructive/50 bg-destructive/5",
+                      value && "border-success/50 bg-success/5"
+                    )}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setIsDragActive(true);
                     }}
-                    accept=".pdf,.doc,.docx,.zip,.rar"
-                    disabled={!isPeriodActive || !hasProject || uploadDocument.isPending}
-                  />
+                    onDragLeave={() => setIsDragActive(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setIsDragActive(false);
+                      if (e.dataTransfer.files?.[0]) {
+                        onChange(e.dataTransfer.files[0]);
+                      }
+                    }}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <input
+                      name={name}
+                      onBlur={onBlur}
+                      ref={fileInputRef}
+                      id="file"
+                      type="file"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) onChange(file)
+                      }}
+                      accept=".pdf,.doc,.docx,.zip,.rar"
+                      disabled={!isPeriodActive || !hasProject || uploadDocument.isPending}
+                    />
 
-                  <div className="flex flex-col items-center justify-center gap-2">
-                    <div className={cn(
-                      "h-12 w-12 rounded-full flex items-center justify-center transition-colors",
-                      value ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"
-                    )}>
-                      {value ? <CheckCircle2 className="h-6 w-6" /> : <Upload className="h-6 w-6" />}
-                    </div>
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <div className={cn(
+                        "h-12 w-12 rounded-full flex items-center justify-center transition-colors",
+                        value ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"
+                      )}>
+                        {value ? <CheckCircle2 className="h-6 w-6" /> : <Upload className="h-6 w-6" />}
+                      </div>
 
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">
-                        {value ? value.name : t('document.clickOrDragToUpload')}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {value ? formatFileSize(value.size) : t('document.fileUploadHint')}
-                      </p>
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">
+                          {value ? value.name : t('document.clickOrDragToUpload')}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {value ? formatFileSize(value.size) : t('document.fileUploadHint')}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                </>
+              )}
+            />
+          </div>
+
+
+          <Button
+            type="submit"
+            disabled={uploadDocument.isPending || !isPeriodActive || !hasProject}
+            className="w-full"
+          >
+            {uploadDocument.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {t('document.uploading')}
+              </>
+            ) : (
+              <>
+                <Upload className="size-4" />
+                {t('document.upload', { defaultValue: 'Upload File' })}
               </>
             )}
-          />
-        </div>
-
-
-        <Button
-          type="submit"
-          disabled={uploadDocument.isPending || !isPeriodActive || !hasProject}
-          className="w-full"
-        >
-          {uploadDocument.isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {t('document.uploading')}
-            </>
-          ) : (
-            <>
-              <Upload className="size-4" />
-              {t('document.upload', { defaultValue: 'Upload File' })}
-            </>
-          )}
-        </Button>
-      </form >
+          </Button>
+        </form >
+      )}
     </div >
   )
 }
