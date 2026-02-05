@@ -132,7 +132,7 @@ export function ProjectRegistrationForm({
   if (registration && registration.status === 'pending') {
     return (
       <Card className="shadow-none border-none p-2">
-        <CardHeader>
+        <CardHeader className='p-0 mb-4'>
           <CardTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5 text-warning" />
             {t('project.registrationStatus')}
@@ -215,7 +215,7 @@ export function ProjectRegistrationForm({
   if (registration && registration.status === 'approved') {
     return (
       <Card className="shadow-none border-none p-2">
-        <CardHeader className='px-0'>
+        <CardHeader className='p-0 mb-4'>
           <CardTitle className="flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5 text-success" />
             {t('project.registrationStatus')}
@@ -282,7 +282,7 @@ export function ProjectRegistrationForm({
     if (registration.projectId === project.id) {
       return (
         <Card className="shadow-none border-none p-2">
-          <CardHeader>
+          <CardHeader className='p-0 mb-4'>
             <CardTitle className="flex items-center gap-2">
               <XCircle className="h-5 w-5 text-destructive" />
               {t('project.registrationStatus')}
@@ -399,7 +399,7 @@ export function ProjectRegistrationForm({
   if (registration && registration.status === 'cancelled') {
     return (
       <Card className="shadow-none border-none p-2">
-        <CardHeader>
+        <CardHeader className='p-0 mb-4'>
           <CardTitle className="flex items-center gap-2">
             <XCircle className="h-5 w-5 text-muted-foreground" />
             {t('project.registrationStatus')}
@@ -451,7 +451,7 @@ export function ProjectRegistrationForm({
   if (approvedRegistration && approvedRegistration.projectId !== project.id) {
     return (
       <Card className="shadow-none border-none p-2">
-        <CardHeader className='px-0'>
+        <CardHeader className='p-0 mb-4'>
           <CardTitle className="flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5 text-success" />
             {t('project.registrationStatus')}

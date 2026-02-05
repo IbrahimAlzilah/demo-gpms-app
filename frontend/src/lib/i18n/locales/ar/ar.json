@@ -98,7 +98,8 @@
     "oneProposal": "مقترح واحد",
     "createdBy": "انشأ بواسطة",
     "proposals": "المقترحات",
-    "evaluate": "تقييم"
+    "evaluate": "تقييم",
+    "note": "ملاحظة"
   },
   "app": {
     "name": "نظام إدارة تقييم مشاريع التخرج",
@@ -2077,7 +2078,7 @@
     "registrationRequest": "طلب التسجيل",
     "requestApproved": "تم قبول الطلب",
     "requestRejected": "تم رفض الطلب",
-    "approvedProject": "المشروع المعتمد: {{project}}",
+    "approvedProject": "المشروع المعتمد",
     "cancel": "إلغاء الطلب",
     "cancelSuccess": "تم إلغاء طلب التسجيل بنجاح",
     "cancelError": "فشل إلغاء طلب التسجيل",
@@ -2091,9 +2092,8 @@
     "loadError": "حدث خطأ أثناء تحميل طلبات التسجيل",
     "autoApprove": "الموافقة التلقائية على التسجيل",
     "autoApproveNote": "سيبقى التسجيل قيد الانتظار حتى يتم الموافقة عليه يدوياً",
-    "groupHasApprovedProject": "هذه المجموعة لديها بالفعل مشروع معتمد: {{project}}. يمكن الموافقة على مشروع واحد فقط لكل مجموعة.",
+    "groupHasApprovedProject": "هذه المجموعة لديها بالفعل مشروع معتمد: {{project}}. لا يمكن الموافقة على مشروع آخر.",
     "cannotApproveAnother": "لا يمكن الموافقة على مشروع آخر - المجموعة لديها بالفعل مشروع معتمد",
-    "approvedProject": "المشروع المعتمد",
     "registrationRequests": "طلبات التسجيل",
     "request": "طلب",
     "requests": "طلبات",

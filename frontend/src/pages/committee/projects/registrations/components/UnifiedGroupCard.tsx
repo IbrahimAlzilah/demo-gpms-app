@@ -16,6 +16,8 @@ import {
   AlertCircle,
   AlertTriangle,
   FileEdit,
+  Edit,
+  Trash2,
 } from 'lucide-react'
 import { formatDate, formatRelativeTime } from '@/lib/utils/format'
 import { cn } from '@/lib/utils'
@@ -249,6 +251,7 @@ export function UnifiedGroupCard({
                                 size="sm"
                                 onClick={() => onViewProposal(proposal)}
                                 className="h-8 w-8 p-0"
+                                title={t('common.view')}
                               >
                                 <Eye className="h-3.5 w-3.5" />
                               </Button>
@@ -261,6 +264,7 @@ export function UnifiedGroupCard({
                                   onClick={() => onApproveProposal(proposal)}
                                   disabled={isLoading}
                                   className="h-8 w-8 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                                  title={t('committee.proposal.approve')}
                                 >
                                   {isLoading ? (
                                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -274,6 +278,7 @@ export function UnifiedGroupCard({
                                   onClick={() => onRequestModification(proposal)}
                                   disabled={isLoading}
                                   className="h-8 w-8 p-0 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                                  title={t('committee.proposal.requestModification')}
                                 >
                                   <FileEdit className="h-3.5 w-3.5" />
                                 </Button>
@@ -283,16 +288,43 @@ export function UnifiedGroupCard({
                                   onClick={() => onRejectProposal(proposal)}
                                   disabled={isLoading}
                                   className="h-8 w-8 p-0 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                                  title={t('committee.proposal.reject')}
                                 >
                                   <X className="h-3.5 w-3.5" />
                                 </Button>
                               </>
                             )}
-                            {hasApprovedProjectWarning && canReview && (
+                            {/* {hasApprovedProjectWarning && canReview && (
                               <div className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0"
+                                  title={t('registration.cannotApproveAnother')}
+                                >
                                 <AlertCircle className="h-3.5 w-3.5" />
-                                <span>{t('registration.cannotApproveAnother')}</span>
+                                </Button>
                               </div>
+                            )} */}
+                            {/* Edit and Delete - same as supervisor proposals */}
+                            {onEditProposal && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => onEditProposal(proposal)}
+                                className="h-8 w-8 p-0 hover:bg-primary/10"
+                                title={t('common.edit')}
+                              >
+                                <Edit className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
+                            {onDeleteProposal && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => onDeleteProposal(proposal)}
+                                className="h-8 w-8 p-0 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                                title={t('common.delete')}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
                             )}
                           </div>
                         </div>
