@@ -130,6 +130,7 @@ export function GroupsList() {
           onDeleteGroup={() => setShowDeleteDialog(true)}
           onLeaveGroup={() => { }}
           joinRequestsCount={joinRequestsCount}
+          joinRequests={joinRequests ?? undefined}
         />
       )}
 

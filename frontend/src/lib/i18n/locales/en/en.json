@@ -552,6 +552,7 @@
     "joining": "Joining...",
     "join": "Join",
     "leave": "Leave",
+    "remove": "Remove",
     "deleteGroup": "Delete Group",
     "confirmDeleteGroup": "Are you sure you want to delete the group? All members will be removed.",
     "deleteSuccess": "Group deleted successfully",
@@ -563,7 +564,12 @@
     "manageYourGroupMembers": "Manage your group members",
     "confirmRemove": "Are you sure you want to remove this member from the group?",
     "removeSuccess": "Member removed successfully",
-    "removeError": "Failed to remove member"
+    "removeError": "Failed to remove member",
+    "invitationAccepted": "Invitation accepted",
+    "invitationRejected": "Invitation rejected",
+    "invitationPending": "Invitation pending",
+    "invitationCancelled": "Invitation cancelled",
+    "invitationExpired": "Invitation expired"
   },
   "theme": {
     "light": "Light",

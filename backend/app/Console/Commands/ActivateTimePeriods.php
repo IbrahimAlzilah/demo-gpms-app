@@ -29,15 +29,13 @@ class ActivateTimePeriods extends Command
      */
     public function handle(): int
     {
-        $today = Carbon::today()->startOfDay();
+        // Use start of day so start/end dates are inclusive (active on both start and end day)
+        $today = Carbon::today();
         $activatedCount = 0;
         $notifiedCount = 0;
 
         // Find periods that should be active but are not yet activated
-        // Conditions:
-        // 1. is_active = false (not manually activated)
-        // 2. start_date <= today (start date has been reached)
-        // 3. end_date >= today (period hasn't ended - end date is inclusive)
+        // Conditions: is_active = false, start_date <= today, end_date >= today (both bounds inclusive)
         $periodsToActivate = TimePeriod::where('is_active', false)
             ->where('start_date', '<=', $today)
             ->where('end_date', '>=', $today)
@@ -83,8 +81,7 @@ class ActivateTimePeriods extends Command
             }
         }
 
-        // Also deactivate periods that have passed their end date
-        // Periods are deactivated the day AFTER the end date
+        // Deactivate periods whose end date has passed (end date is inclusive; deactivate when today > end date)
         $periodsToDeactivate = TimePeriod::where('is_active', true)
             ->where('end_date', '<', $today)
             ->get();

@@ -37,7 +37,7 @@ export const BlockContent = ({
     content = (
       <Card className={cn(printShadow ? "print:shadow-none print:border-0" : "", cardClassName)}>
         <CardHeader className='px-4 py-3'>
-          <div className='flex justify-between items-center'>
+          <div className='flex justify-between items-center min-h-9'>
             {title && <CardTitle className={`text-base ${!actions ? "leading-8" : ""}`}>{title}</CardTitle>}
             <div className='flex gap-2'>
               {actions && actions}

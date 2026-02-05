@@ -577,7 +577,14 @@
     "deleteGroupDescription": "يمكن حذف المجموعة فقط إذا لم يكن هناك أي تسجيلات مشاريع سابقة",
     "onlyLeaderCanLeaveGroup": "يمكن فقط قائد المجموعة مغادرة المجموعة",
     "cannotDeleteGroupWhileRegisteredInProject": "لا يمكن حذف المجموعة أثناء التسجيل في المشروع",
-    "manageYourGroupMembers": "إدارة أعضاء المجموعة"
+    "manageYourGroupMembers": "إدارة أعضاء المجموعة",
+    "invitationAccepted": "تم قبول الدعوة",
+    "invitationRejected": "تم رفض الدعوة",
+    "invitationPending": "قيد المراجعة",
+    "invitationExpired": "تم انتهاء الدعوة",
+    "invitationCancelled": "تم إلغاء الدعوة",
+    "removeSuccess": "تم إزالة العضو بنجاح",
+    "confirmRemove": "هل أنت متأكد من إزالة هذا العضو من المجموعة؟"
   },
   "theme": {
     "light": "فاتح",

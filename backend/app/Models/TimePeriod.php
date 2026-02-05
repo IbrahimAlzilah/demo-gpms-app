@@ -47,9 +47,8 @@ class TimePeriod extends Model
     }
 
     /**
-     * Check if period is currently active
-     * Period is active if current date is between start_date and end_date (inclusive)
-     * The end_date is considered valid for the entire day
+     * Check if period is currently active.
+     * Start date and end date are both inclusive (active on the whole of start day and end day).
      */
     public function isCurrentlyActive(): bool
     {
@@ -73,8 +72,8 @@ class TimePeriod extends Model
     }
 
     /**
-     * Check if period should be active based on current date
-     * Returns true if start_date has been reached and end_date has not passed
+     * Check if period should be active based on current date.
+     * Returns true if today is on or after start_date and on or before end_date (both inclusive).
      */
     public function shouldBeActive(): bool
     {
@@ -84,7 +83,7 @@ class TimePeriod extends Model
     }
 
     /**
-     * Check if period has passed its end date
+     * Check if period has passed its end date (returns true the day after end date).
      */
     public function hasEnded(): bool
     {

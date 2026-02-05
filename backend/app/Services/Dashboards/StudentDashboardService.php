@@ -66,10 +66,11 @@ class StudentDashboardService
             TimePeriodType::FINAL_DEFENSE_PHASE_2->value,
         ];
 
+        $today = Carbon::today();
         $activeTimeWindows = TimePeriod::whereIn('type', $relevantTypes)
             ->where('is_active', true)
-            ->where('start_date', '<=', now())
-            ->where('end_date', '>=', now()->startOfDay())
+            ->where('start_date', '<=', $today)
+            ->where('end_date', '>=', $today)
             ->orderBy('end_date', 'asc')
             ->get()
             ->map(function ($period) {

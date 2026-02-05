@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button } from '@/components/ui'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, Badge, Button } from '@/components/ui'
 import { LoadingSpinner } from '@/components/common'
 import { UserPlus, CheckCircle2, XCircle, Clock, Loader2 } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
@@ -12,6 +11,7 @@ interface GroupJoinRequestsListProps {
   group: ProjectGroup | StudentGroup
   requests?: GroupJoinRequest[]
   isLoading?: boolean
+  joinCount?: number
   onError?: (error: string) => void
   onSuccess?: (message: string) => void
 }
@@ -20,6 +20,7 @@ export function GroupJoinRequestsList({
   group,
   requests: promptRequests,
   isLoading: promptLoading,
+  joinCount = 0,
   onError,
   onSuccess,
 }: GroupJoinRequestsListProps) {
@@ -71,16 +72,21 @@ export function GroupJoinRequestsList({
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <UserPlus className="h-5 w-5 text-primary" />
-          {t('groups.joinRequests')}
-        </CardTitle>
-        <CardDescription>
-          {isGroupFull
-            ? t('groups.groupFullCannotAccept')
-            : t('groups.joinRequestsDescription', { count: pendingRequests.length })}
-        </CardDescription>
+      <CardHeader className="flex items-center justify-between">
+        <div className="flex flex-col gap-1">
+          <CardTitle className="flex items-center gap-2">
+            <UserPlus className="h-5 w-5 text-primary" />
+            {t('groups.joinRequests')}
+          </CardTitle>
+          <CardDescription>
+            {isGroupFull
+              ? t('groups.groupFullCannotAccept')
+              : t('groups.joinRequestsDescription', { count: pendingRequests.length })}
+          </CardDescription>
+        </div>
+        <Badge variant="destructive" className="text-xs">
+          {joinCount}
+        </Badge>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">

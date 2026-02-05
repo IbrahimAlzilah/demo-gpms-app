@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\TimePeriodResource;
 use App\Services\TimeWindowService;
 use App\Enums\TimePeriodType;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -53,13 +54,18 @@ class TimeWindowController extends Controller
         $window = $this->timeWindowService->getActiveWindow($type);
         $isActive = $window !== null;
 
+        $today = Carbon::today();
+        $daysRemaining = $isActive && $window
+            ? $today->diffInDays($window->end_date->startOfDay(), false)
+            : null;
+
         return response()->json([
             'success' => true,
             'data' => [
                 'type' => $type,
                 'isActive' => $isActive,
                 'window' => $window ? new TimePeriodResource($window) : null,
-                'daysRemaining' => $isActive ? now()->diffInDays($window->end_date, false) : null,
+                'daysRemaining' => $daysRemaining,
             ],
         ]);
     }

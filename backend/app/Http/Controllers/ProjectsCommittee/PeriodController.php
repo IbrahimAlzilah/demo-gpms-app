@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\TimePeriodResource;
 use App\Http\Traits\HasTableQuery;
 use App\Models\TimePeriod;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -49,13 +50,17 @@ class PeriodController extends Controller
             'description' => 'nullable|string',
         ]);
 
+        $today = Carbon::today();
+        $startDate = Carbon::parse($validated['start_date'])->startOfDay();
+        $endDate = Carbon::parse($validated['end_date'])->startOfDay();
+        $dateRangeIncludesToday = $startDate <= $today && $endDate >= $today;
+
         try {
-            // Create period as inactive by default - it will be activated when start date is reached
-            // or manually by the committee
+            // Create period; auto-activate if the date range includes today (no manual activation needed)
             $period = TimePeriod::create([
                 ...$validated,
                 'created_by' => $request->user()->id,
-                'is_active' => false, // Default to false - period is scheduled but not yet active
+                'is_active' => $dateRangeIncludesToday,
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             // Handle unique constraint violation
@@ -100,12 +105,12 @@ class PeriodController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        // Check if period has expired before allowing activation/deactivation
+        // Check if period has expired before allowing activation/deactivation (end date is inclusive; expired = after end date)
         if (isset($validated['is_active'])) {
-            $endDate = $validated['end_date'] ?? $period->end_date;
-            $today = now()->startOfDay();
+            $endDateVal = $validated['end_date'] ?? $period->end_date;
+            $today = Carbon::today();
 
-            if ($endDate && $endDate < $today) {
+            if ($endDateVal && Carbon::parse($endDateVal)->startOfDay() < $today) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Cannot modify an expired period. The period has already ended and its status cannot be changed.',
@@ -207,10 +212,10 @@ class PeriodController extends Controller
         $period->refresh();
 
         // Notify students only if the period was just activated (changed from inactive to active)
-        // AND the start date has been reached
+        // AND the start date has been reached (start date is inclusive)
         if (!$wasActiveBefore && $period->is_active) {
-            // Only send notifications if the period's start date has been reached
-            if ($period->start_date <= now()->startOfDay()) {
+            $today = Carbon::today();
+            if ($period->start_date->startOfDay() <= $today && $period->end_date->startOfDay() >= $today) {
                 $this->sendPeriodActivationNotifications($period);
             }
         }

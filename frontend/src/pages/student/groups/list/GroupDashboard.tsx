@@ -4,9 +4,8 @@ import { Users, Copy, CheckCircle2, UserPlus, Crown } from 'lucide-react'
 import { useState } from 'react'
 import { GroupMembersList } from '../components/GroupMembersList'
 import { GroupJoinRequestsList } from '../components/GroupJoinRequestsList'
-import type { StudentGroup } from '@/types/project.types'
+import type { StudentGroup, GroupJoinRequest } from '@/types/project.types'
 import { BlockContent } from '@/components/common'
-import { Badge } from '@/components/ui/badge'
 
 interface GroupDashboardProps {
     group: StudentGroup
@@ -17,6 +16,8 @@ interface GroupDashboardProps {
     onDeleteGroup: () => void
     onLeaveGroup: () => void
     joinRequestsCount?: number
+    /** Pass join requests from parent to avoid duplicate fetch (single source in GroupsList). */
+    joinRequests?: GroupJoinRequest[]
 }
 
 export function GroupDashboard({
@@ -27,6 +28,7 @@ export function GroupDashboard({
     onInviteMember,
     onDeleteGroup,
     joinRequestsCount = 0,
+    joinRequests,
 }: GroupDashboardProps) {
     const { t } = useTranslation()
     const [isCopied, setIsCopied] = useState(false)
@@ -152,14 +154,12 @@ export function GroupDashboard({
                             <GroupMembersList group={group} showHeading={false} />
                         </div>
                         {isLeader && joinRequestsCount > 0 && (
-                            <div className="pt-3 border-t border-border/80">
-                                <div className="flex items-center justify-between mb-2">
-                                    <h4 className="text-sm font-medium">{t('groups.joinRequests')}</h4>
-                                    <Badge variant="destructive" className="text-xs">
-                                        {joinRequestsCount}
-                                    </Badge>
-                                </div>
-                                <GroupJoinRequestsList group={group} />
+                            <div className="pt-4 border-t border-border/80">
+                                <GroupJoinRequestsList
+                                    group={group}
+                                    requests={joinRequests}
+                                    joinCount={joinRequestsCount}
+                                />
                             </div>
                         )}
                     </CardContent>

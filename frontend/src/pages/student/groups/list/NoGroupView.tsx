@@ -31,20 +31,17 @@ export function NoGroupView({
     const headerActions = (
         <div className="flex items-center gap-3">
             {!hasPendingJoinRequest && (
-                <Button onClick={onCreateClick} variant="default" className="gap-2">
-                    <PlusCircle className="size-4" />
-                    {t('groups.createGroup')}
-                </Button>
+                <>
+                    <Button onClick={onCreateClick} variant="default" className="gap-2" disabled={hasPendingJoinRequest}>
+                        <PlusCircle className="size-4" />
+                        {t('groups.createGroup')}
+                    </Button>
+                    <Button onClick={onJoinClick} variant="outline" className="gap-2" disabled={hasPendingJoinRequest}>
+                        <UserPlus className="size-4" />
+                        {t('groups.joinGroup')}
+                    </Button>
+                </>
             )}
-            <Button
-                onClick={onJoinClick}
-                variant="outline"
-                className="gap-2"
-                disabled={hasPendingJoinRequest}
-            >
-                <UserPlus className="size-4" />
-                {t('groups.joinGroup')}
-            </Button>
         </div>
     )
 

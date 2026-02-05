@@ -44,11 +44,12 @@ class ProjectsCommitteeDashboardService
             ->whereNotNull('final_grade')
             ->count();
 
-        // Current phase (active time period)
-        $now = now();
+        // Current phase (active time period; start and end dates inclusive)
+        $now = Carbon::now();
+        $today = Carbon::today();
         $activePeriods = TimePeriod::where('is_active', true)
-            ->where('start_date', '<=', $now)
-            ->where('end_date', '>=', $now->startOfDay())
+            ->where('start_date', '<=', $today)
+            ->where('end_date', '>=', $today)
             ->orderBy('end_date', 'asc')
             ->get();
 
@@ -73,8 +74,8 @@ class ProjectsCommitteeDashboardService
             $endsInDays = round($hoursRemaining / 24, 1);
         }
 
-        // Next upcoming period
-        $nextPeriod = TimePeriod::where('start_date', '>', $now)
+        // Next upcoming period (start date after today)
+        $nextPeriod = TimePeriod::where('start_date', '>', $today)
             ->orderBy('start_date', 'asc')
             ->first();
 

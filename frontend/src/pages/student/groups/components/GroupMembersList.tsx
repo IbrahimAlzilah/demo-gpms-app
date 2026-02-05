@@ -1,8 +1,11 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui'
 import { UserMinus, Crown } from 'lucide-react'
 import { useAuthStore } from '@/pages/auth/login'
 import { useRemoveGroupMember } from '../hooks/useGroupOperations'
+import { useToast, ConfirmDialog } from '@/components/common'
+import { getApiErrorMessage } from '@/lib/utils'
 import type { ProjectGroup, StudentGroup } from '@/types/project.types'
 
 interface GroupMembersListProps {
@@ -16,27 +19,44 @@ interface GroupMembersListProps {
 export function GroupMembersList({ group, onError, onSuccess, showHeading = true }: GroupMembersListProps) {
   const { t } = useTranslation()
   const { user } = useAuthStore()
+  const { toastSuccess, toastError } = useToast()
   const removeMember = useRemoveGroupMember()
+  const [memberToRemove, setMemberToRemove] = useState<{ id: string; name: string } | null>(null)
 
   const isLeader = user?.id === group.leaderId
+  const isRemoveDialogOpen = memberToRemove !== null
 
-  const handleRemove = (memberId: string) => {
-    if (window.confirm(t('groups.confirmRemove'))) {
-      removeMember.mutate(
-        {
-          groupId: group.id,
-          memberId,
+  const openRemoveConfirm = (memberId: string) => {
+    const member = group.members.find((m) => m.id === memberId)
+    if (member) setMemberToRemove({ id: memberId, name: member.name })
+  }
+
+  const closeRemoveConfirm = () => setMemberToRemove(null)
+
+  const handleConfirmRemove = () => {
+    if (!memberToRemove) return
+    removeMember.mutate(
+      {
+        groupId: group.id,
+        memberId: memberToRemove.id,
+      },
+      {
+        onSuccess: () => {
+          closeRemoveConfirm()
+          toastSuccess(t('groups.removeSuccess'))
+          onSuccess?.(t('groups.removeSuccess'))
         },
-        {
-          onError: (err) => {
-            onError?.(err instanceof Error ? err.message : t('groups.removeError'))
-          },
-          onSuccess: () => {
-            onSuccess?.(t('groups.removeSuccess'))
-          },
-        }
-      )
-    }
+        onError: (err) => {
+          closeRemoveConfirm()
+          const message =
+            err instanceof Error && err.message
+              ? err.message
+              : getApiErrorMessage(err as unknown, t, 'groups.removeError')
+          toastError(message)
+          onError?.(message)
+        },
+      }
+    )
   }
 
   return (
@@ -70,7 +90,7 @@ export function GroupMembersList({ group, onError, onSuccess, showHeading = true
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => handleRemove(member.id)}
+                onClick={() => openRemoveConfirm(member.id)}
               >
                 <UserMinus className="mr-1 h-4 w-4" />
                 {t('groups.remove')}
@@ -85,6 +105,20 @@ export function GroupMembersList({ group, onError, onSuccess, showHeading = true
           {t('groups.onlyLeaderCanRemoveMembers')}
         </div>
       )}
+
+      <ConfirmDialog
+        open={isRemoveDialogOpen}
+        onOpenChange={(open) => !open && closeRemoveConfirm()}
+        onConfirm={handleConfirmRemove}
+        title={t('groups.removeMember')}
+        description={
+          memberToRemove
+            ? t('groups.confirmRemove')
+            : undefined
+        }
+        confirmLabel={t('groups.removeMember')}
+        variant="destructive"
+      />
     </div>
   )
 }
