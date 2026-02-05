@@ -18,20 +18,14 @@ export function useProposalsSubmit(onSuccess?: () => void) {
   const { toastSuccess, toastError } = useToast();
   const { user } = useAuthStore();
   const { data: studentGroup } = useMyGroup();
-  // Period rules for students:
-  // - Proposals can be submitted only during the Project Registration period
-  // - Student submissions must be disabled while the Proposal Submission period is active
+  // Period rule for students: proposals can be submitted whenever the Project Registration period is open
   const {
     isPeriodActive: isRegistrationActive,
     isLoading: isRegistrationLoading,
   } = usePeriodCheck("project_registration");
-  const {
-    isPeriodActive: isProposalSubmissionActive,
-    isLoading: isProposalLoading,
-  } = usePeriodCheck("proposal_submission");
 
-  const isPeriodActive = isRegistrationActive && !isProposalSubmissionActive;
-  const isPeriodLoading = isRegistrationLoading || isProposalLoading;
+  const isPeriodActive = isRegistrationActive;
+  const isPeriodLoading = isRegistrationLoading;
   const createBatchMutation = useCreateBatchProposals();
 
   const [proposals, setProposals] = useState<ProposalItem[]>([

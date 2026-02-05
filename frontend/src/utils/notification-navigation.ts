@@ -88,6 +88,27 @@ export function getNotificationTarget(
     }
   }
 
+  // Handle document-related notifications
+  if (type === 'document_uploaded' || type === 'document_resubmitted' || type === 'document_approved' || type === 'document_rejected') {
+    if (userRole === 'student') {
+      return {
+        path: ROUTES.STUDENT.DOCUMENTS,
+        label: 'عرض الوثائق',
+      }
+    }
+    if (userRole === 'supervisor') {
+      return {
+        path: ROUTES.SUPERVISOR.PROJECTS,
+        label: 'عرض المشاريع',
+      }
+    }
+    // Other roles navigate to projects
+    return {
+      path: getProjectsRoute(userRole),
+      label: 'عرض المشاريع',
+    }
+  }
+
   if (type === 'projects_announced' || type === 'projects_unannounced' || type === 'announcement_created') {
     return {
       path: getProjectsRoute(userRole),
@@ -243,7 +264,8 @@ export function getNotificationIconType(notification: NotificationDto): 'success
     type === 'registration_approved' ||
     type === 'grade_approved' ||
     type === 'grade_published' ||
-    type === 'supervisor_assigned'
+    type === 'supervisor_assigned' ||
+    type === 'document_approved'
   ) {
     return 'success'
   }
@@ -253,7 +275,8 @@ export function getNotificationIconType(notification: NotificationDto): 'success
     type.includes('rejected') ||
     type === 'proposal_rejected' ||
     type === 'request_rejected' ||
-    type === 'registration_rejected'
+    type === 'registration_rejected' ||
+    type === 'document_rejected'
   ) {
     return 'error'
   }

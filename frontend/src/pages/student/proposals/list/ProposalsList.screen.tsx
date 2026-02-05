@@ -30,20 +30,14 @@ export function ProposalsList() {
   const { toastSuccess, toastError } = useToast()
   const { user } = useAuthStore()
   const { data: studentGroup } = useMyGroup()
-  // Period rules:
-  // - Students can submit proposals only during the Project Registration period
-  // - Student submissions must be disabled during the Proposal Submission period
+  // Period rule: students can submit proposals whenever the Project Registration period is open
   const {
     isPeriodActive: isRegistrationPeriodActive,
     isLoading: isRegistrationLoading,
   } = usePeriodCheck('project_registration')
-  const {
-    isPeriodActive: isProposalSubmissionActive,
-    isLoading: isProposalLoading,
-  } = usePeriodCheck('proposal_submission')
 
-  const isStudentSubmissionAllowed = isRegistrationPeriodActive && !isProposalSubmissionActive
-  const isPeriodLoading = isRegistrationLoading || isProposalLoading
+  const isStudentSubmissionAllowed = isRegistrationPeriodActive
+  const isPeriodLoading = isRegistrationLoading
   const [showLockModal, setShowLockModal] = useState(false)
   const [showReadOnlyModal, setShowReadOnlyModal] = useState(false)
 

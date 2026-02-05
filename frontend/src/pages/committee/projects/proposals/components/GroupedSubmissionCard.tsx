@@ -279,26 +279,35 @@ export function GroupedSubmissionCard({
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-start gap-3 flex-1 min-w-0">
                         <div className={cn(
-                          'p-2.5 rounded-lg shrink-0 mt-0.5',
+                          'px-2 py-1.5 rounded-md shrink-0 mt-0.5',
                           'border-2',
                           proposal.status === 'approved' && 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800',
                           proposal.status === 'rejected' && 'bg-rose-50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800',
                           proposal.status === 'requires_modification' && 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800',
                           proposal.status === 'pending_review' && 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800'
                         )}>
-                          <FileText className={cn(
+                          {/* <FileText className={cn(
                             'h-4 w-4',
                             proposal.status === 'approved' && 'text-emerald-600 dark:text-emerald-400',
                             proposal.status === 'rejected' && 'text-rose-600 dark:text-rose-400',
                             proposal.status === 'requires_modification' && 'text-amber-600 dark:text-amber-400',
                             proposal.status === 'pending_review' && 'text-blue-600 dark:text-blue-400'
-                          )} />
+                          )} /> */}
+                          <span className={cn(
+                            'text-sm font-bold',
+                            proposal.status === 'approved' && 'text-emerald-600 dark:text-emerald-400',
+                            proposal.status === 'rejected' && 'text-rose-600 dark:text-rose-400',
+                            proposal.status === 'requires_modification' && 'text-amber-600 dark:text-amber-400',
+                            proposal.status === 'pending_review' && 'text-blue-600 dark:text-blue-400'
+                          )}>
+                            #{index + 1}
+                          </span>
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start gap-2 mb-2 flex-wrap">
-                            <span className="text-xs font-bold text-muted-foreground bg-muted px-2 py-1 rounded-md border">
+                            {/* <span className="text-xs font-bold text-muted-foreground bg-muted px-2 py-1 rounded-md border">
                               #{index + 1}
-                            </span>
+                            </span> */}
                             <h5 className="text-base font-semibold flex-1 min-w-[200px]">{proposal.title}</h5>
                             <StatusBadge status={proposal.status} />
                           </div>

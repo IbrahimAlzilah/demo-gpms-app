@@ -14,6 +14,10 @@ use Illuminate\Support\Facades\Storage;
 
 class DocumentService
 {
+    public function __construct(
+        protected NotificationService $notificationService
+    ) {}
+
     /**
      * Upload a document
      */
@@ -96,11 +100,30 @@ class DocumentService
                     'review_status' => 'pending',
                     // Preserve review_comments, reviewed_by, reviewed_at for submission history
                 ]);
+
+                // Notify supervisor about the document resubmission
+                if ($project->supervisor_id) {
+                    $supervisor = User::find($project->supervisor_id);
+                    if ($supervisor) {
+                        $documentTypeAr = $type === 'chapters' ? 'فصل' : 'مستند';
+                        $chapterInfo = $chapterNumber ? " (الفصل {$chapterNumber})" : '';
+                        $message = "تم إعادة رفع {$documentTypeAr}{$chapterInfo} للمشروع: {$project->title}";
+                        
+                        $this->notificationService->create(
+                            $supervisor,
+                            $message,
+                            'document_resubmitted',
+                            'document',
+                            $existing->id
+                        );
+                    }
+                }
+
                 return $existing->fresh();
             }
         }
 
-        return Document::create([
+        $document = Document::create([
             'type' => $type,
             'chapter_number' => $chapterNumber,
             'project_id' => $project->id,
@@ -111,6 +134,26 @@ class DocumentService
             'submitted_by' => $submitter->id,
             'review_status' => 'pending',
         ]);
+
+        // Notify supervisor about the new document submission
+        if ($project->supervisor_id) {
+            $supervisor = User::find($project->supervisor_id);
+            if ($supervisor) {
+                $documentTypeAr = $type === 'chapters' ? 'فصل' : 'مستند';
+                $chapterInfo = $chapterNumber ? " (الفصل {$chapterNumber})" : '';
+                $message = "تم رفع {$documentTypeAr} جديد{$chapterInfo} للمشروع: {$project->title}";
+                
+                $this->notificationService->create(
+                    $supervisor,
+                    $message,
+                    'document_uploaded',
+                    'document',
+                    $document->id
+                );
+            }
+        }
+
+        return $document;
     }
 
     /**
@@ -247,7 +290,32 @@ class DocumentService
             'review_comments' => $comments,
         ]);
 
-        return $document->fresh();
+        $document = $document->fresh();
+
+        // Notify the student who submitted the document about the review
+        if ($document->submitted_by) {
+            $submitter = User::find($document->submitted_by);
+            if ($submitter) {
+                $statusAr = $status === 'approved' ? 'قبول' : 'رفض';
+                $documentTypeAr = $document->type === 'chapters' ? 'الفصل' : 'المستند';
+                $chapterInfo = $document->chapter_number ? " {$document->chapter_number}" : '';
+                $message = "تم {$statusAr} {$documentTypeAr}{$chapterInfo} للمشروع: {$document->project->title}";
+                
+                if ($comments) {
+                    $message .= "\nملاحظات المشرف: {$comments}";
+                }
+                
+                $this->notificationService->create(
+                    $submitter,
+                    $message,
+                    "document_{$status}",
+                    'document',
+                    $document->id
+                );
+            }
+        }
+
+        return $document;
     }
 }
 
