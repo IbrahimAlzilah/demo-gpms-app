@@ -376,13 +376,109 @@ class RequestService
     }
 
     /**
-     * Process change group request
+     * Process change group request.
+     * Validates: student belongs to a group, is not leader, has valid project status if assigned,
+     * target group exists and is not full. Then removes student from current group and project
+     * (members pivot, project_student, project_registrations) and adds to target group.
      */
     private function processChangeGroupRequest(ProjectRequest $request): void
     {
-        // Implementation for change group request
-        // This would handle moving a student to a different group
-        // TODO: Implement when group management is finalized
+        $student = $request->student;
+        if (!$student) {
+            throw new \Exception('Student not found for this request.');
+        }
+
+        $additional = is_array($request->additional_data) ? $request->additional_data : [];
+        $targetGroupId = $additional['target_group_id'] ?? $additional['targetGroupId'] ?? null;
+
+        if (!$targetGroupId) {
+            throw new \Exception('Target group ID not specified in the request.');
+        }
+
+        // 1. Find the student's current group (must belong to a group)
+        $currentGroup = \App\Models\StudentGroup::where(function ($q) use ($student) {
+            $q->where('leader_id', $student->id)
+                ->orWhereHas('members', fn ($m) => $m->where('users.id', $student->id));
+        })->where('status', 'active')->first();
+
+        if (!$currentGroup) {
+            throw new \Exception('Student is not a member of any active group.');
+        }
+
+        // 2. Group leaders cannot change groups
+        $isLeader = (string) $currentGroup->leader_id === (string) $student->id;
+        if ($isLeader) {
+            throw new \Exception('Group leaders cannot change groups. Please transfer leadership first or dissolve the group.');
+        }
+
+        // 3. If the current group has an assigned project, validate project status
+        $currentProject = \App\Models\Project::where('assigned_group_id', $currentGroup->id)->first();
+        if ($currentProject) {
+            $validStatuses = [
+                \App\Enums\ProjectStatus::AVAILABLE_FOR_REGISTRATION->value,
+                \App\Enums\ProjectStatus::IN_PROGRESS->value,
+            ];
+            if (!in_array($currentProject->status->value, $validStatuses, true)) {
+                throw new \Exception(
+                    'The project assigned to the student\'s current group does not allow group changes. ' .
+                    'Project status must be available for registration or in progress.'
+                );
+            }
+        }
+
+        // 4. Target group must exist and be active
+        $targetGroup = \App\Models\StudentGroup::where('id', $targetGroupId)
+            ->where('status', 'active')
+            ->first();
+
+        if (!$targetGroup) {
+            throw new \Exception('Target group does not exist or is not active.');
+        }
+
+        // 5. Target group must not be the same as current group
+        if ((string) $targetGroup->id === (string) $currentGroup->id) {
+            throw new \Exception('Target group must be different from the current group.');
+        }
+
+        // 6. Target group must not have reached maximum members
+        $settingsService = app(\App\Services\SettingsService::class);
+        $maxMembers = $settingsService->getGroupMaxMembers();
+        $targetGroupMemberCount = $targetGroup->getTotalMemberCount();
+        if ($targetGroupMemberCount >= $maxMembers) {
+            throw new \Exception("Target group has reached the maximum number of members ({$maxMembers}).");
+        }
+
+        // 7. Remove student from current group's members pivot
+        $currentGroup->members()->detach($student->id);
+
+        // 8. Remove student from project_student for the project assigned to current group (full detachment)
+        if ($currentProject) {
+            $currentProject->students()->detach($student->id);
+        }
+
+        // 9. Remove project registrations related to the current group's project
+        \App\Models\ProjectRegistration::where('student_id', $student->id)
+            ->whereHas('project', function ($q) use ($currentGroup) {
+                $q->where('assigned_group_id', $currentGroup->id);
+            })
+            ->delete();
+
+        // 10. Add student to the target group as a member
+        $targetGroup->members()->attach($student->id, [
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // 11. Update request with processing details
+        $request->update([
+            'additional_data' => array_merge($additional, [
+                'processed_at' => now()->toISOString(),
+                'previous_group_id' => $currentGroup->id,
+                'previous_group_code' => $currentGroup->group_code,
+                'new_group_id' => $targetGroup->id,
+                'new_group_code' => $targetGroup->group_code,
+            ]),
+        ]);
     }
 
     /**

@@ -18,22 +18,22 @@ class StudentGroupResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'groupCode' => $this->group_code,
-            'leaderId' => (string) $this->leader_id,
-            'leader' => new UserResource($this->whenLoaded('leader')),
-            'members' => UserResource::collection(
-                $this->whenLoaded('members', function () {
-                    // Include leader in the members list for display purposes
-                    // Use unique to avoid duplicates if data is inconsistent
-                    return $this->members->merge([$this->leader])->unique('id');
-                })
-            ),
+            'leaderId' => $this->leader_id ? (string) $this->leader_id : null,
+            'leader' => $this->when($this->relationLoaded('leader') && $this->leader !== null, fn () => new UserResource($this->leader)),
+            'members' => $this->when($this->relationLoaded('members'), function () {
+                // Ensure we never pass null to collection() (avoids "map on null")
+                $members = $this->members ?? collect();
+                $leader = $this->leader ?? null;
+                $combined = $leader ? $members->merge([$leader])->unique('id') : $members;
+                return UserResource::collection($combined);
+            }),
             'status' => $this->status,
             'memberCount' => $this->getTotalMemberCount(),
             'maxMembers' => app(\App\Services\SettingsService::class)->getGroupMaxMembers(),
             'minMembers' => app(\App\Services\SettingsService::class)->getGroupMinMembers(),
             'createdAt' => $this->created_at,
             'updatedAt' => $this->updated_at,
-            'projectId' => $this->assignedProjects->first()?->id,
+            'projectId' => $this->when($this->relationLoaded('assignedProjects'), fn () => $this->assignedProjects->first()?->id),
             'proposalsInitialSubmittedAt' => $this->proposals_initial_submitted_at,
         ];
     }

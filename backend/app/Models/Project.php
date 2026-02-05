@@ -21,7 +21,6 @@ class Project extends Model
         'max_students',
         'current_students',
         'specialization',
-        'keywords',
         'committee_id',
         'project_committee_id',
         'discussion_committee_id',
@@ -33,7 +32,6 @@ class Project extends Model
     ];
 
     protected $casts = [
-        'keywords' => 'array',
         'status' => ProjectStatus::class,
         'supervisor_approval_at' => 'datetime',
         'reserved_at' => 'datetime',

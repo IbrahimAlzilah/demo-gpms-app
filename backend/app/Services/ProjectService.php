@@ -31,7 +31,6 @@ class ProjectService
             'max_students' => $data['max_students'] ?? $defaultMaxStudents,
             'current_students' => 0,
             'specialization' => $data['specialization'] ?? null,
-            'keywords' => $data['keywords'] ?? [],
         ]);
     }
 

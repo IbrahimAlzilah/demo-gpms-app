@@ -1,22 +1,20 @@
 import type { ColumnDef } from "@tanstack/react-table"
 import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
 import { StatusBadge } from "@/components/common/StatusBadge"
-import { ActionsDropdown, type TableAction } from "@/components/common/ActionsDropdown"
+import { Button } from "@/components/ui/button"
 import type { Request } from "@/types/request.types"
-import { Eye, CheckCircle2, XCircle, User } from "lucide-react"
+import { Eye, ClipboardCheck, User } from "lucide-react"
 import { formatRelativeTime } from "@/lib/utils/format"
 
 export interface RequestTableColumnsProps {
   onView: (request: Request) => void
-  onApprove: (request: Request) => void
-  onReject: (request: Request) => void
+  onProcess: (request: Request) => void
   t: (key: string) => string
 }
 
 export function createRequestColumns({
   onView,
-  onApprove,
-  onReject,
+  onProcess,
   t,
 }: RequestTableColumnsProps): ColumnDef<Request>[] {
   const getRequestTypeLabel = (type: string) => {
@@ -24,6 +22,7 @@ export function createRequestColumns({
       change_supervisor: t('requests.change_supervisor'),
       change_group: t('requests.change_group'),
       change_project: t('requests.change_project'),
+      change_project_title: t('requests.change_project_title'),
       other: t('requests.other'),
     }
     return labels[type] || type
@@ -38,23 +37,13 @@ export function createRequestColumns({
       cell: ({ row }) => {
         const student = row.original.student
         if (!student) return <span className="text-muted-foreground">-</span>
-        
+
         return (
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
               <User className="h-4 w-4 text-muted-foreground" />
               <span className="font-medium">{student.name}</span>
             </div>
-            {/* {student.studentId && (
-              <span className="text-xs text-muted-foreground ml-6">
-                ID: {student.studentId}
-              </span>
-            )} */}
-            {/* {student.email && (
-              <span className="text-xs text-muted-foreground ml-6 truncate max-w-[200px]">
-                {student.email}
-              </span>
-            )} */}
           </div>
         )
       },
@@ -122,37 +111,33 @@ export function createRequestColumns({
       ),
       cell: ({ row }) => {
         const request = row.original
-        const canProcess = request.status === 'pending'
+        const canProcess = request.status === 'pending' || request.status === 'supervisor_approved'
 
-        const actions: TableAction<Request>[] = [
-          {
-            id: 'view',
-            label: t('common.view'),
-            icon: Eye,
-            onClick: () => onView(request),
-            variant: 'default',
-          },
-          {
-            id: 'approve',
-            label: t('common.accept'),
-            icon: CheckCircle2,
-            onClick: () => onApprove(request),
-            variant: 'success',
-            disabled: !canProcess,
-            separator: true,
-          },
-          {
-            id: 'reject',
-            label: t('common.reject'),
-            icon: XCircle,
-            onClick: () => onReject(request),
-            variant: 'destructive',
-            disabled: !canProcess,
-          },
-        ]
-
-        return <ActionsDropdown row={request} actions={actions} />
+        return (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onView(request)}
+              className="h-8 px-3"
+            >
+              <Eye className="h-3.5 w-3.5 mr-1.5" />
+              {t('common.view')}
+            </Button>
+            <Button
+              variant={canProcess ? "default" : "secondary"}
+              size="sm"
+              onClick={() => onProcess(request)}
+              disabled={!canProcess}
+              className="h-8 px-3"
+            >
+              <ClipboardCheck className="h-3.5 w-3.5 mr-1.5" />
+              {t('committee.requests.processRequest')}
+            </Button>
+          </div>
+        )
       },
     },
   ]
 }
+

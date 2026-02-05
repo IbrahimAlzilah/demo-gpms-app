@@ -64,10 +64,18 @@ export function RequestsNew({ open, onClose, onSuccess }: RequestsNewProps) {
   const selectedTypeIsLeaderOnly = selectedType && leaderOnlyTypes.includes(selectedType)
   const cannotSubmitLeaderOnly = selectedTypeIsLeaderOnly && !canSubmitLeaderOnlyRequests
   const cannotSubmitChangeSupervisor = selectedType === 'change_supervisor' && !currentSupervisor
-  const cannotSubmit = cannotSubmitLeaderOnly || cannotSubmitChangeSupervisor
+  const submissionPeriodClosed = !requestSubmissionWindowActive
+  const cannotSubmit =
+    submissionPeriodClosed || cannotSubmitLeaderOnly || cannotSubmitChangeSupervisor
 
   return (
     <ModalDialog open={open} onOpenChange={onClose} title={t('request.submitNew')}>
+      {submissionPeriodClosed && (
+        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/20 p-3 text-sm text-amber-800 dark:text-amber-200 flex items-center gap-2">
+          <AlertCircle className="h-4 w-4 shrink-0 rounded-full border border-current p-0.5" aria-hidden />
+          <p className="flex-1">{t('request.conditions.submissionPeriodClosed')}</p>
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="type">
@@ -102,13 +110,13 @@ export function RequestsNew({ open, onClose, onSuccess }: RequestsNewProps) {
             <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-2.5 text-xs text-destructive flex items-start gap-2">
               <AlertCircle className="h-3 w-3 shrink-0 mt-0.5" />
               <div>
-                {cannotSubmitChangeSupervisor && (
-                  <p>{t('request.conditions.noSupervisorAssigned')}</p>
-                )}
-                {!cannotSubmitChangeSupervisor && !requestSubmissionWindowActive && (
+                {submissionPeriodClosed && (
                   <p>{t('request.conditions.submissionPeriodClosed')}</p>
                 )}
-                {!cannotSubmitChangeSupervisor && requestSubmissionWindowActive && !currentProject && (
+                {!submissionPeriodClosed && cannotSubmitChangeSupervisor && (
+                  <p>{t('request.conditions.noSupervisorAssigned')}</p>
+                )}
+                {!submissionPeriodClosed && !cannotSubmitChangeSupervisor && cannotSubmitLeaderOnly && !currentProject && (
                   <p>{t('request.conditions.groupMustHaveApprovedProject')}</p>
                 )}
               </div>

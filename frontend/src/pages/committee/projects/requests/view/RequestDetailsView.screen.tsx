@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { ModalDialog, StatusBadge, LoadingSpinner } from '@/components/common'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { CheckCircle2, XCircle, Clock, User, FileText, Calendar, MessageSquare, Briefcase, Mail, Phone, Building2, IdCard, ClipboardList } from 'lucide-react'
+import { CheckCircle2, XCircle, Clock, User, FileText, Calendar, MessageSquare, Briefcase, Mail, Phone, Building2, IdCard, ClipboardList, Users } from 'lucide-react'
 import { formatDate, formatRelativeTime } from '@/lib/utils/format'
 import { useRequest } from '../hooks/useRequests'
 import { useQuery } from '@tanstack/react-query'
@@ -183,7 +183,7 @@ export function RequestDetailsView({ requestId, open, onClose }: RequestDetailsV
                             </div>
                         </div>
 
-                        {request.additionalData && Object.keys(request.additionalData).length > 0 && (
+                        {request.additionalData && Object.keys(request.additionalData).length > 0 && !request.currentGroup && !request.targetGroup && !request.targetProject && (
                             <div>
                                 <p className="text-xs font-medium text-muted-foreground mb-2">
                                     {t('request.additionalInformation')}
@@ -197,6 +197,106 @@ export function RequestDetailsView({ requestId, open, onClose }: RequestDetailsV
                         )}
                     </CardContent>
                 </Card>
+
+                {/* Change Group: current project, current group, target group (enriched) */}
+                {request.type === 'change_group' && (request.currentGroup != null || request.targetGroup != null || request.currentProject) && (
+                    <Card className="border-l-4 border-l-purple-500">
+                        <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <Users className="h-5 w-5 text-primary" />
+                                {t('committee.requests.groupChangeDetails')}
+                            </CardTitle>
+                            <CardDescription>{t('committee.requests.groupChangeDescription')}</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {request.currentProject && (
+                                <div>
+                                    <p className="text-xs font-medium text-muted-foreground mb-1">{t('committee.requests.projectStudentRegisteredIn', { defaultValue: 'Project student is registered in' })}</p>
+                                    <p className="font-medium">{request.currentProject.title}</p>
+                                </div>
+                            )}
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div className="p-3 rounded-lg bg-muted/50 border space-y-1">
+                                    <p className="text-xs font-medium text-muted-foreground">{t('request.currentGroup')}</p>
+                                    {request.currentGroup ? (
+                                        <>
+                                            <p className="font-medium">{request.currentGroup.name || request.currentGroup.groupCode || '-'}</p>
+                                            {request.currentGroup.groupCode && <p className="text-xs text-muted-foreground">Code: {request.currentGroup.groupCode}</p>}
+                                            {request.currentGroup.leader && <p className="text-xs">Leader: {request.currentGroup.leader.name || request.currentGroup.leader.email}</p>}
+                                            <p className="text-xs text-muted-foreground">{request.currentGroup.memberCount ?? request.currentGroup.members?.length ?? 0} {t('common.members')}</p>
+                                        </>
+                                    ) : (
+                                        <p className="text-sm">{t('common.notSet')}</p>
+                                    )}
+                                </div>
+                                <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 space-y-1">
+                                    <p className="text-xs font-medium text-muted-foreground">{t('request.targetGroup')}</p>
+                                    {request.targetGroup ? (
+                                        <>
+                                            <p className="font-medium text-primary">{request.targetGroup.name || request.targetGroup.groupCode || '-'}</p>
+                                            {request.targetGroup.groupCode && <p className="text-xs text-muted-foreground">Code: {request.targetGroup.groupCode}</p>}
+                                            {request.targetGroup.leader && <p className="text-xs">Leader: {request.targetGroup.leader.name || request.targetGroup.leader.email}</p>}
+                                            <p className="text-xs text-muted-foreground">{request.targetGroup.memberCount ?? request.targetGroup.members?.length ?? 0} / {request.targetGroup.maxMembers ?? '-'} {t('common.members')}</p>
+                                        </>
+                                    ) : (
+                                        <p className="text-sm">{t('common.notSet')}</p>
+                                    )}
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* Change Project: current project/group, target project (enriched) */}
+                {request.type === 'change_project' && (request.currentProject != null || request.targetProject != null) && (
+                    <Card className="border-l-4 border-l-indigo-500">
+                        <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <Briefcase className="h-5 w-5 text-primary" />
+                                {t('committee.requests.projectChangeDetails', { defaultValue: 'Project change details' })}
+                            </CardTitle>
+                            <CardDescription>{t('committee.requests.projectChangeDescription', { defaultValue: 'Student requests to move from current project to the target project.' })}</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="grid gap-4 md:grid-cols-2">
+                                {request.currentProject && (
+                                    <div className="p-3 rounded-lg bg-muted/50 border">
+                                        <p className="text-xs font-medium text-muted-foreground mb-1">{t('committee.requests.currentProject', { defaultValue: 'Current project' })}</p>
+                                        <p className="font-medium">{request.currentProject.title}</p>
+                                        {request.currentProject.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{request.currentProject.description}</p>}
+                                    </div>
+                                )}
+                                {request.currentGroup && (
+                                    <div className="p-3 rounded-lg bg-muted/50 border">
+                                        <p className="text-xs font-medium text-muted-foreground mb-1">{t('request.currentGroup')}</p>
+                                        <p className="font-medium">{request.currentGroup.name || request.currentGroup.groupCode || '-'}</p>
+                                        {request.currentGroup.groupCode && <p className="text-xs text-muted-foreground">Code: {request.currentGroup.groupCode}</p>}
+                                    </div>
+                                )}
+                            </div>
+                            {request.targetProject && (
+                                <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
+                                    <p className="text-xs font-medium text-muted-foreground mb-1">{t('committee.requests.targetProject', { defaultValue: 'Target project' })}</p>
+                                    <p className="font-medium text-primary">{request.targetProject.title}</p>
+                                    {request.targetProject.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{request.targetProject.description}</p>}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* Change Supervisor: note that request was first sent to supervisor */}
+                {request.type === 'change_supervisor' && (
+                    <Card className="border-l-4 border-l-green-500">
+                        <CardContent className="pt-4">
+                            <p className="text-sm text-muted-foreground">
+                                {request.status === 'supervisor_approved'
+                                    ? t('committee.requests.supervisorApprovedThenCommittee')
+                                    : t('committee.requests.supervisorFirstThenCommittee')}
+                            </p>
+                        </CardContent>
+                    </Card>
+                )}
 
                 {/* Committee Decision */}
                 {request.committeeApproval ? (

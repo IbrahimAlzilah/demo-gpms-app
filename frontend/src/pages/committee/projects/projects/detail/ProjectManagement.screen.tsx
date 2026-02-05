@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { MainLayout } from '@/layouts/MainLayout'
 import { BlockContent, ModalDialog } from '@/components/common'
 import {
@@ -25,6 +26,8 @@ import { LoadingSpinner } from '@/components/common'
 import { ROUTES } from '@/lib/constants'
 import { useProjectManagement } from './ProjectManagement.hook'
 import { useToast } from '@/components/common'
+import { supervisorAssignmentService } from '../../supervisors/api/supervisor.service'
+import { ManageGroupModal } from '../components/ManageGroupModal'
 import {
   ChevronLeft,
   FileText,
@@ -42,6 +45,7 @@ import {
   ExternalLink,
   Edit,
   Loader2,
+  Settings2,
 } from 'lucide-react'
 import { formatDate } from '@/lib/utils/format'
 import { cn } from '@/lib/utils'
@@ -59,7 +63,6 @@ interface EditProjectForm {
   description: string
   max_students: number
   specialization: string
-  keywordsText: string
 }
 
 const PHASE_KEYS: Record<string, string> = {
@@ -71,13 +74,22 @@ const PHASE_KEYS: Record<string, string> = {
   evaluation: 'committee.projectManagement.phaseEvaluation',
 }
 
+const WORKFLOW_DETAIL_KEY_PREFIX = 'committee.projectManagement.workflowDetails.'
+
 export function ProjectManagementScreen() {
   const { projectId } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { t } = useTranslation()
   const { toastSuccess, toastError } = useToast()
 
   const [editOpen, setEditOpen] = useState(false)
+  const [manageGroupOpen, setManageGroupOpen] = useState(false)
+
+  const { data: supervisors = [] } = useQuery({
+    queryKey: ['committee-supervisors-list'],
+    queryFn: () => supervisorAssignmentService.getAvailableSupervisors(),
+  })
 
   const {
     project,
@@ -98,7 +110,6 @@ export function ProjectManagementScreen() {
       description: '',
       max_students: 1,
       specialization: '',
-      keywordsText: '',
     },
   })
 
@@ -109,7 +120,6 @@ export function ProjectManagementScreen() {
         description: project.description ?? '',
         max_students: project.maxStudents ?? 1,
         specialization: project.specialization ?? '',
-        keywordsText: Array.isArray(project.keywords) ? project.keywords.join(', ') : '',
       })
     }
   }, [editOpen, project, editForm])
@@ -124,9 +134,6 @@ export function ProjectManagementScreen() {
           description: data.description || undefined,
           max_students: data.max_students,
           specialization: data.specialization || undefined,
-          keywords: data.keywordsText
-            ? data.keywordsText.split(',').map((k) => k.trim()).filter(Boolean)
-            : undefined,
         },
       })
       toastSuccess(t('committee.projectManagement.updateSuccess'))
@@ -180,6 +187,20 @@ export function ProjectManagementScreen() {
     }
   }
 
+  const handleSupervisorChange = async (value: string) => {
+    if (!projectId) return
+    const supervisorId = value === '__none__' ? null : value
+    try {
+      await updateProject.mutateAsync({
+        id: projectId,
+        payload: { supervisor_id: supervisorId ?? undefined },
+      })
+      toastSuccess(t('committee.projectManagement.supervisorUpdated', { defaultValue: 'Supervisor updated' }))
+    } catch (e) {
+      toastError(e instanceof Error ? e.message : t('common.error'))
+    }
+  }
+
   if (!projectId) {
     return (
       <MainLayout>
@@ -228,7 +249,7 @@ export function ProjectManagementScreen() {
     <MainLayout>
       <div className="space-y-6 animate-in fade-in duration-300 pb-10">
         {/* Breadcrumb & Back */}
-        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+        {/* <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
           <Button variant="ghost" size="sm" asChild className="gap-1 -ms-2">
             <Link to={ROUTES.PROJECTS_COMMITTEE.PROJECTS}>
               <ChevronLeft className="h-4 w-4" />
@@ -239,7 +260,7 @@ export function ProjectManagementScreen() {
           <span className="font-medium text-foreground truncate max-w-[200px] sm:max-w-none">
             {project.title}
           </span>
-        </div>
+        </div> */}
 
         {/* Header Card */}
         <Card>
@@ -339,7 +360,11 @@ export function ProjectManagementScreen() {
                       {phase.details && typeof phase.details === 'object' && (
                         <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
                           {Object.entries(phase.details)
-                            .map(([k, v]) => `${k}: ${typeof v === 'boolean' ? (v ? '✓' : '—') : v}`)
+                            .map(([k, v]) => {
+                              const label = t(`${WORKFLOW_DETAIL_KEY_PREFIX}${k}`, { defaultValue: k })
+                              const value = typeof v === 'boolean' ? (v ? '✓' : '—') : (v ?? '—')
+                              return `${label}: ${value}`
+                            })
                             .join(' · ')}
                         </p>
                       )}
@@ -369,16 +394,23 @@ export function ProjectManagementScreen() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {project.supervisor ? (
-                <div className="text-sm">
-                  <p className="font-medium">{project.supervisor.name}</p>
-                  {project.supervisor.email && (
-                    <p className="text-muted-foreground text-xs">{project.supervisor.email}</p>
-                  )}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">{t('common.unassigned')}</p>
-              )}
+              <Select
+                value={project.supervisorId ?? '__none__'}
+                onValueChange={handleSupervisorChange}
+                disabled={updateProject.isPending}
+              >
+                <SelectTrigger className="w-full h-9 text-sm">
+                  <SelectValue placeholder={t('common.select')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">{t('common.unassigned')}</SelectItem>
+                  {supervisors.map((s) => (
+                    <SelectItem key={s.id} value={String(s.id)}>
+                      {s.name} {s.department ? `(${s.department})` : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Button asChild variant="outline" size="sm" className="mt-3">
                 <Link to={ROUTES.PROJECTS_COMMITTEE.ASSIGN_SUPERVISORS}>
                   <UserPlus className="h-3 w-3" />
@@ -401,6 +433,29 @@ export function ProjectManagementScreen() {
                 {project.currentGroups ?? 0} / {project.maxGroups ?? 1} {t('project.groups')}
                 {project.students?.length ? ` · ${project.students.length} ${t('common.students')}` : ''}
               </p>
+              {project.assignedGroupId && project.assignedGroup && (
+                <div className="mt-2 p-2 rounded-md bg-muted/50 text-xs space-y-1">
+                  <p className="font-medium">
+                    {project.assignedGroup.name || project.assignedGroup.groupCode || t('project.groups')}
+                    {project.assignedGroup.groupCode && ` (${project.assignedGroup.groupCode})`}
+                  </p>
+                  {project.assignedGroup.leader && (
+                    <p className="text-muted-foreground">
+                      {t('common.leader')}: {project.assignedGroup.leader.name ?? project.assignedGroup.leader.email}
+                    </p>
+                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-2 gap-1"
+                    onClick={() => setManageGroupOpen(true)}
+                  >
+                    <Settings2 className="h-3 w-3" />
+                    {t('committee.projectManagement.manageGroup', { defaultValue: 'Manage group' })}
+                  </Button>
+                </div>
+              )}
               <Button asChild variant="outline" size="sm" className="mt-3">
                 <Link to={ROUTES.PROJECTS_COMMITTEE.REGISTRATIONS}>
                   <ExternalLink className="h-3 w-3" />
@@ -466,6 +521,19 @@ export function ProjectManagementScreen() {
           </CardContent>
         </Card>
 
+        {/* Manage Group Modal */}
+        {project.assignedGroupId && (
+          <ManageGroupModal
+            groupId={project.assignedGroupId}
+            open={manageGroupOpen}
+            onOpenChange={setManageGroupOpen}
+            onSuccess={() => {
+              queryClient.invalidateQueries({ queryKey: ['committee-project-detail', projectId] })
+              queryClient.invalidateQueries({ queryKey: ['committee-project-workflow', projectId] })
+            }}
+          />
+        )}
+
         {/* Edit Project Dialog */}
         <ModalDialog
           open={editOpen}
@@ -512,14 +580,6 @@ export function ProjectManagementScreen() {
                 id="edit-specialization"
                 {...editForm.register('specialization')}
                 placeholder={t('committee.projectManagement.specializationPlaceholder')}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-keywords">{t('committee.projectManagement.keywords')}</Label>
-              <Input
-                id="edit-keywords"
-                {...editForm.register('keywordsText')}
-                placeholder={t('committee.projectManagement.keywordsPlaceholder')}
               />
             </div>
             <div className="flex justify-end gap-2 pt-2">

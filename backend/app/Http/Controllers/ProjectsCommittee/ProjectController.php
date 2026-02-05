@@ -73,22 +73,28 @@ class ProjectController extends Controller
             'requests.student',
         ]);
 
-        // Calculate project statistics
+        // Calculate project statistics (null-safe for relations)
+        $documents = $project->documents ?? collect();
+        $grades = $project->grades ?? collect();
+        $milestones = $project->milestones ?? collect();
+        $meetings = $project->meetings ?? collect();
+        $supervisorNotes = $project->supervisorNotes ?? collect();
+        $requests = $project->requests ?? collect();
         $statistics = [
-            'documentsCount' => $project->documents->count(),
+            'documentsCount' => $documents->count(),
             'documentsByStatus' => [
-                'pending' => $project->documents->where('review_status', 'pending')->count(),
-                'approved' => $project->documents->where('review_status', 'approved')->count(),
-                'rejected' => $project->documents->where('review_status', 'rejected')->count(),
+                'pending' => $documents->where('review_status', 'pending')->count(),
+                'approved' => $documents->where('review_status', 'approved')->count(),
+                'rejected' => $documents->where('review_status', 'rejected')->count(),
             ],
-            'gradesCount' => $project->grades->count(),
-            'approvedGrades' => $project->grades->where('is_approved', true)->count(),
-            'milestonesCount' => $project->milestones->count(),
-            'completedMilestones' => $project->milestones->where('is_completed', true)->count(),
-            'meetingsCount' => $project->meetings->count(),
-            'notesCount' => $project->supervisorNotes->count(),
-            'requestsCount' => $project->requests->count(),
-            'pendingRequests' => $project->requests->where('status', 'pending')->count(),
+            'gradesCount' => $grades->count(),
+            'approvedGrades' => $grades->where('is_approved', true)->count(),
+            'milestonesCount' => $milestones->count(),
+            'completedMilestones' => $milestones->where('is_completed', true)->count(),
+            'meetingsCount' => $meetings->count(),
+            'notesCount' => $supervisorNotes->count(),
+            'requestsCount' => $requests->count(),
+            'pendingRequests' => $requests->where('status', 'pending')->count(),
         ];
 
         return response()->json([
@@ -106,15 +112,12 @@ class ProjectController extends Controller
         $settingsService = app(\App\Services\SettingsService::class);
         $proposalTitleMaxLength = $settingsService->getProposalTitleMaxLength();
         $projectMaxStudentsLimit = $settingsService->getProjectMaxStudentsLimit();
-        $projectKeywordMaxLength = $settingsService->getProjectKeywordMaxLength();
 
         $validated = $request->validate([
             'title' => "sometimes|string|max:{$proposalTitleMaxLength}",
             'description' => 'sometimes|string',
             'max_students' => "sometimes|integer|min:1|max:{$projectMaxStudentsLimit}",
             'specialization' => "sometimes|nullable|string|max:{$proposalTitleMaxLength}",
-            'keywords' => 'sometimes|nullable|array',
-            'keywords.*' => "string|max:{$projectKeywordMaxLength}",
             'supervisor_id' => 'sometimes|nullable|exists:users,id',
         ]);
 

@@ -100,7 +100,9 @@
     "individual": "Individual",
     "group": "Group",
     "pending": "Pending",
-    "cancelled": "Cancelled"
+    "cancelled": "Cancelled",
+    "select": "Select",
+    "leader": "Leader"
   },
   "app": {
     "name": "Graduation Project Management System",
@@ -165,7 +167,7 @@
     "proposals": "Proposals",
     "myProposals": "My Proposals",
     "approvedProposals": "Approved Proposals",
-    "projects": "Projects",
+    "projects": "Manage Projects",
     "groups": "Groups",
     "requests": "Requests",
     "documents": "Documents",
@@ -1645,7 +1647,23 @@
       "projectId": "Project ID",
       "submittedAt": "Submitted at",
       "reviewedAt": "Reviewed at",
-      "reviewComments": "Review Comments"
+      "reviewComments": "Review Comments",
+      "processRequest": "Process Request",
+      "viewFullDetails": "View full request details",
+      "groupChangeDetails": "Group Change Details",
+      "groupChangeDescription": "Student will be removed from their current group and project, then added to the target group.",
+      "supervisorChangeDetails": "Supervisor Change Details",
+      "supervisorApprovedThenCommittee": "The current supervisor has approved this request. Committee decision is required.",
+      "supervisorFirstThenCommittee": "Change supervisor requests are first sent to the current supervisor; after approval, they are forwarded to the Committee.",
+      "currentProject": "Current project",
+      "projectStudentRegisteredIn": "Project student is registered in",
+      "projectChangeDetails": "Project change details",
+      "projectChangeDescription": "Student requests to move from current project to the target project.",
+      "targetProject": "Target project",
+      "groupChangeDetails": "Group change details",
+      "groupChangeDescription": "Current group, target group, and project context for the request.",
+      "newProjectTitle": "New Project Title",
+      "requestAlreadyProcessed": "This request has already been processed and cannot be modified."
     },
     "distribute": {
       "title": "Distribute Projects to Discussion Committees",
@@ -1732,8 +1750,40 @@
       "announced": "Project announced",
       "unannounced": "Project unannounced",
       "deleted": "Project deleted",
-      "confirmDelete": "Are you sure you want to delete this project?",
-      "projectNotFound": "Project not found"
+      "confirmDelete": "Delete project?",
+      "confirmDeleteDescription": "This project will be permanently removed. This action cannot be undone.",
+      "projectNotFound": "Project not found",
+      "supervisorUpdated": "Supervisor updated",
+      "manageGroup": "Manage group",
+      "memberAdded": "Member added to group",
+      "memberRemoved": "Member removed from group",
+      "addMember": "Add member",
+      "noEligibleStudents": "No eligible students",
+      "workflowDetails": {
+        "proposalsCount": "Proposals",
+        "approvedProposals": "Approved",
+        "registrationsCount": "Registrations",
+        "hasAssignedGroup": "Group assigned",
+        "studentsCount": "Students",
+        "hasSupervisor": "Supervisor assigned",
+        "supervisorName": "Supervisor",
+        "notesCount": "Notes",
+        "meetingsCount": "Meetings",
+        "totalDocuments": "Documents",
+        "approvedDocuments": "Approved",
+        "pendingDocuments": "Pending",
+        "totalMilestones": "Milestones",
+        "completedMilestones": "Completed",
+        "overdueMilestones": "Overdue",
+        "hasCommittee": "Committee assigned",
+        "committeeCount": "Committee members",
+        "gradesSubmitted": "Grades submitted",
+        "gradesApproved": "Grades approved"
+      }
+    },
+    "projects": {
+      "noProjects": "No projects found",
+      "loadError": "Error loading projects"
     },
     "reports": {
       "title": "Reports",

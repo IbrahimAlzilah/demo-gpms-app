@@ -4,8 +4,12 @@ namespace App\Http\Controllers\ProjectsCommittee;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\RequestResource;
+use App\Http\Resources\ProjectResource;
+use App\Http\Resources\StudentGroupResource;
 use App\Http\Traits\HasTableQuery;
 use App\Models\ProjectRequest;
+use App\Models\StudentGroup;
+use App\Models\Project;
 use App\Services\RequestService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -45,11 +49,55 @@ class RequestController extends Controller
         return response()->json($this->getPaginatedResponse($query, $request, RequestResource::class));
     }
 
-    public function show(ProjectRequest $request): JsonResponse
+    /**
+     * Show a single request with enriched data for committee decision.
+     * For change_group: includes currentGroup, currentProject, targetGroup.
+     * For change_project: includes currentGroup, currentProject, targetProject.
+     * Handles null student/project safely (e.g. deleted user or project).
+     */
+    public function show(ProjectRequest $projectRequest): JsonResponse
     {
+        $projectRequest->load(['student', 'project']);
+        $data = (new RequestResource($projectRequest))->toArray(request());
+
+        $student = $projectRequest->student;
+        $additional = is_array($projectRequest->additional_data) ? $projectRequest->additional_data : [];
+
+        // Only enrich with group/project context when student exists (avoid null->id)
+        if ($student !== null) {
+            $currentGroup = StudentGroup::where(function ($q) use ($student) {
+                $q->where('leader_id', $student->id)
+                    ->orWhereHas('members', fn ($m) => $m->where('users.id', $student->id));
+            })->where('status', 'active')->with(['leader', 'members'])->first();
+
+            $currentProject = $currentGroup !== null
+                ? Project::where('assigned_group_id', $currentGroup->id)->with(['supervisor', 'assignedGroup.leader', 'assignedGroup.members'])->first()
+                : null;
+
+            if ($projectRequest->type === 'change_group') {
+                $data['currentGroup'] = $currentGroup !== null ? (new StudentGroupResource($currentGroup))->toArray(request()) : null;
+                $data['currentProject'] = $currentProject !== null ? (new ProjectResource($currentProject))->toArray(request()) : null;
+                $targetGroupId = $additional['target_group_id'] ?? $additional['targetGroupId'] ?? null;
+                $targetGroup = $targetGroupId
+                    ? StudentGroup::where('id', $targetGroupId)->where('status', 'active')->with(['leader', 'members'])->first()
+                    : null;
+                $data['targetGroup'] = $targetGroup !== null ? (new StudentGroupResource($targetGroup))->toArray(request()) : null;
+            }
+
+            if ($projectRequest->type === 'change_project') {
+                $data['currentGroup'] = $currentGroup !== null ? (new StudentGroupResource($currentGroup))->toArray(request()) : null;
+                $data['currentProject'] = $currentProject !== null ? (new ProjectResource($currentProject))->toArray(request()) : null;
+                $targetProjectId = $additional['target_project_id'] ?? $additional['targetProjectId'] ?? null;
+                $targetProject = $targetProjectId ? Project::find($targetProjectId) : null;
+                $data['targetProject'] = $targetProject !== null
+                    ? (new ProjectResource($targetProject->load(['supervisor', 'assignedGroup'])))->toArray(request())
+                    : null;
+            }
+        }
+
         return response()->json([
             'success' => true,
-            'data' => new RequestResource($request->load(['student', 'project'])),
+            'data' => $data,
         ]);
     }
 

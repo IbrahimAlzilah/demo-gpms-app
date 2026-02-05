@@ -1,17 +1,36 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { DataTable, Button, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui'
-import { BlockContent } from '@/components/common'
+import { BlockContent, ConfirmDialog } from '@/components/common'
+import { useToast } from '@/components/common'
 import { AlertCircle, Megaphone } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { ROUTES } from '@/lib/constants'
 import { createProjectsColumns } from '../components/table'
 import { useProjectsList } from './ProjectsList.hook'
+import { committeeProjectService } from '../../announce-projects/api/project.service'
+import type { Project } from '@/types/project.types'
 
 export function ProjectsList() {
     const { t } = useTranslation()
     const navigate = useNavigate()
+    const queryClient = useQueryClient()
+    const { toastSuccess, toastError } = useToast()
+    const [projectToDelete, setProjectToDelete] = useState<Project | null>(null)
+
+    const deleteProject = useMutation({
+        mutationFn: (id: string) => committeeProjectService.delete(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['committee-projects'] })
+            toastSuccess(t('committee.projectManagement.deleted'))
+            setProjectToDelete(null)
+        },
+        onError: (e) => {
+            toastError(e instanceof Error ? e.message : t('common.error'))
+        },
+    })
 
     const {
         data,
@@ -35,6 +54,8 @@ export function ProjectsList() {
         () =>
             createProjectsColumns({
                 onView: (project) => navigate(ROUTES.PROJECTS_COMMITTEE.PROJECT_DETAIL(project.id)),
+                onEdit: (project) => navigate(ROUTES.PROJECTS_COMMITTEE.PROJECT_DETAIL(project.id)),
+                onDelete: (project) => setProjectToDelete(project),
                 t,
             }),
         [navigate, t]
@@ -108,6 +129,16 @@ export function ProjectsList() {
                     </div>
                 </BlockContent>
             )}
+
+            <ConfirmDialog
+                open={!!projectToDelete}
+                onOpenChange={(open) => !open && setProjectToDelete(null)}
+                onConfirm={() => projectToDelete && deleteProject.mutate(projectToDelete.id)}
+                title={t('committee.projectManagement.confirmDelete', { defaultValue: 'Delete project?' })}
+                description={projectToDelete ? t('committee.projectManagement.confirmDeleteDescription', { defaultValue: 'This project will be permanently removed. This action cannot be undone.' }) : undefined}
+                confirmLabel={t('common.delete')}
+                variant="destructive"
+            />
         </>
     )
 }

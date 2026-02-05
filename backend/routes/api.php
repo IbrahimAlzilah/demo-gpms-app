@@ -196,7 +196,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('projects/{project}/workflow', [App\Http\Controllers\ProjectsCommittee\ProjectController::class, 'workflow']);
         Route::put('projects/{project}/status', [App\Http\Controllers\ProjectsCommittee\ProjectController::class, 'updateStatus']);
         Route::delete('projects/{project}/supervisor', [App\Http\Controllers\ProjectsCommittee\SupervisorController::class, 'unassign']);
-        Route::apiResource('projects', App\Http\Controllers\ProjectsCommittee\ProjectController::class);
+        Route::apiResource('projects', App\Http\Controllers\ProjectsCommittee\ProjectController::class)->only(['index', 'show', 'update', 'destroy']);
         Route::post('projects/announce', [App\Http\Controllers\ProjectsCommittee\ProjectController::class, 'announce']);
         Route::post('projects/unannounce', [App\Http\Controllers\ProjectsCommittee\ProjectController::class, 'unannounce']);
         Route::apiResource('periods', App\Http\Controllers\ProjectsCommittee\PeriodController::class);
@@ -218,6 +218,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('registrations', [App\Http\Controllers\ProjectsCommittee\RegistrationController::class, 'store']);
         Route::post('registrations/{registration}/approve', [App\Http\Controllers\ProjectsCommittee\RegistrationController::class, 'approve']);
         Route::post('registrations/{registration}/reject', [App\Http\Controllers\ProjectsCommittee\RegistrationController::class, 'reject']);
+        Route::get('groups/eligible-students', [App\Http\Controllers\ProjectsCommittee\GroupController::class, 'eligibleStudents']);
+        Route::get('groups/{group}', [App\Http\Controllers\ProjectsCommittee\GroupController::class, 'show']);
+        Route::put('groups/{group}', [App\Http\Controllers\ProjectsCommittee\GroupController::class, 'update']);
+        Route::post('groups/{group}/members', [App\Http\Controllers\ProjectsCommittee\GroupController::class, 'addMember']);
+        Route::delete('groups/{group}/members/{member}', [App\Http\Controllers\ProjectsCommittee\GroupController::class, 'removeMember']);
         Route::post('committees/distribute', [App\Http\Controllers\ProjectsCommittee\CommitteeController::class, 'distribute']);
         Route::get('committees/members', [App\Http\Controllers\ProjectsCommittee\CommitteeController::class, 'members']);
         Route::get('committees/projects', [App\Http\Controllers\ProjectsCommittee\CommitteeController::class, 'projectsForDiscussion']);

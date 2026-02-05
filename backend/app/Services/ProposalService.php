@@ -132,7 +132,6 @@ class ProposalService
                     'supervisor_id' => null, // Will be assigned later
                     'max_students' => $maxStudents,
                     'specialization' => null,
-                    'keywords' => [],
                 ], $proposal->id);
 
                 $targetProjectId = $project->id;

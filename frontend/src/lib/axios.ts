@@ -26,33 +26,40 @@ apiClient.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // Response interceptor
 apiClient.interceptors.response.use(
   (response) => {
     // Skip processing for blob responses (file downloads)
-    if (response.config.responseType === 'blob') {
+    if (response.config.responseType === "blob") {
       return response;
     }
 
-    // Backend returns { success: true, data: {...}, message?: string, pagination?: {...} }
-    // Extract the data property for easier access in services
+    // Backend returns { success: true, data: {...}, message?: string, pagination?: {...}, statistics?: {...}, ... }
+    // Extract the data property for easier access while preserving other keys (e.g. statistics)
     if (
       response.data &&
       typeof response.data === "object" &&
       "success" in response.data
     ) {
-      // Return the full response but with data extracted
-      // Use 'data' in response.data to properly handle null values
-      const extractedData = "data" in response.data ? response.data.data : response.data;
+      const body = response.data as Record<string, unknown>;
+      const extractedData = "data" in body ? body.data : body;
+      const {
+        data: _d,
+        success: _s,
+        pagination: p,
+        message: m,
+        ...rest
+      } = body;
       return {
         ...response,
         data: extractedData,
-        // Keep pagination if present (check both response.data.pagination and root level)
-        pagination: response.data.pagination || (response as any).pagination,
-        message: response.data.message,
+        pagination:
+          (p as Record<string, unknown>) || (response as any).pagination,
+        message: m,
+        ...rest,
       };
     }
     return response;
@@ -95,5 +102,5 @@ apiClient.interceptors.response.use(
       ...error,
       message: error.message || "Network error. Please check your connection.",
     });
-  }
+  },
 );

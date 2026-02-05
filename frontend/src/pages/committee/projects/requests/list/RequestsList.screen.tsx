@@ -3,12 +3,12 @@ import { useTranslation } from 'react-i18next'
 import { useApproveRequest, useRejectRequest } from '../hooks/useRequestOperations'
 import { createRequestColumns } from '../components/table'
 import { DataTable, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
-import { BlockContent, ConfirmDialog } from '@/components/common'
-import { AlertCircle, User, MessageSquare } from 'lucide-react'
-import { Textarea, Label } from '@/components/ui'
+import { BlockContent } from '@/components/common'
+import { AlertCircle } from 'lucide-react'
 import { useToast } from '@/components/common'
 import { useRequestsList } from './RequestsList.hook'
 import { RequestDetailsView } from '../view/RequestDetailsView.screen'
+import { ProcessRequestModal } from '../components/ProcessRequestModal'
 import type { Request } from '@/types/request.types'
 
 export function RequestsList() {
@@ -18,6 +18,7 @@ export function RequestsList() {
   const approveRequest = useApproveRequest()
   const rejectRequest = useRejectRequest()
   const [viewingRequestId, setViewingRequestId] = useState<string | null>(null)
+  const [processingRequest, setProcessingRequest] = useState<Request | null>(null)
 
   const {
     data,
@@ -35,57 +36,33 @@ export function RequestsList() {
     setPagination,
   } = useRequestsList()
 
-  const handleApprove = async () => {
-    if (!state.selectedRequest) return
+  const handleApprove = async (comments: string) => {
+    if (!processingRequest) return
     try {
-      await approveRequest.mutateAsync({ id: state.selectedRequest.id, comments: state.comments || undefined })
+      await approveRequest.mutateAsync({ id: processingRequest.id, comments: comments || undefined })
       toastSuccess('committee.requests.approveSuccess')
-      setState((prev) => ({
-        ...prev,
-        comments: '',
-        selectedRequest: null,
-        action: null,
-        showConfirmDialog: false,
-      }))
+      setProcessingRequest(null)
     } catch (err) {
       toastError(err instanceof Error ? err.message : 'committee.requests.processingError')
+      throw err
     }
   }
 
-  const handleReject = async () => {
-    if (!state.selectedRequest) return
+  const handleReject = async (comments: string) => {
+    if (!processingRequest) return
     try {
-      await rejectRequest.mutateAsync({ id: state.selectedRequest.id, comments: state.comments || undefined })
+      await rejectRequest.mutateAsync({ id: processingRequest.id, comments: comments || undefined })
       toastSuccess('committee.requests.rejectSuccess')
-      setState((prev) => ({
-        ...prev,
-        comments: '',
-        selectedRequest: null,
-        action: null,
-        showConfirmDialog: false,
-      }))
+      setProcessingRequest(null)
     } catch (err) {
       toastError(err instanceof Error ? err.message : 'committee.requests.processingError')
+      throw err
     }
   }
 
-  const handleApproveClick = useCallback((request: Request) => {
-    setState((prev) => ({
-      ...prev,
-      selectedRequest: request,
-      action: 'approve',
-      showConfirmDialog: true,
-    }))
-  }, [setState])
-
-  const handleRejectClick = useCallback((request: Request) => {
-    setState((prev) => ({
-      ...prev,
-      selectedRequest: request,
-      action: 'reject',
-      showConfirmDialog: true,
-    }))
-  }, [setState])
+  const handleProcessClick = useCallback((request: Request) => {
+    setProcessingRequest(request)
+  }, [])
 
   const handleViewClick = useCallback((request: Request) => {
     setViewingRequestId(request.id)
@@ -95,11 +72,10 @@ export function RequestsList() {
     () =>
       createRequestColumns({
         onView: handleViewClick,
-        onApprove: handleApproveClick,
-        onReject: handleRejectClick,
+        onProcess: handleProcessClick,
         t,
       }),
-    [handleViewClick, handleApproveClick, handleRejectClick, t]
+    [handleViewClick, handleProcessClick, t]
   )
 
   return (
@@ -121,6 +97,7 @@ export function RequestsList() {
               <SelectContent>
                 <SelectItem value="all">{t('common.all')}</SelectItem>
                 <SelectItem value="pending">{t('common.pending')}</SelectItem>
+                <SelectItem value="supervisor_approved">{t('status.supervisor_approved')}</SelectItem>
                 <SelectItem value="committee_approved">{t('common.approved')}</SelectItem>
                 <SelectItem value="committee_rejected">{t('common.rejected')}</SelectItem>
                 <SelectItem value="cancelled">{t('common.cancelled')}</SelectItem>
@@ -160,104 +137,23 @@ export function RequestsList() {
         </BlockContent>
       )}
 
-      <ConfirmDialog
-        open={state.showConfirmDialog}
-        onClose={() => {
-          setState((prev) => ({
-            ...prev,
-            showConfirmDialog: false,
-            selectedRequest: null,
-            action: null,
-            comments: '',
-          }))
-        }}
-        onConfirm={() => {
-          if (state.action === 'approve') {
-            handleApprove()
-          } else if (state.action === 'reject') {
-            handleReject()
-          }
-        }}
-        title={
-          state.action === 'approve'
-            ? t('committee.requests.confirmApprove')
-            : t('committee.requests.confirmReject')
-        }
-        description={
-          state.action === 'approve'
-            ? t('committee.requests.confirmApproveDescription')
-            : t('committee.requests.confirmRejectDescription')
-        }
-        confirmLabel={t('common.confirm')}
-        cancelLabel={t('common.cancel')}
-        variant={state.action === 'reject' ? 'destructive' : 'default'}
-      >
-        {state.selectedRequest && (
-          <div className="space-y-4">
-            {state.selectedRequest.student && (
-              <div className="p-3 bg-muted rounded-lg space-y-2">
-                <p className="text-xs font-medium text-muted-foreground">{t('committee.requests.student')}</p>
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">{state.selectedRequest.student.name}</span>
-                  </div>
-                  {state.selectedRequest.student.studentId && (
-                    <div className="text-xs text-muted-foreground ml-6">
-                      {t('common.studentId')}: {state.selectedRequest.student.studentId}
-                    </div>
-                  )}
-                  {state.selectedRequest.student.email && (
-                    <div className="text-xs text-muted-foreground ml-6">
-                      {t('common.email')}: {state.selectedRequest.student.email}
-                    </div>
-                  )}
-                  {state.selectedRequest.student.phone && (
-                    <div className="text-xs text-muted-foreground ml-6">
-                      {t('common.phone')}: {state.selectedRequest.student.phone}
-                    </div>
-                  )}
-                  {state.selectedRequest.student.department && (
-                    <div className="text-xs text-muted-foreground ml-6">
-                      {t('common.department')}: {state.selectedRequest.student.department}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-            <div className="text-sm space-y-2">
-              {state.selectedRequest.status === 'pending' && (
-                <div className="flex items-start gap-2 p-2 bg-info/10 rounded border border-info/20">
-                  <AlertCircle className="h-4 w-4 text-info mt-0.5 shrink-0" />
-                  <p className="text-xs text-info-foreground">
-                    {t('committee.requests.awaitingCommitteeReview')}
-                  </p>
-                </div>
-              )}
-            </div>
-            <div>
-              <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1">
-                <MessageSquare className="h-3 w-3" />
-                {t('request.reason')}
-              </p>
-              <p className="text-sm whitespace-pre-wrap">{state.selectedRequest.reason}</p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="comments">
-                {t('committee.requests.comments')} ({t('common.optional')})
-              </Label>
-              <Textarea
-                id="comments"
-                value={state.comments}
-                onChange={(e) => setState((prev) => ({ ...prev, comments: e.target.value }))}
-                placeholder={t('committee.requests.commentsPlaceholder')}
-                rows={3}
-                className="resize-none"
-              />
-            </div>
-          </div>
-        )}
-      </ConfirmDialog>
+      {/* Process Request Modal */}
+      {processingRequest && (
+        <ProcessRequestModal
+          requestId={processingRequest.id}
+          open={!!processingRequest}
+          onClose={() => setProcessingRequest(null)}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          isProcessing={approveRequest.isPending || rejectRequest.isPending}
+          onViewFullDetails={() => {
+            if (processingRequest) {
+              setViewingRequestId(processingRequest.id)
+              setProcessingRequest(null)
+            }
+          }}
+        />
+      )}
 
       {/* Request Details View */}
       {viewingRequestId && (

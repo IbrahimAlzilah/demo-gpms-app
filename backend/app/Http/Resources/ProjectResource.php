@@ -26,7 +26,6 @@ class ProjectResource extends JsonResource
             'assignedGroupId' => $this->assigned_group_id ? (string) $this->assigned_group_id : null,
             'isLinkedToGroup' => $this->assigned_group_id !== null,
             'specialization' => $this->specialization,
-            'keywords' => $this->keywords,
             'supervisorId' => $this->supervisor_id ? (string) $this->supervisor_id : null,
             'committeeId' => $this->committee_id,
             'projectCommitteeId' => $this->project_committee_id ? (string) $this->project_committee_id : null,
@@ -37,7 +36,7 @@ class ProjectResource extends JsonResource
             'supervisor' => $this->when($this->relationLoaded('supervisor') && $this->supervisor !== null, function () {
                 return new UserResource($this->supervisor);
             }),
-            'students' => UserResource::collection($this->whenLoaded('students') ?? []),
+            'students' => $this->when($this->relationLoaded('students'), fn () => UserResource::collection($this->students ?? [])),
             'assignedGroup' => $this->when($this->relationLoaded('assignedGroup') && $this->assignedGroup !== null, function () {
                 return new StudentGroupResource($this->assignedGroup);
             }),
@@ -53,12 +52,12 @@ class ProjectResource extends JsonResource
             'groupName' => $this->when($this->relationLoaded('assignedGroup') && $this->assignedGroup !== null, function () {
                 return $this->assignedGroup->name ?? $this->assignedGroup->group_code ?? null;
             }),
-            'documents' => $this->whenLoaded('documents') ? DocumentResource::collection($this->documents) : [],
+            'documents' => $this->when($this->relationLoaded('documents'), fn () => DocumentResource::collection($this->documents ?? [])),
             'documentsCount' => $this->when(isset($this->documents_count), fn () => $this->documents_count),
             'documentsApprovedCount' => $this->when(isset($this->documents_approved_count), fn () => $this->documents_approved_count),
             'gradesCount' => $this->when(isset($this->grades_count), fn () => $this->grades_count),
-            'grades' => $this->whenLoaded('grades') ? GradeResource::collection($this->grades) : [],
-            'committeeMembers' => $this->whenLoaded('committeeMembers') ? UserResource::collection($this->committeeMembers) : [],
+            'grades' => $this->when($this->relationLoaded('grades'), fn () => GradeResource::collection($this->grades ?? [])),
+            'committeeMembers' => $this->when($this->relationLoaded('committeeMembers'), fn () => UserResource::collection($this->committeeMembers ?? [])),
             'createdAt' => $this->created_at?->toISOString(),
             'updatedAt' => $this->updated_at?->toISOString(),
         ];

@@ -126,6 +126,15 @@ class RequestController extends Controller
         $user = $request->user();
         $type = $validated['type'];
 
+        // All request types require the Request Submission period to be open
+        $timeWindowService = app(TimeWindowService::class);
+        if (!$timeWindowService->isWindowActive(TimePeriodType::REQUEST_SUBMISSION)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Request submission is only allowed during the Request Submission period. Please check the active time windows.',
+            ], 403);
+        }
+
         $group = StudentGroup::where(function ($q) use ($user) {
             $q->where('leader_id', $user->id)
                 ->orWhereHas('members', fn ($m) => $m->where('users.id', $user->id));
@@ -147,12 +156,6 @@ class RequestController extends Controller
                 ], 403);
             }
             $timeWindowService = app(TimeWindowService::class);
-            if (!$timeWindowService->isWindowActive(TimePeriodType::REQUEST_SUBMISSION)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'The request submission period is not currently open. Please check the time windows for when you can submit requests.',
-                ], 403);
-            }
             if (!$project) {
                 return response()->json([
                     'success' => false,
@@ -238,18 +241,20 @@ class RequestController extends Controller
         })->where('status', 'active')->first();
         $project = $group ? Project::where('assigned_group_id', $group->id)->first() : null;
 
+        // All request updates require the Request Submission period to be open
+        $timeWindowService = app(TimeWindowService::class);
+        if (!$timeWindowService->isWindowActive(TimePeriodType::REQUEST_SUBMISSION)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'The request submission period is not currently open. Updates are not allowed.',
+            ], 403);
+        }
+
         if (in_array($type, self::LEADER_ONLY_REQUEST_TYPES, true)) {
             if (!$group || (string) $group->leader_id !== (string) $user->id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Only the group leader can update Change Supervisor, Change Project, and Change Project Title requests.',
-                ], 403);
-            }
-            $timeWindowService = app(TimeWindowService::class);
-            if (!$timeWindowService->isWindowActive(TimePeriodType::REQUEST_SUBMISSION)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'The request submission period is not currently open. Updates are not allowed.',
                 ], 403);
             }
             if (!$project) {

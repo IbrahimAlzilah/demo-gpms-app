@@ -526,6 +526,113 @@ class StudentGroupService
     }
 
     /**
+     * Add member to group (Projects Committee only). Allowed even when group is assigned to a project.
+     * Syncs project_student when group is assigned.
+     */
+    public function addMemberByCommittee(StudentGroup $group, User $member): StudentGroup
+    {
+        if ($group->status !== 'active') {
+            throw new \Exception('Cannot add members to an inactive group');
+        }
+
+        if (!$member->isStudent()) {
+            throw new \Exception('Only students can be added to groups');
+        }
+
+        if ($group->isFull()) {
+            $maxMembers = $this->settingsService->getGroupMaxMembers();
+            throw new \Exception("Group is full (maximum {$maxMembers} members)");
+        }
+
+        if ($group->hasMember($member->id) || $group->leader_id === $member->id) {
+            throw new \Exception('User is already in the group');
+        }
+
+        $existingGroup = StudentGroup::where(function ($query) use ($member) {
+            $query->where('leader_id', $member->id)
+                ->orWhereHas('members', function ($q) use ($member) {
+                    $q->where('users.id', $member->id);
+                });
+        })
+            ->where('status', 'active')
+            ->where('id', '!=', $group->id)
+            ->first();
+
+        if ($existingGroup) {
+            throw new \Exception('Student is already a member of another active group');
+        }
+
+        return DB::transaction(function () use ($group, $member) {
+            $group->members()->attach($member->id);
+            $group = $group->fresh()->load(['leader', 'members']);
+
+            $project = $group->assignedProjects()->first();
+            if ($project) {
+                if (!$project->students()->where('users.id', $member->id)->exists()) {
+                    $project->students()->attach($member->id);
+                    $project->increment('current_students');
+                    \App\Models\ProjectRegistration::updateOrCreate(
+                        ['project_id' => $project->id, 'student_id' => $member->id],
+                        ['status' => 'approved', 'submitted_at' => now(), 'reviewed_at' => now()]
+                    );
+                }
+            }
+
+            return $group;
+        });
+    }
+
+    /**
+     * Remove member from group (Projects Committee only). Allowed even when group is assigned.
+     * Syncs project_student and current_students when group is assigned.
+     */
+    public function removeMemberByCommittee(StudentGroup $group, User $member): StudentGroup
+    {
+        if ($group->leader_id === $member->id) {
+            throw new \Exception('Cannot remove group leader. Change leader first or dissolve the group.');
+        }
+
+        if (!$group->hasMember($member->id)) {
+            throw new \Exception('User is not a member of this group');
+        }
+
+        $minMembers = $this->settingsService->getGroupMinMembers();
+        $currentTotal = $group->getTotalMemberCount();
+        if (($currentTotal - 1) < $minMembers) {
+            throw new \Exception("Group must have at least {$minMembers} members");
+        }
+
+        return DB::transaction(function () use ($group, $member) {
+            $group->members()->detach($member->id);
+
+            $project = $group->assignedProjects()->first();
+            if ($project && $project->students()->where('users.id', $member->id)->exists()) {
+                $project->students()->detach($member->id);
+                $project->decrement('current_students');
+            }
+
+            return $group->fresh()->load(['leader', 'members']);
+        });
+    }
+
+    /**
+     * Update group (Projects Committee only). E.g. name.
+     */
+    public function updateGroupByCommittee(StudentGroup $group, array $data): StudentGroup
+    {
+        $settingsService = app(\App\Services\SettingsService::class);
+        $groupNameMaxLength = $settingsService->getGroupNameMaxLength();
+
+        $allowed = ['name'];
+        $toUpdate = array_intersect_key(array_filter($data), array_flip($allowed));
+        if (isset($toUpdate['name']) && strlen($toUpdate['name']) > $groupNameMaxLength) {
+            throw new \Exception("Group name must be at most {$groupNameMaxLength} characters");
+        }
+        $group->update($toUpdate);
+        return $group->fresh()->load(['leader', 'members']);
+    }
+
+    /**
      * Ensure group is not assigned to any project
      */
     protected function ensureGroupNotAssigned(StudentGroup $group): void
@@ -537,7 +644,7 @@ class StudentGroupService
 
     /**
      * Leave group (DISABLED - members cannot leave groups)
-     * 
+     *
      * Note: Student members are not allowed to leave groups.
      * Only group leaders can delete the group, which removes all members.
      * This method is kept for backward compatibility but will throw an exception for members.
