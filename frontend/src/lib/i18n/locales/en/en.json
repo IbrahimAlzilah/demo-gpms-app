@@ -78,6 +78,7 @@
     "completed": "Completed",
     "overdue": "Overdue",
     "days": "days",
+    "minutes": "minutes",
     "fillRequiredFields": "Please fill all required fields",
     "register": "Register",
     "endsToday": "Ends today",

@@ -83,6 +83,23 @@ class MeetingController extends Controller
             }
         }
 
+        // Notify all project students about the new meeting
+        $notificationService = app(\App\Services\NotificationService::class);
+        $projectStudentIds = $project->students()->pluck('users.id')->toArray();
+        
+        if (!empty($projectStudentIds)) {
+            $formattedDate = \Carbon\Carbon::parse($meeting->scheduled_date)->format('Y-m-d H:i');
+            $message = "تم جدولة اجتماع جديد للمشروع '{$project->title}' في {$formattedDate}";
+            
+            $notificationService->createForUsers(
+                $projectStudentIds,
+                $message,
+                'meeting_scheduled',
+                'project_meeting',
+                $meeting->id
+            );
+        }
+
         return response()->json([
             'success' => true,
             'data' => new ProjectMeetingResource($meeting->load(['scheduledBy', 'attendees'])),
@@ -128,6 +145,23 @@ class MeetingController extends Controller
             $projectStudentIds = $project->students()->pluck('users.id')->toArray();
             $validAttendeeIds = array_intersect($validated['attendee_ids'], $projectStudentIds);
             $meeting->attendees()->sync($validAttendeeIds);
+        }
+
+        // Notify all project students about the updated meeting
+        $notificationService = app(\App\Services\NotificationService::class);
+        $projectStudentIds = $project->students()->pluck('users.id')->toArray();
+        
+        if (!empty($projectStudentIds)) {
+            $formattedDate = \Carbon\Carbon::parse($meeting->scheduled_date)->format('Y-m-d H:i');
+            $message = "تم تحديث اجتماع المشروع '{$project->title}' إلى {$formattedDate} - " . ($validated['location'] ?? 'موقع غير محدد');
+            
+            $notificationService->createForUsers(
+                $projectStudentIds,
+                $message,
+                'meeting_updated',
+                'project_meeting',
+                $meeting->id
+            );
         }
 
         return response()->json([

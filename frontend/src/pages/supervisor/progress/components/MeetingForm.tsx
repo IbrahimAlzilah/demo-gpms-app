@@ -42,7 +42,7 @@ export function MeetingForm({
     defaultValues: {
       scheduledDate: meeting?.scheduledDate
         ? new Date(meeting.scheduledDate).toISOString().slice(0, 16)
-        : '',
+        : new Date().toISOString().slice(0, 16),
       duration: meeting?.duration || 60,
       location: meeting?.location || '',
       agenda: meeting?.agenda || '',
@@ -59,8 +59,13 @@ export function MeetingForm({
     if (meeting?.attendees) {
       setSelectedAttendees(meeting.attendees)
       setValue('attendeeIds', meeting.attendees)
+    } else if (project?.students && !meeting) {
+      // Default to selecting all students for new meetings
+      const allStudentIds = project.students.map(s => s.id)
+      setSelectedAttendees(allStudentIds)
+      setValue('attendeeIds', allStudentIds)
     }
-  }, [meeting, setValue])
+  }, [meeting, project, setValue])
 
   const handleAttendeeToggle = (studentId: string) => {
     const newAttendees = selectedAttendees.includes(studentId)
@@ -70,10 +75,26 @@ export function MeetingForm({
     setValue('attendeeIds', newAttendees)
   }
 
+  const handleSelectAll = () => {
+    if (project?.students) {
+      if (selectedAttendees.length === project.students.length) {
+        setSelectedAttendees([])
+        setValue('attendeeIds', [])
+      } else {
+        const allIds = project.students.map(s => s.id)
+        setSelectedAttendees(allIds)
+        setValue('attendeeIds', allIds)
+      }
+    }
+  }
+
   const handleFormSubmit = async (data: MeetingFormData) => {
     await onSubmit({ ...data, attendeeIds: selectedAttendees })
     if (!isEditMode) {
       reset()
+      // Reset to all students for next time or clear? 
+      // Usually keeping it consistent or clearing is fine.
+      // Let's clear for safety, effect will re-set if needed.
       setSelectedAttendees([])
     }
   }
@@ -111,6 +132,16 @@ export function MeetingForm({
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
+            <Label htmlFor="location">{t('meeting.location')}</Label>
+            <Input
+              id="location"
+              {...register('location')}
+              placeholder={t('meeting.locationPlaceholder')}
+              className={errors.location ? 'border-destructive' : ''}
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="duration">{t('meeting.duration')} ({t('meeting.minutes')})</Label>
             <Input
               id="duration"
@@ -127,16 +158,6 @@ export function MeetingForm({
                 {errors.duration.message}
               </p>
             )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="location">{t('meeting.location')}</Label>
-            <Input
-              id="location"
-              {...register('location')}
-              placeholder={t('meeting.locationPlaceholder')}
-              className={errors.location ? 'border-destructive' : ''}
-            />
           </div>
         </div>
 
@@ -159,7 +180,20 @@ export function MeetingForm({
 
         {project?.students && project.students.length > 0 && (
           <div className="space-y-2">
-            <Label>{t('meeting.attendees')}</Label>
+            <div className="flex items-center justify-between">
+              <Label>{t('meeting.attendees')}</Label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleSelectAll}
+                className="h-6 px-2 text-xs"
+              >
+                {selectedAttendees.length === project.students.length
+                  ? t('common.deselectAll') || 'Deselect All'
+                  : t('common.selectAll') || 'Select All'}
+              </Button>
+            </div>
             <div className="space-y-2 max-h-40 overflow-y-auto border rounded-md p-2">
               {project.students.map((student) => (
                 <label

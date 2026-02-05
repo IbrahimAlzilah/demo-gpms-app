@@ -82,6 +82,7 @@
     "completed": "مكتمل",
     "overdue": "متأخر",
     "days": "أيام",
+    "minutes": "دقيقة",
     "print": "طباعة",
     "leader": "قائد المجموعة",
     "fillRequiredFields": "يرجى ملء جميع الحقول المطلوبة",
@@ -273,7 +274,7 @@
       "requests": "الطلبات",
       "authentication": "المصادقة",
       "ui": "البحث والواجهة",
-      "periods": "الفترات الزمنية",
+      "periods": "الفترات",
       "other": "أخرى"
     }
   },
