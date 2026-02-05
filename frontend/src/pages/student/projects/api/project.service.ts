@@ -14,7 +14,7 @@ export const projectService = {
 
   getTableData: async (params?: TableQueryParams, available?: boolean): Promise<TableResponse<Project>> => {
     const queryParams = new URLSearchParams()
-    
+
     if (available !== undefined) {
       queryParams.append('available', available.toString())
     }
@@ -34,7 +34,7 @@ export const projectService = {
     const response = await apiClient.get<Project[]>(
       `/student/projects?${queryParams.toString()}`
     )
-    
+
     return {
       data: Array.isArray(response.data) ? response.data : [],
       totalCount: response.pagination?.total || 0,
@@ -91,7 +91,7 @@ export const projectService = {
   batchRegister: async (projectIds: string[], studentGroupId: string): Promise<GroupRegistrationRequest> => {
     const response = await apiClient.post<GroupRegistrationRequest>(
       '/student/projects/batch-register',
-      { 
+      {
         project_ids: projectIds,
         student_group_id: studentGroupId
       }

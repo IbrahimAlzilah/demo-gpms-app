@@ -7,9 +7,9 @@ import { projectService } from '../../projects/api/project.service'
 import { Button, Textarea, Label, Badge } from '@/components/ui'
 import { LoadingSpinner, StatusBadge, ModalDialog, BlockContent } from '@/components/common'
 import {
-  Calendar, FileText, MessageSquare, CheckCircle2, Clock, Loader2, Send, X, AlertCircle, Upload
+  Calendar, FileText, MessageSquare, CheckCircle2, Clock, Loader2, Send, X, AlertCircle, Upload, MapPin
 } from 'lucide-react'
-import { formatDate, formatRelativeTime } from '@/lib/utils/format'
+import { formatDate, formatRelativeTime, formatDateTime } from '@/lib/utils/format'
 import type { NoteReply } from '@/types/project.types'
 
 interface ProjectDashboardProps {
@@ -224,15 +224,33 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
             <div className="space-y-4">
               {/* Upcoming Meeting */}
               {upcomingMeeting && (
-                <div className="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200/50 dark:border-amber-800/30">
-                  <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg shrink-0">
-                    <Calendar className="h-5 w-5 text-amber-600 dark:text-amber-500" />
+                <div className="flex flex-col sm:flex-row items-start gap-4 p-4 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200/50 dark:border-amber-800/30">
+                  <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl shrink-0 text-amber-600 dark:text-amber-500">
+                    <Calendar className="h-6 w-6" />
                   </div>
-                  <div>
-                    <p className="font-medium text-foreground">{t('followUp.upcomingMeeting')}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {formatDate(upcomingMeeting.scheduledDate)}
-                    </p>
+
+                  <div className="space-y-3 flex-1 w-full">
+                    <div>
+                      <h4 className="font-semibold text-foreground text-base">{t('followUp.upcomingMeeting')}</h4>
+                      <p className="text-sm font-medium text-muted-foreground mt-1">
+                        {formatDateTime(upcomingMeeting.scheduledDate)}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3">
+                      {upcomingMeeting.duration && (
+                        <div className="flex items-center gap-2 text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-100/50 dark:bg-amber-900/20 px-2.5 py-1.5 rounded-md border border-amber-200/50 dark:border-amber-800/50">
+                          <Clock className="h-3.5 w-3.5" />
+                          <span>{upcomingMeeting.duration} {t('common.minutes')}</span>
+                        </div>
+                      )}
+                      {upcomingMeeting.location && (
+                        <div className="flex items-center gap-2 text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-100/50 dark:bg-amber-900/20 px-2.5 py-1.5 rounded-md border border-amber-200/50 dark:border-amber-800/50">
+                          <MapPin className="h-3.5 w-3.5" />
+                          <span>{upcomingMeeting.location}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
