@@ -1,7 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table"
 import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
 import { StatusBadge } from "@/components/common/StatusBadge"
-import { Button } from "@/components/ui/button"
+import { ActionsDropdown } from "@/components/common/ActionsDropdown"
 import type { Request } from "@/types/request.types"
 import { Eye, ClipboardCheck, User } from "lucide-react"
 import { formatRelativeTime } from "@/lib/utils/format"
@@ -111,31 +111,27 @@ export function createRequestColumns({
       ),
       cell: ({ row }) => {
         const request = row.original
-        const canProcess = request.status === 'pending' || request.status === 'supervisor_approved'
 
-        return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onView(request)}
-              className="h-8 px-3"
-            >
-              <Eye className="h-3.5 w-3.5 mr-1.5" />
-              {t('common.view')}
-            </Button>
-            <Button
-              variant={canProcess ? "default" : "secondary"}
-              size="sm"
-              onClick={() => onProcess(request)}
-              disabled={!canProcess}
-              className="h-8 px-3"
-            >
-              <ClipboardCheck className="h-3.5 w-3.5 mr-1.5" />
-              {t('committee.requests.processRequest')}
-            </Button>
-          </div>
-        )
+        const actions = [
+          {
+            id: 'view',
+            label: t('common.view'),
+            icon: Eye,
+            onClick: () => onView(request),
+            variant: 'default' as const,
+          },
+          {
+            id: 'process',
+            label: t('committee.requests.processRequest'),
+            icon: ClipboardCheck,
+            onClick: () => onProcess(request),
+            hidden: (row: Request) => row.status !== 'pending' && row.status !== 'supervisor_approved',
+            variant: 'primary' as const,
+            separator: true,
+          },
+        ]
+
+        return <ActionsDropdown row={request} actions={actions} />
       },
     },
   ]

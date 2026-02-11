@@ -100,7 +100,6 @@ export function RequestsList() {
                 <SelectItem value="supervisor_approved">{t('status.supervisor_approved')}</SelectItem>
                 <SelectItem value="committee_approved">{t('common.approved')}</SelectItem>
                 <SelectItem value="committee_rejected">{t('common.rejected')}</SelectItem>
-                <SelectItem value="cancelled">{t('common.cancelled')}</SelectItem>
               </SelectContent>
             </Select>
           }

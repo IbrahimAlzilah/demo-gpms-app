@@ -27,7 +27,8 @@ class RequestController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = ProjectRequest::query()
-            ->with(['student', 'project']);
+            ->with(['student', 'project'])
+            ->where('status', '!=', 'cancelled'); // Committee does not see student-cancelled requests
 
         // Apply status filter if provided
         $filters = $request->get('filters', []);
