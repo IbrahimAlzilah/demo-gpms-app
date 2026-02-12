@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ROUTES } from '../../lib/constants'
+import { ROUTES } from '../../lib/constants/constants'
 
 export function UnauthorizedPage() {
   const { t } = useTranslation()
-  
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30">
       <div className="text-center">

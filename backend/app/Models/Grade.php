@@ -16,7 +16,13 @@ class Grade extends Model
         'supervisor_grade',
         'committee_grade',
         'final_grade',
+        'fd1_final_grade',
+        'fd2_final_grade',
         'is_approved',
+        'fd1_approved',
+        'fd2_approved',
+        'fd1_published',
+        'fd2_published',
         'approved_at',
         'approved_by',
     ];
@@ -25,7 +31,13 @@ class Grade extends Model
         'supervisor_grade' => 'array',
         'committee_grade' => 'array',
         'final_grade' => 'decimal:2',
+        'fd1_final_grade' => 'decimal:2',
+        'fd2_final_grade' => 'decimal:2',
         'is_approved' => 'boolean',
+        'fd1_approved' => 'boolean',
+        'fd2_approved' => 'boolean',
+        'fd1_published' => 'boolean',
+        'fd2_published' => 'boolean',
         'approved_at' => 'datetime',
     ];
 
@@ -71,6 +83,216 @@ class Grade extends Model
         }
 
         return $supervisorScore ?? $committeeScore;
+    }
+
+    /**
+     * Get FD1 evaluations for this student
+     */
+    public function fd1Evaluations()
+    {
+        return DefenseEvaluation::where('project_id', $this->project_id)
+            ->where('student_id', $this->student_id)
+            ->where('defense_stage', 'fd1')
+            ->get();
+    }
+
+    /**
+     * Get FD2 evaluations for this student
+     */
+    public function fd2Evaluations()
+    {
+        return DefenseEvaluation::where('project_id', $this->project_id)
+            ->where('student_id', $this->student_id)
+            ->where('defense_stage', 'fd2')
+            ->get();
+    }
+
+    /**
+     * Get FD1 approval status for this project
+     */
+    public function fd1Approval()
+    {
+        return DefenseApproval::where('project_id', $this->project_id)
+            ->where('defense_stage', 'fd1')
+            ->first();
+    }
+
+    /**
+     * Get FD2 approval status for this project
+     */
+    public function fd2Approval()
+    {
+        return DefenseApproval::where('project_id', $this->project_id)
+            ->where('defense_stage', 'fd2')
+            ->first();
+    }
+
+    /**
+     * Calculate FD1 final grade from all evaluations
+     */
+    public function calculateFD1FinalGrade(): ?float
+    {
+        $evaluations = $this->fd1Evaluations();
+        
+        if ($evaluations->isEmpty()) {
+            return null;
+        }
+
+        // Separate evaluations by role
+        $supervisorEval = $evaluations->where('evaluator_role', 'supervisor')->first();
+        $committeeEvals = $evaluations->where('evaluator_role', 'committee_member');
+        $projectCommitteeEvals = $evaluations->where('evaluator_role', 'project_committee');
+
+        $supervisorScore = $supervisorEval ? $supervisorEval->normalized_score : null;
+        $committeeAvg = $committeeEvals->isNotEmpty() ? $committeeEvals->avg('normalized_score') : null;
+
+        // If project committee added evaluations, include them
+        if ($projectCommitteeEvals->isNotEmpty()) {
+            $projectCommitteeAvg = $projectCommitteeEvals->avg('normalized_score');
+            
+            // Weight: 40% supervisor, 40% committee, 20% project committee
+            if ($supervisorScore !== null && $committeeAvg !== null) {
+                return ($supervisorScore * 0.4) + ($committeeAvg * 0.4) + ($projectCommitteeAvg * 0.2);
+            }
+        }
+
+        // Default: 40% supervisor, 60% committee
+        if ($supervisorScore !== null && $committeeAvg !== null) {
+            return ($supervisorScore * 0.4) + ($committeeAvg * 0.6);
+        }
+
+        return $supervisorScore ?? $committeeAvg;
+    }
+
+    /**
+     * Calculate FD2 final grade from all evaluations
+     */
+    public function calculateFD2FinalGrade(): ?float
+    {
+        $evaluations = $this->fd2Evaluations();
+        
+        if ($evaluations->isEmpty()) {
+            return null;
+        }
+
+        // Separate evaluations by role
+        $supervisorEval = $evaluations->where('evaluator_role', 'supervisor')->first();
+        $committeeEvals = $evaluations->where('evaluator_role', 'committee_member');
+        $projectCommitteeEvals = $evaluations->where('evaluator_role', 'project_committee');
+
+        $supervisorScore = $supervisorEval ? $supervisorEval->normalized_score : null;
+        $committeeAvg = $committeeEvals->isNotEmpty() ? $committeeEvals->avg('normalized_score') : null;
+
+        // If project committee added evaluations, include them
+        if ($projectCommitteeEvals->isNotEmpty()) {
+            $projectCommitteeAvg = $projectCommitteeEvals->avg('normalized_score');
+            
+            // Weight: 40% supervisor, 40% committee, 20% project committee
+            if ($supervisorScore !== null && $committeeAvg !== null) {
+                return ($supervisorScore * 0.4) + ($committeeAvg * 0.4) + ($projectCommitteeAvg * 0.2);
+            }
+        }
+
+        // Default: 40% supervisor, 60% committee
+        if ($supervisorScore !== null && $committeeAvg !== null) {
+            return ($supervisorScore * 0.4) + ($committeeAvg * 0.6);
+        }
+
+        return $supervisorScore ?? $committeeAvg;
+    }
+
+    /**
+     * Check if FD1 is locked (approved or published)
+     */
+    public function isFD1Locked(): bool
+    {
+        $approval = $this->fd1Approval();
+        return $approval && $approval->isLocked();
+    }
+
+    /**
+     * Check if FD2 is locked (approved or published)
+     */
+    public function isFD2Locked(): bool
+    {
+        $approval = $this->fd2Approval();
+        return $approval && $approval->isLocked();
+    }
+
+    /**
+     * Get supervisor score safely
+     */
+    public function getSupervisorScore(): ?float
+    {
+        return $this->supervisor_grade['score'] ?? null;
+    }
+
+    /**
+     * Get committee aggregate score (handles legacy score or members average)
+     */
+    public function getCommitteeScore(): ?float
+    {
+        $grade = $this->committee_grade;
+        if (!is_array($grade)) {
+            return null;
+        }
+
+        // Direct score
+        if (isset($grade['score'])) {
+            return (float) $grade['score'];
+        }
+
+        // Members average
+        $members = $grade['members'] ?? [];
+        if (empty($members)) {
+            return null;
+        }
+
+        $scores = [];
+        foreach ($members as $member) {
+            if (isset($member['score'])) {
+                $scores[] = (float) $member['score'];
+            }
+        }
+
+        if (empty($scores)) {
+            return null;
+        }
+
+        return round(array_sum($scores) / count($scores), 2);
+    }
+
+    /**
+     * Check if grade is ready for approval
+     */
+    public function isReadyForApproval(): bool
+    {
+        return empty($this->getApprovalValidationErrors());
+    }
+
+    /**
+     * Get validation errors preventing approval
+     */
+    public function getApprovalValidationErrors(): array
+    {
+        $errors = [];
+
+        // Must have final grade calculated
+        if ($this->final_grade === null) {
+            $errors[] = 'Final grade has not been calculated';
+        }
+
+        // Must have supervisor input (unless override allowed - currently strict)
+        if ($this->getSupervisorScore() === null && empty($this->supervisor_grade)) {
+            $errors[] = 'Supervisor grade is missing';
+        }
+
+        // Must have committee input
+        if ($this->getCommitteeScore() === null && empty($this->committee_grade)) {
+            $errors[] = 'Committee grade is missing';
+        }
+
+        return $errors;
     }
 }
 

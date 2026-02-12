@@ -1,4 +1,4 @@
-import { ROUTES } from '@/lib/constants'
+import { ROUTES } from '@/lib/constants/constants'
 import type { RouteConfig } from './types'
 import {
   // Public

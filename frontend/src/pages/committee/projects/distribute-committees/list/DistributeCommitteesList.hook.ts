@@ -23,6 +23,8 @@ export function useDistributeCommitteesList() {
     searchQuery: "",
     selectedMemberForDetails: null,
     showMemberDetailsDialog: false,
+    selectedProjectForHistory: null,
+    showHistoryDialog: false,
   });
 
   // Use debouncedSearch for API calls to reduce requests

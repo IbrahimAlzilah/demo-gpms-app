@@ -32,11 +32,21 @@ export interface Grade extends BaseEntity {
     evaluatedAt: string
     evaluatedBy: string
     committeeMembers: string[]
+    members?: Record<string, any>
   }
   finalGrade?: number
   isApproved: boolean
   approvedAt?: string
   approvedBy?: string
+  /** Supervisor/committee breakdown from defense evaluations (if available) */
+  displaySupervisorGrade?: { score: number | null; maxScore: number; evaluatedAt?: string; evaluatedBy?: string } | null
+  displayCommitteeGrade?: { score: number | null; maxScore: number; evaluatedAt?: string; committeeMembers?: string[] } | null
+  approver?: User
+  /** Computed fields from backend */
+  supervisorScore?: number | null
+  committeeScore?: number | null
+  isReadyForApproval?: boolean
+  validationErrors?: string[]
 }
 
 export type EvaluationPeriodType =

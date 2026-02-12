@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { MainLayout } from '@/layouts/MainLayout'
 import { ProgressList } from './list/ProgressList.screen'
 import { ProjectsList } from '../projects/list/ProjectsList.screen'
-import { ROUTES } from '@/lib/constants'
+import { ROUTES } from '@/lib/constants/constants'
 
 export function ProgressPage() {
   const { projectId } = useParams<{ projectId?: string }>()

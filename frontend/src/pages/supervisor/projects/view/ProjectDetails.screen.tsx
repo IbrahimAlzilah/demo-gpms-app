@@ -17,7 +17,7 @@ import {
   TrendingUp,
   ClipboardCheck
 } from 'lucide-react'
-import { ROUTES } from '@/lib/constants'
+import { ROUTES } from '@/lib/constants/constants'
 import { useProjectDetails } from './ProjectDetails.hook'
 import { formatDate } from '@/lib/utils/format'
 import { DocumentsSection } from './components/DocumentsSection'

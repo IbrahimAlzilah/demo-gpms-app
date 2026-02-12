@@ -4,7 +4,7 @@ import { StatusBadge } from "@/components/common/StatusBadge"
 import { ActionsDropdown } from "@/components/common/ActionsDropdown"
 import type { Project } from "@/types/project.types"
 import { Eye, Users, TrendingUp, ClipboardCheck } from "lucide-react"
-import { ROUTES } from "@/lib/constants"
+import { ROUTES } from "@/lib/constants/constants"
 import type { ProjectTableColumnsProps } from '../../types/Projects.types'
 
 export function createProjectColumns({

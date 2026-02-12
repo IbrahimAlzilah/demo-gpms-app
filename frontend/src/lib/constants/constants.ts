@@ -202,7 +202,7 @@ export const NAV_MENU: Record<string, NavMenuItem[]> = {
       icon: "FileText",
     },
     {
-      labelKey: "nav.projects",
+      labelKey: "nav.projectsManagement",
       path: ROUTES.PROJECTS_COMMITTEE.PROJECTS,
       icon: "Briefcase",
     },

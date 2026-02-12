@@ -18,7 +18,7 @@ import {
 import { formatDateTime, formatRelativeTime } from '@/lib/utils/format'
 import { useTranslation } from 'react-i18next'
 import { useProposalsView } from './ProposalsView.hook'
-import { ROUTES } from '@/lib/constants'
+import { ROUTES } from '@/lib/constants/constants'
 import { cn } from '@/lib/utils'
 
 export function ProposalsView() {

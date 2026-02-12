@@ -23,7 +23,7 @@ import {
 } from '@/components/ui'
 import { StatusBadge } from '@/components/common/StatusBadge'
 import { LoadingSpinner } from '@/components/common'
-import { ROUTES } from '@/lib/constants'
+import { ROUTES } from '@/lib/constants/constants'
 import { useProjectManagement } from './ProjectManagement.hook'
 import { useToast } from '@/components/common'
 import { supervisorAssignmentService } from '../../supervisors/api/supervisor.service'

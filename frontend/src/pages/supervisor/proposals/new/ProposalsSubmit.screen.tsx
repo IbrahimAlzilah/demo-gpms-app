@@ -12,7 +12,7 @@ import {
   Loader2,
   Edit
 } from 'lucide-react'
-import { ROUTES } from '@/lib/constants'
+import { ROUTES } from '@/lib/constants/constants'
 import { useProposalsSubmit } from './ProposalsSubmit.hook'
 import { ProposalFields } from '../components/ProposalFields/ProposalFields'
 import { cn } from '@/lib/utils'

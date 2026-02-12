@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { MainLayout } from '../../../layouts/MainLayout'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
-import { ROUTES } from '../../../lib/constants'
+import { ROUTES } from '../../../lib/constants/constants'
 import { Link } from 'react-router-dom'
 import {
   FileText,
@@ -180,8 +180,8 @@ export function ProjectsCommitteeDashboardPage() {
                       <div className="text-right">
                         <div className="text-3xl font-bold text-primary">
                           {currentPhase.endsInDays !== null ? (
-                            currentPhase.endsInDays < 1 
-                              ? currentPhase.endsInDays.toFixed(2) 
+                            currentPhase.endsInDays < 1
+                              ? currentPhase.endsInDays.toFixed(2)
                               : Math.round(currentPhase.endsInDays)
                           ) : '-'} <span className="text-sm font-normal text-muted-foreground">{t('dashboard.committee.daysLeft')}</span>
                         </div>

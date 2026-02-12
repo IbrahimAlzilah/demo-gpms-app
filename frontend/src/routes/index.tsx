@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Suspense } from 'react'
 import { LoadingSpinner } from '@/components/common'
 import { useAuthStore } from '@/pages/auth/login'
-import { ROUTES } from '@/lib/constants'
+import { ROUTES } from '@/lib/constants/constants'
 import { publicRoutes, roleRouteMap } from './config'
 import { ProtectedRouteWrapper, RoleBasedRoutesWrapper } from './guards'
 

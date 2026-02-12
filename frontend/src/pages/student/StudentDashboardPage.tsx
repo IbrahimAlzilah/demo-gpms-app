@@ -3,7 +3,7 @@ import { MainLayout } from '../../layouts/MainLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
 import { LoadingSpinner, BlockContent } from '../../components/common'
 import { useStudentDashboard } from './hooks/useStudentDashboard'
-import { ROUTES } from '../../lib/constants'
+import { ROUTES } from '../../lib/constants/constants'
 import { Link } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
 import {

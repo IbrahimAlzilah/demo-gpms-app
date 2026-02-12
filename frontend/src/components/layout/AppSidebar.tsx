@@ -4,7 +4,7 @@ import type { SVGProps } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/pages/auth/login'
-import { NAV_MENU } from '@/lib/constants'
+import { NAV_MENU } from '@/lib/constants/constants'
 import { cn } from '@/lib/utils'
 import {
   Sidebar,

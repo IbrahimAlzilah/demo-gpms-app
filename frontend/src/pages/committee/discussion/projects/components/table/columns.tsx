@@ -3,7 +3,7 @@ import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-col
 import { Button } from "@/components/ui/button"
 import type { Project } from "@/types/project.types"
 import { formatDate } from "@/lib/utils/format"
-import { ROUTES } from "@/lib/constants"
+import { ROUTES } from "@/lib/constants/constants"
 import { Eye, FileText, ClipboardCheck } from "lucide-react"
 import { Link } from "react-router-dom"
 

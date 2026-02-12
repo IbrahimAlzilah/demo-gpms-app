@@ -20,7 +20,7 @@ import { useResubmitProposal } from '../hooks/useProposalOperations'
 import { useMyGroup } from '@/pages/student/groups/hooks/useGroups'
 import { useAuthStore } from '@/pages/auth/login'
 import { usePeriodCheck } from '@/hooks/usePeriodCheck'
-import { ROUTES } from '@/lib/constants'
+import { ROUTES } from '@/lib/constants/constants'
 import { cn, getApiErrorMessage } from '@/lib/utils'
 import { proposalService } from '../api/proposal.service'
 

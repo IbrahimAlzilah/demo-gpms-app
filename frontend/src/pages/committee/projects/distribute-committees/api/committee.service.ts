@@ -5,24 +5,57 @@ import type { User } from "../../../../../types/user.types";
 export interface CommitteeAssignment {
   projectId: string;
   committeeMemberIds: string[];
+  defenseStage: "FD1" | "FD2";
+}
+
+export interface MemberProfile {
+  department?: string;
+  specialization?: string;
+  office_location?: string;
+  phone?: string;
 }
 
 export interface MemberStatistics {
   currentAssignments: number;
   completedProjects: number;
   totalEvaluations: number;
+  maxAllowedProjects: number;
+  availableSlots: number;
 }
 
-export interface CurrentProject {
+export interface ProjectAssignment {
   id: string;
   title: string;
+  assigned_at?: string;
+  completed_at?: string;
+}
+
+export interface PastAssignment {
+  project_id: string;
+  project_title: string;
+  defense_stage: "FD1" | "FD2";
+  action: "assigned" | "removed" | "redistributed";
+  assigned_at: string;
 }
 
 export interface CommitteeMemberProfile extends User {
-  department?: string;
+  profile: MemberProfile;
   statistics: MemberStatistics;
-  currentProjects: CurrentProject[];
-  availability: "available" | "moderate" | "busy";
+  currentProjects: ProjectAssignment[];
+  completedProjects: ProjectAssignment[];
+  pastAssignments: PastAssignment[];
+  availability: "available" | "moderate" | "busy" | "unavailable";
+}
+
+export interface AssignmentHistoryRecord {
+  id: string;
+  action: "assigned" | "removed" | "redistributed";
+  defense_stage: "FD1" | "FD2";
+  current_members: Array<{ id: string; name: string }>;
+  previous_members: Array<{ id: string; name: string }>;
+  performed_by: { id: string; name: string };
+  notes?: string;
+  created_at: string;
 }
 
 export interface EvaluationProgress {
@@ -107,6 +140,7 @@ export const committeeDistributionService = {
         assignments: assignments.map((a) => ({
           project_id: a.projectId,
           committee_member_ids: a.committeeMemberIds,
+          defense_stage: a.defenseStage,
         })),
       },
     );
@@ -120,5 +154,17 @@ export const committeeDistributionService = {
     await apiClient.delete(
       `/projects-committee/committees/projects/${projectId}/assignment`,
     );
+  },
+
+  /**
+   * Get assignment history for a specific project
+   */
+  getAssignmentHistory: async (
+    projectId: string,
+  ): Promise<AssignmentHistoryRecord[]> => {
+    const response = await apiClient.get<AssignmentHistoryRecord[]>(
+      `/projects-committee/committees/projects/${projectId}/history`,
+    );
+    return Array.isArray(response.data) ? response.data : [];
   },
 };

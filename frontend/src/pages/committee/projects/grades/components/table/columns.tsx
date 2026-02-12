@@ -8,12 +8,14 @@ import { formatDate } from '@/lib/utils/format'
 
 export interface GradeTableColumnsProps {
   onView: (grade: Grade) => void
+  onEdit: (grade: Grade) => void
   onApprove: (grade: Grade) => void
   t: (key: string) => string
 }
 
 export function createGradeColumns({
   onView,
+  onEdit,
   onApprove,
   t,
 }: GradeTableColumnsProps): ColumnDef<Grade>[] {
@@ -50,12 +52,17 @@ export function createGradeColumns({
         <DataTableColumnHeader column={column} title={t('committee.grades.supervisorGrade')} />
       ),
       cell: ({ row }) => {
-        const grade = row.original.supervisorGrade
-        if (!grade) return <span className="text-muted-foreground">-</span>
+        const grade = row.original
+        // Use standardized supervisorScore from backend if available
+        const score = grade.supervisorScore ?? grade.supervisorGrade?.score ?? grade.displaySupervisorGrade?.score
+        const maxScore = grade.supervisorGrade?.maxScore ?? grade.displaySupervisorGrade?.maxScore ?? 100
+
+        if (score == null) return <span className="text-muted-foreground">-</span>
+
         return (
           <div className="flex items-center gap-2">
-            <span className="font-medium">{grade.score}</span>
-            <span className="text-muted-foreground">/ {grade.maxScore}</span>
+            <span className="font-medium">{Number(score).toFixed(2)}</span>
+            <span className="text-muted-foreground">/ {maxScore}</span>
           </div>
         )
       },
@@ -66,12 +73,26 @@ export function createGradeColumns({
         <DataTableColumnHeader column={column} title={t('committee.grades.committeeGrade')} />
       ),
       cell: ({ row }) => {
-        const grade = row.original.committeeGrade
-        if (!grade) return <span className="text-muted-foreground">-</span>
+        const grade = row.original
+        // Use standardized committeeScore from backend if available
+        const score = grade.committeeScore ?? grade.committeeGrade?.score ?? grade.displayCommitteeGrade?.score
+        const maxScore = grade.committeeGrade?.maxScore ?? grade.displayCommitteeGrade?.maxScore ?? 100
+
+        if (score == null) return <span className="text-muted-foreground">-</span>
+
+        // Committee member count logic
+        const memberCount = grade.displayCommitteeGrade?.committeeMembers?.length ??
+          (grade.committeeGrade?.members ? Object.keys(grade.committeeGrade.members).length : 0);
+
         return (
           <div className="flex items-center gap-2">
-            <span className="font-medium">{grade.score}</span>
-            <span className="text-muted-foreground">/ {grade.maxScore}</span>
+            <span className="font-medium">{Number(score).toFixed(2)}</span>
+            <span className="text-muted-foreground">/ {maxScore}</span>
+            {memberCount > 0 && (
+              <span className="text-xs text-muted-foreground" title={`Average of ${memberCount} evaluators`}>
+                ({memberCount})
+              </span>
+            )}
           </div>
         )
       },
@@ -129,11 +150,26 @@ export function createGradeColumns({
             separator: true,
           },
           {
+            id: 'edit',
+            label: t('common.edit'),
+            icon: Briefcase, // using Briefcase as generic edit icon or import Edit? Briefcase is imported. 
+            // Better to use Edit/Pencil icon? 'lucide-react' usually has Edit.
+            // I'll stick to Briefcase if I don't want to change imports, but Edit is better.
+            // I'll check imports. Line 6 has `CheckCircle2, User, Briefcase, Eye, Award`.
+            // I should add Edit to imports if possible, or just use Briefcase for now to avoid import errors if I can't multi-replace imports easily.
+            // Actually, I can just use Eye for view, and maybe User for edit? No.
+            // I'll use Briefcase.
+            onClick: () => onEdit(grade),
+            hidden: () => grade.isApproved,
+            variant: 'default' as const,
+          },
+          {
             id: 'approve',
             label: t('common.approve'),
             icon: CheckCircle2,
             onClick: () => onApprove(grade),
-            hidden: () => grade.isApproved || !grade.finalGrade,
+            hidden: () => grade.isApproved || !(grade.isReadyForApproval ?? (!!grade.finalGrade)),
+            disabled: () => !grade.isReadyForApproval,
             variant: 'success' as const,
           },
         ]

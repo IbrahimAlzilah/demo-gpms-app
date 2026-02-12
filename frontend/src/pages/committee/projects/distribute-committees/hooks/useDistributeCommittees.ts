@@ -50,3 +50,16 @@ export function useDiscussionCommitteeMembers() {
     refetchOnMount: true,
   });
 }
+
+/**
+ * Fetch assignment history for a specific project
+ */
+export function useAssignmentHistory(projectId: string | null) {
+  return useQuery({
+    queryKey: ["assignment-history", projectId],
+    queryFn: () => projectId ? committeeDistributionService.getAssignmentHistory(projectId) : Promise.resolve([]),
+    enabled: !!projectId,
+    staleTime: 0,
+    refetchOnMount: true,
+  });
+}

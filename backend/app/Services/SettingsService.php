@@ -167,6 +167,14 @@ class SettingsService
             'min' => 200,
             'max' => 5000,
         ],
+        'committee_max_projects_per_member' => [
+            'type' => 'integer',
+            'default' => 5,
+            'description' => 'Maximum number of projects a committee member can be assigned to simultaneously',
+            'category' => 'committees',
+            'min' => 1,
+            'max' => 20,
+        ],
 
         // ========== SUPERVISORS ==========
         'supervisor_max_projects' => [
@@ -588,6 +596,14 @@ class SettingsService
     }
 
     /**
+     * Get max projects per committee member
+     */
+    public function getCommitteeMaxProjectsPerMember(): int
+    {
+        return (int) Setting::get('committee_max_projects_per_member', self::DEFINITIONS['committee_max_projects_per_member']['default']);
+    }
+
+    /**
      * Get supervisor response max length
      */
     public function getSupervisorResponseMaxLength(): int
@@ -831,6 +847,11 @@ class SettingsService
     public function setDiscussionCommitteeMaxMembers(int $value): void
     {
         Setting::set('discussion_committee_max_members', $value, 'integer', self::DEFINITIONS['discussion_committee_max_members']['description']);
+    }
+
+    public function setCommitteeMaxProjectsPerMember(int $value): void
+    {
+        Setting::set('committee_max_projects_per_member', $value, 'integer', self::DEFINITIONS['committee_max_projects_per_member']['description']);
     }
 
     public function setSupervisorMaxProjects(int $value): void

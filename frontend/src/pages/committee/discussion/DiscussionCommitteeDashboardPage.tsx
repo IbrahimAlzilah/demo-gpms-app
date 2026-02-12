@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { MainLayout } from '../../../layouts/MainLayout'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
-import { ROUTES } from '../../../lib/constants'
+import { ROUTES } from '../../../lib/constants/constants'
 import { Link } from 'react-router-dom'
 import {
   Briefcase,

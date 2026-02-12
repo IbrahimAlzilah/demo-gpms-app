@@ -6,7 +6,7 @@ import { ProjectsView } from '../view/ProjectsView.screen'
 import { RejectionDetailsModal } from '../components/RejectionDetailsModal'
 import { useProjectsList } from './ProjectsList.hook'
 import { useNavigate } from 'react-router-dom'
-import { ROUTES } from '@/lib/constants'
+import { ROUTES } from '@/lib/constants/constants'
 import { cn } from '@/lib/utils'
 
 export function ProjectsList() {

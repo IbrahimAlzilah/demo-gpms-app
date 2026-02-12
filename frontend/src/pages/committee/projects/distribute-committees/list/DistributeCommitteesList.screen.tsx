@@ -30,11 +30,14 @@ import {
   Info,
   Building,
   XCircle,
-  TrendingUp
+  TrendingUp,
+  History,
+  Clock
 } from 'lucide-react'
 import type { CommitteeAssignment, CommitteeMemberProfile } from '../api/committee.service'
 import { useDistributeCommitteesList } from './DistributeCommitteesList.hook'
 import { usePublicSettings } from '@/pages/admin/settings/hooks/useSettings'
+import { useAssignmentHistory } from '../hooks/useDistributeCommittees'
 
 export function DistributeCommitteesList() {
   const { t } = useTranslation()
@@ -54,20 +57,39 @@ export function DistributeCommitteesList() {
     defensePhaseOptions,
   } = useDistributeCommitteesList()
 
+  // Fetch assignment history for selected project
+  const { data: assignmentHistory, isLoading: historyLoading } = useAssignmentHistory(state.selectedProjectForHistory)
+
   const toggleMember = (projectId: string, memberId: string) => {
+    const member = data.members.find(m => m.id === memberId)
     const newAssignments = new Map(state.assignments)
     const currentMembers = newAssignments.get(projectId) || []
 
     if (currentMembers.includes(memberId)) {
+      // Allow unselecting
       newAssignments.set(
         projectId,
         currentMembers.filter((id) => id !== memberId)
       )
     } else {
+      // Check max members per project
       if (currentMembers.length >= committeeMax) {
         toastWarning(t('committee.distribute.maxMembersReached'))
         return
       }
+      
+      // Check member availability
+      if (member && member.availability === 'unavailable') {
+        toastWarning(t('committee.distribute.memberUnavailable', { name: member.name }))
+        return
+      }
+      
+      // Check available slots
+      if (member && member.statistics.availableSlots <= 0) {
+        toastWarning(t('committee.distribute.memberAtCapacity', { name: member.name }))
+        return
+      }
+      
       newAssignments.set(projectId, [...currentMembers, memberId])
     }
 
@@ -87,11 +109,18 @@ export function DistributeCommitteesList() {
       }
     }
 
+    // Map assignments with defense stage
     const assignmentArray: CommitteeAssignment[] = Array.from(state.assignments.entries()).map(
-      ([projectId, committeeMemberIds]) => ({
-        projectId,
-        committeeMemberIds,
-      })
+      ([projectId, committeeMemberIds]) => {
+        const project = data.projects.find(p => p.id === projectId)
+        const defenseStage = project?.readyForDefensePhase === 'final_defense_2' ? 'FD2' : 'FD1'
+        
+        return {
+          projectId,
+          committeeMemberIds,
+          defenseStage,
+        }
+      }
     )
 
     try {
@@ -120,6 +149,14 @@ export function DistributeCommitteesList() {
     }))
   }
 
+  const showProjectHistory = (projectId: string) => {
+    setState((prev) => ({
+      ...prev,
+      selectedProjectForHistory: projectId,
+      showHistoryDialog: true,
+    }))
+  }
+
   const getAvailabilityColor = (availability: string) => {
     switch (availability) {
       case 'available':
@@ -127,6 +164,8 @@ export function DistributeCommitteesList() {
       case 'moderate':
         return 'bg-yellow-500'
       case 'busy':
+        return 'bg-orange-500'
+      case 'unavailable':
         return 'bg-red-500'
       default:
         return 'bg-gray-500'
@@ -141,6 +180,8 @@ export function DistributeCommitteesList() {
         return t('committee.distribute.moderate')
       case 'busy':
         return t('committee.distribute.busy')
+      case 'unavailable':
+        return t('committee.distribute.unavailable')
       default:
         return availability
     }
@@ -319,23 +360,33 @@ export function DistributeCommitteesList() {
                   </CardHeader>
 
                   <CardContent className="space-y-4">
-                    {/* Existing Committee Info & Remove Button */}
+                    {/* Existing Committee Info & Action Buttons */}
                     {existingCommittee && (
                       <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                         <div className="flex items-center gap-2 text-sm">
                           <Info className="h-4 w-4 text-primary" />
                           <span>{t('committee.distribute.existingCommitteeInfo')}</span>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleRemoveAssignment(project.id)}
-                          disabled={removeAssignment.isPending}
-                          className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                        >
-                          <XCircle className="h-4 w-4" />
-                          {t('committee.distribute.removeCommittee')}
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => showProjectHistory(project.id)}
+                          >
+                            <History className="h-4 w-4" />
+                            {t('committee.distribute.viewHistory')}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleRemoveAssignment(project.id)}
+                            disabled={removeAssignment.isPending}
+                            className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                          >
+                            <XCircle className="h-4 w-4" />
+                            {t('committee.distribute.removeCommittee')}
+                          </Button>
+                        </div>
                       </div>
                     )}
 
@@ -351,14 +402,25 @@ export function DistributeCommitteesList() {
 
                       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
                         {data.members.length > 0 ? (
-                          data.members.map((member) => (
+                          data.members.map((member) => {
+                            const isUnavailable = member.availability === 'unavailable' || member.statistics.availableSlots <= 0
+                            const isSelected = assignedMembers.includes(member.id)
+                            
+                            return (
                             <Card
                               key={member.id}
-                              className={`cursor-pointer transition-all ${assignedMembers.includes(member.id)
-                                ? 'border-primary bg-primary/5 shadow-md'
-                                : 'hover:bg-muted hover:shadow-sm'
-                                }`}
-                              onClick={() => toggleMember(project.id, member.id)}
+                              className={`transition-all ${
+                                isUnavailable && !isSelected
+                                  ? 'opacity-50 cursor-not-allowed'
+                                  : 'cursor-pointer'
+                              } ${
+                                isSelected
+                                  ? 'border-primary bg-primary/5 shadow-md'
+                                  : isUnavailable
+                                  ? 'border-destructive/30'
+                                  : 'hover:bg-muted hover:shadow-sm'
+                              }`}
+                              onClick={() => !isUnavailable && toggleMember(project.id, member.id)}
                             >
                               <CardContent className="p-3">
                                 <div className="flex items-start justify-between">
@@ -366,16 +428,16 @@ export function DistributeCommitteesList() {
                                     <div className={`mt-1 size-2 rounded-full shrink-0 ${getAvailabilityColor(member.availability)}`} />
                                     <div className="min-w-0">
                                       <p className="font-medium text-sm truncate">{member.name}</p>
-                                      {member.department && (
+                                      {member.profile?.department && (
                                         <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                                           <Building className="h-3 w-3" />
-                                          {member.department}
+                                          {member.profile.department}
                                         </p>
                                       )}
                                       <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                                        <span>{member.statistics.currentAssignments} {t('committee.distribute.current')}</span>
+                                        <span>{member.statistics.currentAssignments}/{member.statistics.maxAllowedProjects} {t('committee.distribute.projects')}</span>
                                         <span>•</span>
-                                        <span>{member.statistics.totalEvaluations} {t('committee.distribute.evaluations')}</span>
+                                        <span>{member.statistics.availableSlots} {t('committee.distribute.available')}</span>
                                       </div>
                                     </div>
                                   </div>
@@ -406,7 +468,8 @@ export function DistributeCommitteesList() {
                                 </div>
                               </CardContent>
                             </Card>
-                          ))
+                          )
+                          })
                         ) : (
                           <EmptyState
                             icon={Users}
@@ -450,65 +513,173 @@ export function DistributeCommitteesList() {
         title={t('committee.distribute.memberDetails')}
       >
         {state.selectedMemberForDetails && (
-          <div className="space-y-6">
+          <div className="space-y-6 max-h-[70vh] overflow-y-auto">
             {/* Member Info */}
             <div className="flex items-center gap-4">
               <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
                 <User className="h-8 w-8 text-primary" />
               </div>
-              <div>
+              <div className="flex-1">
                 <h3 className="text-lg font-semibold">{state.selectedMemberForDetails.name}</h3>
                 {state.selectedMemberForDetails.email && (
                   <p className="text-sm text-muted-foreground">{state.selectedMemberForDetails.email}</p>
                 )}
-                {state.selectedMemberForDetails.department && (
-                  <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                    <Building className="h-3 w-3" />
-                    {state.selectedMemberForDetails.department}
-                  </p>
+                {state.selectedMemberForDetails.username && (
+                  <p className="text-xs text-muted-foreground">@{state.selectedMemberForDetails.username}</p>
                 )}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`size-3 rounded-full ${getAvailabilityColor(state.selectedMemberForDetails.availability)}`} />
+                <span className="text-sm font-medium">{getAvailabilityLabel(state.selectedMemberForDetails.availability)}</span>
               </div>
             </div>
 
-            {/* Availability Badge */}
-            <div className="flex items-center gap-2">
-              <span className={`size-3 rounded-full ${getAvailabilityColor(state.selectedMemberForDetails.availability)}`} />
-              <span className="font-medium">{getAvailabilityLabel(state.selectedMemberForDetails.availability)}</span>
-            </div>
+            {/* Profile Details */}
+            {state.selectedMemberForDetails.profile && (
+              <Card className="p-4 bg-muted/30">
+                <h4 className="font-medium mb-3 text-sm">{t('committee.distribute.profileDetails')}</h4>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  {state.selectedMemberForDetails.profile.department && (
+                    <div className="flex items-start gap-2">
+                      <Building className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">{t('committee.distribute.department')}</p>
+                        <p className="font-medium">{state.selectedMemberForDetails.profile.department}</p>
+                      </div>
+                    </div>
+                  )}
+                  {state.selectedMemberForDetails.profile.specialization && (
+                    <div className="flex items-start gap-2">
+                      <TrendingUp className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">{t('committee.distribute.specialization')}</p>
+                        <p className="font-medium">{state.selectedMemberForDetails.profile.specialization}</p>
+                      </div>
+                    </div>
+                  )}
+                  {state.selectedMemberForDetails.profile.office_location && (
+                    <div className="flex items-start gap-2">
+                      <Building className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">{t('committee.distribute.officeLocation')}</p>
+                        <p className="font-medium">{state.selectedMemberForDetails.profile.office_location}</p>
+                      </div>
+                    </div>
+                  )}
+                  {state.selectedMemberForDetails.profile.phone && (
+                    <div className="flex items-start gap-2">
+                      <User className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">{t('committee.distribute.phone')}</p>
+                        <p className="font-medium">{state.selectedMemberForDetails.profile.phone}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            )}
 
             {/* Statistics */}
-            <div className="grid grid-cols-3 gap-4">
-              <Card className="p-4 text-center">
+            <div className="grid grid-cols-2 gap-3">
+              <Card className="p-4">
                 <p className="text-2xl font-bold text-primary">
-                  {state.selectedMemberForDetails.statistics.currentAssignments}
+                  {state.selectedMemberForDetails.statistics.currentAssignments}/{state.selectedMemberForDetails.statistics.maxAllowedProjects}
                 </p>
-                <p className="text-xs text-muted-foreground">{t('committee.distribute.currentProjects')}</p>
+                <p className="text-xs text-muted-foreground">{t('committee.distribute.currentAssignments')}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {state.selectedMemberForDetails.statistics.availableSlots} {t('committee.distribute.slotsAvailable')}
+                </p>
               </Card>
-              <Card className="p-4 text-center">
+              <Card className="p-4">
                 <p className="text-2xl font-bold text-primary">
                   {state.selectedMemberForDetails.statistics.completedProjects}
                 </p>
                 <p className="text-xs text-muted-foreground">{t('committee.distribute.completedProjects')}</p>
               </Card>
-              <Card className="p-4 text-center">
+              <Card className="p-4">
                 <p className="text-2xl font-bold text-primary">
                   {state.selectedMemberForDetails.statistics.totalEvaluations}
                 </p>
                 <p className="text-xs text-muted-foreground">{t('committee.distribute.totalEvaluations')}</p>
               </Card>
+              <Card className="p-4">
+                <p className="text-2xl font-bold text-primary">
+                  {state.selectedMemberForDetails.pastAssignments?.length || 0}
+                </p>
+                <p className="text-xs text-muted-foreground">{t('committee.distribute.totalAssignments')}</p>
+              </Card>
             </div>
 
             {/* Current Projects */}
-            {state.selectedMemberForDetails.currentProjects.length > 0 && (
+            {state.selectedMemberForDetails.currentProjects && state.selectedMemberForDetails.currentProjects.length > 0 && (
               <div>
-                <h4 className="font-medium mb-2 flex items-center gap-2">
-                  <Briefcase className="h-4 w-4" />
-                  {t('committee.distribute.assignedProjects')}
+                <h4 className="font-medium mb-3 flex items-center gap-2 text-sm">
+                  <Briefcase className="h-4 w-4 text-primary" />
+                  {t('committee.distribute.currentProjects')} ({state.selectedMemberForDetails.currentProjects.length})
                 </h4>
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-40 overflow-y-auto">
                   {state.selectedMemberForDetails.currentProjects.map((project) => (
-                    <div key={project.id} className="p-2 rounded border bg-muted/30 text-sm">
-                      {project.title}
+                    <div key={project.id} className="p-3 rounded border bg-muted/30 text-sm">
+                      <p className="font-medium">{project.title}</p>
+                      {project.assigned_at && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t('committee.distribute.assignedAt')}: {new Date(project.assigned_at).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Completed Projects */}
+            {state.selectedMemberForDetails.completedProjects && state.selectedMemberForDetails.completedProjects.length > 0 && (
+              <div>
+                <h4 className="font-medium mb-3 flex items-center gap-2 text-sm">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  {t('committee.distribute.completedProjectsList')} ({state.selectedMemberForDetails.completedProjects.length})
+                </h4>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {state.selectedMemberForDetails.completedProjects.map((project) => (
+                    <div key={project.id} className="p-3 rounded border bg-green-50 dark:bg-green-900/10 text-sm">
+                      <p className="font-medium">{project.title}</p>
+                      {project.completed_at && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t('committee.distribute.completedAt')}: {new Date(project.completed_at).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Past Assignments History */}
+            {state.selectedMemberForDetails.pastAssignments && state.selectedMemberForDetails.pastAssignments.length > 0 && (
+              <div>
+                <h4 className="font-medium mb-3 flex items-center gap-2 text-sm">
+                  <FileText className="h-4 w-4 text-primary" />
+                  {t('committee.distribute.assignmentHistory')} ({state.selectedMemberForDetails.pastAssignments.length})
+                </h4>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {state.selectedMemberForDetails.pastAssignments.map((assignment, idx) => (
+                    <div key={idx} className="p-3 rounded border bg-muted/20 text-sm">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1">
+                          <p className="font-medium">{assignment.project_title}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="outline" className="text-xs">
+                              {assignment.defense_stage}
+                            </Badge>
+                            <Badge variant="secondary" className="text-xs">
+                              {t(`committee.distribute.action.${assignment.action}`)}
+                            </Badge>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground whitespace-nowrap">
+                          {new Date(assignment.assigned_at).toLocaleDateString()}
+                        </p>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -516,6 +687,131 @@ export function DistributeCommitteesList() {
             )}
           </div>
         )}
+      </ModalDialog>
+
+      {/* Assignment History Dialog */}
+      <ModalDialog
+        open={state.showHistoryDialog}
+        onOpenChange={(open) =>
+          setState((prev) => ({
+            ...prev,
+            showHistoryDialog: open,
+            selectedProjectForHistory: open ? prev.selectedProjectForHistory : null,
+          }))
+        }
+        title={t('committee.distribute.assignmentHistory')}
+      >
+        <div className="space-y-4">
+          {historyLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <LoadingSpinner />
+            </div>
+          ) : assignmentHistory && assignmentHistory.length > 0 ? (
+            <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+              {assignmentHistory.map((record) => (
+                <Card key={record.id} className="p-4 bg-muted/30">
+                  <div className="space-y-3">
+                    {/* Header */}
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-2">
+                        <div className={`p-2 rounded-full ${
+                          record.action === 'assigned' ? 'bg-green-100 dark:bg-green-900/20' :
+                          record.action === 'removed' ? 'bg-red-100 dark:bg-red-900/20' :
+                          'bg-blue-100 dark:bg-blue-900/20'
+                        }`}>
+                          {record.action === 'assigned' && <CheckCircle2 className="h-4 w-4 text-green-600" />}
+                          {record.action === 'removed' && <XCircle className="h-4 w-4 text-red-600" />}
+                          {record.action === 'redistributed' && <History className="h-4 w-4 text-blue-600" />}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={record.defense_stage === 'FD1' ? 'default' : 'secondary'}>
+                              {record.defense_stage}
+                            </Badge>
+                            <Badge variant="outline">
+                              {t(`committee.distribute.action.${record.action}`)}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {t('committee.distribute.by')} {record.performed_by.name}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Clock className="h-3 w-3" />
+                        {new Date(record.created_at).toLocaleString()}
+                      </div>
+                    </div>
+
+                    {/* Members */}
+                    {record.action === 'redistributed' && record.previous_members && record.previous_members.length > 0 && (
+                      <div className="space-y-2 text-sm">
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">{t('committee.distribute.previousMembers')}:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {record.previous_members.map((member) => (
+                              <Badge key={member.id} variant="outline" className="text-xs">
+                                {member.name}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">{t('committee.distribute.newMembers')}:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {record.current_members.map((member) => (
+                              <Badge key={member.id} variant="default" className="text-xs">
+                                {member.name}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {record.action === 'assigned' && record.current_members && record.current_members.length > 0 && (
+                      <div className="space-y-1 text-sm">
+                        <p className="text-xs text-muted-foreground">{t('committee.distribute.assignedMembers')}:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {record.current_members.map((member) => (
+                            <Badge key={member.id} variant="default" className="text-xs">
+                              {member.name}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {record.action === 'removed' && record.previous_members && record.previous_members.length > 0 && (
+                      <div className="space-y-1 text-sm">
+                        <p className="text-xs text-muted-foreground">{t('committee.distribute.removedMembers')}:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {record.previous_members.map((member) => (
+                            <Badge key={member.id} variant="outline" className="text-xs">
+                              {member.name}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {record.notes && (
+                      <p className="text-sm text-muted-foreground bg-muted/50 p-2 rounded">
+                        {record.notes}
+                      </p>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              icon={History}
+              title={t('committee.distribute.noHistory')}
+              description={t('committee.distribute.noHistoryDescription')}
+            />
+          )}
+        </div>
       </ModalDialog>
     </>
   )

@@ -28,6 +28,11 @@ class GradeResource extends JsonResource
             'student' => new UserResource($this->whenLoaded('student')),
             'createdAt' => $this->created_at?->toISOString(),
             'updatedAt' => $this->updated_at?->toISOString(),
+            // Additional computed fields
+            'supervisorScore' => ($this->display_supervisor_grade ?? [])['score'] ?? $this->getSupervisorScore(),
+            'committeeScore' => ($this->display_committee_grade ?? [])['score'] ?? $this->getCommitteeScore(),
+            'isReadyForApproval' => $this->isReadyForApproval(),
+            'validationErrors' => $this->is_approved ? [] : $this->getApprovalValidationErrors(),
         ];
     }
 }

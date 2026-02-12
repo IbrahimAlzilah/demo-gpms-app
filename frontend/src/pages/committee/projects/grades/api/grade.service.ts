@@ -103,6 +103,29 @@ export const committeeGradeService = {
     return response.data;
   },
 
+  update: async (
+    gradeId: string,
+    data: { supervisorScore?: number; committeeScore?: number; finalGrade?: number }
+  ): Promise<Grade> => {
+    // Map to API structure
+    const payload: any = {}
+    if (data.supervisorScore !== undefined) {
+      payload.supervisor_grade = { score: data.supervisorScore }
+    }
+    if (data.committeeScore !== undefined) {
+      payload.committee_grade = { score: data.committeeScore }
+    }
+    if (data.finalGrade !== undefined) {
+      payload.final_grade = data.finalGrade
+    }
+
+    const response = await apiClient.put<{ data: Grade }>(
+      `/projects-committee/grades/${gradeId}`,
+      payload
+    )
+    return response.data.data
+  },
+
   /**
    * Publish approved grades to students (notify; marks FD stage complete)
    */

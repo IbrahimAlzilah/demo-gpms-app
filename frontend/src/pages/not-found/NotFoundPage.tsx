@@ -4,7 +4,7 @@ import { FileQuestion, Home, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { useAuthStore } from '@/pages/auth/login'
-import { ROUTES } from '@/lib/constants'
+import { ROUTES } from '@/lib/constants/constants'
 import { roleRouteMap } from '@/routes/config'
 
 export function NotFoundPage() {

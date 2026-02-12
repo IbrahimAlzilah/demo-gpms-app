@@ -12,6 +12,8 @@ export interface DistributeCommitteesListState {
   searchQuery: string;
   selectedMemberForDetails: CommitteeMemberProfile | null;
   showMemberDetailsDialog: boolean;
+  selectedProjectForHistory: string | null;
+  showHistoryDialog: boolean;
 }
 
 export interface DistributeCommitteesListData {

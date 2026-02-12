@@ -165,6 +165,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('evaluations', [App\Http\Controllers\Supervisor\EvaluationController::class, 'store']);
         Route::post('evaluations/batch', [App\Http\Controllers\Supervisor\EvaluationController::class, 'batchStore']);
         Route::get('evaluations/locked/{project}', [App\Http\Controllers\Supervisor\EvaluationController::class, 'isLocked']);
+        // Defense Evaluation routes (FD1 & FD2)
+        Route::get('defense-evaluations', [App\Http\Controllers\Supervisor\DefenseEvaluationController::class, 'index']);
+        Route::get('defense-evaluations/{project}/stage/{stage}', [App\Http\Controllers\Supervisor\DefenseEvaluationController::class, 'getEvaluations']);
+        Route::post('defense-evaluations', [App\Http\Controllers\Supervisor\DefenseEvaluationController::class, 'submitEvaluation']);
+        Route::put('defense-evaluations/{evaluation}', [App\Http\Controllers\Supervisor\DefenseEvaluationController::class, 'updateEvaluation']);
+        Route::get('defense-evaluations/{project}/locked/{stage}', [App\Http\Controllers\Supervisor\DefenseEvaluationController::class, 'isLocked']);
         // Notes routes - custom routes to match frontend expectations (project-based)
         Route::get('projects/{project}/notes', [App\Http\Controllers\Supervisor\NoteController::class, 'index']);
         Route::post('projects/{project}/notes', [App\Http\Controllers\Supervisor\NoteController::class, 'store']);
@@ -226,6 +232,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('committees/distribute', [App\Http\Controllers\ProjectsCommittee\CommitteeController::class, 'distribute']);
         Route::get('committees/members', [App\Http\Controllers\ProjectsCommittee\CommitteeController::class, 'members']);
         Route::get('committees/projects', [App\Http\Controllers\ProjectsCommittee\CommitteeController::class, 'projectsForDiscussion']);
+        Route::get('committees/projects/{project}/history', [App\Http\Controllers\ProjectsCommittee\CommitteeController::class, 'assignmentHistory']);
         Route::delete('committees/projects/{project}/assignment', [App\Http\Controllers\ProjectsCommittee\CommitteeController::class, 'removeAssignment']);
         Route::get('grades', [App\Http\Controllers\ProjectsCommittee\GradeController::class, 'index']);
         Route::get('grades/{grade}', [App\Http\Controllers\ProjectsCommittee\GradeController::class, 'show']);
@@ -242,6 +249,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('reports/history', [App\Http\Controllers\ProjectsCommittee\ReportController::class, 'history']);
         Route::get('reports/export/pdf', [App\Http\Controllers\ProjectsCommittee\ReportExportController::class, 'pdf']);
         Route::get('reports/export/excel', [App\Http\Controllers\ProjectsCommittee\ReportExportController::class, 'excel']);
+        // Defense Evaluation routes (FD1 & FD2) - Project Committee has full control
+        Route::get('defense-evaluations', [App\Http\Controllers\ProjectsCommittee\DefenseEvaluationController::class, 'index']);
+        Route::get('defense-evaluations/{project}/review/{stage}', [App\Http\Controllers\ProjectsCommittee\DefenseEvaluationController::class, 'getAllEvaluationsForReview']);
+        Route::put('defense-evaluations/{evaluation}', [App\Http\Controllers\ProjectsCommittee\DefenseEvaluationController::class, 'updateEvaluation']);
+        Route::post('defense-evaluations', [App\Http\Controllers\ProjectsCommittee\DefenseEvaluationController::class, 'addEvaluation']);
+        Route::delete('defense-evaluations/{evaluation}', [App\Http\Controllers\ProjectsCommittee\DefenseEvaluationController::class, 'deleteEvaluation']);
+        Route::post('defense-approvals/{project}/approve/{stage}', [App\Http\Controllers\ProjectsCommittee\DefenseEvaluationController::class, 'approveStage']);
+        Route::post('defense-approvals/{project}/publish/{stage}', [App\Http\Controllers\ProjectsCommittee\DefenseEvaluationController::class, 'publishResults']);
+        Route::get('defense-evaluations/{project}/statistics/{stage}', [App\Http\Controllers\ProjectsCommittee\DefenseEvaluationController::class, 'getStatistics']);
     });
 
     // Discussion Committee routes
@@ -258,6 +274,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('evaluations/batch', [App\Http\Controllers\DiscussionCommittee\EvaluationController::class, 'batchStore'])
             ->middleware('window:final_defense_phase_1,final_defense_phase_2');
         Route::get('evaluations/locked/{project}', [App\Http\Controllers\DiscussionCommittee\EvaluationController::class, 'isLocked']);
+        // Defense Evaluation routes (FD1 & FD2) - Independent grading, cannot see peers
+        Route::get('defense-evaluations/projects/{stage}', [App\Http\Controllers\DiscussionCommittee\DefenseEvaluationController::class, 'index']);
+        Route::get('defense-evaluations/my-evaluations', [App\Http\Controllers\DiscussionCommittee\DefenseEvaluationController::class, 'getMyEvaluations']);
+        Route::post('defense-evaluations', [App\Http\Controllers\DiscussionCommittee\DefenseEvaluationController::class, 'submitEvaluation']);
+        Route::put('defense-evaluations/{evaluation}', [App\Http\Controllers\DiscussionCommittee\DefenseEvaluationController::class, 'updateEvaluation']);
+        Route::get('defense-evaluations/{project}/status/{stage}', [App\Http\Controllers\DiscussionCommittee\DefenseEvaluationController::class, 'getStatus']);
     });
 
     // Admin routes

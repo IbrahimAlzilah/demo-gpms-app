@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { MainLayout } from '@/layouts/MainLayout'
 import { ProjectsList } from './list/ProjectsList.screen'
-import { ROUTES } from '@/lib/constants'
+import { ROUTES } from '@/lib/constants/constants'
 
 export function ProjectsPage() {
   const navigate = useNavigate()

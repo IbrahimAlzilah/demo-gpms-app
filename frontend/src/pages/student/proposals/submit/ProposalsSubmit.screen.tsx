@@ -12,7 +12,7 @@ import {
   Loader2,
   Edit
 } from 'lucide-react'
-import { ROUTES } from '@/lib/constants'
+import { ROUTES } from '@/lib/constants/constants'
 import { useMyGroup } from '@/pages/student/groups/hooks/useGroups'
 import { useAuthStore } from '@/pages/auth/login'
 import { useProposalsSubmit } from './ProposalsSubmit.hook'

@@ -6,7 +6,7 @@ import { BlockContent } from '@/components/common'
 import { AlertCircle } from 'lucide-react'
 import { createProjectsColumns } from '../components/table'
 import { useProjectsList } from './ProjectsList.hook'
-import { ROUTES } from '@/lib/constants'
+import { ROUTES } from '@/lib/constants/constants'
 import type { Project } from '@/types/project.types'
 
 export function ProjectsList() {

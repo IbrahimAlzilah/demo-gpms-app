@@ -41,8 +41,14 @@ class GradeController extends Controller
             $query->where('project_id', $request->project_id);
         }
 
-        // Only show grades with final_grade calculated
-        $query->whereNotNull('final_grade');
+        // Show grades that have started evaluation (supervisor, committee, or defense stages)
+        $query->where(function ($q) {
+            $q->whereNotNull('final_grade')
+              ->orWhereNotNull('supervisor_grade')
+              ->orWhereNotNull('committee_grade')
+              ->orWhereNotNull('fd1_final_grade')
+              ->orWhereNotNull('fd2_final_grade');
+        });
 
         $query = $this->applyTableQuery($query, $request);
 
@@ -70,11 +76,13 @@ class GradeController extends Controller
         $this->authorize('approve', $grade);
 
         try {
-            // Validate that grade has final_grade calculated
-            if (!$grade->final_grade) {
+            // Validate using model logic
+            if (!$grade->isReadyForApproval()) {
+                $errors = $grade->getApprovalValidationErrors();
                 return response()->json([
                     'success' => false,
-                    'message' => 'Cannot approve grade without final grade calculated',
+                    'message' => 'Cannot approve grade: ' . implode(', ', $errors),
+                    'errors' => $errors,
                 ], 400);
             }
 
@@ -111,6 +119,54 @@ class GradeController extends Controller
                 'message' => $e->getMessage(),
             ], 400);
         }
+    }
+
+    /**
+     * Update a grade (Supervisors/Committee scores)
+     */
+    public function update(Request $request, Grade $grade): JsonResponse
+    {
+        $this->authorize('update', $grade);
+
+        // Validate
+        $validated = $request->validate([
+            'supervisor_grade' => 'nullable|array',
+            'supervisor_grade.score' => 'nullable|numeric|min:0|max:100',
+            'committee_grade' => 'nullable|array',
+            'committee_grade.score' => 'nullable|numeric|min:0|max:100',
+            'final_grade' => 'nullable|numeric|min:0|max:100',
+        ]);
+
+        // Check lock state
+        if ($grade->is_approved) {
+             return response()->json(['message' => 'Cannot update approved grade'], 400);
+        }
+
+        // Merge updates
+        if (isset($validated['supervisor_grade'])) {
+            $current = $grade->supervisor_grade ?? [];
+            $grade->supervisor_grade = array_merge($current, $validated['supervisor_grade']);
+        }
+        if (isset($validated['committee_grade'])) {
+            $current = $grade->committee_grade ?? [];
+            $grade->committee_grade = array_merge($current, $validated['committee_grade']);
+        }
+        if (isset($validated['final_grade'])) {
+            $grade->final_grade = $validated['final_grade'];
+        }
+
+        // Recalculate final if not explicitly set and components changed
+        if (!isset($validated['final_grade']) && (isset($validated['supervisor_grade']) || isset($validated['committee_grade']))) {
+            $grade->final_grade = $grade->calculateFinalGrade();
+        }
+
+        $grade->save();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Grade updated',
+            'data' => new GradeResource($grade->refresh()->load(['project', 'student', 'approver'])),
+        ]);
     }
 
     /**
