@@ -34,7 +34,7 @@ class TimePeriodsSeeder extends Seeder
                 'end_date' => now()->addDays(30), // Ends in 30 days
                 'is_active' => true,
                 'academic_year' => now()->format('Y') . '-' . (now()->format('Y') + 1),
-                'semester' => 'Fall',
+                'semester' => 'الفصل الأول',
                 'description' => 'فترة تقديم مقترحات المشاريع من الطلاب والمشرفين',
                 'created_by' => $admin->id,
             ]
@@ -52,14 +52,14 @@ class TimePeriodsSeeder extends Seeder
                 'end_date' => now()->addDays(60), // Ends in 60 days
                 'is_active' => false, // Inactive for now
                 'academic_year' => now()->format('Y') . '-' . (now()->format('Y') + 1),
-                'semester' => 'Fall',
+                'semester' => 'الفصل الأول',
                 'description' => 'فترة تسجيل الطلاب في المشاريع المعتمدة',
                 'created_by' => $admin->id,
             ]
         );
 
-        $this->command->info('Created time periods:');
-        $this->command->info('- 1 active proposal submission window');
-        $this->command->info('- 1 inactive project registration window');
+        $this->command->info('تم إنشاء الفترات الزمنية (عربي) / Created time periods (Arabic):');
+        $this->command->info('- 1 فترة تقديم مقترحات (نشطة) / proposal submission (active)');
+        $this->command->info('- 1 فترة تسجيل مشاريع (غير نشطة) / project registration (inactive)');
     }
 }

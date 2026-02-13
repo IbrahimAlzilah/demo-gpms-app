@@ -57,13 +57,25 @@ class UsersSeeder extends Seeder
             $existingSupervisors = $existingSupervisors->take(5);
         }
 
-        // Create missing supervisors
+        // Create missing supervisors (Arabic male names)
         $newSupervisors = collect();
         if ($supervisorsToCreate > 0) {
-            $newSupervisors = User::factory()
-                ->count($supervisorsToCreate)
-                ->supervisor()
-                ->create();
+            for ($i = 0; $i < $supervisorsToCreate; $i++) {
+                $name = YemeniDataHelper::yemeniMaleName();
+                $emailDomain = YemeniDataHelper::yemeniEmailDomain();
+                $emailUsername = Str::slug(explode(' ', $name)[0]) . '.' . fake()->unique()->numberBetween(100, 9999);
+                $user = User::create([
+                    'name' => $name,
+                    'email' => $emailUsername . '@' . $emailDomain,
+                    'username' => 'temp_' . Str::random(10) . '_' . time(),
+                    'email_verified_at' => now(),
+                    'password' => Hash::make('password'),
+                    'role' => 'supervisor',
+                    'status' => 'active',
+                    'phone' => YemeniDataHelper::yemeniPhoneNumber(),
+                ]);
+                $newSupervisors->push($user);
+            }
         }
 
         $supervisors = $existingSupervisors->merge($newSupervisors);
@@ -83,16 +95,16 @@ class UsersSeeder extends Seeder
             }
         }
 
-        // Ensure exactly 10 students with male names
+        // Ensure exactly 20 students with male names (Arabic)
         $existingStudents = User::where('role', 'student')->get();
-        $studentsToCreate = max(0, 10 - $existingStudents->count());
+        $studentsToCreate = max(0, 20 - $existingStudents->count());
 
-        // Delete extras if we have more than 10
-        if ($existingStudents->count() > 10) {
-            $existingStudents->skip(10)->each(function ($extra) {
+        // Delete extras if we have more than 20
+        if ($existingStudents->count() > 20) {
+            $existingStudents->skip(20)->each(function ($extra) {
                 $extra->delete();
             });
-            $existingStudents = $existingStudents->take(10);
+            $existingStudents = $existingStudents->take(20);
         }
 
         // Create missing students with male names
@@ -135,25 +147,37 @@ class UsersSeeder extends Seeder
             }
         }
 
-        // Ensure exactly 3 discussion committee members
+        // Ensure exactly 4 discussion committee members (Arabic male names)
         $existingDiscussion = User::where('role', 'discussion_committee')->get();
-        $discussionToCreate = max(0, 3 - $existingDiscussion->count());
+        $discussionToCreate = max(0, 4 - $existingDiscussion->count());
 
-        // Delete extras if we have more than 3
-        if ($existingDiscussion->count() > 3) {
-            $existingDiscussion->skip(3)->each(function ($extra) {
+        // Delete extras if we have more than 4
+        if ($existingDiscussion->count() > 4) {
+            $existingDiscussion->skip(4)->each(function ($extra) {
                 $extra->delete();
             });
-            $existingDiscussion = $existingDiscussion->take(3);
+            $existingDiscussion = $existingDiscussion->take(4);
         }
 
         // Create missing discussion committee members
         $newDiscussion = collect();
         if ($discussionToCreate > 0) {
-            $newDiscussion = User::factory()
-                ->count($discussionToCreate)
-                ->discussionCommittee()
-                ->create();
+            for ($i = 0; $i < $discussionToCreate; $i++) {
+                $name = YemeniDataHelper::yemeniMaleName();
+                $emailDomain = YemeniDataHelper::yemeniEmailDomain();
+                $emailUsername = Str::slug(explode(' ', $name)[0]) . '.' . fake()->unique()->numberBetween(100, 9999);
+                $user = User::create([
+                    'name' => $name,
+                    'email' => $emailUsername . '@' . $emailDomain,
+                    'username' => 'temp_' . Str::random(10) . '_' . time(),
+                    'email_verified_at' => now(),
+                    'password' => Hash::make('password'),
+                    'role' => 'discussion_committee',
+                    'status' => 'active',
+                    'phone' => YemeniDataHelper::yemeniPhoneNumber(),
+                ]);
+                $newDiscussion->push($user);
+            }
         }
 
         $discussionCommitteeMembers = $existingDiscussion->merge($newDiscussion);
@@ -185,13 +209,25 @@ class UsersSeeder extends Seeder
             $existingProjects = $existingProjects->take(2);
         }
 
-        // Create missing projects committee members
+        // Create missing projects committee members (Arabic male names)
         $newProjects = collect();
         if ($projectsToCreate > 0) {
-            $newProjects = User::factory()
-                ->count($projectsToCreate)
-                ->projectsCommittee()
-                ->create();
+            for ($i = 0; $i < $projectsToCreate; $i++) {
+                $name = YemeniDataHelper::yemeniMaleName();
+                $emailDomain = YemeniDataHelper::yemeniEmailDomain();
+                $emailUsername = Str::slug(explode(' ', $name)[0]) . '.' . fake()->unique()->numberBetween(100, 9999);
+                $user = User::create([
+                    'name' => $name,
+                    'email' => $emailUsername . '@' . $emailDomain,
+                    'username' => 'temp_' . Str::random(10) . '_' . time(),
+                    'email_verified_at' => now(),
+                    'password' => Hash::make('password'),
+                    'role' => 'projects_committee',
+                    'status' => 'active',
+                    'phone' => YemeniDataHelper::yemeniPhoneNumber(),
+                ]);
+                $newProjects->push($user);
+            }
         }
 
         $projectsCommitteeMembers = $existingProjects->merge($newProjects);
@@ -211,10 +247,10 @@ class UsersSeeder extends Seeder
             }
         }
 
-        $this->command->info('تم إنشاء المستخدمين / Created users:');
+        $this->command->info('تم إنشاء المستخدمين (بيانات عربية) / Created users (Arabic demo data):');
         $this->command->info('- 1 مدير / admin');
         $this->command->info('- ' . $supervisors->count() . ' مشرف / supervisors');
-        $this->command->info('- ' . $students->count() . ' طالب / students (male names only)');
+        $this->command->info('- ' . $students->count() . ' طالب / students (أسماء ذكور فقط)');
         $this->command->info('- ' . $discussionCommitteeMembers->count() . ' عضو لجنة مناقشة / discussion committee members');
         $this->command->info('- ' . $projectsCommitteeMembers->count() . ' عضو لجنة المشاريع / projects committee members');
     }

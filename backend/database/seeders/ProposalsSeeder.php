@@ -12,6 +12,7 @@ class ProposalsSeeder extends Seeder
 {
     /**
      * Run the database seeds.
+     * Creates demo proposals (all Arabic) in mixed statuses for committee workflow.
      */
     public function run(): void
     {
@@ -23,19 +24,25 @@ class ProposalsSeeder extends Seeder
             return;
         }
 
-        $pendingProposals = collect();
+        // Idempotent: skip if we already have demo proposals (for re-seeding / testing)
+        if (Proposal::count() >= 5) {
+            $this->command->info('تم تخطي المقترحات (موجودة مسبقاً) / Proposals already seeded, skipping.');
+            return;
+        }
 
-        // Create ~8 proposals total, all with 'pending review' status
-        // All proposals are submitted by supervisors
+        $pending = collect();
+        $requiresModification = collect();
 
-        // Supervisor-submitted proposals (8 proposals)
-        $supervisorSubmitters = $supervisors->take(8);
-        foreach ($supervisorSubmitters as $supervisor) {
-            $proposal = Proposal::create([
+        // 5 supervisor-submitted proposals: 4 pending_review, 1 requires_modification (Arabic)
+        $submitters = $supervisors->take(5);
+        $reviewer = $projectsCommitteeMembers->first();
+
+        foreach ($submitters->take(4) as $supervisor) {
+            $pending->push(Proposal::create([
                 'title' => YemeniDataHelper::yemeniProposalTitle(),
                 'description' => YemeniDataHelper::yemeniProposalDescription(),
                 'submitter_id' => $supervisor->id,
-                'proposed_supervisor_id' => $supervisor->id, // Supervisor proposes themselves
+                'proposed_supervisor_id' => $supervisor->id,
                 'team_members' => null,
                 'status' => ProposalStatus::PENDING_REVIEW,
                 'reviewed_by' => null,
@@ -44,12 +51,30 @@ class ProposalsSeeder extends Seeder
                 'project_id' => null,
                 'student_group_id' => null,
                 'target_project_id' => null,
-            ]);
-            $pendingProposals->push($proposal);
+            ]));
         }
 
-        $this->command->info('Created proposals:');
-        $this->command->info('- ' . $pendingProposals->count() . ' pending review');
-        $this->command->info('Total: ' . $pendingProposals->count() . ' proposals');
+        $lastSupervisor = $submitters->get(4);
+        if ($lastSupervisor) {
+            $requiresModification->push(Proposal::create([
+                'title' => YemeniDataHelper::yemeniProposalTitle(),
+                'description' => YemeniDataHelper::yemeniProposalDescription(),
+                'submitter_id' => $lastSupervisor->id,
+                'proposed_supervisor_id' => $lastSupervisor->id,
+                'team_members' => null,
+                'status' => ProposalStatus::REQUIRES_MODIFICATION,
+                'reviewed_by' => $reviewer->id,
+                'reviewed_at' => now(),
+                'review_notes' => 'يرجى توضيح منهجية التنفيذ والجدول الزمني.',
+                'project_id' => null,
+                'student_group_id' => null,
+                'target_project_id' => null,
+            ]));
+        }
+
+        $this->command->info('تم إنشاء المقترحات (عربي) / Created proposals (Arabic):');
+        $this->command->info('- ' . $pending->count() . ' قيد المراجعة / pending review');
+        $this->command->info('- ' . $requiresModification->count() . ' يتطلب تعديلات / requires modification');
+        $this->command->info('المجموع / Total: ' . ($pending->count() + $requiresModification->count()) . ' مقترحات / proposals');
     }
 }

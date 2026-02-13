@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import type { Grade } from '@/types/evaluation.types'
 import { committeeGradeService } from '../api/grade.service'
 import { useToast } from '@/components/common'
+import { GradeDetailsView } from './GradeDetailsView'
 
 interface EditGradeModalProps {
     open: boolean
@@ -89,12 +90,22 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSucce
     const isReadOnly = mode === 'view' || grade?.isApproved
     const isStageGrade = !!stage
 
+    if (mode === 'view' && grade) {
+        return (
+            <Dialog open={open} onOpenChange={onOpenChange}>
+                <DialogContent className="max-w-4xl p-0 gap-0 overflow-hidden bg-white/95 backdrop-blur-sm shadow-xl">
+                    <GradeDetailsView grade={grade} onClose={() => onOpenChange(false)} stage={stage} />
+                </DialogContent>
+            </Dialog>
+        )
+    }
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                     <DialogTitle>
-                        {mode === 'view' ? t('committee.grades.viewDetails') : t('committee.grades.editGrade')}
+                        {t('committee.grades.editGrade')}
                         {stage ? ` - ${stage.toUpperCase()}` : ''}
                     </DialogTitle>
                     <DialogDescription>

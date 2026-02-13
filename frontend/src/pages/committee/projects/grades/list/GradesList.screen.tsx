@@ -1,17 +1,15 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useApproveGrade, usePublishGrades } from '../hooks/useGradeOperations'
-import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui'
-import { Card, CardContent } from '@/components/ui/card'
-import { LoadingSpinner, ConfirmDialog, BlockContent } from '@/components/common'
-import { Send, ChevronDown, ChevronRight, User, Award, CheckCircle2, Eye, Edit2, Check } from 'lucide-react'
+import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
+import { Card, CardContent, Badge, Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui'
+import { LoadingSpinner, ConfirmDialog, BlockContent, EmptyState, ActionsDropdown, type TableAction } from '@/components/common'
+import { Send, ChevronDown, User, Eye, Edit2, Check, Menu, ChevronUp, FileX } from 'lucide-react'
 import type { Grade } from '@/types/evaluation.types'
 import { useGradesList } from './GradesList.hook'
 import { useToast } from '@/components/common'
 import { committeeGradeService } from '../api/grade.service'
 import { EditGradeModal } from '../components/EditGradeModal'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { Badge } from '@/components/ui/badge'
 
 export function GradesList() {
   const { t } = useTranslation()
@@ -177,9 +175,11 @@ export function GradesList() {
 
         <TabsContent value="fd1" className="space-y-4">
           {Object.entries(groupedGrades).length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              {t('committee.grades.noGrades')}
-            </div>
+            <EmptyState
+              icon={FileX}
+              title={t('committee.grades.noGrades')}
+              description={t('committee.grades.noGradesDescription')}
+            />
           ) : (
             Object.entries(groupedGrades).map(([projectId, group]) => (
               <ProjectGradeCard
@@ -197,9 +197,11 @@ export function GradesList() {
 
         <TabsContent value="fd2" className="space-y-4">
           {Object.entries(groupedGrades).length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              {t('committee.grades.noGrades')}
-            </div>
+            <EmptyState
+              icon={FileX}
+              title={t('committee.grades.noGrades')}
+              description={t('committee.grades.noGradesDescription')}
+            />
           ) : (
             Object.entries(groupedGrades).map(([projectId, group]) => (
               <ProjectGradeCard
@@ -322,15 +324,16 @@ function ProjectGradeCard({ project, grades, onAction, onStageAction, stage, t }
   stage: 'fd1' | 'fd2',
   t: (key: string) => string
 }) {
-  const [isOpen, setIsOpen] = useState(true)
+  const [isOpen, setIsOpen] = useState(false)
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="border rounded-lg bg-card">
-      <div className="flex items-center justify-between p-4 border-b bg-muted/10">
+      <div className="flex items-center justify-between p-4 bg-muted/10">
         <div className="flex items-center gap-2 flex-1">
           <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="sm" className="p-0 h-auto hover:bg-transparent">
-              {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            <Button variant="ghost" size="sm" className="inline-flex h-8 w-8 items-center justify-center rounded-2xl font-extrabold bg-slate-100 text-slate-700">
+              <Menu className="h-4 w-4" />
+              {/* #{project?.id} */}
             </Button>
           </CollapsibleTrigger>
           <div>
@@ -348,15 +351,32 @@ function ProjectGradeCard({ project, grades, onAction, onStageAction, stage, t }
               {t('common.publish')}
             </Button>
           </div>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm" className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-slate-700 ring-1 ring-slate-200 transition group-open:rotate-180">
+              {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+            </Button>
+          </CollapsibleTrigger>
         </div>
       </div>
 
       <CollapsibleContent>
-        <div className="divide-y">
-          {grades.map(grade => (
-            <StudentGradeRow key={grade.id} grade={grade} onAction={onAction} stage={stage} t={t} />
-          ))}
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[25%] text-right">{t('committee.grades.student')}</TableHead>
+              <TableHead className="text-center">{t('committee.grades.supervisorGrade')}</TableHead>
+              <TableHead className="text-center">{t('committee.grades.committeeGrade')}</TableHead>
+              <TableHead className="text-center">{t('committee.grades.finalGrade')}</TableHead>
+              <TableHead className="text-center">{t('common.status')}</TableHead>
+              <TableHead className="text-center">{t('common.actions')}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {grades.map(grade => (
+              <StudentGradeRow key={grade.id} grade={grade} onAction={onAction} stage={stage} t={t} />
+            ))}
+          </TableBody>
+        </Table>
       </CollapsibleContent>
     </Collapsible>
   )
@@ -390,73 +410,80 @@ function StudentGradeRow({ grade, onAction, stage, t }: {
   // Fallback to legacy finalGrade if stage specific is missing (during migration)
   const displayFinal = finalGrade // ?? grade.finalGrade
 
-  return (
-    <div className="p-4 flex items-center justify-between hover:bg-muted/5 transition-colors">
-      <div className="flex items-center gap-4 flex-1">
-        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-          <User className="h-5 w-5 text-primary" />
-        </div>
-        <div>
-          <p className="font-medium">{grade.student?.name}</p>
-          <p className="text-sm text-muted-foreground">{grade.student?.studentId}</p>
-        </div>
-      </div>
+  const actions: TableAction<Grade>[] = [
+    {
+      id: 'view',
+      label: t('common.view'),
+      icon: Eye,
+      onClick: (row) => onAction(row, 'view'),
+    },
+    {
+      id: 'edit',
+      label: t('common.edit'),
+      icon: Edit2,
+      onClick: (row) => onAction(row, 'edit'),
+      hidden: (row) => !!row.isApproved,
+    },
+    {
+      id: 'approve',
+      label: t('common.approve'),
+      icon: Check,
+      onClick: (row) => onAction(row, 'approve'),
+      hidden: (row) => !!row.isApproved,
+      disabled: (row) => !row.isReadyForApproval,
+      variant: 'success',
+    }
+  ]
 
-      <div className="flex items-center gap-8 mr-8">
-        <div className="text-center">
-          <p className="text-xs text-muted-foreground mb-1">{t('committee.grades.supervisorGrade')}</p>
-          <p className="font-medium">{supervisorScore != null ? Number(supervisorScore).toFixed(2) : '-'}</p>
-        </div>
-        <div className="text-center">
-          <p className="text-xs text-muted-foreground mb-1">{t('committee.grades.committeeGrade')}</p>
-          <p className="font-medium">{committeeScore != null ? Number(committeeScore).toFixed(2) : '-'}</p>
-        </div>
-        <div className="text-center">
-          <p className="text-xs text-muted-foreground mb-1">{t('committee.grades.finalGrade')}</p>
-          <div className="flex items-center gap-1">
-            <Award className="h-4 w-4 text-primary" />
-            <span className="font-bold text-lg">{displayFinal != null ? Number(displayFinal).toFixed(2) : '-'}</span>
+  return (
+    <TableRow className="hover:bg-muted/5">
+      <TableCell className="text-start">
+        <div className="flex items-center justify-start gap-3">
+          <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+            <User className="h-4 w-4 text-primary" />
+          </div>
+          <div className="flex flex-col items-start">
+            <span className="font-medium text-sm">{grade.student?.name}</span>
+            <span className="text-xs text-muted-foreground">{grade.student?.department}</span>
           </div>
         </div>
-      </div>
+      </TableCell>
 
-      <div className="flex items-center gap-2">
+      <TableCell className="text-center font-medium">
+        {supervisorScore != null ? Number(supervisorScore).toFixed(2) : '-'}
+      </TableCell>
+
+      <TableCell className="text-center font-medium">
+        {committeeScore != null ? Number(committeeScore).toFixed(2) : '-'}
+      </TableCell>
+
+      <TableCell className="text-center">
+        <div className="flex items-center justify-center gap-1 font-bold">
+          {displayFinal != null ? (
+            <>
+              <span>{Number(displayFinal).toFixed(2)}</span>
+            </>
+          ) : '-'}
+        </div>
+      </TableCell>
+
+      <TableCell className="text-center">
         {grade.isApproved ? (
-          <Badge variant="outline" className="gap-1 border-green-600 text-green-600">
-            <CheckCircle2 className="h-3 w-3" />
+          <Badge variant="outline" className="gap-1 border-green-600 text-green-600 bg-green-50">
             {t('committee.grades.approved')}
           </Badge>
         ) : (
-          <div className="flex items-center gap-1">
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => onAction(grade, 'view')}
-              title={t('committee.grades.viewDetails')}
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => onAction(grade, 'edit')}
-              title={t('common.edit')}
-            >
-              <Edit2 className="h-4 w-4" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => onAction(grade, 'approve')}
-              disabled={!grade.isReadyForApproval}
-              className={!grade.isReadyForApproval ? "opacity-50" : "text-green-600 hover:text-green-700 hover:bg-green-50"}
-              title={t('common.approve')}
-            >
-              <Check className="h-4 w-4" />
-            </Button>
-          </div>
+          <Badge variant="secondary" className="bg-muted text-muted-foreground">
+            {t('committee.grades.pending')}
+          </Badge>
         )}
-      </div>
-    </div>
+      </TableCell>
+
+      <TableCell className="text-center">
+        <div className="flex items-center justify-center">
+          <ActionsDropdown row={grade} actions={actions} />
+        </div>
+      </TableCell>
+    </TableRow>
   )
 }

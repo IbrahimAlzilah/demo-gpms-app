@@ -65,11 +65,11 @@ export function LoginForm() {
     <div className="w-full space-y-8">
       <div className="text-center space-y-2">
         <div className="flex justify-center mb-6">
-          <div className="p-4 bg-primary/5 rounded-2xl ring-1 ring-primary/10 shadow-sm backdrop-blur-sm">
+          <div className="p-4 bg-primary/5 rounded-2xl ring-1 ring-primary/10 backdrop-blur-sm">
             <img src={logo} alt="GPMS Logo" className="h-16 w-16 object-contain" />
           </div>
         </div>
-        <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+        <h2 className="text-2xl font-bold tracking-tight bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
           {t('auth.login')}
         </h2>
         <p className="text-sm text-muted-foreground font-medium">
@@ -86,7 +86,7 @@ export function LoginForm() {
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="identifier">{t('auth.loginIdLabel')}</Label>
+          <Label htmlFor="identifier">{t('auth.loginIdLabel')} <span className="text-xs text-destructive">*</span></Label>
           <Input
             id="identifier"
             type="text"
@@ -109,7 +109,7 @@ export function LoginForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">{t('common.password')}</Label>
+          <Label htmlFor="password">{t('common.password')} <span className="text-xs text-destructive">*</span></Label>
           <div className="relative">
             <Input
               id="password"

@@ -42,9 +42,9 @@ class CommitteesSeeder extends Seeder
             }
         }
 
-        // Create discussion committees (only if we don't have enough)
+        // Create discussion committees (2 committees for 4 members: 2 members each)
         $existingDiscussionCommitteesCount = DiscussionCommittee::count();
-        $discussionCommitteesToCreate = max(0, 3 - $existingDiscussionCommitteesCount);
+        $discussionCommitteesToCreate = max(0, 2 - $existingDiscussionCommitteesCount);
         $discussionCommittees = collect();
         if ($discussionCommitteesToCreate > 0) {
             $discussionCommittees = DiscussionCommittee::factory()
@@ -54,10 +54,9 @@ class CommitteesSeeder extends Seeder
         // Get all discussion committees (existing + newly created)
         $discussionCommittees = DiscussionCommittee::all();
 
-        // Attach members to discussion committees (1 member per committee with 3 committees and 3 members)
+        // Attach members to discussion committees (distribute 4 members across 2 committees)
         $discussionCommitteeMembers = User::where('role', 'discussion_committee')->get();
         if ($discussionCommitteeMembers->isNotEmpty() && $discussionCommittees->isNotEmpty()) {
-            // Distribute members evenly across committees (1 member per committee)
             $membersPerCommittee = max(1, (int) floor($discussionCommitteeMembers->count() / $discussionCommittees->count()));
             foreach ($discussionCommittees as $index => $committee) {
                 $startIndex = $index * $membersPerCommittee;
@@ -70,8 +69,8 @@ class CommitteesSeeder extends Seeder
             }
         }
 
-        $this->command->info('Created committees:');
-        $this->command->info('- ' . count($projectCommittees) . ' project committees');
-        $this->command->info('- ' . count($discussionCommittees) . ' discussion committees');
+        $this->command->info('تم إنشاء اللجان (بيانات عربية) / Created committees (Arabic):');
+        $this->command->info('- ' . count($projectCommittees) . ' لجنة مشاريع / project committees');
+        $this->command->info('- ' . count($discussionCommittees) . ' لجنة مناقشة / discussion committees');
     }
 }
