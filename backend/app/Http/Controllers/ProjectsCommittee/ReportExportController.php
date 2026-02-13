@@ -87,6 +87,14 @@ class ReportExportController extends Controller
                 $report = $this->reportService->generateDeadlinesReport($filters);
                 $content .= $this->formatDeadlinesReport($report);
                 break;
+            case 'student-groups':
+                $report = $this->reportService->generateStudentGroupsReport($filters);
+                $content .= $this->formatStudentGroupsReport($report);
+                break;
+            case 'discussion-committees':
+                $report = $this->reportService->generateDiscussionCommitteesReport($filters);
+                $content .= $this->formatDiscussionCommitteesReport($report);
+                break;
             default:
                 $content .= "Unknown report type: {$reportType}\n";
         }
@@ -125,6 +133,14 @@ class ReportExportController extends Controller
             case 'deadlines':
                 $report = $this->reportService->generateDeadlinesReport($filters);
                 $this->writeDeadlinesCsv($output, $report);
+                break;
+            case 'student-groups':
+                $report = $this->reportService->generateStudentGroupsReport($filters);
+                $this->writeStudentGroupsCsv($output, $report);
+                break;
+            case 'discussion-committees':
+                $report = $this->reportService->generateDiscussionCommitteesReport($filters);
+                $this->writeDiscussionCommitteesCsv($output, $report);
                 break;
         }
 
@@ -184,7 +200,9 @@ class ReportExportController extends Controller
 
         $content .= "Projects:\n";
         foreach ($report['projects'] ?? [] as $project) {
-            $content .= "  - {$project->title} ({$project->status})\n";
+            $status = is_object($project->status) ? $project->status->value : $project->status;
+            $committee = implode(', ', $project->committee_member_names ?? []);
+            $content .= "  - {$project->title} ({$status}) | Committee: {$committee} | Group: " . ($project->assigned_group_name ?? '-') . " | FD1: " . ($project->fd1_status ?? '-') . ", FD2: " . ($project->fd2_status ?? '-') . "\n";
         }
 
         return $content;
@@ -206,7 +224,11 @@ class ReportExportController extends Controller
 
         $content .= "Supervisors:\n";
         foreach ($report['supervisors'] ?? [] as $supervisor) {
-            $content .= "  - {$supervisor['name']}: {$supervisor['projects_count']} projects, {$supervisor['students_count']} students\n";
+            $titles = implode(', ', $supervisor['project_titles'] ?? []);
+            $byStatus = isset($supervisor['by_status']) && is_array($supervisor['by_status'])
+                ? ' [Status breakdown: ' . implode(', ', array_map(fn ($s, $c) => "{$s}: {$c}", array_keys($supervisor['by_status']), $supervisor['by_status'])) . ']'
+                : '';
+            $content .= "  - {$supervisor['name']}: {$supervisor['projects_count']} projects, {$supervisor['students_count']} students{$byStatus}. Projects: {$titles}\n";
         }
 
         return $content;
@@ -224,7 +246,11 @@ class ReportExportController extends Controller
         $content .= "Summary:\n";
         $content .= "  Total: {$summary['total']}\n";
         $content .= "  Registered: {$summary['registered']}\n";
-        $content .= "  Unregistered: {$summary['unregistered']}\n\n";
+        $content .= "  Unregistered: {$summary['unregistered']}\n";
+        foreach ($summary['by_defense_status'] ?? [] as $status => $count) {
+            $content .= "  By status {$status}: {$count}\n";
+        }
+        $content .= "\n";
 
         return $content;
     }
@@ -244,6 +270,63 @@ class ReportExportController extends Controller
         $content .= "  Rejected: {$summary['rejected']}\n";
         $content .= "  Pending: {$summary['pending']}\n";
         $content .= "  Approval Rate: {$summary['approval_rate']}%\n\n";
+
+        return $content;
+    }
+
+    /**
+     * Format student groups report for text
+     */
+    protected function formatStudentGroupsReport(array $report): string
+    {
+        $content = "STUDENT GROUPS REPORT\n";
+        $content .= str_repeat("=", 50) . "\n\n";
+
+        $summary = $report['summary'] ?? [];
+        $content .= "Summary: Total groups: {$summary['total']}\n";
+        if (!empty($summary['by_readiness'])) {
+            foreach ($summary['by_readiness'] as $readiness => $count) {
+                $content .= "  By readiness {$readiness}: {$count}\n";
+            }
+        }
+        $content .= "\n";
+
+        foreach ($report['groups'] ?? [] as $group) {
+            $content .= "  - {$group['group_code']} (" . ($group['name'] ?? '') . "): Leader {$group['leader_name']}, {$group['member_count']} members\n";
+            $content .= "    Overall readiness: " . ($group['overall_readiness'] ?? '-') . "\n";
+            $content .= "    Project: " . ($group['project_title'] ?? 'None') . ", Supervisor: " . ($group['supervisor_name'] ?? '-') . "\n";
+            foreach ($group['members'] ?? [] as $m) {
+                $content .= "      Member: " . ($m['name'] ?? '') . " (ID: " . ($m['student_id'] ?? $m['id']) . ") - Status: " . ($m['defense_status'] ?? '-') . "\n";
+            }
+        }
+
+        return $content;
+    }
+
+    /**
+     * Format discussion committees report for text
+     */
+    protected function formatDiscussionCommitteesReport(array $report): string
+    {
+        $content = "DISCUSSION COMMITTEES REPORT\n";
+        $content .= str_repeat("=", 50) . "\n\n";
+
+        $summary = $report['summary'] ?? [];
+        $content .= "Summary: Total projects with committee: {$summary['total']}\n";
+        $content .= "Total committee members: " . ($summary['total_committee_members'] ?? 0) . "\n\n";
+
+        $content .= "Projects:\n";
+        foreach ($report['projects'] ?? [] as $row) {
+            $members = implode(', ', $row['committee_member_names'] ?? []);
+            $content .= "  - {$row['title']} (Supervisor: {$row['supervisor_name']})\n";
+            $content .= "    Committee: {$members}\n";
+            $content .= "    FD1: {$row['fd1_status']}, FD2: {$row['fd2_status']}, Students: {$row['students_count']}\n";
+        }
+
+        $content .= "\nCommittee member workload:\n";
+        foreach ($report['member_workload'] ?? [] as $mw) {
+            $content .= "  - {$mw['name']} ({$mw['email']}): {$mw['projects_count']} project(s)\n";
+        }
 
         return $content;
     }
@@ -294,16 +377,21 @@ class ReportExportController extends Controller
      */
     protected function writeProjectsCsv($handle, array $report): void
     {
-        fputcsv($handle, ['ID', 'Title', 'Status', 'Specialization', 'Supervisor', 'Students Count']);
+        fputcsv($handle, ['ID', 'Title', 'Status', 'Specialization', 'Supervisor', 'Students Count', 'Committee Members', 'Assigned Group', 'FD1 Status', 'FD2 Status']);
         
         foreach ($report['projects'] ?? [] as $project) {
+            $status = is_object($project->status) ? $project->status->value : $project->status;
             fputcsv($handle, [
                 $project->id,
                 $project->title,
-                $project->status,
+                $status,
                 $project->specialization ?? '',
                 $project->supervisor->name ?? '',
                 $project->current_students ?? 0,
+                implode('; ', $project->committee_member_names ?? []),
+                $project->assigned_group_name ?? '',
+                $project->fd1_status ?? '',
+                $project->fd2_status ?? '',
             ]);
         }
     }
@@ -313,17 +401,22 @@ class ReportExportController extends Controller
      */
     protected function writeSupervisorsCsv($handle, array $report): void
     {
-        fputcsv($handle, ['Name', 'Email', 'Department', 'Projects Count', 'Students Count', 'Average Grade', 'Pending Evaluations']);
+        fputcsv($handle, ['Name', 'Email', 'Department', 'Projects Count', 'Students Count', 'Status Breakdown', 'Average Grade', 'Pending Evaluations', 'Project Titles']);
         
         foreach ($report['supervisors'] ?? [] as $supervisor) {
+            $byStatus = isset($supervisor['by_status']) && is_array($supervisor['by_status'])
+                ? implode('; ', array_map(fn ($s, $c) => "{$s}:{$c}", array_keys($supervisor['by_status']), $supervisor['by_status']))
+                : '';
             fputcsv($handle, [
                 $supervisor['name'],
                 $supervisor['email'],
                 $supervisor['department'] ?? '',
                 $supervisor['projects_count'],
                 $supervisor['students_count'],
+                $byStatus,
                 $supervisor['average_grade'] ?? '',
                 $supervisor['pending_evaluations'],
+                implode('; ', $supervisor['project_titles'] ?? []),
             ]);
         }
     }
@@ -333,7 +426,7 @@ class ReportExportController extends Controller
      */
     protected function writeStudentsCsv($handle, array $report): void
     {
-        fputcsv($handle, ['Name', 'Student ID', 'Email', 'Department', 'Registered', 'Project', 'In Group']);
+        fputcsv($handle, ['Name', 'Student ID', 'Email', 'Department', 'Registered', 'Project', 'Supervisor', 'Group', 'Defense Status', 'In Group']);
         
         foreach ($report['students'] ?? [] as $student) {
             fputcsv($handle, [
@@ -343,6 +436,9 @@ class ReportExportController extends Controller
                 $student['department'] ?? '',
                 $student['is_registered'] ? 'Yes' : 'No',
                 $student['project_title'] ?? '',
+                $student['supervisor_name'] ?? '',
+                $student['group_name'] ?? '',
+                $student['defense_status'] ?? '',
                 $student['is_in_group'] ? 'Yes' : 'No',
             ]);
         }
@@ -382,6 +478,69 @@ class ReportExportController extends Controller
                 $milestone->completed ? 'Completed' : 'Overdue',
                 $milestone->completed_at ? $milestone->completed_at->format('Y-m-d H:i:s') : '',
             ]);
+        }
+    }
+
+    /**
+     * Write student groups CSV
+     */
+    protected function writeStudentGroupsCsv($handle, array $report): void
+    {
+        fputcsv($handle, ['Group Code', 'Name', 'Leader', 'Member Count', 'Overall Readiness', 'Project', 'Supervisor', 'Member Names', 'Member Statuses']);
+        
+        foreach ($report['groups'] ?? [] as $group) {
+            $memberNames = [];
+            $memberStatuses = [];
+            foreach ($group['members'] ?? [] as $m) {
+                $memberNames[] = $m['name'] ?? '';
+                $memberStatuses[] = $m['defense_status'] ?? '';
+            }
+            fputcsv($handle, [
+                $group['group_code'] ?? '',
+                $group['name'] ?? '',
+                $group['leader_name'] ?? '',
+                $group['member_count'] ?? 0,
+                $group['overall_readiness'] ?? '',
+                $group['project_title'] ?? '',
+                $group['supervisor_name'] ?? '',
+                implode('; ', $memberNames),
+                implode('; ', $memberStatuses),
+            ]);
+        }
+    }
+
+    /**
+     * Write discussion committees CSV (projects sheet)
+     */
+    protected function writeDiscussionCommitteesCsv($handle, array $report): void
+    {
+        fputcsv($handle, ['Project', 'Status', 'Supervisor', 'Committee Members', 'FD1 Status', 'FD2 Status', 'Students Count']);
+        
+        foreach ($report['projects'] ?? [] as $row) {
+            fputcsv($handle, [
+                $row['title'] ?? '',
+                $row['status'] ?? '',
+                $row['supervisor_name'] ?? '',
+                implode('; ', $row['committee_member_names'] ?? []),
+                $row['fd1_status'] ?? '',
+                $row['fd2_status'] ?? '',
+                $row['students_count'] ?? 0,
+            ]);
+        }
+
+        // Member workload section
+        if (!empty($report['member_workload'])) {
+            fputcsv($handle, []);
+            fputcsv($handle, ['Committee Member', 'Email', 'Projects Count', 'Project Titles (FD1/FD2)']);
+            foreach ($report['member_workload'] as $mw) {
+                $projectLines = array_map(fn ($p) => ($p['title'] ?? '') . ' (FD1:' . ($p['fd1_status'] ?? '') . ', FD2:' . ($p['fd2_status'] ?? '') . ')', $mw['projects'] ?? []);
+                fputcsv($handle, [
+                    $mw['name'] ?? '',
+                    $mw['email'] ?? '',
+                    $mw['projects_count'] ?? 0,
+                    implode('; ', $projectLines),
+                ]);
+            }
         }
     }
 

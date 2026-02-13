@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
   useProjectsForDiscussion,
@@ -17,21 +17,21 @@ export function useDistributeCommitteesList() {
   const { t } = useTranslation();
 
   const [state, setState] = useState<DistributeCommitteesListState>({
-    assignments: new Map(),
     filterStatus: "all",
     defensePhase: "all",
     searchQuery: "",
     selectedMemberForDetails: null,
     showMemberDetailsDialog: false,
-    selectedProjectForHistory: null,
-    showHistoryDialog: false,
+    selectedProjectForAssign: null,
+    showAssignModal: false,
+    projectToRemove: null,
   });
 
   // Use debouncedSearch for API calls to reduce requests
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
   // Debounce search query
-  useMemo(() => {
+  useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(state.searchQuery);
     }, 300);

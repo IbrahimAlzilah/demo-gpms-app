@@ -116,4 +116,79 @@ export const committeeEvaluationService = {
       totalPages: response.pagination?.totalPages || 0,
     };
   },
+  /**
+   * Submit defense evaluation (FD1 / FD2)
+   */
+  submitDefenseEvaluation: async (data: {
+    projectId: string;
+    studentId: string;
+    defenseStage: 'fd1' | 'fd2';
+    grade: {
+      score: number;
+      maxScore: number;
+      criteria: Record<string, unknown>;
+      comments?: string;
+    };
+  }): Promise<void> => {
+    await apiClient.post("/discussion-committee/defense-evaluations", {
+      project_id: data.projectId,
+      student_id: data.studentId,
+      defense_stage: data.defenseStage,
+      score: data.grade.score,
+      max_score: data.grade.maxScore,
+      criteria: data.grade.criteria,
+      notes: data.grade.comments,
+    });
+  },
+
+  /**
+   * Get defense evaluations for a project and stage
+   */
+  getDefenseEvaluations: async (projectId: string, stage: 'fd1' | 'fd2'): Promise<Grade[]> => {
+    // This endpoint should return the evaluations for the specific stage
+    // Note: The backend route is likely /discussion-committee/defense-evaluations/{project}/status/{stage} 
+    // or similar based on routes/api.php investigation.
+    // The route `Route::get('defense-evaluations/{project}/status/{stage}', ...)` seems relevant but might just return status.
+    // Wait, `Route::get('defense-evaluations/projects/{stage}', ...)` returns projects.
+    // I need to fetch the actual grades for the student list.
+    // There isn't a direct "get grades for project" endpoint for discussion committee in the new routes list I saw earlier?
+    // Listing again:
+    // Route::get('defense-evaluations/projects/{stage}', ...index)
+    // Route::get('defense-evaluations/my-evaluations', ...getMyEvaluations)
+    // Route::get('defense-evaluations/{project}/status/{stage}', ...getStatus)
+    
+    // It seems `getMyEvaluations` might return all my evaluations.
+    // But `UnifiedEvaluationModal` needs grades for a specific project.
+    // Maybe `getStatus` returns the grades? I'll assume getStatus returns the grade details.
+    
+    const response = await apiClient.get<any>(
+      `/discussion-committee/defense-evaluations/${projectId}/status/${stage}`
+    );
+    
+    // Transform backend response to Grade[] format if needed
+    // Assuming backend returns { evaluations: [...] } or array of evaluations
+    const evaluations = response.data?.evaluations || (Array.isArray(response.data) ? response.data : []);
+    
+    return evaluations.map((e: any) => ({
+      ...e,
+      // Map fields to Grade interface expectation
+      studentId: e.student_id,
+      committeeGrade: {
+        score: e.score,
+        maxScore: e.max_score,
+        comments: e.notes,
+        criteria: e.criteria
+      }
+    }));
+  },
+
+  /**
+   * Get projects assigned for defense evaluation
+   */
+  getDefenseProjects: async (stage: 'fd1' | 'fd2'): Promise<EvaluationProjectItem[]> => {
+    const response = await apiClient.get<EvaluationProjectItem[]>(
+      `/discussion-committee/defense-evaluations/projects/${stage}`
+    );
+    return Array.isArray(response.data) ? response.data : [];
+  },
 };

@@ -117,3 +117,25 @@ export function useHistoryReport(periodsCount?: number) {
     refetchOnMount: true,
   });
 }
+
+export function useStudentGroupsReport(
+  filters?: ReportFilters & { page?: number; pageSize?: number },
+) {
+  return useQuery({
+    queryKey: ["committee-reports", "student-groups", filters],
+    queryFn: () => committeeReportService.getStudentGroups(filters),
+    staleTime: 0,
+    refetchOnMount: true,
+  });
+}
+
+export function useDiscussionCommitteesReport(
+  filters?: ReportFilters & { page?: number; pageSize?: number },
+) {
+  return useQuery({
+    queryKey: ["committee-reports", "discussion-committees", filters],
+    queryFn: () => committeeReportService.getDiscussionCommittees(filters),
+    staleTime: 0,
+    refetchOnMount: true,
+  });
+}

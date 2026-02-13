@@ -79,6 +79,23 @@ export function SupervisorsTab({ filters }: SupervisorsTabProps) {
       header: t('committee.reports.studentsCount'),
     },
     {
+      accessorKey: 'by_status',
+      header: t('committee.reports.statusBreakdown'),
+      cell: ({ row }: any) => {
+        const byStatus = row.original.by_status
+        if (!byStatus || typeof byStatus !== 'object' || Object.keys(byStatus).length === 0) return <span className="text-muted-foreground">-</span>
+        return (
+          <div className="flex flex-wrap gap-1">
+            {Object.entries(byStatus).map(([status, count]) => (
+              <span key={status} className="inline-flex items-center rounded-md bg-secondary px-1.5 py-0.5 text-xs font-medium">
+                {status}: {String(count)}
+              </span>
+            ))}
+          </div>
+        )
+      },
+    },
+    {
       accessorKey: 'average_grade',
       header: t('committee.reports.averageGrade'),
       cell: ({ row }: any) => row.original.average_grade ? Number(row.original.average_grade).toFixed(1) : '-',
@@ -91,6 +108,15 @@ export function SupervisorsTab({ filters }: SupervisorsTabProps) {
           {row.original.pending_evaluations}
         </span>
       ),
+    },
+    {
+      accessorKey: 'project_titles',
+      header: t('committee.reports.projectsList'),
+      cell: ({ row }: any) => {
+        const titles = row.original.project_titles
+        if (!titles || titles.length === 0) return <span className="text-muted-foreground">-</span>
+        return <span className="text-sm" title={titles.join('\n')}>{titles.join(', ')}</span>
+      },
     },
   ]
 

@@ -213,5 +213,20 @@ class Project extends Model
     {
         return $this->status === ProjectStatus::COMPLETED;
     }
+    /**
+     * Get all defense evaluations for this project
+     */
+    public function defenseEvaluations(): HasMany
+    {
+        return $this->hasMany(DefenseEvaluation::class);
+    }
+
+    /**
+     * Get defense schedules (date/time) for FD1 and FD2
+     */
+    public function defenseSchedules(): HasMany
+    {
+        return $this->hasMany(ProjectDefenseSchedule::class);
+    }
 }
 

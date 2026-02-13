@@ -9,6 +9,7 @@ use App\Http\Traits\HasTableQuery;
 use App\Models\Project;
 use App\Models\CommitteeAssignment;
 use App\Models\CommitteeAssignmentHistory;
+use App\Models\ProjectDefenseSchedule;
 use App\Models\User;
 use App\Models\Grade;
 use App\Services\NotificationService;
@@ -29,8 +30,16 @@ class CommitteeController extends Controller
      */
     public function projectsForDiscussion(Request $request): JsonResponse
     {
-        $query = Project::with(['supervisor', 'students', 'assignedGroup.leader', 'committeeMembers', 'documents'])
-            ->where('status', 'in_progress');
+        $query = Project::with([
+            'supervisor.supervisorProfile',  // For department
+            'students.studentProfile',       // For student details
+            'assignedGroup.leader.studentProfile',  // For group leader
+            'assignedGroup.members',         // For group members
+            'committeeMembers',
+            'documents',
+            'defenseSchedules',
+        ])
+        ->where('status', 'in_progress');
 
         // Apply status filter if provided
         if ($request->has('filter_status') && $request->filter_status !== 'all') {
@@ -63,6 +72,10 @@ class CommitteeController extends Controller
                     ->orWhere('description', 'like', "%{$search}%")
                     ->orWhereHas('supervisor', function ($sq) use ($search) {
                         $sq->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('assignedGroup', function ($sq) use ($search) {
+                        $sq->where('group_code', 'like', "%{$search}%")
+                           ->orWhere('name', 'like', "%{$search}%");
                     });
             });
         }
@@ -98,6 +111,61 @@ class CommitteeController extends Controller
             $data['hasCommitteeAssigned'] = $project->committeeMembers->isNotEmpty();
             $data['committeeCount'] = $project->committeeMembers->count();
             $data['readyForDefensePhase'] = $readyForDefensePhase;
+
+            // Add group information
+            $groupInfo = [
+                'code' => 'N/A',
+                'name' => 'N/A',
+                'memberCount' => 0,
+                'leaderName' => 'N/A',
+            ];
+            
+            if ($project->assignedGroup) {
+                $groupInfo['code'] = $project->assignedGroup->group_code ?? $project->assignedGroup->name ?? 'N/A';
+                $groupInfo['name'] = $project->assignedGroup->name ?? 'N/A';
+                $groupInfo['memberCount'] = $project->assignedGroup->getTotalMemberCount(); // includes leader
+                $groupInfo['leaderName'] = $project->assignedGroup->leader->name ?? 'N/A';
+            } else {
+                // Fallback: use students count if no group assigned
+                $groupInfo['memberCount'] = $project->students->count();
+            }
+            
+            $data['groupInfo'] = $groupInfo;
+            $data['studentsCount'] = $project->students->count();
+            
+            // Add department (prioritize supervisor's department, fallback to student major)
+            $department = 'N/A';
+            if ($project->supervisor && $project->supervisor->supervisorProfile) {
+                $department = $project->supervisor->supervisorProfile->department ?? 'N/A';
+            } elseif ($project->assignedGroup && $project->assignedGroup->leader && $project->assignedGroup->leader->studentProfile) {
+                $department = $project->assignedGroup->leader->studentProfile->major ?? 'N/A';
+            }
+            $data['department'] = $department;
+            
+            // Add workflow stage
+            $data['workflowStage'] = $this->determineWorkflowStage($project);
+
+            // Defense stage display (Final Defense-1 / Final Defense-2)
+            $data['defenseStageDisplay'] = $readyForDefensePhase === 'final_defense_2' ? 'Final Defense-2' : ($readyForDefensePhase === 'final_defense_1' ? 'Final Defense-1' : null);
+
+            // Defense date & time from schedule
+            $defenseStageKey = $readyForDefensePhase === 'final_defense_2' ? 'FD2' : ($readyForDefensePhase === 'final_defense_1' ? 'FD1' : null);
+            $schedule = $project->defenseSchedules?->firstWhere('defense_stage', $defenseStageKey);
+            $data['defenseScheduledAt'] = $schedule?->scheduled_at?->toISOString();
+
+            // For FD2 projects: show previous FD1 committee from history (for re-distribution context)
+            $data['fd1CommitteePreview'] = null;
+            if ($readyForDefensePhase === 'final_defense_2') {
+                $fd1History = CommitteeAssignmentHistory::where('project_id', $project->id)
+                    ->where('defense_stage', 'FD1')
+                    ->where('action', 'assigned')
+                    ->orderBy('created_at', 'desc')
+                    ->first();
+                if ($fd1History && !empty($fd1History->committee_member_ids)) {
+                    $fd1Members = User::whereIn('id', $fd1History->committee_member_ids)->get(['id', 'name']);
+                    $data['fd1CommitteePreview'] = $fd1Members->map(fn ($m) => ['id' => (string) $m->id, 'name' => $m->name])->values()->all();
+                }
+            }
 
             $evaluatedStudents = Grade::where('project_id', $project->id)
                 ->whereNotNull('committee_grade')
@@ -177,6 +245,37 @@ class CommitteeController extends Controller
     }
 
     /**
+     * Determine detailed workflow stage for a project
+     */
+    private function determineWorkflowStage(Project $project): string
+    {
+        // Check if grading is complete
+        $hasApprovedGrades = Grade::where('project_id', $project->id)
+            ->where('is_approved', true)
+            ->whereNotNull('final_grade')
+            ->exists();
+            
+        if ($hasApprovedGrades) {
+            return 'grading_completed';
+        }
+        
+        // Check if committee is assigned
+        $hasCommittee = $project->committeeMembers->isNotEmpty();
+        if ($hasCommittee) {
+            return 'committee_evaluation';
+        }
+        
+        // Check if documents have been submitted
+        $hasDocuments = $project->documents->count() > 0;
+        if ($hasDocuments) {
+            return 'document_submission';
+        }
+        
+        // Initial stage
+        return 'initial_stage';
+    }
+
+    /**
      * Distribute/assign committee members to projects
      */
     public function distribute(Request $request): JsonResponse
@@ -192,6 +291,7 @@ class CommitteeController extends Controller
             "assignments.*.committee_member_ids" => "required|array|min:{$minMembers}|max:{$maxMembers}",
             'assignments.*.committee_member_ids.*' => 'exists:users,id',
             'assignments.*.defense_stage' => 'required|in:FD1,FD2',
+            'assignments.*.defense_scheduled_at' => 'nullable|date',
         ]);
 
         try {
@@ -280,6 +380,13 @@ class CommitteeController extends Controller
                     'defense_stage' => $assignment['defense_stage'],
                     'performed_by' => $performedBy,
                 ]);
+
+                // Store defense schedule (date + time)
+                $scheduledAt = $assignment['defense_scheduled_at'] ?? null;
+                ProjectDefenseSchedule::updateOrCreate(
+                    ['project_id' => $project->id, 'defense_stage' => $assignment['defense_stage']],
+                    ['scheduled_at' => $scheduledAt]
+                );
 
                 // Send notifications to assigned committee members
                 $committeeMembers = User::whereIn('id', $newMembers)->get();
@@ -467,10 +574,11 @@ class CommitteeController extends Controller
             // Remove assignments
             CommitteeAssignment::where('project_id', $project->id)->delete();
 
-            // Determine defense stage based on project readiness
+            // Determine defense stage and remove schedule for current stage
             $fd1Completed = $this->isFinalDefensePhaseOneCompleted($project);
             $readyForFd2 = $fd1Completed && $this->isPhase2ChaptersComplete($project);
             $defenseStage = $readyForFd2 ? 'FD2' : 'FD1';
+            ProjectDefenseSchedule::where('project_id', $project->id)->where('defense_stage', $defenseStage)->delete();
 
             // Create audit trail
             CommitteeAssignmentHistory::create([
@@ -516,38 +624,5 @@ class CommitteeController extends Controller
         }
     }
 
-    /**
-     * Get assignment history for a specific project
-     */
-    public function assignmentHistory(Request $request, Project $project): JsonResponse
-    {
-        $history = CommitteeAssignmentHistory::where('project_id', $project->id)
-            ->with('performedBy:id,name,email')
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($record) {
-                $currentMembers = User::whereIn('id', $record->committee_member_ids ?? [])->get(['id', 'name']);
-                $previousMembers = User::whereIn('id', $record->previous_committee_member_ids ?? [])->get(['id', 'name']);
-
-                return [
-                    'id' => (string) $record->id,
-                    'action' => $record->action,
-                    'defense_stage' => $record->defense_stage,
-                    'current_members' => $currentMembers->map(fn($m) => ['id' => (string) $m->id, 'name' => $m->name]),
-                    'previous_members' => $previousMembers->map(fn($m) => ['id' => (string) $m->id, 'name' => $m->name]),
-                    'performed_by' => [
-                        'id' => (string) $record->performedBy->id,
-                        'name' => $record->performedBy->name,
-                    ],
-                    'notes' => $record->notes,
-                    'created_at' => $record->created_at->toISOString(),
-                ];
-            });
-
-        return response()->json([
-            'success' => true,
-            'data' => $history,
-        ]);
-    }
 }
 

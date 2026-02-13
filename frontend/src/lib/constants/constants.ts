@@ -54,6 +54,7 @@ export const ROUTES = {
     PROJECTS: "/projects",
     PROJECT_DETAIL: (id: string) => `/projects/${id}`,
     EVALUATION: "/evaluation",
+    EVALUATE_PROJECT: (projectId: string, stage: string) => `/projects/${projectId}/evaluate/${stage}`,
   },
   // Projects Committee routes
   PROJECTS_COMMITTEE: {

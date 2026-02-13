@@ -32,6 +32,10 @@ export function ProjectsList() {
       createProjectsColumns({
         t,
         onView: (project: Project) => navigate(ROUTES.DISCUSSION_COMMITTEE.PROJECT_DETAIL(project.id)),
+        onEvaluate: (project: Project) => {
+          const stage = project.defenseStage?.current ?? 'fd1'
+          navigate(ROUTES.DISCUSSION_COMMITTEE.EVALUATE_PROJECT(project.id, stage))
+        },
       }),
     [t, navigate]
   )

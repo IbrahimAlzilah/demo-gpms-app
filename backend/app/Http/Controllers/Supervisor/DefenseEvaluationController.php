@@ -142,6 +142,7 @@ class DefenseEvaluationController extends Controller
             'student_id' => 'required|exists:users,id',
             'stage' => 'required|in:fd1,fd2',
             'score' => 'required|numeric|min:0|max:100',
+            'max_score' => 'nullable|numeric|min:0',
             'maxScore' => 'nullable|numeric|min:0',
             'criteria' => 'nullable|array',
             'notes' => 'nullable|string|max:5000',
@@ -158,7 +159,7 @@ class DefenseEvaluationController extends Controller
                 $validated['stage'],
                 [
                     'score' => $validated['score'],
-                    'maxScore' => $validated['maxScore'] ?? 100,
+                    'maxScore' => $validated['max_score'] ?? $validated['maxScore'] ?? 100,
                     'criteria' => $validated['criteria'] ?? [],
                     'notes' => $validated['notes'] ?? null,
                 ],
@@ -201,6 +202,20 @@ class DefenseEvaluationController extends Controller
 
         $supervisor = $request->user();
         $evaluation = \App\Models\DefenseEvaluation::findOrFail($evaluationId);
+
+        // RBAC: only the evaluator (supervisor) who owns the project can update
+        if ($evaluation->evaluator_id !== $supervisor->id || $evaluation->evaluator_role !== 'supervisor') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized to update this evaluation.',
+            ], 403);
+        }
+        if ($evaluation->project->supervisor_id !== $supervisor->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized. You can only evaluate projects you supervise.',
+            ], 403);
+        }
 
         try {
             $updated = $this->evaluationService->updateEvaluation(

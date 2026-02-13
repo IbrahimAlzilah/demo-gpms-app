@@ -54,6 +54,7 @@ export interface OverviewReport {
       total: number;
       registered: number;
       unregistered: number;
+      by_defense_status?: Record<string, number>;
     };
     evaluations: {
       total: number;
@@ -96,8 +97,10 @@ export interface SupervisorsReport {
     department: string | null;
     projects_count: number;
     students_count: number;
+    by_status?: Record<string, number>;
     average_grade: number | null;
     pending_evaluations: number;
+    project_titles?: string[];
   }>;
   pagination?: {
     page: number;
@@ -107,12 +110,15 @@ export interface SupervisorsReport {
   };
 }
 
+export type DefenseStatus = "completed" | "ready_for_fd2" | "ready_for_fd1" | "in_progress";
+
 export interface StudentsReport {
   summary: {
     total: number;
     registered: number;
     unregistered: number;
     in_groups: number;
+    by_defense_status?: Record<string, number>;
   };
   students: Array<{
     id: number;
@@ -125,6 +131,11 @@ export interface StudentsReport {
     project_title: string | null;
     is_in_group: boolean;
     group_id: number | null;
+    group_name?: string | null;
+    supervisor_name?: string | null;
+    defense_status: DefenseStatus;
+    fd1_approved?: boolean;
+    fd2_approved?: boolean;
   }>;
   pagination?: {
     page: number;
@@ -183,6 +194,70 @@ export interface HistoryReport {
   }>;
 }
 
+export interface StudentGroupMember {
+  id: number;
+  name: string | null;
+  student_id: string | null;
+  defense_status: DefenseStatus;
+  fd1_approved?: boolean;
+  fd2_approved?: boolean;
+}
+
+export interface StudentGroupsReport {
+  summary: {
+    total: number;
+    by_readiness?: Record<string, number>;
+  };
+  groups: Array<{
+    id: number;
+    name: string | null;
+    group_code: string;
+    leader_id: number;
+    leader_name: string | null;
+    member_count: number;
+    member_names: string[];
+    members: StudentGroupMember[];
+    overall_readiness: string;
+    project_id: number | null;
+    project_title: string | null;
+    supervisor_name: string | null;
+  }>;
+  pagination?: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface DiscussionCommitteesReport {
+  summary: { total: number; total_committee_members?: number };
+  projects: Array<{
+    id: number;
+    title: string;
+    status: string;
+    supervisor_name: string | null;
+    committee_member_names: string[];
+    committee_member_emails?: string[];
+    fd1_status: string;
+    fd2_status: string;
+    students_count: number;
+  }>;
+  member_workload?: Array<{
+    id: number;
+    name: string;
+    email: string | null;
+    projects_count: number;
+    projects: Array<{ project_id: number; title: string; fd1_status: string; fd2_status: string }>;
+  }>;
+  pagination?: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
 export const committeeReportService = {
   // Legacy endpoint
   generateProjectsReport: async (): Promise<ReportData> => {
@@ -207,7 +282,7 @@ export const committeeReportService = {
             projects: { total: 0, byStatus: {} },
             proposals: { total: 0, byStatus: {} },
             requests: { total: 0, byStatus: {} },
-            students: { total: 0, registered: 0, unregistered: 0 },
+            students: { total: 0, registered: 0, unregistered: 0, by_defense_status: {} },
             evaluations: { total: 0, averageGrade: 0 },
             milestones: { total: 0, completed: 0, overdue: 0 },
           },
@@ -220,7 +295,7 @@ export const committeeReportService = {
           projects: { total: 0, byStatus: {} },
           proposals: { total: 0, byStatus: {} },
           requests: { total: 0, byStatus: {} },
-          students: { total: 0, registered: 0, unregistered: 0 },
+          students: { total: 0, registered: 0, unregistered: 0, by_defense_status: {} },
           evaluations: { total: 0, averageGrade: 0 },
           milestones: { total: 0, completed: 0, overdue: 0 },
         },
@@ -295,6 +370,26 @@ export const committeeReportService = {
     const response = await apiClient.get<HistoryReport>(
       "/projects-committee/reports/history",
       { params: { periods_count: periodsCount } },
+    );
+    return response.data;
+  },
+
+  getStudentGroups: async (
+    filters?: ReportFilters & { page?: number; pageSize?: number },
+  ): Promise<StudentGroupsReport> => {
+    const response = await apiClient.get<StudentGroupsReport>(
+      "/projects-committee/reports/student-groups",
+      { params: filters },
+    );
+    return response.data;
+  },
+
+  getDiscussionCommittees: async (
+    filters?: ReportFilters & { page?: number; pageSize?: number },
+  ): Promise<DiscussionCommitteesReport> => {
+    const response = await apiClient.get<DiscussionCommitteesReport>(
+      "/projects-committee/reports/discussion-committees",
+      { params: filters },
     );
     return response.data;
   },

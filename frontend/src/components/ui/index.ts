@@ -24,4 +24,5 @@ export * from "./calendar";
 export * from "./alert";
 export * from "./tabs";
 export * from "./radio-group";
+export * from "./collapsible";
 // export * from './toaster'

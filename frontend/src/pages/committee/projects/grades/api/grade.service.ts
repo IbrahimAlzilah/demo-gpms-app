@@ -105,25 +105,37 @@ export const committeeGradeService = {
 
   update: async (
     gradeId: string,
-    data: { supervisorScore?: number; committeeScore?: number; finalGrade?: number }
+    data: {
+      supervisorScore?: number;
+      committeeScore?: number;
+      finalGrade?: number;
+      fd1FinalGrade?: number;
+      fd2FinalGrade?: number;
+    },
   ): Promise<Grade> => {
     // Map to API structure
-    const payload: any = {}
+    const payload: any = {};
     if (data.supervisorScore !== undefined) {
-      payload.supervisor_grade = { score: data.supervisorScore }
+      payload.supervisor_grade = { score: data.supervisorScore };
     }
     if (data.committeeScore !== undefined) {
-      payload.committee_grade = { score: data.committeeScore }
+      payload.committee_grade = { score: data.committeeScore };
     }
     if (data.finalGrade !== undefined) {
-      payload.final_grade = data.finalGrade
+      payload.final_grade = data.finalGrade;
+    }
+    if (data.fd1FinalGrade !== undefined) {
+      payload.fd1_final_grade = data.fd1FinalGrade;
+    }
+    if (data.fd2FinalGrade !== undefined) {
+      payload.fd2_final_grade = data.fd2FinalGrade;
     }
 
     const response = await apiClient.put<{ data: Grade }>(
       `/projects-committee/grades/${gradeId}`,
-      payload
-    )
-    return response.data.data
+      payload,
+    );
+    return response.data.data;
   },
 
   /**
@@ -135,5 +147,42 @@ export const committeeGradeService = {
       { grade_ids: gradeIds },
     );
     return response.data;
+  },
+
+  /**
+   * Approve a specific defense stage (FD1 / FD2)
+   */
+  approveDefenseStage: async (
+    projectId: string,
+    stage: "fd1" | "fd2",
+  ): Promise<void> => {
+    await apiClient.post(
+      `/projects-committee/defense-approvals/${projectId}/approve/${stage}`,
+    );
+  },
+
+  /**
+   * Publish results for a specific defense stage
+   */
+  publishDefenseResults: async (
+    projectId: string,
+    stage: "fd1" | "fd2",
+  ): Promise<void> => {
+    await apiClient.post(
+      `/projects-committee/defense-approvals/${projectId}/publish/${stage}`,
+    );
+  },
+
+  /**
+   * Get all evaluations for a project stage (for review)
+   */
+  getDefenseReview: async (
+    projectId: string,
+    stage: "fd1" | "fd2",
+  ): Promise<any[]> => {
+    const response = await apiClient.get<any[]>(
+      `/projects-committee/defense-evaluations/${projectId}/review/${stage}`,
+    );
+    return Array.isArray(response.data) ? response.data : [];
   },
 };

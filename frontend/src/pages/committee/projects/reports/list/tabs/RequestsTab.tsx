@@ -53,7 +53,7 @@ export function RequestsTab({ filters }: RequestsTabProps) {
     },
     {
       accessorKey: 'status',
-      header: t('request.status'),
+      header: t('request.statusLabel'),
       cell: ({ row }: any) => <StatusBadge status={row.original.status} />,
     },
     {

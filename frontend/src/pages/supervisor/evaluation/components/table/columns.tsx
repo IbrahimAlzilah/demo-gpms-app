@@ -3,17 +3,81 @@ import { DataTableColumnHeader } from '@/components/ui/data-table/data-table-col
 import { Button } from '@/components/ui'
 import { Badge } from '@/components/ui/badge'
 import { Lock, Eye, Edit3, ClipboardCheck, User } from 'lucide-react'
-import type { SupervisorEvaluationProjectItem } from '../../api/evaluation.service'
+import type { SupervisorDefenseEvaluationItem } from '../../api/evaluation.service'
+
+export type DefenseStage = 'fd1' | 'fd2'
 
 export interface SupervisorEvaluationTableColumnsProps {
-  onEvaluate: (item: SupervisorEvaluationProjectItem) => void
+  onEvaluate: (item: SupervisorDefenseEvaluationItem, stage: DefenseStage) => void
   t: (key: string) => string
+}
+
+function StageCell({
+  stage,
+  stats,
+  t,
+  onEvaluate,
+  item,
+}: {
+  stage: DefenseStage
+  stats: SupervisorDefenseEvaluationItem['fd1']
+  t: (key: string) => string
+  onEvaluate: (item: SupervisorDefenseEvaluationItem, stage: DefenseStage) => void
+  item: SupervisorDefenseEvaluationItem
+}) {
+  const total = stats.totalStudents
+  const evaluated = stats.supervisorEvaluated
+  const progress = total > 0 ? Math.round((evaluated / total) * 100) : 0
+  const isLocked = stats.isLocked
+  const isComplete = stats.isComplete
+
+  const label = stage === 'fd1' ? t('evaluation.fd1') : t('evaluation.fd2')
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-sm font-medium text-muted-foreground">{label}</span>
+        {isLocked && (
+          <Badge variant="secondary" className="gap-1 shrink-0">
+            <Lock className="h-3 w-3" />
+            {t('common.locked')}
+          </Badge>
+        )}
+      </div>
+      <span className="text-sm text-muted-foreground">
+        {evaluated}/{total} {t('discussion.evaluated')} ({progress}%)
+      </span>
+      <Button
+        variant={isLocked ? 'ghost' : isComplete ? 'outline' : 'default'}
+        size="sm"
+        onClick={() => onEvaluate(item, stage)}
+        className="w-fit gap-1.5 mt-0.5"
+      >
+        {isLocked ? (
+          <>
+            <Eye className="h-3.5 w-3.5" />
+            {t('common.view')}
+          </>
+        ) : isComplete ? (
+          <>
+            <Edit3 className="h-3.5 w-3.5" />
+            {t('common.edit')}
+          </>
+        ) : (
+          <>
+            <ClipboardCheck className="h-3.5 w-3.5" />
+            {t('common.evaluate')}
+          </>
+        )}
+      </Button>
+    </div>
+  )
 }
 
 export function createSupervisorEvaluationColumns({
   onEvaluate,
   t,
-}: SupervisorEvaluationTableColumnsProps): ColumnDef<SupervisorEvaluationProjectItem>[] {
+}: SupervisorEvaluationTableColumnsProps): ColumnDef<SupervisorDefenseEvaluationItem>[] {
   return [
     {
       accessorKey: 'project.title',
@@ -23,12 +87,10 @@ export function createSupervisorEvaluationColumns({
       cell: ({ row }) => (
         <div className="font-medium max-w-[280px]">
           <p className="truncate text-foreground">{row.original.project.title}</p>
-          {row.original.project.supervisor && (
-            <p className="text-xs text-muted-foreground truncate mt-0.5 flex items-center gap-1">
-              <User className="h-3 w-3 shrink-0" />
-              {row.original.project.supervisor.name}
-            </p>
-          )}
+          <p className="text-xs text-muted-foreground truncate mt-0.5 flex items-center gap-1">
+            <User className="h-3 w-3 shrink-0" />
+            {row.original.project.studentsCount} {t('common.students')}
+          </p>
         </div>
       ),
     },
@@ -44,105 +106,30 @@ export function createSupervisorEvaluationColumns({
       ),
     },
     {
-      accessorKey: 'studentsCount',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.students')} />
-      ),
+      id: 'fd1',
+      header: () => t('evaluation.fd1'),
       cell: ({ row }) => (
-        <span className="text-sm">{row.original.studentsCount}</span>
+        <StageCell
+          stage="fd1"
+          stats={row.original.fd1}
+          t={t}
+          onEvaluate={onEvaluate}
+          item={row.original}
+        />
       ),
     },
     {
-      accessorKey: 'evaluationProgress',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('evaluation.progress')} />
+      id: 'fd2',
+      header: () => t('evaluation.fd2'),
+      cell: ({ row }) => (
+        <StageCell
+          stage="fd2"
+          stats={row.original.fd2}
+          t={t}
+          onEvaluate={onEvaluate}
+          item={row.original}
+        />
       ),
-      cell: ({ row }) => {
-        const item = row.original
-        const progress = item.evaluationProgress
-        return (
-          <span className="text-sm text-muted-foreground">
-            {item.evaluatedCount}/{item.studentsCount} {t('discussion.evaluated')} ({progress}%)
-          </span>
-        )
-      },
-    },
-    {
-      accessorKey: 'isLocked',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.status')} />
-      ),
-      cell: ({ row }) => {
-        const item = row.original
-        const isLocked = item.isLocked
-        const isComplete = item.evaluationProgress === 100
-        if (isLocked) {
-          return (
-            <Badge variant="secondary" className="gap-1">
-              <Lock className="h-3 w-3" />
-              {t('common.locked')}
-            </Badge>
-          )
-        }
-        if (isComplete) {
-          return (
-            <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-              {t('common.completed')}
-            </Badge>
-          )
-        }
-        if (item.evaluationProgress > 0) {
-          return (
-            <Badge variant="secondary">
-              {t('common.inProgress')}
-            </Badge>
-          )
-        }
-        return (
-          <Badge variant="outline" className="text-muted-foreground">
-            {t('common.pending')}
-          </Badge>
-        )
-      },
-    },
-    {
-      id: 'actions',
-      header: () => <div className="text-right">{t('common.actions')}</div>,
-      cell: ({ row }) => {
-        const item = row.original
-        const isLocked = item.isLocked
-        const isComplete = item.evaluationProgress === 100
-        const hasProgress = item.evaluationProgress > 0
-        const isReadOnly = isLocked
-
-        return (
-          <div className="flex justify-end">
-            <Button
-              variant={isReadOnly ? 'ghost' : hasProgress ? 'outline' : 'default'}
-              size="sm"
-              onClick={() => onEvaluate(item)}
-              className="gap-1.5"
-            >
-              {isReadOnly ? (
-                <>
-                  <Eye className="h-3.5 w-3.5" />
-                  {t('common.view')}
-                </>
-              ) : isComplete ? (
-                <>
-                  <Edit3 className="h-3.5 w-3.5" />
-                  {t('common.edit')}
-                </>
-              ) : (
-                <>
-                  <ClipboardCheck className="h-3.5 w-3.5" />
-                  {t('common.evaluate')}
-                </>
-              )}
-            </Button>
-          </div>
-        )
-      },
     },
   ]
 }

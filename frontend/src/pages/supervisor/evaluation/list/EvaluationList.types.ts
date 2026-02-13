@@ -1,14 +1,20 @@
-import type { SupervisorEvaluationProjectItem } from "../api/evaluation.service";
+import type {
+  SupervisorEvaluationProjectItem,
+  SupervisorDefenseEvaluationItem,
+} from "../api/evaluation.service";
+
+export type DefenseStage = 'fd1' | 'fd2';
 
 export interface SupervisorEvaluationListState {
   selectedProjectId: string | null;
+  selectedStage: DefenseStage | null;
   showEvaluationModal: boolean;
 }
 
 export interface SupervisorEvaluationListData {
-  items: SupervisorEvaluationProjectItem[];
+  items: SupervisorDefenseEvaluationItem[];
   isLoading: boolean;
   error: Error | null;
 }
 
-export type { SupervisorEvaluationProjectItem };
+export type { SupervisorEvaluationProjectItem, SupervisorDefenseEvaluationItem };

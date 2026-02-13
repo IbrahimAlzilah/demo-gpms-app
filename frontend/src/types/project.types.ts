@@ -18,11 +18,13 @@ export interface Project extends BaseEntity {
   supervisorId?: string;
   supervisor?: User;
   students: User[];
+  studentsCount?: number;
   groupId?: string;
   groupName?: string;
   assignedGroupId?: string;
   isLinkedToGroup?: boolean;
   committeeId?: string;
+  discussionCommitteeId?: string;
   documents: (string | Document)[];
   maxStudents: number;
   currentStudents: number;
@@ -30,6 +32,7 @@ export interface Project extends BaseEntity {
   maxGroups?: number;
   assignedGroup?: StudentGroup;
   groups?: StudentGroup[];
+  group?: StudentGroup;
   specialization?: string;
   keywords?: string[];
   supervisorApprovalStatus?: "pending" | "approved" | "rejected";
@@ -39,6 +42,45 @@ export interface Project extends BaseEntity {
   documentsCount?: number;
   documentsApprovedCount?: number;
   gradesCount?: number;
+  /** Discussion Committee enhancements */
+  department?: string;
+  defenseStage?: {
+    current: 'fd1' | 'fd2';
+    fd1Status: 'pending' | 'approved' | 'published';
+    fd1Locked: boolean;
+    fd1Date?: string;
+    fd2Status: 'pending' | 'approved' | 'published';
+    fd2Locked: boolean;
+    fd2Date?: string;
+  };
+  evaluationStatus?: {
+    myEvaluatedCount: number;
+    totalStudents: number;
+    percentage: number;
+    isComplete: boolean;
+  };
+  groupInfo?: {
+    code: string;
+    name?: string;
+    memberCount: number;
+    leaderName: string;
+  };
+  /** Supervisor enhancements */
+  committeeStatus?: 'assigned' | 'not_assigned';
+  supervisorEvaluationStatus?: {
+    fd1: {
+      evaluated: boolean;
+      evaluatedCount: number;
+      totalStudents: number;
+      isComplete: boolean;
+    };
+    fd2: {
+      evaluated: boolean;
+      evaluatedCount: number;
+      totalStudents: number;
+      isComplete: boolean;
+    };
+  };
 }
 
 export interface Proposal extends BaseEntity {

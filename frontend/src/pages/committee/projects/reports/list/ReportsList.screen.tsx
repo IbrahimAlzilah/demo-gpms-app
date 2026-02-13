@@ -14,6 +14,8 @@ import { OverviewTab } from './tabs/OverviewTab'
 import { ProjectsTab } from './tabs/ProjectsTab'
 import { SupervisorsTab } from './tabs/SupervisorsTab'
 import { StudentsTab } from './tabs/StudentsTab'
+import { StudentGroupsTab } from './tabs/StudentGroupsTab'
+import { DiscussionCommitteesTab } from './tabs/DiscussionCommitteesTab'
 import { RequestsTab } from './tabs/RequestsTab'
 import { DeadlinesTab } from './tabs/DeadlinesTab'
 import { HistoryTab } from './tabs/HistoryTab'
@@ -48,7 +50,9 @@ export function ReportsList() {
       /* Table optimizations */
       .overflow-auto, .overflow-x-auto, .overflow-y-auto { overflow: visible !important; }
       th, td { white-space: normal !important; }
+      .report-print-header { display: block !important; }
     }
+    .report-print-header { display: none; }
   `
 
   // Fetch periods for filter
@@ -107,7 +111,7 @@ export function ReportsList() {
   }
 
   const actions = (
-    <div className="relative flex justify-between items-center">
+    <div className="relative flex flex-wrap items-center gap-2">
       {/* Filter Button and Popover */}
       <Popover open={filterOpen} onOpenChange={setFilterOpen}>
         <PopoverTrigger asChild>
@@ -185,11 +189,11 @@ export function ReportsList() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t('common.all')}</SelectItem>
-                    <SelectItem value="draft">{t('project.status.draft')}</SelectItem>
-                    <SelectItem value="pending_review">{t('project.status.pendingReview')}</SelectItem>
-                    <SelectItem value="approved">{t('project.status.approved')}</SelectItem>
-                    <SelectItem value="in_progress">{t('project.status.inProgress')}</SelectItem>
-                    <SelectItem value="completed">{t('project.status.completed')}</SelectItem>
+                    <SelectItem value="draft">{t('projectManagement.status.draft')}</SelectItem>
+                    <SelectItem value="pending_review">{t('projectManagement.status.pendingReview')}</SelectItem>
+                    <SelectItem value="approved">{t('projectManagement.status.approved')}</SelectItem>
+                    <SelectItem value="in_progress">{t('projectManagement.status.inProgress')}</SelectItem>
+                    <SelectItem value="completed">{t('projectManagement.status.completed')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -254,52 +258,60 @@ export function ReportsList() {
           </div>
         </PopoverContent>
       </Popover>
-    </div >
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => window.print()}
+        className="no-print"
+      >
+        <Printer className="h-4 w-4 mr-2" />
+        {t('common.print')}
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => handleExport(activeTab, 'excel')}
+        className="no-print"
+      >
+        <Download className="h-4 w-4 mr-2" />
+        {t('committee.reports.exportExcel')}
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => handleExport(activeTab, 'pdf')}
+        className="no-print"
+      >
+        <Download className="h-4 w-4 mr-2" />
+        {t('committee.reports.exportPdf')}
+      </Button>
+    </div>
   )
 
+  const reportGeneratedDate = new Date().toLocaleString(undefined, { dateStyle: 'long', timeStyle: 'short' })
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" role="region" aria-label={t('committee.reports.title')}>
       <style>{printStyles}</style>
+      <div className="report-print-header" aria-hidden="true">
+        <h1 className="text-lg font-bold">{t('committee.reports.title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('committee.reports.generatedOn', { date: reportGeneratedDate })}</p>
+      </div>
       <BlockContent title={t('committee.reports.title')} actions={actions}>
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <div className="flex justify-between items-center mb-4">
+          <div className="mb-4">
             <TabsList>
               <TabsTrigger value="overview">{t('committee.reports.tabs.overview')}</TabsTrigger>
               <TabsTrigger value="projects">{t('committee.reports.tabs.projects')}</TabsTrigger>
               <TabsTrigger value="supervisors">{t('committee.reports.tabs.supervisors')}</TabsTrigger>
               <TabsTrigger value="students">{t('committee.reports.tabs.students')}</TabsTrigger>
+              <TabsTrigger value="student-groups">{t('committee.reports.tabs.studentGroups')}</TabsTrigger>
+              <TabsTrigger value="discussion-committees">{t('committee.reports.tabs.discussionCommittees')}</TabsTrigger>
               <TabsTrigger value="requests">{t('committee.reports.tabs.requests')}</TabsTrigger>
               <TabsTrigger value="deadlines">{t('committee.reports.tabs.deadlines')}</TabsTrigger>
               <TabsTrigger value="history">{t('committee.reports.tabs.history')}</TabsTrigger>
             </TabsList>
-
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => window.print()}
-              >
-                <Printer className="h-4 w-4 mr-2" />
-                {t('common.print')}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleExport(activeTab, 'excel')}
-              >
-                <Download className="h-4 w-4 mr-2" />
-                {t('committee.reports.exportExcel')}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleExport(activeTab, 'pdf')}
-              >
-                <Download className="h-4 w-4 mr-2" />
-                {t('committee.reports.exportPdf')}
-              </Button>
-            </div>
           </div>
 
           <TabsContent value="overview">
@@ -316,6 +328,14 @@ export function ReportsList() {
 
           <TabsContent value="students">
             <StudentsTab filters={filters} onExport={handleExport} />
+          </TabsContent>
+
+          <TabsContent value="student-groups">
+            <StudentGroupsTab filters={filters} onExport={handleExport} />
+          </TabsContent>
+
+          <TabsContent value="discussion-committees">
+            <DiscussionCommitteesTab filters={filters} onExport={handleExport} />
           </TabsContent>
 
           <TabsContent value="requests">

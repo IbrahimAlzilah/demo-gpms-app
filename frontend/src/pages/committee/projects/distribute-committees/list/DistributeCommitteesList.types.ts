@@ -6,14 +6,14 @@ import type {
 } from "../api/committee.service";
 
 export interface DistributeCommitteesListState {
-  assignments: Map<string, string[]>;
   filterStatus: ProjectFilterStatus;
   defensePhase: DefensePhaseFilter;
   searchQuery: string;
   selectedMemberForDetails: CommitteeMemberProfile | null;
   showMemberDetailsDialog: boolean;
-  selectedProjectForHistory: string | null;
-  showHistoryDialog: boolean;
+  selectedProjectForAssign: ProjectForDiscussion | null;
+  showAssignModal: boolean;
+  projectToRemove: ProjectForDiscussion | null;
 }
 
 export interface DistributeCommitteesListData {

@@ -77,6 +77,14 @@ class GradePolicy
     }
 
     /**
+     * Determine if the user can update the grade (general update).
+     */
+    public function update(User $user, Grade $grade): bool
+    {
+        return $user->isProjectsCommittee();
+    }
+
+    /**
      * Determine if the user can approve the grade.
      */
     public function approve(User $user, Grade $grade): bool

@@ -1,18 +1,26 @@
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 import { MainLayout } from '@/layouts/MainLayout'
 import { ProjectsList } from './list/ProjectsList.screen'
-import { ROUTES } from '@/lib/constants/constants'
+import { SupervisorDefenseEvaluationModal } from './components/SupervisorDefenseEvaluationModal'
+import type { Project } from '@/types/project.types'
 
 export function ProjectsPage() {
-  const navigate = useNavigate()
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const [evaluationModalOpen, setEvaluationModalOpen] = useState(false)
+
+  const handleEvaluate = (project: Project) => {
+    setSelectedProject(project)
+    setEvaluationModalOpen(true)
+  }
+
   return (
     <MainLayout>
-      <ProjectsList
-        onEvaluate={(project) => {
-          if (project?.students?.length) {
-            navigate(`${ROUTES.SUPERVISOR.EVALUATION}/${project.id}`)
-          }
-        }}
+      <ProjectsList onEvaluate={handleEvaluate} />
+
+      <SupervisorDefenseEvaluationModal
+        open={evaluationModalOpen}
+        onOpenChange={setEvaluationModalOpen}
+        project={selectedProject}
       />
     </MainLayout>
   )

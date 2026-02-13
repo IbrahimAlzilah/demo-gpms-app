@@ -33,6 +33,14 @@ class GradeResource extends JsonResource
             'committeeScore' => ($this->display_committee_grade ?? [])['score'] ?? $this->getCommitteeScore(),
             'isReadyForApproval' => $this->isReadyForApproval(),
             'validationErrors' => $this->is_approved ? [] : $this->getApprovalValidationErrors(),
+            'fd1FinalGrade' => $this->fd1_final_grade ? (float) $this->fd1_final_grade : null,
+            'fd2FinalGrade' => $this->fd2_final_grade ? (float) $this->fd2_final_grade : null,
+            'isFd1Approved' => (bool) $this->fd1_approved,
+            'isFd2Approved' => (bool) $this->fd2_approved,
+            'fd1SupervisorScore' => $this->getFD1SupervisorScore(),
+            'fd1CommitteeScore' => $this->getFD1CommitteeScore(),
+            'fd2SupervisorScore' => $this->getFD2SupervisorScore(),
+            'fd2CommitteeScore' => $this->getFD2CommitteeScore(),
         ];
     }
 }

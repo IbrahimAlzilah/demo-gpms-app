@@ -10,6 +10,9 @@ use App\Models\TimePeriod;
 use App\Models\User;
 use App\Models\ProjectMilestone;
 use App\Models\ProjectMeeting;
+use App\Models\DefenseApproval;
+use App\Models\StudentGroup;
+use App\Models\CommitteeAssignment;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -222,6 +225,9 @@ class ReportService
         $overdueMilestones = $milestonesQuery->where('completed', false)
             ->where('due_date', '<', now())->count();
 
+        $studentsReport = $this->generateStudentsReport($filters);
+        $byDefenseStatus = $studentsReport['summary']['by_defense_status'] ?? [];
+
         return [
             'kpis' => [
                 'projects' => [
@@ -240,6 +246,7 @@ class ReportService
                     'total' => $studentsTotal,
                     'registered' => $registeredCount,
                     'unregistered' => $unregisteredCount,
+                    'by_defense_status' => $byDefenseStatus,
                 ],
                 'evaluations' => [
                     'total' => $gradesTotal,
@@ -261,7 +268,7 @@ class ReportService
     {
         $dateRange = $this->getPeriodDateRange($filters['period_id'] ?? null);
 
-        $query = Project::with(['supervisor', 'students']);
+        $query = Project::with(['supervisor', 'students', 'committeeMembers', 'assignedGroup']);
 
         if ($dateRange) {
             $query->whereBetween('created_at', [$dateRange['from'], $dateRange['to']]);
@@ -276,9 +283,23 @@ class ReportService
             $query->where('specialization', $filters['project_specialization']);
         }
 
-        // Add computed phase
-        $projects = $query->get()->map(function ($project) {
+        $projectsCollection = $query->get();
+        $projectIds = $projectsCollection->pluck('id')->all();
+        $approvalsByProject = $projectIds
+            ? DefenseApproval::whereIn('project_id', $projectIds)->get()->groupBy('project_id')
+            : collect();
+
+        $projects = $projectsCollection->map(function ($project) use ($approvalsByProject) {
             $project->phase = $this->computeProjectPhase($project);
+            $project->committee_member_names = $project->committeeMembers->pluck('name')->values()->all();
+            $project->assigned_group_name = $project->assignedGroup
+                ? ($project->assignedGroup->name ?: $project->assignedGroup->group_code)
+                : null;
+            $approvals = $approvalsByProject->get($project->id, collect());
+            $fd1 = $approvals->firstWhere('defense_stage', 'fd1');
+            $fd2 = $approvals->firstWhere('defense_stage', 'fd2');
+            $project->fd1_status = $fd1 ? $fd1->status : 'not_started';
+            $project->fd2_status = $fd2 ? $fd2->status : 'not_started';
             return $project;
         });
 
@@ -296,6 +317,14 @@ class ReportService
             ],
             'projects' => $projects,
         ];
+    }
+
+    /**
+     * Compute project phase (public for use in report controller)
+     */
+    public function computeProjectPhaseForReport(Project $project): string
+    {
+        return $this->computeProjectPhase($project);
     }
 
     /**
@@ -346,6 +375,13 @@ class ReportService
 
             $projects = $projectsQuery->get();
             $studentsCount = $projects->sum('current_students');
+            $project_titles = $projects->pluck('title')->values()->all();
+
+            // Status breakdown: count by project status
+            $by_status = $projects->groupBy(function ($p) {
+                $status = $p->status;
+                return $status instanceof \BackedEnum ? $status->value : (string) $status;
+            })->map->count()->toArray();
 
             // Get average grade for projects with grades
             $grades = Grade::whereIn('project_id', $projects->pluck('id'))->get();
@@ -367,8 +403,10 @@ class ReportService
                 'department' => $supervisor->department,
                 'projects_count' => $projects->count(),
                 'students_count' => $studentsCount,
+                'by_status' => $by_status,
                 'average_grade' => $avgGrade,
                 'pending_evaluations' => $pendingEvaluations,
+                'project_titles' => $project_titles,
             ];
         });
 
@@ -379,6 +417,46 @@ class ReportService
                 'total_students' => $supervisors->sum('students_count'),
             ],
             'supervisors' => $supervisors->values(),
+        ];
+    }
+
+    /**
+     * Derive student defense/completion status from preloaded DefenseApproval and Grade data.
+     * Values: completed, ready_for_fd2, ready_for_fd1, in_progress.
+     */
+    protected function deriveDefenseStatusFromPreloaded(
+        ?int $projectId,
+        int $studentId,
+        \Illuminate\Support\Collection $approvalsByProject,
+        \Illuminate\Support\Collection $gradesByProjectStudent
+    ): array {
+        if (!$projectId) {
+            return ['defense_status' => 'in_progress', 'fd1_approved' => false, 'fd2_approved' => false];
+        }
+
+        $approvals = $approvalsByProject->get($projectId, collect());
+        $fd1 = $approvals->firstWhere('defense_stage', 'fd1');
+        $fd2 = $approvals->firstWhere('defense_stage', 'fd2');
+        $fd1Approved = $fd1 && in_array($fd1->status, ['approved', 'published']);
+        $fd2Published = $fd2 && $fd2->status === 'published';
+
+        $grade = $gradesByProjectStudent->get("{$projectId}_{$studentId}");
+        $gradeApproved = $grade && $grade->is_approved;
+
+        if ($fd2Published) {
+            $status = 'completed';
+        } elseif ($fd1Approved && !$fd2Published) {
+            $status = 'ready_for_fd2';
+        } elseif ($gradeApproved && !$fd1Approved) {
+            $status = 'ready_for_fd1';
+        } else {
+            $status = 'in_progress';
+        }
+
+        return [
+            'defense_status' => $status,
+            'fd1_approved' => $fd1Approved,
+            'fd2_approved' => $fd2Published,
         ];
     }
 
@@ -398,11 +476,14 @@ class ReportService
             });
         }
 
-        $students = $query->get()->map(function ($student) use ($dateRange) {
+        $studentList = $query->get();
+        $projectIds = [];
+
+        $rows = $studentList->map(function ($student) use ($dateRange, &$projectIds) {
             $projectQuery = DB::table('project_student')
                 ->where('student_id', $student->id)
                 ->join('projects', 'project_student.project_id', '=', 'projects.id')
-                ->select('projects.*');
+                ->select('projects.id', 'projects.title', 'projects.supervisor_id', 'projects.assigned_group_id');
 
             if ($dateRange) {
                 $projectQuery->whereBetween('project_student.created_at', [$dateRange['from'], $dateRange['to']]);
@@ -410,19 +491,22 @@ class ReportService
 
             $projectRow = $projectQuery->first();
             $isRegistered = $projectRow !== null;
+            if ($projectRow) {
+                $projectIds[$projectRow->id] = true;
+            }
 
-            // Check if in a group
             $groupQuery = DB::table('student_group_members')
                 ->where('student_id', $student->id)
                 ->join('student_groups', 'student_group_members.group_id', '=', 'student_groups.id')
                 ->join('projects', 'projects.assigned_group_id', '=', 'student_groups.id')
-                ->select('projects.id', 'projects.title', 'student_groups.id as group_id');
+                ->select('projects.id', 'projects.title', 'student_groups.id as group_id', 'student_groups.name as group_name', 'student_groups.group_code');
 
             if ($dateRange) {
                 $groupQuery->whereBetween('student_group_members.created_at', [$dateRange['from'], $dateRange['to']]);
             }
 
             $groupRow = $groupQuery->first();
+            $groupName = $groupRow ? ($groupRow->group_name ?: $groupRow->group_code) : null;
 
             return [
                 'id' => $student->id,
@@ -435,12 +519,45 @@ class ReportService
                 'project_title' => $projectRow->title ?? null,
                 'is_in_group' => $groupRow !== null,
                 'group_id' => $groupRow->group_id ?? null,
+                'group_name' => $groupName,
+                'supervisor_name' => null,
+                'defense_status' => 'in_progress',
+                'fd1_approved' => false,
+                'fd2_approved' => false,
             ];
+        });
+
+        $pidList = array_keys($projectIds);
+        $projects = $pidList ? Project::with(['supervisor', 'assignedGroup'])->whereIn('id', $pidList)->get()->keyBy('id') : collect();
+        $approvalsByProject = $pidList ? DefenseApproval::whereIn('project_id', $pidList)->get()->groupBy('project_id') : collect();
+        $gradesList = $pidList ? Grade::whereIn('project_id', $pidList)->get() : collect();
+        $gradesByProjectStudent = $gradesList->keyBy(function ($g) {
+            return $g->project_id . '_' . $g->student_id;
+        });
+
+        $students = $rows->map(function ($row) use ($projects, $approvalsByProject, $gradesByProjectStudent) {
+            $projectId = $row['project_id'];
+            $project = $projectId ? $projects->get($projectId) : null;
+            $row['supervisor_name'] = $project && $project->supervisor ? $project->supervisor->name : null;
+            if ($project && $project->assignedGroup && $row['group_name'] === null) {
+                $row['group_name'] = $project->assignedGroup->name ?: $project->assignedGroup->group_code;
+            }
+            $defense = $this->deriveDefenseStatusFromPreloaded(
+                $projectId,
+                $row['id'],
+                $approvalsByProject,
+                $gradesByProjectStudent
+            );
+            $row['defense_status'] = $defense['defense_status'];
+            $row['fd1_approved'] = $defense['fd1_approved'];
+            $row['fd2_approved'] = $defense['fd2_approved'];
+            return $row;
         });
 
         $registered = $students->where('is_registered', true);
         $unregistered = $students->where('is_registered', false);
         $inGroups = $students->where('is_in_group', true);
+        $byDefenseStatus = $students->groupBy('defense_status')->map->count()->toArray();
 
         return [
             'summary' => [
@@ -448,8 +565,196 @@ class ReportService
                 'registered' => $registered->count(),
                 'unregistered' => $unregistered->count(),
                 'in_groups' => $inGroups->count(),
+                'by_defense_status' => $byDefenseStatus,
             ],
             'students' => $students->values(),
+        ];
+    }
+
+    /**
+     * Compute overall group readiness from member defense statuses.
+     * Values: all_completed, all_ready_fd2, all_ready_fd1, mixed, in_progress.
+     */
+    protected function computeGroupReadiness(array $memberStatuses): string
+    {
+        if (empty($memberStatuses)) {
+            return 'in_progress';
+        }
+        $unique = array_unique($memberStatuses);
+        if (count($unique) === 1) {
+            return $unique[0];
+        }
+        if (in_array('completed', $memberStatuses) && count($unique) > 1) {
+            return 'mixed';
+        }
+        if (in_array('ready_for_fd2', $memberStatuses)) {
+            return 'mixed';
+        }
+        if (in_array('ready_for_fd1', $memberStatuses)) {
+            return 'mixed';
+        }
+        return 'in_progress';
+    }
+
+    /**
+     * Generate student groups report with members, per-student status (Completed, Ready for FD1, Ready for FD2),
+     * and clear overall readiness status per group.
+     */
+    public function generateStudentGroupsReport(array $filters = []): array
+    {
+        $dateRange = $this->getPeriodDateRange($filters['period_id'] ?? null);
+
+        $query = StudentGroup::with(['leader.studentProfile', 'members.studentProfile', 'assignedProjects.supervisor']);
+
+        if ($dateRange) {
+            $query->whereBetween('created_at', [$dateRange['from'], $dateRange['to']]);
+        }
+
+        $groups = $query->get();
+        $projectIds = $groups->map(fn ($g) => $g->assignedProjects->first()?->id)->filter()->unique()->values()->all();
+        $approvalsByProject = $projectIds
+            ? DefenseApproval::whereIn('project_id', $projectIds)->get()->groupBy('project_id')
+            : collect();
+        $gradesList = $projectIds ? Grade::whereIn('project_id', $projectIds)->get() : collect();
+        $gradesByProjectStudent = $gradesList->keyBy(function ($g) {
+            return $g->project_id . '_' . $g->student_id;
+        });
+
+        $groupRows = $groups->map(function ($group) use ($approvalsByProject, $gradesByProjectStudent) {
+            $project = $group->assignedProjects->first();
+            $projectId = $project?->id;
+
+            $memberIds = $group->members->pluck('id')->push($group->leader_id)->filter()->unique()->values()->all();
+            $membersWithStatus = collect($memberIds)->map(function ($studentId) use ($group, $projectId, $approvalsByProject, $gradesByProjectStudent) {
+                $user = $group->leader_id === $studentId ? $group->leader : $group->members->firstWhere('id', $studentId);
+                $defense = $this->deriveDefenseStatusFromPreloaded(
+                    $projectId,
+                    (int) $studentId,
+                    $approvalsByProject,
+                    $gradesByProjectStudent
+                );
+                $studentIdAttr = $user && $user->relationLoaded('studentProfile') && $user->studentProfile ? $user->studentProfile->student_id : null;
+                return [
+                    'id' => $studentId,
+                    'name' => $user ? $user->name : null,
+                    'student_id' => $studentIdAttr,
+                    'defense_status' => $defense['defense_status'],
+                    'fd1_approved' => $defense['fd1_approved'],
+                    'fd2_approved' => $defense['fd2_approved'],
+                ];
+            })->values()->all();
+
+            $statuses = array_column($membersWithStatus, 'defense_status');
+            $overall_readiness = $this->computeGroupReadiness($statuses);
+
+            return [
+                'id' => $group->id,
+                'name' => $group->name,
+                'group_code' => $group->group_code,
+                'leader_id' => $group->leader_id,
+                'leader_name' => $group->leader ? $group->leader->name : null,
+                'member_count' => $group->getTotalMemberCount(),
+                'member_names' => $group->members->pluck('name')->push($group->leader?->name)->filter()->values()->all(),
+                'members' => $membersWithStatus,
+                'overall_readiness' => $overall_readiness,
+                'project_id' => $projectId,
+                'project_title' => $project?->title,
+                'supervisor_name' => $project && $project->supervisor ? $project->supervisor->name : null,
+            ];
+        });
+
+        $byReadiness = $groupRows->groupBy('overall_readiness')->map->count()->toArray();
+
+        return [
+            'summary' => [
+                'total' => $groupRows->count(),
+                'by_readiness' => $byReadiness,
+            ],
+            'groups' => $groupRows->values(),
+        ];
+    }
+
+    /**
+     * Generate discussion committees report: projects with assigned committee (FD1/FD2),
+     * plus committee member workload (number of assigned projects per member).
+     */
+    public function generateDiscussionCommitteesReport(array $filters = []): array
+    {
+        $dateRange = $this->getPeriodDateRange($filters['period_id'] ?? null);
+
+        $projectIds = CommitteeAssignment::query()->distinct()->pluck('project_id');
+        $query = Project::with(['supervisor', 'committeeMembers', 'students'])
+            ->whereIn('id', $projectIds);
+
+        if ($dateRange) {
+            $query->whereBetween('created_at', [$dateRange['from'], $dateRange['to']]);
+        }
+        if (isset($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+        if (isset($filters['supervisor_id'])) {
+            $query->where('supervisor_id', $filters['supervisor_id']);
+        }
+
+        $projects = $query->get();
+        $pidList = $projects->pluck('id')->all();
+        $approvalsByProject = $pidList
+            ? DefenseApproval::whereIn('project_id', $pidList)->get()->groupBy('project_id')
+            : collect();
+
+        $rows = $projects->map(function ($project) use ($approvalsByProject) {
+            $approvals = $approvalsByProject->get($project->id, collect());
+            $fd1 = $approvals->firstWhere('defense_stage', 'fd1');
+            $fd2 = $approvals->firstWhere('defense_stage', 'fd2');
+            return [
+                'id' => $project->id,
+                'title' => $project->title,
+                'status' => $project->status?->value ?? $project->status,
+                'supervisor_name' => $project->supervisor ? $project->supervisor->name : null,
+                'committee_member_names' => $project->committeeMembers->pluck('name')->values()->all(),
+                'committee_member_ids' => $project->committeeMembers->pluck('id')->values()->all(),
+                'committee_member_emails' => $project->committeeMembers->pluck('email')->values()->all(),
+                'fd1_status' => $fd1 ? $fd1->status : 'not_started',
+                'fd2_status' => $fd2 ? $fd2->status : 'not_started',
+                'students_count' => $project->students->count(),
+            ];
+        });
+
+        // Build member workload: for each committee member, count projects and list with FD1/FD2
+        $memberWorkload = [];
+        foreach ($rows as $row) {
+            $names = $row['committee_member_names'];
+            $ids = $row['committee_member_ids'];
+            $emails = $row['committee_member_emails'] ?? [];
+            foreach (array_keys($ids) as $i) {
+                $mid = $ids[$i];
+                if (!isset($memberWorkload[$mid])) {
+                    $memberWorkload[$mid] = [
+                        'id' => $mid,
+                        'name' => $names[$i] ?? '',
+                        'email' => $emails[$i] ?? null,
+                        'projects_count' => 0,
+                        'projects' => [],
+                    ];
+                }
+                $memberWorkload[$mid]['projects_count']++;
+                $memberWorkload[$mid]['projects'][] = [
+                    'project_id' => $row['id'],
+                    'title' => $row['title'],
+                    'fd1_status' => $row['fd1_status'],
+                    'fd2_status' => $row['fd2_status'],
+                ];
+            }
+        }
+        $memberWorkload = array_values($memberWorkload);
+
+        return [
+            'summary' => [
+                'total' => $rows->count(),
+                'total_committee_members' => count($memberWorkload),
+            ],
+            'projects' => $rows->values(),
+            'member_workload' => $memberWorkload,
         ];
     }
 

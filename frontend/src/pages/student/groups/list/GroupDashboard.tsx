@@ -41,7 +41,7 @@ export function GroupDashboard({
         }
     }
 
-    const memberCount = group.members?.length ?? 0
+    const memberCount = group.memberCount ?? group.members?.length ?? 0
     const maxMembers = group.maxMembers ?? 5
     const statusText = projectStatus ?? t('dashboard.student.notRegisteredInProject')
 

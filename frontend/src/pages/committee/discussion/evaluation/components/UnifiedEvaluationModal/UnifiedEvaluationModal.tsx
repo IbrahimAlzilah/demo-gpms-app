@@ -10,8 +10,6 @@ import {
   Input,
   Label,
   Textarea,
-  Alert,
-  AlertDescription,
   Badge,
 } from "@/components/ui";
 import { LoadingSpinner } from "@/components/common";
@@ -36,7 +34,7 @@ import { committeeEvaluationService } from "../../api/evaluation.service";
 import { useSubmitFinalGrade } from "../../hooks/useEvaluationOperations";
 import type { Project } from "@/types/project.types";
 import type { User as UserType } from "@/types/user.types";
-import type { Grade } from "@/types/evaluation.types";
+import type { Grade, DefenseStage } from "@/types/evaluation.types";
 import type { EvaluationMode, StudentGradeEntry } from "../../types/Evaluation.types";
 
 export type EvaluationRole = "discussion_committee" | "supervisor";
@@ -50,9 +48,13 @@ export interface UnifiedEvaluationModalProps {
   /** For supervisor: fetch project via supervisor API */
   fetchProject?: (id: string) => Promise<Project | null>;
   fetchGrades?: (projectId: string) => Promise<Grade[]>;
+  defenseStage?: DefenseStage;
+  /** For supervisor: check if stage is locked (read-only after approval) */
+  getLocked?: (projectId: string) => Promise<boolean>;
   submitGrade?: (params: {
     projectId: string;
     studentId: string;
+    defenseStage?: DefenseStage;
     grade: {
       score: number;
       maxScore: number;
@@ -71,6 +73,8 @@ export function UnifiedEvaluationModal({
   fetchProject: fetchProjectProp,
   fetchGrades: fetchGradesProp,
   submitGrade: submitGradeProp,
+  defenseStage,
+  getLocked,
 }: UnifiedEvaluationModalProps) {
   const { t } = useTranslation();
   const { toastSuccess, toastError } = useToast();
@@ -82,7 +86,9 @@ export function UnifiedEvaluationModal({
   const { isPeriodActive: isPhase2Active } = usePeriodCheck(
     "final_defense_phase_2"
   );
-  const isPeriodActiveComputed = isPeriodActive || isPhase2Active;
+  // Supervisors can evaluate anytime (only locked after approval); committee follows period
+  const isPeriodActiveComputed =
+    role === "supervisor" ? true : isPeriodActive || isPhase2Active;
 
   // State
   const [evaluationMode, setEvaluationMode] = useState<EvaluationMode>("group");
@@ -97,6 +103,7 @@ export function UnifiedEvaluationModal({
     null
   );
 
+  // Queries
   // Queries
   const projectQuery = useQuery({
     queryKey: [
@@ -119,12 +126,28 @@ export function UnifiedEvaluationModal({
         ? "discussion-grades"
         : "supervisor-grades",
       projectId,
+      defenseStage,
     ],
-    queryFn: () =>
-      role === "discussion_committee"
+    queryFn: async () => {
+      if (fetchGradesProp) return fetchGradesProp(projectId);
+
+      if (defenseStage) {
+        if (role === "discussion_committee") {
+          return committeeEvaluationService.getDefenseEvaluations(projectId, defenseStage);
+        }
+      }
+      return role === "discussion_committee"
         ? committeeEvaluationService.getEvaluationsByProject(projectId)
-        : fetchGradesProp?.(projectId) ?? Promise.resolve([]),
+        : Promise.resolve([]);
+    },
     enabled: open && !!projectId,
+    staleTime: 0,
+  });
+
+  const lockedQuery = useQuery({
+    queryKey: ["supervisor-defense-locked", projectId, defenseStage],
+    queryFn: () => (getLocked ? getLocked(projectId) : Promise.resolve(false)),
+    enabled: open && !!projectId && role === "supervisor" && !!getLocked,
     staleTime: 0,
   });
 
@@ -166,8 +189,10 @@ export function UnifiedEvaluationModal({
     setStudentGrades(next);
   }, [open, students, grades, role]);
 
-  // Check if grades are locked
-  const gradesLocked = grades.some((g: Grade) => g.isApproved === true);
+  // Check if grades are locked (supervisor: by stage; committee: by approval on grades)
+  const gradesLocked =
+    (role === "supervisor" && lockedQuery.data === true) ||
+    grades.some((g: Grade) => g.isApproved === true);
 
   // Apply group grade to all students
   const handleApplyGroupGrade = useCallback(() => {
@@ -237,10 +262,14 @@ export function UnifiedEvaluationModal({
     students.forEach((s) => {
       const entry = studentGrades[s.id];
       if (!entry?.score?.trim() || !entry?.maxScore?.trim()) return;
-      const score = parseFloat(entry.score);
-      const maxScore = parseFloat(entry.maxScore);
-      if (isNaN(score) || isNaN(maxScore) || score < 0 || score > maxScore)
+      let score = parseFloat(entry.score);
+      let maxScore = parseFloat(entry.maxScore);
+      if (role === "supervisor" && defenseStage) {
+        maxScore = 100;
+        if (isNaN(score) || score < 0 || score > 100) return;
+      } else if (isNaN(score) || isNaN(maxScore) || score < 0 || score > maxScore) {
         return;
+      }
       toSubmit.push({
         studentId: s.id,
         score,
@@ -260,6 +289,7 @@ export function UnifiedEvaluationModal({
         ? (p: {
           projectId: string;
           studentId: string;
+          defenseStage?: DefenseStage;
           grade: {
             score: number;
             maxScore: number;
@@ -269,12 +299,21 @@ export function UnifiedEvaluationModal({
         }) => submitGradeProp(p)
         : (
           p: Parameters<typeof committeeEvaluationService.submitFinalGrade>[0]
-        ) => submitCommitteeGrade.mutateAsync(p);
+        ) => {
+          if (defenseStage) {
+            return committeeEvaluationService.submitDefenseEvaluation({
+              ...p,
+              defenseStage
+            });
+          }
+          return submitCommitteeGrade.mutateAsync(p);
+        };
 
       for (const item of toSubmit) {
         await submit({
           projectId,
           studentId: item.studentId,
+          ...(defenseStage ? { defenseStage } : {}),
           grade: {
             score: item.score,
             maxScore: item.maxScore,
@@ -561,15 +600,15 @@ export function UnifiedEvaluationModal({
               <div
                 key={student.id}
                 className={`overflow-hidden rounded-xl border transition-all duration-200 ${isExpanded
-                    ? "border-primary/30 shadow-md"
-                    : "border-border/50 hover:border-border"
+                  ? "border-primary/30 shadow-md"
+                  : "border-border/50 hover:border-border"
                   }`}
               >
                 {/* Student Header Row */}
                 <div
                   className={`flex items-center justify-between gap-4 p-4 cursor-pointer transition-colors ${isExpanded
-                      ? "bg-primary/5"
-                      : "hover:bg-muted/50"
+                    ? "bg-primary/5"
+                    : "hover:bg-muted/50"
                     }`}
                   onClick={() =>
                     setExpandedStudentId(isExpanded ? null : student.id)
@@ -578,8 +617,8 @@ export function UnifiedEvaluationModal({
                   <div className="flex items-center gap-3">
                     <div
                       className={`flex h-10 w-10 items-center justify-center rounded-full font-semibold text-sm ${hasGrade
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                          : "bg-muted text-muted-foreground"
+                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                        : "bg-muted text-muted-foreground"
                         }`}
                     >
                       {hasGrade ? (

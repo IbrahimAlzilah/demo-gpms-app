@@ -62,7 +62,7 @@ export function GroupJoinRequestsList({
   }
 
   const pendingRequests = joinRequests?.filter((r) => r.status === 'pending') || []
-  const memberCount = group.members?.length ?? 0
+  const memberCount = group.memberCount ?? group.members?.length ?? 0
   const maxMembers = group.maxMembers ?? 5
   const isGroupFull = memberCount >= maxMembers
 

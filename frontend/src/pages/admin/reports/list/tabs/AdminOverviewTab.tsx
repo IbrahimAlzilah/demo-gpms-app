@@ -48,7 +48,7 @@ export function AdminOverviewTab({ filters }: AdminOverviewTabProps) {
             <p className="text-2xl font-bold mt-2">{value}</p>
             {subtext && <div className="text-xs text-muted-foreground mt-1">{subtext}</div>}
           </div>
-          <div className={`p-3 rounded-full bg-opacity-10 ${colorClass.replace('text-', 'bg-')}`}>{icon}</div>
+          <div className={`p-3 rounded-full bg-opacity-10 ${colorClass.replace('text-', '1bg-')}`}>{icon}</div>
         </div>
       </CardContent>
     </Card>

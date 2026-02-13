@@ -70,6 +70,17 @@ export function StudentsTab({ filters }: StudentsTabProps) {
       cell: ({ row }: any) => row.original.project_title || <span className="text-muted-foreground">-</span>,
     },
     {
+      accessorKey: 'defense_status',
+      header: t('committee.reports.defenseStatus'),
+      cell: ({ row }: any) => {
+        const status = row.original.defense_status
+        const key = status ? `committee.reports.defenseStatus.${status}` : 'committee.reports.defenseStatus.in_progress'
+        const label = t(key)
+        const color = status === 'completed' ? 'text-green-600' : status === 'ready_for_fd2' ? 'text-blue-600' : status === 'ready_for_fd1' ? 'text-amber-600' : 'text-muted-foreground'
+        return <span className={color}>{label}</span>
+      },
+    },
+    {
       accessorKey: 'is_in_group',
       header: t('committee.reports.inGroup'),
       cell: ({ row }: any) => row.original.is_in_group ? t('common.yes') : t('common.no'),
@@ -137,6 +148,24 @@ export function StudentsTab({ filters }: StudentsTabProps) {
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {data.summary?.by_defense_status && Object.keys(data.summary.by_defense_status).length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t('committee.reports.byDefenseStatus')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-4">
+              {(['completed', 'ready_for_fd2', 'ready_for_fd1', 'in_progress'] as const).map((status) => (
+                <div key={status} className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">{t(`committee.reports.defenseStatus.${status}`)}:</span>
+                  <span className="font-semibold">{data.summary?.by_defense_status?.[status] ?? 0}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       <DataTable

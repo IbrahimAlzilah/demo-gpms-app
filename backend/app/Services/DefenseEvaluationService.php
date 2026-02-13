@@ -37,6 +37,11 @@ class DefenseEvaluationService
             throw new \Exception('Unauthorized to grade this project.');
         }
 
+        // Validate student belongs to the project
+        if (!$project->students->contains('id', $student->id)) {
+            throw new \Exception('Student is not part of this project.');
+        }
+
         // Check if stage is locked
         $this->ensureStageNotLocked($project, $stage);
 

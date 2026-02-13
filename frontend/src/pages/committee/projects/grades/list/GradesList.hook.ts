@@ -10,7 +10,7 @@ export function useGradesList() {
   const { isPeriodActive, isLoading: periodLoading } = usePeriodCheck('grade_approval')
   
   const [state, setState] = useState<GradesListState>({
-    approvalFilter: 'pending',
+    approvalFilter: 'all',
     selectedGrade: null,
     action: null,
     showDialog: false,

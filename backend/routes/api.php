@@ -232,10 +232,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('committees/distribute', [App\Http\Controllers\ProjectsCommittee\CommitteeController::class, 'distribute']);
         Route::get('committees/members', [App\Http\Controllers\ProjectsCommittee\CommitteeController::class, 'members']);
         Route::get('committees/projects', [App\Http\Controllers\ProjectsCommittee\CommitteeController::class, 'projectsForDiscussion']);
-        Route::get('committees/projects/{project}/history', [App\Http\Controllers\ProjectsCommittee\CommitteeController::class, 'assignmentHistory']);
         Route::delete('committees/projects/{project}/assignment', [App\Http\Controllers\ProjectsCommittee\CommitteeController::class, 'removeAssignment']);
         Route::get('grades', [App\Http\Controllers\ProjectsCommittee\GradeController::class, 'index']);
         Route::get('grades/{grade}', [App\Http\Controllers\ProjectsCommittee\GradeController::class, 'show']);
+        Route::put('grades/{grade}', [App\Http\Controllers\ProjectsCommittee\GradeController::class, 'update'])
+            ->middleware('window:grade_approval');
         Route::post('grades/{grade}/approve', [App\Http\Controllers\ProjectsCommittee\GradeController::class, 'approve'])
             ->middleware('window:grade_approval');
         Route::post('grades/publish', [App\Http\Controllers\ProjectsCommittee\GradeController::class, 'publish']);
@@ -247,6 +248,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('reports/requests', [App\Http\Controllers\ProjectsCommittee\ReportController::class, 'requests']);
         Route::get('reports/deadlines', [App\Http\Controllers\ProjectsCommittee\ReportController::class, 'deadlines']);
         Route::get('reports/history', [App\Http\Controllers\ProjectsCommittee\ReportController::class, 'history']);
+        Route::get('reports/student-groups', [App\Http\Controllers\ProjectsCommittee\ReportController::class, 'studentGroups']);
+        Route::get('reports/discussion-committees', [App\Http\Controllers\ProjectsCommittee\ReportController::class, 'discussionCommittees']);
         Route::get('reports/export/pdf', [App\Http\Controllers\ProjectsCommittee\ReportExportController::class, 'pdf']);
         Route::get('reports/export/excel', [App\Http\Controllers\ProjectsCommittee\ReportExportController::class, 'excel']);
         // Defense Evaluation routes (FD1 & FD2) - Project Committee has full control

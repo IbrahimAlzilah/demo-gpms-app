@@ -14,6 +14,7 @@ export function useSupervisorEvaluationList() {
   const { t } = useTranslation();
   const [state, setState] = useState<SupervisorEvaluationListState>({
     selectedProjectId: null,
+    selectedStage: null,
     showEvaluationModal: false,
   });
   const [globalFilter, setGlobalFilter] = useState("");
@@ -30,8 +31,8 @@ export function useSupervisorEvaluationList() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["supervisor-evaluation-projects"],
-    queryFn: () => evaluationService.getProjects(),
+    queryKey: ["supervisor-defense-evaluation-projects"],
+    queryFn: () => evaluationService.getDefenseEvaluationProjects(),
     staleTime: 0,
     refetchOnMount: true,
   });
@@ -43,8 +44,7 @@ export function useSupervisorEvaluationList() {
     return projectItems.filter(
       (item) =>
         item.project.title.toLowerCase().includes(q) ||
-        item.project.description?.toLowerCase().includes(q) ||
-        item.project.supervisor?.name?.toLowerCase().includes(q),
+        item.project.description?.toLowerCase().includes(q),
     );
   }, [projectItems, globalFilter]);
 
@@ -57,13 +57,6 @@ export function useSupervisorEvaluationList() {
         sort.desc
           ? b.project.title.localeCompare(a.project.title)
           : a.project.title.localeCompare(b.project.title),
-      );
-    }
-    if (sort.id === "evaluationProgress") {
-      sorted.sort((a, b) =>
-        sort.desc
-          ? b.evaluationProgress - a.evaluationProgress
-          : a.evaluationProgress - b.evaluationProgress,
       );
     }
     return sorted;

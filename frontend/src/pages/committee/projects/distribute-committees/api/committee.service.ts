@@ -6,6 +6,7 @@ export interface CommitteeAssignment {
   projectId: string;
   committeeMemberIds: string[];
   defenseStage: "FD1" | "FD2";
+  defenseScheduledAt?: string | null;
 }
 
 export interface MemberProfile {
@@ -47,17 +48,6 @@ export interface CommitteeMemberProfile extends User {
   availability: "available" | "moderate" | "busy" | "unavailable";
 }
 
-export interface AssignmentHistoryRecord {
-  id: string;
-  action: "assigned" | "removed" | "redistributed";
-  defense_stage: "FD1" | "FD2";
-  current_members: Array<{ id: string; name: string }>;
-  previous_members: Array<{ id: string; name: string }>;
-  performed_by: { id: string; name: string };
-  notes?: string;
-  created_at: string;
-}
-
 export interface EvaluationProgress {
   evaluated: number;
   total: number;
@@ -73,12 +63,23 @@ export type ProjectFilterStatus =
 
 export type DefensePhaseFilter = "all" | "final_defense_1" | "final_defense_2";
 
+export type WorkflowStage =
+  | "initial_stage"
+  | "document_submission"
+  | "committee_evaluation"
+  | "grading_completed";
+
 export interface ProjectForDiscussion extends Project {
   documentCount: number;
   hasCommitteeAssigned: boolean;
   committeeCount: number;
+  committeeMembers?: Array<{ id: string; name: string }>;
   evaluationProgress: EvaluationProgress;
   readyForDefensePhase?: "final_defense_1" | "final_defense_2" | null;
+  workflowStage?: WorkflowStage | null;
+  defenseStageDisplay?: string | null;
+  defenseScheduledAt?: string | null;
+  fd1CommitteePreview?: Array<{ id: string; name: string }> | null;
 }
 
 export const committeeDistributionService = {
@@ -141,6 +142,7 @@ export const committeeDistributionService = {
           project_id: a.projectId,
           committee_member_ids: a.committeeMemberIds,
           defense_stage: a.defenseStage,
+          defense_scheduled_at: a.defenseScheduledAt ?? null,
         })),
       },
     );
@@ -154,17 +156,5 @@ export const committeeDistributionService = {
     await apiClient.delete(
       `/projects-committee/committees/projects/${projectId}/assignment`,
     );
-  },
-
-  /**
-   * Get assignment history for a specific project
-   */
-  getAssignmentHistory: async (
-    projectId: string,
-  ): Promise<AssignmentHistoryRecord[]> => {
-    const response = await apiClient.get<AssignmentHistoryRecord[]>(
-      `/projects-committee/committees/projects/${projectId}/history`,
-    );
-    return Array.isArray(response.data) ? response.data : [];
   },
 };

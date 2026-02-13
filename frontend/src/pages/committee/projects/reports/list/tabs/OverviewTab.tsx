@@ -49,7 +49,7 @@ export function OverviewTab({ filters }: OverviewTabProps) {
             <p className="text-2xl font-bold mt-2">{value}</p>
             {subtext && <div className="text-xs text-muted-foreground mt-1">{subtext}</div>}
           </div>
-          <div className={`p-3 rounded-full bg-opacity-10 ${colorClass.replace('text-', 'bg-')}`}>
+          <div className={`p-3 rounded-full bg-opacity-10 ${colorClass.replace('text-', '1bg-')}`}>
             {icon}
           </div>
         </div>
@@ -184,6 +184,24 @@ export function OverviewTab({ filters }: OverviewTabProps) {
           </CardContent>
         </Card>
       </div>
+
+      {kpis.students?.by_defense_status && Object.keys(kpis.students.by_defense_status).length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-semibold">{t('committee.reports.studentsByDefenseStatus')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {(['completed', 'ready_for_fd2', 'ready_for_fd1', 'in_progress'] as const).map((status) => (
+                <div key={status} className="rounded-lg border p-3">
+                  <p className="text-xs text-muted-foreground font-medium">{t(`committee.reports.defenseStatus.${status}`)}</p>
+                  <p className="text-2xl font-bold mt-1">{kpis.students.by_defense_status[status] ?? 0}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

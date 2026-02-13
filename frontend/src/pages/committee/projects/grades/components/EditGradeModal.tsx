@@ -13,10 +13,11 @@ interface EditGradeModalProps {
     onOpenChange: (open: boolean) => void
     grade: Grade | null
     mode: 'edit' | 'view'
+    stage?: 'fd1' | 'fd2'
     onSuccess: () => void
 }
 
-export function EditGradeModal({ open, onOpenChange, grade, mode, onSuccess }: EditGradeModalProps) {
+export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSuccess }: EditGradeModalProps) {
     const { t } = useTranslation()
     const { toastSuccess, toastError } = useToast()
     const [isLoading, setIsLoading] = useState(false)
@@ -27,15 +28,25 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, onSuccess }: E
 
     useEffect(() => {
         if (grade) {
-            const sup = grade.supervisorScore ?? grade.supervisorGrade?.score ?? grade.displaySupervisorGrade?.score
-            const com = grade.committeeScore ?? grade.committeeGrade?.score ?? grade.displayCommitteeGrade?.score
-            const fin = grade.finalGrade
+            let sup, com, fin
+
+            if (stage === 'fd1') {
+                fin = grade.fd1FinalGrade
+                // FD1 specific components not currently stored on grade object in same way
+                // Leave empty or populate if we add them to GradeResource
+            } else if (stage === 'fd2') {
+                fin = grade.fd2FinalGrade
+            } else {
+                sup = grade.supervisorScore ?? grade.supervisorGrade?.score ?? grade.displaySupervisorGrade?.score
+                com = grade.committeeScore ?? grade.committeeGrade?.score ?? grade.displayCommitteeGrade?.score
+                fin = grade.finalGrade
+            }
 
             setSupervisorScore(sup?.toString() ?? '')
             setCommitteeScore(com?.toString() ?? '')
             setFinalGrade(fin?.toString() ?? '')
         }
-    }, [grade])
+    }, [grade, stage])
 
     const handleSave = async () => {
         if (!grade) return
@@ -52,11 +63,19 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, onSuccess }: E
 
         try {
             setIsLoading(true)
-            await committeeGradeService.update(grade.id, {
-                supervisorScore: sScore,
-                committeeScore: cScore,
-                finalGrade: fGrade
-            })
+            const payload: any = {}
+
+            if (stage === 'fd1') {
+                payload.fd1FinalGrade = fGrade
+            } else if (stage === 'fd2') {
+                payload.fd2FinalGrade = fGrade
+            } else {
+                payload.supervisorScore = sScore
+                payload.committeeScore = cScore
+                payload.finalGrade = fGrade
+            }
+
+            await committeeGradeService.update(grade.id, payload)
             toastSuccess(t('committee.grades.updateSuccess'))
             onSuccess()
             onOpenChange(false)
@@ -68,6 +87,7 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, onSuccess }: E
     }
 
     const isReadOnly = mode === 'view' || grade?.isApproved
+    const isStageGrade = !!stage
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -75,6 +95,7 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, onSuccess }: E
                 <DialogHeader>
                     <DialogTitle>
                         {mode === 'view' ? t('committee.grades.viewDetails') : t('committee.grades.editGrade')}
+                        {stage ? ` - ${stage.toUpperCase()}` : ''}
                     </DialogTitle>
                     <DialogDescription>
                         {grade?.project?.title} - {grade?.student?.name}
@@ -82,53 +103,57 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, onSuccess }: E
                 </DialogHeader>
 
                 <div className="grid gap-6 py-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="supervisorScore">{t('committee.grades.supervisorGrade')}</Label>
-                        <div className="flex items-center gap-2">
-                            <Input
-                                id="supervisorScore"
-                                type="number"
-                                value={supervisorScore}
-                                onChange={(e) => setSupervisorScore(e.target.value)}
-                                disabled={isReadOnly}
-                                className="w-full"
-                                max={100}
-                                min={0}
-                            />
-                            <span className="text-muted-foreground whitespace-nowrap">
-                                / {grade?.supervisorGrade?.maxScore ?? 100}
-                            </span>
-                        </div>
-                        {grade?.displaySupervisorGrade?.evaluatedBy && (
-                            <p className="text-xs text-muted-foreground">
-                                By: {grade.displaySupervisorGrade.evaluatedBy}
-                            </p>
-                        )}
-                    </div>
+                    {!isStageGrade && (
+                        <>
+                            <div className="grid gap-2">
+                                <Label htmlFor="supervisorScore">{t('committee.grades.supervisorGrade')}</Label>
+                                <div className="flex items-center gap-2">
+                                    <Input
+                                        id="supervisorScore"
+                                        type="number"
+                                        value={supervisorScore}
+                                        onChange={(e) => setSupervisorScore(e.target.value)}
+                                        disabled={isReadOnly}
+                                        className="w-full"
+                                        max={100}
+                                        min={0}
+                                    />
+                                    <span className="text-muted-foreground whitespace-nowrap">
+                                        / {grade?.supervisorGrade?.maxScore ?? 100}
+                                    </span>
+                                </div>
+                                {grade?.displaySupervisorGrade?.evaluatedBy && (
+                                    <p className="text-xs text-muted-foreground">
+                                        By: {grade.displaySupervisorGrade.evaluatedBy}
+                                    </p>
+                                )}
+                            </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="committeeScore">{t('committee.grades.committeeGrade')}</Label>
-                        <div className="flex items-center gap-2">
-                            <Input
-                                id="committeeScore"
-                                type="number"
-                                value={committeeScore}
-                                onChange={(e) => setCommitteeScore(e.target.value)}
-                                disabled={isReadOnly}
-                                className="w-full"
-                                max={100}
-                                min={0}
-                            />
-                            <span className="text-muted-foreground whitespace-nowrap">
-                                / {grade?.committeeGrade?.maxScore ?? 100}
-                            </span>
-                        </div>
-                        {grade?.displayCommitteeGrade?.committeeMembers && grade.displayCommitteeGrade.committeeMembers.length > 0 && (
-                            <p className="text-xs text-muted-foreground">
-                                Evaluators: {grade.displayCommitteeGrade.committeeMembers.length}
-                            </p>
-                        )}
-                    </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="committeeScore">{t('committee.grades.committeeGrade')}</Label>
+                                <div className="flex items-center gap-2">
+                                    <Input
+                                        id="committeeScore"
+                                        type="number"
+                                        value={committeeScore}
+                                        onChange={(e) => setCommitteeScore(e.target.value)}
+                                        disabled={isReadOnly}
+                                        className="w-full"
+                                        max={100}
+                                        min={0}
+                                    />
+                                    <span className="text-muted-foreground whitespace-nowrap">
+                                        / {grade?.committeeGrade?.maxScore ?? 100}
+                                    </span>
+                                </div>
+                                {grade?.displayCommitteeGrade?.committeeMembers && grade.displayCommitteeGrade.committeeMembers.length > 0 && (
+                                    <p className="text-xs text-muted-foreground">
+                                        Evaluators: {grade.displayCommitteeGrade.committeeMembers.length}
+                                    </p>
+                                )}
+                            </div>
+                        </>
+                    )}
 
                     <div className="grid gap-2">
                         <Label htmlFor="finalGrade">{t('committee.grades.finalGrade')}</Label>

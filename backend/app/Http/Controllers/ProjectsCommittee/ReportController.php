@@ -5,6 +5,7 @@ namespace App\Http\Controllers\ProjectsCommittee;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ReportFiltersRequest;
 use App\Http\Traits\HasTableQuery;
+use App\Models\DefenseApproval;
 use App\Models\Project;
 use App\Services\ReportService;
 use Illuminate\Http\JsonResponse;
@@ -52,8 +53,8 @@ class ReportController extends Controller
     {
         $filters = $request->validated();
 
-        // Get base projects query with filters
-        $baseQuery = Project::with(['supervisor', 'students']);
+        // Get base projects query with filters (committee + assigned group for report)
+        $baseQuery = Project::with(['supervisor', 'students', 'committeeMembers', 'assignedGroup']);
         $this->applyCommonFiltersToQuery($baseQuery, $filters);
 
         // Apply search if provided
@@ -74,12 +75,37 @@ class ReportController extends Controller
 
         // Get paginated response
         $response = $this->getPaginatedResponse($baseQuery, $request);
+        $projects = $response['data'];
+
+        $projectIds = $projects->pluck('id')->unique()->values()->all();
+        $approvalsByProject = $projectIds
+            ? DefenseApproval::whereIn('project_id', $projectIds)->get()->groupBy('project_id')
+            : collect();
+
+        $projectsData = $projects->map(function ($project) use ($approvalsByProject) {
+            $approvals = $approvalsByProject->get($project->id, collect());
+            $fd1 = $approvals->firstWhere('defense_stage', 'fd1');
+            $fd2 = $approvals->firstWhere('defense_stage', 'fd2');
+            $fd1Status = $fd1 ? $fd1->status : 'not_started';
+            $fd2Status = $fd2 ? $fd2->status : 'not_started';
+
+            $item = $project->toArray();
+            $item['committee_member_names'] = $project->committeeMembers->pluck('name')->values()->all();
+            $item['assigned_group_name'] = $project->assignedGroup
+                ? ($project->assignedGroup->name ?: $project->assignedGroup->group_code)
+                : null;
+            $item['fd1_status'] = $fd1Status;
+            $item['fd2_status'] = $fd2Status;
+            $item['phase'] = $this->reportService->computeProjectPhaseForReport($project);
+
+            return $item;
+        });
 
         return response()->json([
             'success' => true,
             'data' => [
                 'summary' => $summaryQuery['summary'],
-                'projects' => $response['data'],
+                'projects' => $projectsData,
                 'pagination' => $response['pagination'],
             ],
         ]);
@@ -255,6 +281,80 @@ class ReportController extends Controller
     {
         $periodsCount = (int) $request->get('periods_count', 5);
         $report = $this->reportService->generateHistoryReport($periodsCount);
+
+        return response()->json([
+            'success' => true,
+            'data' => $report,
+        ]);
+    }
+
+    /**
+     * Get student groups report
+     */
+    public function studentGroups(ReportFiltersRequest $request): JsonResponse
+    {
+        $filters = $request->validated();
+        $report = $this->reportService->generateStudentGroupsReport($filters);
+
+        $groups = collect($report['groups']);
+        if ($request->has('page') || $request->has('pageSize')) {
+            $page = (int) $request->get('page', 1);
+            $pageSize = (int) $request->get('pageSize', 10);
+            $total = $groups->count();
+            $totalPages = (int) ceil($total / $pageSize);
+            $paginated = $groups->skip(($page - 1) * $pageSize)->take($pageSize)->values();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'summary' => $report['summary'],
+                    'groups' => $paginated,
+                    'pagination' => [
+                        'page' => $page,
+                        'pageSize' => $pageSize,
+                        'total' => $total,
+                        'totalPages' => $totalPages,
+                    ],
+                ],
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $report,
+        ]);
+    }
+
+    /**
+     * Get discussion committees report
+     */
+    public function discussionCommittees(ReportFiltersRequest $request): JsonResponse
+    {
+        $filters = $request->validated();
+        $report = $this->reportService->generateDiscussionCommitteesReport($filters);
+
+        $projects = collect($report['projects']);
+        if ($request->has('page') || $request->has('pageSize')) {
+            $page = (int) $request->get('page', 1);
+            $pageSize = (int) $request->get('pageSize', 10);
+            $total = $projects->count();
+            $totalPages = (int) ceil($total / $pageSize);
+            $paginated = $projects->skip(($page - 1) * $pageSize)->take($pageSize)->values();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'summary' => $report['summary'],
+                    'projects' => $paginated,
+                    'pagination' => [
+                        'page' => $page,
+                        'pageSize' => $pageSize,
+                        'total' => $total,
+                        'totalPages' => $totalPages,
+                    ],
+                ],
+            ]);
+        }
 
         return response()->json([
             'success' => true,

@@ -25,15 +25,12 @@ class GradeController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Grade::with(['project', 'student', 'approver']);
+        $query = Grade::with(['project.defenseEvaluations', 'student', 'approver']);
 
-        // Filter by approval status
+        // Filter by approval status only when explicitly requested (omit for "All")
         if ($request->has('is_approved')) {
             $isApproved = filter_var($request->is_approved, FILTER_VALIDATE_BOOLEAN);
             $query->where('is_approved', $isApproved);
-        } else {
-            // Default: show unapproved grades
-            $query->where('is_approved', false);
         }
 
         // Filter by project if provided
@@ -135,6 +132,8 @@ class GradeController extends Controller
             'committee_grade' => 'nullable|array',
             'committee_grade.score' => 'nullable|numeric|min:0|max:100',
             'final_grade' => 'nullable|numeric|min:0|max:100',
+            'fd1_final_grade' => 'nullable|numeric|min:0|max:100',
+            'fd2_final_grade' => 'nullable|numeric|min:0|max:100',
         ]);
 
         // Check lock state
@@ -154,8 +153,20 @@ class GradeController extends Controller
         if (isset($validated['final_grade'])) {
             $grade->final_grade = $validated['final_grade'];
         }
+        if (isset($validated['fd1_final_grade'])) {
+            if ($grade->fd1_approved || $grade->fd1_published) {
+                return response()->json(['message' => 'Cannot update approved/published FD1 grade'], 400);
+            }
+            $grade->fd1_final_grade = $validated['fd1_final_grade'];
+        }
+        if (isset($validated['fd2_final_grade'])) {
+             if ($grade->fd2_approved || $grade->fd2_published) {
+                return response()->json(['message' => 'Cannot update approved/published FD2 grade'], 400);
+            }
+            $grade->fd2_final_grade = $validated['fd2_final_grade'];
+        }
 
-        // Recalculate final if not explicitly set and components changed
+        // Recalculate final if not explicitly set and components changed (legacy flow)
         if (!isset($validated['final_grade']) && (isset($validated['supervisor_grade']) || isset($validated['committee_grade']))) {
             $grade->final_grade = $grade->calculateFinalGrade();
         }

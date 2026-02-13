@@ -1,20 +1,20 @@
 import type { ColumnDef } from "@tanstack/react-table"
 import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
-import { Button } from "@/components/ui/button"
+import { ActionsDropdown } from "@/components/common/ActionsDropdown"
+import { Badge } from "@/components/ui/badge"
 import type { Project } from "@/types/project.types"
-import { formatDate } from "@/lib/utils/format"
-import { ROUTES } from "@/lib/constants/constants"
-import { Eye, FileText, ClipboardCheck } from "lucide-react"
-import { Link } from "react-router-dom"
+import { Eye, Users, CheckCircle2, FileText } from "lucide-react"
 
 export interface ProjectsTableColumnsProps {
   t: (key: string) => string
   onView?: (project: Project) => void
+  onEvaluate?: (project: Project) => void
 }
 
 export function createProjectsColumns({
   t,
   onView,
+  onEvaluate,
 }: ProjectsTableColumnsProps): ColumnDef<Project>[] {
   const cols: ColumnDef<Project>[] = [
     {
@@ -22,7 +22,7 @@ export function createProjectsColumns({
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('project.title')} />
       ),
-      cell: ({ row }) => <div className="font-medium max-w-[300px] truncate">{row.original.title}</div>,
+      cell: ({ row }) => <div className="font-medium max-w-[250px] truncate">{row.original.title}</div>,
     },
     {
       accessorKey: "description",
@@ -30,60 +30,199 @@ export function createProjectsColumns({
         <DataTableColumnHeader column={column} title={t('project.description')} />
       ),
       cell: ({ row }) => (
-        <div className="max-w-[400px] truncate text-muted-foreground">
+        <div className="max-w-[200px] truncate text-muted-foreground text-sm">
           {row.original.description}
         </div>
       ),
     },
     {
-      id: 'workflow',
+      id: 'supervisor',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('common.supervisor')} />
+      ),
+      cell: ({ row }) => {
+        const supervisor = row.original.supervisor
+        if (!supervisor) {
+          return <div className="text-muted-foreground text-sm">—</div>
+        }
+        return (
+          <div className="flex flex-col gap-0.5">
+            <div className="font-medium text-sm">{supervisor.name}</div>
+            <div className="text-xs text-muted-foreground">{supervisor.department || '—'}</div>
+          </div>
+        )
+      },
+    },
+    {
+      id: 'group',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('common.group')} />
+      ),
+      cell: ({ row }) => {
+        const groupInfo = row.original.groupInfo
+        if (!groupInfo || groupInfo.code === 'N/A') {
+          return <div className="text-muted-foreground text-sm">—</div>
+        }
+        return (
+          <div className="flex flex-col gap-0.5">
+            <div className="font-medium text-sm">{groupInfo.code}</div>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Users className="h-3 w-3" />
+              <span>{groupInfo.memberCount} {t('common.members')}</span>
+            </div>
+          </div>
+        )
+      },
+    },
+    {
+      id: 'status',
+      accessorKey: 'status',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('discussion.workflowStatus')} />
       ),
       cell: ({ row }) => {
-        const p = row.original
-        const docsTotal = p.documentsCount ?? 0
-        const docsApproved = p.documentsApprovedCount ?? 0
-        const gradesTotal = p.gradesCount ?? 0
-        const studentsCount = p.students?.length ?? 0
-        const evaluationLabel = studentsCount > 0
-          ? `${gradesTotal}/${studentsCount} ${t('discussion.evaluated')}`
-          : '—'
+        const status = row.original.status
+        const statusVariants: Record<string, string> = {
+          'in_progress': 'default',
+          'pending': 'secondary',
+          'completed': 'success',
+          'approved': 'success',
+        }
         return (
-          <div className="flex flex-wrap items-center gap-2 text-sm">
-            <span className="flex items-center gap-1" title={t('discussion.documentsPhase')}>
-              <FileText className="h-3.5 w-3 text-muted-foreground" />
-              <span className="text-muted-foreground">{docsApproved}/{docsTotal}</span>
-            </span>
-            <span className="text-muted-foreground">·</span>
-            <span className="flex items-center gap-1" title={t('discussion.evaluationPhase')}>
-              <ClipboardCheck className="h-3.5 w-3 text-muted-foreground" />
-              <span>{evaluationLabel}</span>
+          <Badge variant={statusVariants[status] as any || 'outline'}>
+            {t(`status.${status}`)}
+          </Badge>
+        )
+      },
+    },
+    {
+      id: 'documents',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('discussion.documentsPhase')} />
+      ),
+      cell: ({ row }) => {
+        const documentsCount = row.original.documentsCount ?? 0
+        const documentsApprovedCount = row.original.documentsApprovedCount ?? 0
+        return (
+          <div className="flex items-center gap-2">
+            <FileText className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium">
+              {documentsApprovedCount}/{documentsCount}
             </span>
           </div>
         )
       },
     },
     {
-      accessorKey: "createdAt",
+      id: 'defenseStage',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('common.date')} />
+        <DataTableColumnHeader column={column} title={t('discussion.defenseStage')} />
       ),
-      cell: ({ row }) => <div className="text-sm">{formatDate(row.original.createdAt)}</div>,
+      cell: ({ row }) => {
+        const defenseStage = row.original.defenseStage
+        if (!defenseStage) {
+          return <Badge variant="outline">FD1</Badge>
+        }
+        const stage = defenseStage.current.toUpperCase()
+        const isLocked = defenseStage.current === 'fd1' ? defenseStage.fd1Locked : defenseStage.fd2Locked
+        return (
+          <div className="flex items-center gap-2">
+            <Badge variant={defenseStage.current === 'fd1' ? 'default' : 'secondary'}>
+              {stage}
+            </Badge>
+            {isLocked && (
+              <span className="text-xs text-muted-foreground" title={t('discussion.stageLocked')}>
+                🔒
+              </span>
+            )}
+          </div>
+        )
+      },
+    },
+    {
+      id: 'evaluationProgress',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('discussion.myProgress')} />
+      ),
+      cell: ({ row }) => {
+        const evalStatus = row.original.evaluationStatus
+        if (!evalStatus) {
+          return <div className="text-muted-foreground text-sm">—</div>
+        }
+        const isComplete = evalStatus.isComplete
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">
+              {evalStatus.myEvaluatedCount}/{evalStatus.totalStudents}
+            </span>
+            {isComplete && (
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+            )}
+            <span className="text-xs text-muted-foreground">
+              ({evalStatus.percentage}%)
+            </span>
+          </div>
+        )
+      },
     },
   ]
-  if (onView) {
+  if (onView || onEvaluate) {
     cols.push({
       id: 'actions',
-      header: t('common.actions'),
-      cell: ({ row }) => (
-        <Button variant="ghost" size="sm" asChild>
-          <Link to={ROUTES.DISCUSSION_COMMITTEE.PROJECT_DETAIL(row.original.id)} className="gap-1">
-            <Eye className="h-4 w-4" />
-            {t('common.view')}
-          </Link>
-        </Button>
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('common.actions')} />
       ),
+      cell: ({ row }) => {
+        const project = row.original
+        const defenseStage = project.defenseStage
+        const evalStatus = project.evaluationStatus
+        const currentStage = defenseStage?.current || 'fd1'
+        const isLocked = defenseStage?.[currentStage === 'fd1' ? 'fd1Locked' : 'fd2Locked'] ?? false
+        const hasEvaluations = evalStatus && evalStatus.myEvaluatedCount > 0
+
+        const actions = [
+          ...(onView
+            ? [{
+              id: 'view',
+              label: t('common.viewDetails'),
+              icon: Eye,
+              onClick: () => onView(project),
+              variant: 'default' as const,
+            }]
+            : []),
+          ...(onEvaluate
+            ? [
+              {
+                id: 'view-evaluation',
+                label: t('discussion.viewEvaluation'),
+                icon: Eye,
+                onClick: () => onEvaluate(project),
+                hidden: () => !isLocked,
+                variant: 'default' as const,
+                separator: !!onView,
+              },
+              {
+                id: 'edit-evaluation',
+                label: t('discussion.editEvaluation'),
+                icon: CheckCircle2,
+                onClick: () => onEvaluate(project),
+                hidden: () => !hasEvaluations || isLocked,
+                variant: 'default' as const,
+              },
+              {
+                id: 'evaluate',
+                label: t('discussion.evaluateProject'),
+                icon: CheckCircle2,
+                onClick: () => onEvaluate(project),
+                hidden: () => hasEvaluations || isLocked,
+                variant: 'primary' as const,
+              },
+            ]
+            : []),
+        ]
+
+        return <ActionsDropdown row={project} actions={actions} />
+      },
     })
   }
   return cols

@@ -278,21 +278,47 @@ class Grade extends Model
         $errors = [];
 
         // Must have final grade calculated
-        if ($this->final_grade === null) {
+        if ($this->final_grade === null && $this->fd1_final_grade === null && $this->fd2_final_grade === null) {
             $errors[] = 'Final grade has not been calculated';
         }
 
-        // Must have supervisor input (unless override allowed - currently strict)
-        if ($this->getSupervisorScore() === null && empty($this->supervisor_grade)) {
-            $errors[] = 'Supervisor grade is missing';
-        }
-
-        // Must have committee input
-        if ($this->getCommitteeScore() === null && empty($this->committee_grade)) {
-            $errors[] = 'Committee grade is missing';
-        }
-
         return $errors;
+    }
+
+    /**
+     * Get evaluations for a specific stage, using eager loaded relation if available
+     */
+    protected function getEvaluationsForStage(string $stage)
+    {
+        // Revert to direct query for reliability
+        return DefenseEvaluation::where('project_id', $this->project_id)
+            ->where('student_id', $this->student_id)
+            ->where('defense_stage', $stage)
+            ->get();
+    }
+
+    public function getFD1SupervisorScore(): ?float
+    {
+        $eval = $this->getEvaluationsForStage('fd1')->firstWhere('evaluator_role', 'supervisor');
+        return $eval ? (float) $eval->normalized_score : null;
+    }
+
+    public function getFD1CommitteeScore(): ?float
+    {
+        $evals = $this->getEvaluationsForStage('fd1')->where('evaluator_role', 'committee_member');
+        return $evals->isNotEmpty() ? (float) $evals->avg('normalized_score') : null;
+    }
+
+    public function getFD2SupervisorScore(): ?float
+    {
+        $eval = $this->getEvaluationsForStage('fd2')->firstWhere('evaluator_role', 'supervisor');
+        return $eval ? (float) $eval->normalized_score : null;
+    }
+
+    public function getFD2CommitteeScore(): ?float
+    {
+        $evals = $this->getEvaluationsForStage('fd2')->where('evaluator_role', 'committee_member');
+        return $evals->isNotEmpty() ? (float) $evals->avg('normalized_score') : null;
     }
 }
 

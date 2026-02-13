@@ -37,10 +37,11 @@ export function EvaluationList() {
   const columns = useMemo(
     () =>
       createSupervisorEvaluationColumns({
-        onEvaluate: (item) => {
+        onEvaluate: (item, stage) => {
           setState((prev) => ({
             ...prev,
             selectedProjectId: item.project.id,
+            selectedStage: stage,
             showEvaluationModal: true,
           }))
         },
@@ -49,13 +50,14 @@ export function EvaluationList() {
     [t, setState]
   )
 
-  // Auto-open modal when navigating to evaluation/:projectId (e.g. from Projects list)
+  // Auto-open modal when navigating to evaluation/:projectId (e.g. from Projects list) with default FD1
   useEffect(() => {
     if (projectIdFromUrl && !hasAutoOpenedRef.current) {
       hasAutoOpenedRef.current = true
       setState((prev) => ({
         ...prev,
         selectedProjectId: projectIdFromUrl,
+        selectedStage: 'fd1',
         showEvaluationModal: true,
       }))
     }
@@ -68,6 +70,7 @@ export function EvaluationList() {
       ...prev,
       showEvaluationModal: false,
       selectedProjectId: null,
+      selectedStage: null,
     }))
   }
 
@@ -75,13 +78,16 @@ export function EvaluationList() {
     return projectService.getById(id)
   }
 
+  const selectedStage = state.selectedStage ?? 'fd1'
+
   const handleFetchGrades = async (projectId: string): Promise<Grade[]> => {
-    return evaluationService.getGrades(projectId)
+    return evaluationService.getDefenseEvaluations(projectId, selectedStage)
   }
 
   const handleSubmitGrade = async (params: {
     projectId: string
     studentId: string
+    defenseStage?: 'fd1' | 'fd2'
     grade: {
       score: number
       maxScore: number
@@ -89,18 +95,23 @@ export function EvaluationList() {
       comments?: string
     }
   }): Promise<unknown> => {
-    return evaluationService.submitGrade(
-      params.projectId,
-      params.studentId,
-      {
+    const stage = params.defenseStage ?? selectedStage
+    return evaluationService.submitDefenseEvaluation({
+      projectId: params.projectId,
+      studentId: params.studentId,
+      defenseStage: stage,
+      grade: {
         score: params.grade.score,
         maxScore: params.grade.maxScore,
-        criteria: (params.grade.criteria || {}) as Record<string, number>,
+        criteria: params.grade.criteria ?? {},
         comments: params.grade.comments,
       },
-      ''
-    )
+    })
   }
+
+  const handleGetLocked = state.selectedProjectId && state.selectedStage
+    ? (projectId: string) => evaluationService.isDefenseLocked(projectId, state.selectedStage!)
+    : undefined
 
   return (
     <>
@@ -139,7 +150,7 @@ export function EvaluationList() {
         </BlockContent>
       )}
 
-      {state.selectedProjectId && (
+      {state.selectedProjectId && state.selectedStage && (
         <ModalDialog
           open={state.showEvaluationModal}
           onOpenChange={(open) =>
@@ -147,9 +158,10 @@ export function EvaluationList() {
               ...prev,
               showEvaluationModal: open,
               selectedProjectId: open ? prev.selectedProjectId : null,
+              selectedStage: open ? prev.selectedStage : null,
             }))
           }
-          title={t('evaluation.evaluate')}
+          title={`${t('evaluation.evaluate')} – ${state.selectedStage === 'fd1' ? t('evaluation.fd1') : t('evaluation.fd2')}`}
           size="xl"
         >
           <UnifiedEvaluationModal
@@ -159,14 +171,17 @@ export function EvaluationList() {
                 ...prev,
                 showEvaluationModal: open,
                 selectedProjectId: open ? prev.selectedProjectId : null,
+                selectedStage: open ? prev.selectedStage : null,
               }))
             }
             projectId={state.selectedProjectId}
             role="supervisor"
+            defenseStage={state.selectedStage}
             onSuccess={handleEvaluationSuccess}
             fetchProject={handleFetchProject}
             fetchGrades={handleFetchGrades}
             submitGrade={handleSubmitGrade}
+            getLocked={handleGetLocked}
           />
         </ModalDialog>
       )}

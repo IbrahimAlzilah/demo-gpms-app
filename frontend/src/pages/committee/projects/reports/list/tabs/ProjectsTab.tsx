@@ -53,12 +53,18 @@ export function ProjectsTab({ filters }: ProjectsTabProps) {
     {
       accessorKey: 'status',
       header: t('project.status'),
-      cell: ({ row }: any) => <StatusBadge status={row.original.status} />,
+      cell: ({ row }: any) => <StatusBadge status={typeof row.original.status === 'string' ? row.original.status : row.original.status?.value ?? row.original.status} />,
     },
     {
       accessorKey: 'phase',
       header: t('project.phase'),
-      cell: ({ row }: any) => row.original.phase || '-',
+      cell: ({ row }: any) => {
+        const phase = row.original.phase
+        if (!phase) return '-'
+        const key = `committee.reports.phase.${phase}`
+        const translated = t(key)
+        return key !== translated ? translated : phase
+      },
     },
     {
       accessorKey: 'specialization',
@@ -70,9 +76,33 @@ export function ProjectsTab({ filters }: ProjectsTabProps) {
       cell: ({ row }: any) => row.original.supervisor?.name || t('common.notAssigned'),
     },
     {
+      accessorKey: 'committee_member_names',
+      header: t('committee.reports.discussionCommittee'),
+      cell: ({ row }: any) => {
+        const names = row.original.committee_member_names
+        if (!names || !Array.isArray(names) || names.length === 0) return <span className="text-muted-foreground">-</span>
+        return <span className="text-sm">{names.join(', ')}</span>
+      },
+    },
+    {
+      accessorKey: 'assigned_group_name',
+      header: t('committee.reports.assignedGroup'),
+      cell: ({ row }: any) => row.original.assigned_group_name || <span className="text-muted-foreground">-</span>,
+    },
+    {
+      accessorKey: 'fd1_status',
+      header: t('committee.reports.fd1Status'),
+      cell: ({ row }: any) => row.original.fd1_status || '-',
+    },
+    {
+      accessorKey: 'fd2_status',
+      header: t('committee.reports.fd2Status'),
+      cell: ({ row }: any) => row.original.fd2_status || '-',
+    },
+    {
       accessorKey: 'current_students',
       header: t('project.students'),
-      cell: ({ row }: any) => `${row.original.current_students} / ${row.original.max_students || '-'}`,
+      cell: ({ row }: any) => `${row.original.current_students ?? 0} / ${row.original.max_students || '-'}`,
     },
   ]
 
