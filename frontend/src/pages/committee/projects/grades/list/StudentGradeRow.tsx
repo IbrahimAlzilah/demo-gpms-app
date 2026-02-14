@@ -20,11 +20,13 @@ export function StudentGradeRow({ grade, onAction, stage, committeeMemberCount }
         .filter((e: { defenseStage?: string }) => e.defenseStage === stage)
         .sort((a: { evaluatorName?: string }, b: { evaluatorName?: string }) => (a.evaluatorName || '').localeCompare(b.evaluatorName || ''))
 
-    // Supervisor: use breakdown or fallback
+    // Supervisor: use breakdown or fallback to general supervisorGrade
     const supervisorEval = stageBreakdown?.supervisor ?? grade.supervisorEvaluation
     const rawSupervisorScore = supervisorEval
         ? ((supervisorEval as { rawScore?: number }).rawScore ?? (supervisorEval as { score?: number }).score)
         : (stage === 'fd1' ? grade.fd1SupervisorScore : grade.fd2SupervisorScore)
+        ?? grade.supervisorGrade?.score
+        ?? grade.supervisorScore
 
     // Contributions: Formula (grade/100)/5 for committee, (grade/100)/2 for supervisor
     // Backend sends contribution already scaled to 0-100
@@ -42,8 +44,11 @@ export function StudentGradeRow({ grade, onAction, stage, committeeMemberCount }
         return null
     })
 
+    // Fall back to general committeeGrade or stage-specific score if no evaluations exist
     if (committeeEvals.length === 0 && !stageBreakdown) {
-        const existingTotal = stage === 'fd1' ? grade.fd1CommitteeScore : grade.fd2CommitteeScore
+        const existingTotal = (stage === 'fd1' ? grade.fd1CommitteeScore : grade.fd2CommitteeScore)
+            ?? grade.committeeGrade?.score
+            ?? grade.committeeScore
         if (existingTotal != null) committeeTotalContribution = existingTotal
     }
 
@@ -72,14 +77,14 @@ export function StudentGradeRow({ grade, onAction, stage, committeeMemberCount }
             label: t('common.edit'),
             icon: Edit2,
             onClick: (row) => onAction(row, 'edit'),
-            hidden: (row) => isStageLocked,
+            hidden: () => isStageLocked,
         },
         {
             id: 'approve',
             label: t('common.approve'),
             icon: Check,
             onClick: (row) => onAction(row, 'approve'),
-            hidden: (row) => isStageLocked,
+            hidden: () => isStageLocked,
             disabled: (row) => !row.isReadyForApproval,
             variant: 'success',
         }
