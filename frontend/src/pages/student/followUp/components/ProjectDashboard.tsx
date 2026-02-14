@@ -53,6 +53,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
     enabled: !!projectId,
     staleTime: 0,
     refetchOnMount: true,
+    refetchOnWindowFocus: true,
   })
 
   const queryClient = useQueryClient()
@@ -134,22 +135,22 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                 <p className="text-sm text-muted-foreground">{t('common.status')}:</p>
                 <StatusBadge status={project.status} />
               </div>
-              {!progressLoading && progressPercentage !== undefined && (
+              {!progressLoading && (
                 <div>
                   <p className="text-sm text-muted-foreground">{t('followUp.completionRate')}:</p>
-                  <p className="text-lg font-bold text-foreground">{progressPercentage}%</p>
+                  <p className="text-lg font-bold text-foreground">{progressPercentage ?? 0}%</p>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Progress Bar */}
-          {!progressLoading && progressPercentage !== undefined && (
+          {/* Progress Bar - always show when progress has been loaded (including 0%) */}
+          {!progressLoading && (
             <div className="mt-4">
               <div className="w-full bg-muted rounded-full h-3">
                 <div
                   className="bg-primary/70 h-3 rounded-full transition-all duration-500"
-                  style={{ width: `${progressPercentage}%` }}
+                  style={{ width: `${Math.min(100, Math.max(0, progressPercentage ?? 0))}%` }}
                 />
               </div>
             </div>

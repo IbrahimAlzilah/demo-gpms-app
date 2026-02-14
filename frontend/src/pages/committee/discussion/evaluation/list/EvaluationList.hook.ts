@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useDataTable } from '@/hooks/useDataTable'
+import { useQuery } from '@tanstack/react-query'
 import { committeeEvaluationService } from '../api/evaluation.service'
-import type { EvaluationListState, EvaluationListData } from './EvaluationList.types'
+import type { EvaluationListState } from './EvaluationList.types'
 
 export function useEvaluationList() {
   const { t } = useTranslation()
@@ -11,51 +11,25 @@ export function useEvaluationList() {
     selectedProjectId: null,
     selectedStudentId: null,
     showEvaluationForm: false,
+    defenseStage: 'fd1', // Default to FD1
   })
 
-  const {
-    data: items,
-    totalCount,
-    pageCount,
-    isLoading,
-    error,
-    sorting,
-    setSorting,
-    columnFilters,
-    setColumnFilters,
-    globalFilter,
-    setGlobalFilter,
-    pagination,
-    setPagination,
-  } = useDataTable({
-    queryKey: ['discussion-committee-evaluations-table'],
-    queryFn: (params) => committeeEvaluationService.getTableData(params),
-    initialPageSize: 10,
-    enableServerSide: true,
+  // Fetch projects for the selected defense stage
+  const projectsQuery = useQuery({
+    queryKey: ['discussion-committee-defense-projects', state.defenseStage],
+    queryFn: () => committeeEvaluationService.getDefenseProjects(state.defenseStage),
+    staleTime: 30000, // 30 seconds
   })
 
-  const data: EvaluationListData = {
-    items: items || [],
-    isLoading,
-    error: error as Error | null,
-    pageCount,
-  }
+  const projects = projectsQuery.data || []
 
   return {
-    data,
     state,
     setState,
-    // Table controls
-    totalCount,
-    pageCount,
-    sorting,
-    setSorting,
-    columnFilters,
-    setColumnFilters,
-    globalFilter,
-    setGlobalFilter,
-    pagination,
-    setPagination,
+    projects,
+    isLoading: projectsQuery.isLoading,
+    error: projectsQuery.error as Error | null,
+    refetch: projectsQuery.refetch,
     t,
   }
 }

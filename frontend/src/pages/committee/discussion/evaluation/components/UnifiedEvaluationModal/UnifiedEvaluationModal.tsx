@@ -408,12 +408,11 @@ export function UnifiedEvaluationModal({
       )} */}
 
       {/* Project Header Card */}
-      <Card className="overflow-hidden border-0 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 shadow-lg">
-        <CardContent className="p-6">
+      <Card className="overflow-hidden border bg-linear-to-br from-primary/5 via-primary/10 to-primary/5 shadow-none">
+        <CardContent className="p-4">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div className="space-y-2 flex-1">
               <div className="flex items-center gap-2">
-                <GraduationCap className="h-5 w-5 text-primary" />
                 <h3 className="text-lg font-semibold text-foreground">
                   {project.title}
                 </h3>
@@ -423,7 +422,7 @@ export function UnifiedEvaluationModal({
                   {project.description}
                 </p>
               )}
-              <div className="flex flex-wrap items-center gap-4 pt-2 text-sm">
+              <div className="flex flex-wrap items-center gap-4 text-sm">
                 {project.supervisor && (
                   <div className="flex items-center gap-1.5 text-muted-foreground">
                     <User className="h-4 w-4" />
@@ -451,7 +450,7 @@ export function UnifiedEvaluationModal({
 
             {/* Progress Indicator */}
             <div className="flex flex-col items-center justify-center rounded-xl bg-background/80 px-6 py-4 shadow-inner">
-              <div className="relative h-16 w-16">
+              <div className="relative h-10 w-10">
                 <svg
                   className="h-full w-full -rotate-90"
                   viewBox="0 0 36 36"
@@ -488,11 +487,10 @@ export function UnifiedEvaluationModal({
 
       {/* Evaluation Mode Toggle & Group Grade */}
       {!gradesLocked && (
-        <Card className="border-0 shadow-md">
+        <Card className="border shadow-none">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-base">
-                <Sparkles className="h-4 w-4 text-primary" />
                 {t("evaluation.applyGroupGrade")}
               </CardTitle>
               <div className="flex items-center gap-2">
@@ -518,7 +516,7 @@ export function UnifiedEvaluationModal({
             </div>
           </CardHeader>
           {evaluationMode === "group" && (
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div className="grid gap-4 sm:grid-cols-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium">
@@ -552,8 +550,7 @@ export function UnifiedEvaluationModal({
                     onClick={handleApplyGroupGrade}
                     className="w-full h-10 gap-2"
                   >
-                    <CheckCircle2 className="h-4 w-4" />
-                    {t("evaluation.applyToAll")}
+                    {t("evaluation.apply")}
                   </Button>
                 </div>
               </div>
@@ -571,193 +568,194 @@ export function UnifiedEvaluationModal({
               </div>
             </CardContent>
           )}
-        </Card>
-      )}
 
-      {/* Student List */}
-      <Card className="border-0 shadow-md">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <ClipboardCheck className="h-4 w-4 text-primary" />
-            {t("evaluation.individualGrades")}
-          </CardTitle>
-          <p className="text-xs text-muted-foreground">
-            {t("evaluation.studentGroupMembers")}
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {students.map((student, index) => {
-            const entry = studentGrades[student.id] ?? {
-              studentId: student.id,
-              score: "",
-              maxScore: "100",
-              comments: "",
-            };
-            const isExpanded = expandedStudentId === student.id;
-            const hasGrade = entry.score && parseFloat(entry.score) >= 0;
+          {evaluationMode === "individual" && (
+            < Card className="border-0 shadow-none">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-xs text-muted-foreground">
+                  {t("evaluation.studentGroupMembers")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 pt-0">
+                {students.map((student, index) => {
+                  const entry = studentGrades[student.id] ?? {
+                    studentId: student.id,
+                    score: "",
+                    maxScore: "100",
+                    comments: "",
+                  };
+                  const isExpanded = expandedStudentId === student.id;
+                  const hasGrade = entry.score && parseFloat(entry.score) >= 0;
 
-            return (
-              <div
-                key={student.id}
-                className={`overflow-hidden rounded-xl border transition-all duration-200 ${isExpanded
-                  ? "border-primary/30 shadow-md"
-                  : "border-border/50 hover:border-border"
-                  }`}
-              >
-                {/* Student Header Row */}
-                <div
-                  className={`flex items-center justify-between gap-4 p-4 cursor-pointer transition-colors ${isExpanded
-                    ? "bg-primary/5"
-                    : "hover:bg-muted/50"
-                    }`}
-                  onClick={() =>
-                    setExpandedStudentId(isExpanded ? null : student.id)
-                  }
-                >
-                  <div className="flex items-center gap-3">
+                  return (
                     <div
-                      className={`flex h-10 w-10 items-center justify-center rounded-full font-semibold text-sm ${hasGrade
-                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                        : "bg-muted text-muted-foreground"
+                      key={student.id}
+                      className={`overflow-hidden rounded-xl border transition-all duration-200 ${isExpanded
+                        ? "border-primary/20"
+                        : "border-border/50 hover:border-border"
                         }`}
                     >
-                      {hasGrade ? (
-                        <CheckCircle2 className="h-5 w-5" />
-                      ) : (
-                        index + 1
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-medium text-sm truncate">
-                        {student.name}
-                      </p>
-                      {student.email && (
-                        <p className="text-xs text-muted-foreground truncate">
-                          {student.email}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    {hasGrade && (
-                      <Badge
-                        variant="secondary"
-                        className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                      {/* Student Header Row */}
+                      <div
+                        className={`flex items-center justify-between gap-4 p-4 cursor-pointer transition-colors ${isExpanded
+                          ? "bg-primary/5"
+                          : "hover:bg-muted/50"
+                          }`}
+                        onClick={() =>
+                          setExpandedStudentId(isExpanded ? null : student.id)
+                        }
                       >
-                        {entry.score}/{entry.maxScore}
-                      </Badge>
-                    )}
-                    {gradesLocked && (
-                      <Lock className="h-4 w-4 text-muted-foreground" />
-                    )}
-                    {isExpanded ? (
-                      <ChevronUp className="h-5 w-5 text-muted-foreground" />
-                    ) : (
-                      <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                    )}
-                  </div>
-                </div>
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`flex h-10 w-10 items-center justify-center rounded-full font-semibold text-sm ${hasGrade
+                              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                              : "bg-muted text-muted-foreground"
+                              }`}
+                          >
+                            {hasGrade ? (
+                              <CheckCircle2 className="h-5 w-5" />
+                            ) : (
+                              index + 1
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-medium text-sm truncate">
+                              {student.name}
+                            </p>
+                            {student.email && (
+                              <p className="text-xs text-muted-foreground truncate">
+                                {student.department}
+                              </p>
+                            )}
+                          </div>
+                        </div>
 
-                {/* Expanded Content */}
-                {isExpanded && (
-                  <div className="border-t bg-muted/20 p-4 space-y-4">
-                    {gradesLocked ? (
-                      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                        <div>
-                          <span className="text-xs text-muted-foreground block mb-1">
-                            {t("discussion.score")}
-                          </span>
-                          <p className="font-semibold text-lg">
-                            {entry.score || "—"}
-                          </p>
+                        <div className="flex items-center gap-3">
+                          {hasGrade && (
+                            <Badge
+                              variant="secondary"
+                              className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                            >
+                              {entry.score}/{entry.maxScore}
+                            </Badge>
+                          )}
+                          {gradesLocked && (
+                            <Lock className="h-4 w-4 text-muted-foreground" />
+                          )}
+                          {isExpanded ? (
+                            <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                          ) : (
+                            <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                          )}
                         </div>
-                        <div>
-                          <span className="text-xs text-muted-foreground block mb-1">
-                            {t("discussion.maxScore")}
-                          </span>
-                          <p className="font-semibold text-lg">
-                            {entry.maxScore || "—"}
-                          </p>
-                        </div>
-                        {entry.comments && (
-                          <div className="col-span-2">
-                            <span className="text-xs text-muted-foreground block mb-1">
-                              {t("discussion.comments")}
-                            </span>
-                            <p className="text-sm">{entry.comments}</p>
-                          </div>
-                        )}
                       </div>
-                    ) : (
-                      <>
-                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                          <div className="space-y-1.5">
-                            <Label className="text-xs font-medium">
-                              {t("discussion.score")} *
-                            </Label>
-                            <Input
-                              type="number"
-                              min={0}
-                              value={entry.score}
-                              onChange={(e) =>
-                                setGradeForStudent(
-                                  student.id,
-                                  "score",
-                                  e.target.value
-                                )
-                              }
-                              placeholder="0"
-                              className="h-9"
-                            />
-                          </div>
-                          <div className="space-y-1.5">
-                            <Label className="text-xs font-medium">
-                              {t("discussion.maxScore")} *
-                            </Label>
-                            <Input
-                              type="number"
-                              min={0}
-                              value={entry.maxScore}
-                              onChange={(e) =>
-                                setGradeForStudent(
-                                  student.id,
-                                  "maxScore",
-                                  e.target.value
-                                )
-                              }
-                              placeholder="100"
-                              className="h-9"
-                            />
-                          </div>
+
+                      {/* Expanded Content */}
+                      {isExpanded && (
+                        <div className="border-t bg-muted/20 p-4 space-y-4">
+                          {gradesLocked ? (
+                            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                              <div>
+                                <span className="text-xs text-muted-foreground block mb-1">
+                                  {t("discussion.score")}
+                                </span>
+                                <p className="font-semibold text-lg">
+                                  {entry.score || "—"}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-muted-foreground block mb-1">
+                                  {t("discussion.maxScore")}
+                                </span>
+                                <p className="font-semibold text-lg">
+                                  {entry.maxScore || "—"}
+                                </p>
+                              </div>
+                              {entry.comments && (
+                                <div className="col-span-2">
+                                  <span className="text-xs text-muted-foreground block mb-1">
+                                    {t("discussion.comments")}
+                                  </span>
+                                  <p className="text-sm">{entry.comments}</p>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs font-medium">
+                                    {t("discussion.score")} *
+                                  </Label>
+                                  <Input
+                                    type="number"
+                                    min={0}
+                                    value={entry.score}
+                                    onChange={(e) =>
+                                      setGradeForStudent(
+                                        student.id,
+                                        "score",
+                                        e.target.value
+                                      )
+                                    }
+                                    placeholder="0"
+                                    className="h-9"
+                                  />
+                                </div>
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs font-medium">
+                                    {t("discussion.maxScore")} *
+                                  </Label>
+                                  <Input
+                                    type="number"
+                                    min={0}
+                                    value={entry.maxScore}
+                                    onChange={(e) =>
+                                      setGradeForStudent(
+                                        student.id,
+                                        "maxScore",
+                                        e.target.value
+                                      )
+                                    }
+                                    placeholder="100"
+                                    className="h-9"
+                                    disabled={true}
+                                  />
+                                </div>
+                              </div>
+                              <div className="space-y-1.5">
+                                <Label className="text-xs font-medium">
+                                  {t("discussion.comments")} ({t("common.optional")})
+                                </Label>
+                                <Textarea
+                                  value={entry.comments}
+                                  onChange={(e) =>
+                                    setGradeForStudent(
+                                      student.id,
+                                      "comments",
+                                      e.target.value
+                                    )
+                                  }
+                                  placeholder={t("discussion.commentsPlaceholder")}
+                                  rows={2}
+                                  className="resize-none"
+                                />
+                              </div>
+                            </>
+                          )}
                         </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-medium">
-                            {t("discussion.comments")} ({t("common.optional")})
-                          </Label>
-                          <Textarea
-                            value={entry.comments}
-                            onChange={(e) =>
-                              setGradeForStudent(
-                                student.id,
-                                "comments",
-                                e.target.value
-                              )
-                            }
-                            placeholder={t("discussion.commentsPlaceholder")}
-                            rows={2}
-                            className="resize-none"
-                          />
-                        </div>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </CardContent>
-      </Card>
+                      )}
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          )}
+        </Card>
+      )
+      }
+
+
 
       {/* Action Buttons */}
       <div className="flex justify-end gap-3 pt-2">
@@ -789,6 +787,6 @@ export function UnifiedEvaluationModal({
           </>
         )}
       </div>
-    </div>
+    </div >
   );
 }

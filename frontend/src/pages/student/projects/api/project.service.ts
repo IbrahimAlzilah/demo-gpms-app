@@ -133,8 +133,11 @@ export const projectService = {
 
   getProgressPercentage: async (projectId: string): Promise<number> => {
     try {
-      const response = await apiClient.get<{ progress: number }>(`/student/projects/${projectId}/progress`)
-      return response.data?.progress || 0
+      const response = await apiClient.get<{ progressPercentage?: number; progress?: number }>(
+        `/student/projects/${projectId}/progress`
+      )
+      const value = response.data?.progressPercentage ?? response.data?.progress
+      return typeof value === 'number' ? Math.min(100, Math.max(0, value)) : 0
     } catch {
       return 0
     }

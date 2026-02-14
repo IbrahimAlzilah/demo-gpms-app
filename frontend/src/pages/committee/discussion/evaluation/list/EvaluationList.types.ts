@@ -29,6 +29,7 @@ export interface EvaluationListState {
   selectedProjectId: string | null
   selectedStudentId: string | null
   showEvaluationForm: boolean
+  defenseStage: 'fd1' | 'fd2'
 }
 
 export interface EvaluationListData {
