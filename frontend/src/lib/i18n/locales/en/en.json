@@ -108,7 +108,10 @@
     "print": "Print",
     "publish": "Publish",
     "clearFilters": "Clear filters",
-    "completionRate": "Completion rate"
+    "completionRate": "Completion rate",
+    "noComments": "No comments",
+    "updated": "Updated",
+    "by": "By"
   },
   "app": {
     "name": "Graduation Project Management System",
@@ -1848,7 +1851,14 @@
         "committeeCount": "Committee members",
         "gradesSubmitted": "Grades submitted",
         "gradesApproved": "Grades approved"
-      }
+      },
+      "phaseProposal": "Proposal Phase",
+      "phaseRegistration": "Registration Phase",
+      "phaseSupervision": "Supervision Phase",
+      "phaseDocuments": "Documents Phase",
+      "phaseMilestones": "Milestones Phase",
+      "phaseEvaluation": "Evaluation Phase",
+      "workflowProgress": "Workflow Progress"
     },
     "projects": {
       "noProjects": "No projects found",
@@ -2022,7 +2032,18 @@
       "editGrade": "Edit Grade",
       "invalidScore": "Please enter a valid score",
       "updateSuccess": "Grade updated successfully",
-      "updateError": "Failed to update grade"
+      "updateError": "Failed to update grade",
+      "group": "Group",
+      "criteriaItems": "Criteria Items: {{count}}",
+      "approvalAndFinal": "Approval & Final Grade",
+      "ready": "Ready for Approval",
+      "approvedBy": "Approved By",
+      "committeeMembers": "Committee members",
+      "validationIssues": "Validation issues",
+      "evaluators": "Evaluators",
+      "calculatedAutomatically": "Calculated automatically",
+      "notCalculatedYet": "Not calculated yet",
+      "averageOfEvaluators": "Average of {{count}} evaluator(s)"
     }
   },
   "project": {
@@ -2641,5 +2662,11 @@
     "individualGrades": "Individual Student Grades",
     "studentGroupMembers": "Review and modify grades for each student",
     "enterAtLeastOneGrade": "Please enter at least one valid grade"
+  },
+  "status": {
+    "draft": "Draft",
+    "available_for_registration": "Available for Registration",
+    "in_progress": "In Progress",
+    "completed": "Completed"
   }
 }

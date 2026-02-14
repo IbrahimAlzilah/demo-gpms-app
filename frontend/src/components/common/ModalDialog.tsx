@@ -36,7 +36,7 @@ export function ModalDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className={`p-0! ${sizeClasses[size]} ${className}`}>
+      <DialogContent className={`sm:max-w-xl p-0! ${sizeClasses[size]} ${className}`}>
         <DialogHeader className={`p-5 pb-1! ${headerClassName}`}>
           <DialogTitle className='text-base font-bold mb-0'>{title}</DialogTitle>
           <DialogDescription className={description ? '' : 'sr-only'}>

@@ -252,7 +252,7 @@ export function GradesList() {
           <div className="space-y-4 mt-4">
             {state.selectedGrade.validationErrors && state.selectedGrade.validationErrors.length > 0 && (
               <div className="bg-destructive/10 text-destructive p-3 rounded-md text-sm">
-                <p className="font-medium mb-1">Validation Issues:</p>
+                <p className="font-medium mb-1">{t('committee.grades.validationIssues')}:</p>
                 <ul className="list-disc list-inside">
                   {state.selectedGrade.validationErrors.map((error, idx) => (
                     <li key={idx}>{error}</li>
@@ -309,6 +309,9 @@ export function GradesList() {
           stage={activeStage}
           onSuccess={() => {
             window.location.reload()
+          }}
+          onApprove={() => {
+            setState((prev) => ({ ...prev, action: 'approve' }))
           }}
         />
       )}
@@ -450,20 +453,16 @@ function StudentGradeRow({ grade, onAction, stage, t }: {
       </TableCell>
 
       <TableCell className="text-center font-medium">
-        {supervisorScore != null ? Number(supervisorScore).toFixed(2) : '-'}
+        {supervisorScore ? Number(supervisorScore).toFixed(2) : '-'}
       </TableCell>
 
       <TableCell className="text-center font-medium">
-        {committeeScore != null ? Number(committeeScore).toFixed(2) : '-'}
+        {committeeScore ? Number(committeeScore).toFixed(2) : '-'}
       </TableCell>
 
       <TableCell className="text-center">
         <div className="flex items-center justify-center gap-1 font-bold">
-          {displayFinal != null ? (
-            <>
-              <span>{Number(displayFinal).toFixed(2)}</span>
-            </>
-          ) : '-'}
+          {displayFinal ? <span>{Number(displayFinal).toFixed(2)}</span> : '-'}
         </div>
       </TableCell>
 

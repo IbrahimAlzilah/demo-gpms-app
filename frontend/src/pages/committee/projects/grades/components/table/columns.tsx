@@ -10,7 +10,7 @@ export interface GradeTableColumnsProps {
   onView: (grade: Grade) => void
   onEdit: (grade: Grade) => void
   onApprove: (grade: Grade) => void
-  t: (key: string) => string
+  t: (key: string, options?: Record<string, unknown>) => string
 }
 
 export function createGradeColumns({
@@ -89,7 +89,7 @@ export function createGradeColumns({
             <span className="font-medium">{Number(score).toFixed(2)}</span>
             <span className="text-muted-foreground">/ {maxScore}</span>
             {memberCount > 0 && (
-              <span className="text-xs text-muted-foreground" title={`Average of ${memberCount} evaluators`}>
+              <span className="text-xs text-muted-foreground" title={t('committee.grades.averageOfEvaluators', { count: memberCount })}>
                 ({memberCount})
               </span>
             )}

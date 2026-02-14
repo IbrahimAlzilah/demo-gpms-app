@@ -1,4 +1,4 @@
-import { X, User, Calendar, Users, Award, CheckCircle2, Clock } from "lucide-react"
+import { X, User, Calendar, Users, Award, CheckCircle2, Clock, Check } from "lucide-react"
 import { formatDateTime } from "@/lib/utils/format"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -12,9 +12,10 @@ interface GradeDetailsViewProps {
     grade: Grade
     onClose: () => void
     stage?: 'fd1' | 'fd2'
+    onApprove?: () => void
 }
 
-export function GradeDetailsView({ grade, onClose, stage }: GradeDetailsViewProps) {
+export function GradeDetailsView({ grade, onClose, stage, onApprove }: GradeDetailsViewProps) {
     const { t } = useTranslation()
 
     // Helper to extract stage-specific data
@@ -59,6 +60,11 @@ export function GradeDetailsView({ grade, onClose, stage }: GradeDetailsViewProp
     const finalGrade = stageData.final
     const isApproved = stageData.isApproved
 
+    // Check if ready for approval (should align with parent list logic)
+    const isReadyComp = grade.isReadyForApproval;
+    // If not approved, and we have an approve handler, show button
+    const canApprove = !isApproved && onApprove;
+
     return (
         <div className="flex flex-col h-full max-h-[85vh]">
             {/* Header */}
@@ -81,9 +87,21 @@ export function GradeDetailsView({ grade, onClose, stage }: GradeDetailsViewProp
                         </span>
                     </div>
                 </div>
-                <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-full">
-                    <X className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-2">
+                    {canApprove && (
+                        <Button
+                            onClick={onApprove}
+                            disabled={!isReadyComp}
+                            className={cn("gap-2", isReadyComp ? "bg-green-600 hover:bg-green-700 text-white" : "")}
+                        >
+                            <Check className="h-4 w-4" />
+                            {t('common.approve')}
+                        </Button>
+                    )}
+                    <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-full">
+                        {/* <X className="h-4 w-4" /> */}
+                    </Button>
+                </div>
             </div>
 
             {/* Content */}
@@ -150,7 +168,7 @@ export function GradeDetailsView({ grade, onClose, stage }: GradeDetailsViewProp
 
                             {committeeGrade?.committeeMembers && (
                                 <div className="text-xs text-muted-foreground">
-                                    Members: {committeeGrade.committeeMembers.join(', ')}
+                                    {t('committee.grades.committeeMembers')}: {committeeGrade.committeeMembers.join(', ')}
                                 </div>
                             )}
 

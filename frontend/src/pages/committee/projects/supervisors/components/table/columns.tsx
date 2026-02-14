@@ -61,8 +61,8 @@ export function createSupervisorAssignmentColumns({
           return (
             <div className="text-sm">
               {project.supervisor.name}
-              {project.supervisor.email && (
-                <div className="text-xs text-muted-foreground">{project.supervisor.email}</div>
+              {project.supervisor.department && (
+                <div className="text-xs text-muted-foreground">{project.supervisor.department}</div>
               )}
             </div>
           )

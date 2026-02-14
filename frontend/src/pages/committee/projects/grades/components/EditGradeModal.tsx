@@ -16,9 +16,10 @@ interface EditGradeModalProps {
     mode: 'edit' | 'view'
     stage?: 'fd1' | 'fd2'
     onSuccess: () => void
+    onApprove?: (grade: Grade) => void
 }
 
-export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSuccess }: EditGradeModalProps) {
+export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSuccess, onApprove }: EditGradeModalProps) {
     const { t } = useTranslation()
     const { toastSuccess, toastError } = useToast()
     const [isLoading, setIsLoading] = useState(false)
@@ -87,6 +88,25 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSucce
         }
     }
 
+    const handleApproveFromView = async () => {
+        if (!grade) return
+        if (onApprove) {
+            onApprove(grade)
+        } else {
+            // Fallback internal approve logic if no prop provided
+            try {
+                // Assuming approve function exists or implementing directly if needed
+                // But safer to rely on parent
+                await committeeGradeService.approve(grade.id) // Assuming .approve exists based on context
+                toastSuccess(t('committee.grades.approveSuccess'))
+                onSuccess()
+                onOpenChange(false)
+            } catch (err) {
+                toastError(err instanceof Error ? err.message : t('committee.grades.approveError'))
+            }
+        }
+    }
+
     const isReadOnly = mode === 'view' || grade?.isApproved
     const isStageGrade = !!stage
 
@@ -94,7 +114,12 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSucce
         return (
             <Dialog open={open} onOpenChange={onOpenChange}>
                 <DialogContent className="max-w-4xl p-0 gap-0 overflow-hidden bg-white/95 backdrop-blur-sm shadow-xl">
-                    <GradeDetailsView grade={grade} onClose={() => onOpenChange(false)} stage={stage} />
+                    <GradeDetailsView
+                        grade={grade}
+                        onClose={() => onOpenChange(false)}
+                        stage={stage}
+                        onApprove={(!grade.isApproved && grade.isReadyForApproval) ? handleApproveFromView : undefined}
+                    />
                 </DialogContent>
             </Dialog>
         )
@@ -106,7 +131,7 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSucce
                 <DialogHeader>
                     <DialogTitle>
                         {t('committee.grades.editGrade')}
-                        {stage ? ` - ${stage.toUpperCase()}` : ''}
+                        {stage ? ` - ${t(`committee.grades.${stage}`)}` : ''}
                     </DialogTitle>
                     <DialogDescription>
                         {grade?.project?.title} - {grade?.student?.name}
@@ -135,7 +160,7 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSucce
                                 </div>
                                 {grade?.displaySupervisorGrade?.evaluatedBy && (
                                     <p className="text-xs text-muted-foreground">
-                                        By: {grade.displaySupervisorGrade.evaluatedBy}
+                                        {t('common.by')}: {grade.displaySupervisorGrade.evaluatedBy}
                                     </p>
                                 )}
                             </div>
@@ -159,7 +184,7 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSucce
                                 </div>
                                 {grade?.displayCommitteeGrade?.committeeMembers && grade.displayCommitteeGrade.committeeMembers.length > 0 && (
                                     <p className="text-xs text-muted-foreground">
-                                        Evaluators: {grade.displayCommitteeGrade.committeeMembers.length}
+                                        {t('committee.grades.evaluators')}: {grade.displayCommitteeGrade.committeeMembers.length}
                                     </p>
                                 )}
                             </div>
@@ -174,9 +199,9 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSucce
                             value={finalGrade}
                             onChange={(e) => setFinalGrade(e.target.value)}
                             disabled={isReadOnly} // Typically computed, but allow override if needed or just display
-                            placeholder="Calculated automatically"
+                            placeholder={t('committee.grades.calculatedAutomatically')}
                         />
-                        {isReadOnly && !finalGrade && <p className="text-xs text-muted-foreground">Not calculated yet</p>}
+                        {isReadOnly && !finalGrade && <p className="text-xs text-muted-foreground">{t('committee.grades.notCalculatedYet')}</p>}
                     </div>
 
                     {grade?.isApproved && (

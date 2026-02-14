@@ -107,7 +107,10 @@
     "inProgress": "قيد التنفيذ",
     "ofTotal": "من الإجمالي",
     "clearFilters": "مسح المرشحات",
-    "completionRate": "نسبة الإنجاز"
+    "completionRate": "نسبة الإنجاز",
+    "noComments": "لا توجد ملاحظات",
+    "updated": "آخر تحديث",
+    "by": "بواسطة"
   },
   "app": {
     "name": "نظام إدارة تقييم مشاريع التخرج",
@@ -1917,7 +1920,14 @@
         "committeeCount": "أعضاء اللجنة",
         "gradesSubmitted": "الدرجات المقدمة",
         "gradesApproved": "الدرجات المعتمدة"
-      }
+      },
+      "phaseProposal": "مرحلة المقترح",
+      "phaseRegistration": "مرحلة التسجيل",
+      "phaseSupervision": "مرحلة الإشراف",
+      "phaseDocuments": "مرحلة المستندات",
+      "phaseMilestones": "مرحلة المعالم",
+      "phaseEvaluation": "مرحلة التقييم",
+      "workflowProgress": "تقدم سير العمل"
     },
     "projects": {
       "noProjects": "لا توجد مشاريع",
@@ -2089,7 +2099,18 @@
       "editGrade": "تعديل الدرجة",
       "invalidScore": "يرجى إدخال درجة صحيحة",
       "updateSuccess": "تم تحديث الدرجة بنجاح",
-      "updateError": "فشل تحديث الدرجة"
+      "updateError": "فشل تحديث الدرجة",
+      "group": "المجموعة",
+      "criteriaItems": "عناصر المعايير: {{count}}",
+      "approvalAndFinal": "الاعتماد والدرجة النهائية",
+      "ready": "جاهز للاعتماد",
+      "approvedBy": "اعتمد بواسطة",
+      "committeeMembers": "أعضاء اللجنة",
+      "validationIssues": "مشكلات التحقق",
+      "evaluators": "المقيّمون",
+      "calculatedAutomatically": "يُحسب تلقائياً",
+      "notCalculatedYet": "لم تُحسب بعد",
+      "averageOfEvaluators": "متوسط تقييم {{count}} مقيّم/مقيّمين"
     }
   },
   "project": {
@@ -2657,5 +2678,11 @@
     "finalGrades": "الدرجات النهائية",
     "noFinalGrades": "لا توجد درجات نهائية بعد",
     "student": "الطالب"
+  },
+  "status": {
+    "draft": "مسودة",
+    "available_for_registration": "متاح للتسجيل",
+    "in_progress": "قيد التنفيذ",
+    "completed": "مكتمل"
   }
 }
