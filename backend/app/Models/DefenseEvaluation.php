@@ -131,21 +131,25 @@ class DefenseEvaluation extends Model
      */
     public function canModify(User $user): bool
     {
-        // Project committee can modify any evaluation
-        if ($user->isProjectsCommittee()) {
-            return true;
-        }
-
-        // Check if the stage is locked (approved)
         $approval = DefenseApproval::where('project_id', $this->project_id)
             ->where('defense_stage', $this->defense_stage)
             ->first();
 
+        // When published: no one can modify (permanent lock)
+        if ($approval && $approval->status === 'published') {
+            return false;
+        }
+
+        // Project committee can modify when pending or approved (before publish)
+        if ($user->isProjectsCommittee()) {
+            return true;
+        }
+
+        // Supervisor/committee: only when pending
         if ($approval && $approval->status !== 'pending') {
             return false;
         }
 
-        // Evaluator can modify their own evaluation if not locked
         return $this->evaluator_id === $user->id;
     }
 

@@ -145,50 +145,42 @@ export const committeeEvaluationService = {
    * Get defense evaluations for a project and stage
    */
   getDefenseEvaluations: async (projectId: string, stage: 'fd1' | 'fd2'): Promise<Grade[]> => {
-    // This endpoint should return the evaluations for the specific stage
-    // Note: The backend route is likely /discussion-committee/defense-evaluations/{project}/status/{stage} 
-    // or similar based on routes/api.php investigation.
-    // The route `Route::get('defense-evaluations/{project}/status/{stage}', ...)` seems relevant but might just return status.
-    // Wait, `Route::get('defense-evaluations/projects/{stage}', ...)` returns projects.
-    // I need to fetch the actual grades for the student list.
-    // There isn't a direct "get grades for project" endpoint for discussion committee in the new routes list I saw earlier?
-    // Listing again:
-    // Route::get('defense-evaluations/projects/{stage}', ...index)
-    // Route::get('defense-evaluations/my-evaluations', ...getMyEvaluations)
-    // Route::get('defense-evaluations/{project}/status/{stage}', ...getStatus)
-    
-    // It seems `getMyEvaluations` might return all my evaluations.
-    // But `UnifiedEvaluationModal` needs grades for a specific project.
-    // Maybe `getStatus` returns the grades? I'll assume getStatus returns the grade details.
-    
     const response = await apiClient.get<any>(
-      `/discussion-committee/defense-evaluations/${projectId}/status/${stage}`
+      `/discussion-committee/defense-evaluations/my-evaluations?project_id=${projectId}&stage=${stage}`
     );
     
-    // Transform backend response to Grade[] format if needed
-    // Assuming backend returns { evaluations: [...] } or array of evaluations
-    const evaluations = response.data?.evaluations || (Array.isArray(response.data) ? response.data : []);
+    // Controller returns { data: { evaluations: [...], isLocked: boolean, ... } }
+    // Axios returns response.data as the body.
+    // So response.data.evaluations is likely correct if the interceptor unwraps 'data', 
+    // or response.data.data.evaluations if not. 
+    // Usually existing patterns suggest unwrapping happens or we access directly.
+    // Let's assume standard response like getMyEvaluations returns.
     
-    return evaluations.map((e: any) => ({
-      ...e,
-      // Map fields to Grade interface expectation
-      studentId: e.student_id,
-      committeeGrade: {
-        score: e.score,
-        maxScore: e.max_score,
-        comments: e.notes,
-        criteria: e.criteria
-      }
-    }));
+    const evaluations = response.data?.evaluations ?? response.data?.data?.evaluations ?? [];
+    
+    return evaluations.map((item: any) => ({
+      ...item,
+      studentId: item.student.id,
+      student: item.student,
+      // Map 'myEvaluation' to 'committeeGrade' for frontend compatibility
+      committeeGrade: item.myEvaluation ? {
+        score: item.myEvaluation.score,
+        maxScore: item.myEvaluation.maxScore,
+        comments: item.myEvaluation.notes,
+        criteria: item.myEvaluation.criteria,
+        evaluatedAt: item.myEvaluation.createdAt
+      } : undefined
+    })) as Grade[];
   },
 
   /**
    * Get projects assigned for defense evaluation
    */
   getDefenseProjects: async (stage: 'fd1' | 'fd2'): Promise<EvaluationProjectItem[]> => {
-    const response = await apiClient.get<EvaluationProjectItem[]>(
+    const response = await apiClient.get<{ data: EvaluationProjectItem[] }>(
       `/discussion-committee/defense-evaluations/projects/${stage}`
     );
-    return Array.isArray(response.data) ? response.data : [];
+    const data = response.data?.data ?? response.data;
+    return Array.isArray(data) ? data : [];
   },
 };

@@ -8,6 +8,8 @@ import type { Grade } from '@/types/evaluation.types'
 import { committeeGradeService } from '../api/grade.service'
 import { useToast } from '@/components/common'
 import { GradeDetailsView } from './GradeDetailsView'
+import { EnhancedGradeDetailsView } from './EnhancedGradeDetailsView'
+import { LoadingSpinner } from '@/components/common'
 
 interface EditGradeModalProps {
     open: boolean
@@ -23,10 +25,66 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSucce
     const { t } = useTranslation()
     const { toastSuccess, toastError } = useToast()
     const [isLoading, setIsLoading] = useState(false)
+    const [fetchingDetails, setFetchingDetails] = useState(false)
+    const [detailedGrade, setDetailedGrade] = useState<Grade | null>(null)
+    const [validationErrors, setValidationErrors] = useState<string[]>([])
+    const [canApprove, setCanApprove] = useState(false)
 
     const [supervisorScore, setSupervisorScore] = useState<string>('')
     const [committeeScore, setCommitteeScore] = useState<string>('')
     const [finalGrade, setFinalGrade] = useState<string>('')
+
+    // Fetch detailed breakdown when in view mode and stage is specified
+    useEffect(() => {
+        const fetchDetailedBreakdown = async () => {
+            if (mode === 'view' && grade && stage && grade.project?.id) {
+                setFetchingDetails(true)
+                try {
+                    const response = await committeeGradeService.getDefenseReview(grade.project.id, stage)
+                    // The response is an object with { data: { evaluations: [...], approval, statistics, validationErrors, canApprove } }
+                    const data = response as any
+                    
+                    if (data.data?.evaluations) {
+                        // Find the evaluation for this specific student
+                        const studentEvaluation = data.data.evaluations.find(
+                            (e: any) => e.student.id === grade.studentId
+                        )
+                        
+                        if (studentEvaluation) {
+                            // Merge the detailed breakdown with the grade object
+                            setDetailedGrade({
+                                ...grade,
+                                gradeBreakdown: studentEvaluation.gradeBreakdown,
+                                supervisorEvaluation: studentEvaluation.supervisorEvaluation,
+                                committeeEvaluations: studentEvaluation.committeeEvaluations,
+                                projectCommitteeEvaluations: studentEvaluation.projectCommitteeEvaluations,
+                                supervisorContribution: studentEvaluation.supervisorContribution,
+                                committeeContribution: studentEvaluation.committeeContribution,
+                                projectCommitteeContribution: studentEvaluation.projectCommitteeContribution,
+                            })
+                        }
+                    }
+                    
+                    // Set validation errors and approval status
+                    if (data.data) {
+                        setValidationErrors(data.data.validationErrors || [])
+                        setCanApprove(data.data.canApprove || false)
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch detailed breakdown:', error)
+                    setDetailedGrade(grade)
+                } finally {
+                    setFetchingDetails(false)
+                }
+            } else {
+                setDetailedGrade(grade)
+            }
+        }
+
+        if (open && grade) {
+            fetchDetailedBreakdown()
+        }
+    }, [open, grade, stage, mode])
 
     useEffect(() => {
         if (grade) {
@@ -113,13 +171,28 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSucce
     if (mode === 'view' && grade) {
         return (
             <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogContent className="max-w-4xl p-0 gap-0 overflow-hidden bg-white/95 backdrop-blur-sm shadow-xl">
-                    <GradeDetailsView
-                        grade={grade}
-                        onClose={() => onOpenChange(false)}
-                        stage={stage}
-                        onApprove={(!grade.isApproved && grade.isReadyForApproval) ? handleApproveFromView : undefined}
-                    />
+                <DialogContent className="max-w-6xl p-0 gap-0 overflow-hidden bg-white/95 backdrop-blur-sm shadow-xl max-h-[95vh]">
+                    {fetchingDetails ? (
+                        <div className="flex items-center justify-center p-12">
+                            <LoadingSpinner />
+                        </div>
+                    ) : detailedGrade?.gradeBreakdown ? (
+                        <EnhancedGradeDetailsView
+                            grade={detailedGrade}
+                            onClose={() => onOpenChange(false)}
+                            stage={stage}
+                            onApprove={(!(stage === 'fd1' ? grade.fd1Approved : grade.fd2Approved) && !(stage === 'fd1' ? grade.fd1Published : grade.fd2Published)) ? handleApproveFromView : undefined}
+                            canApprove={canApprove}
+                            validationErrors={validationErrors}
+                        />
+                    ) : (
+                        <GradeDetailsView
+                            grade={detailedGrade || grade}
+                            onClose={() => onOpenChange(false)}
+                            stage={stage}
+                            onApprove={(!grade.isApproved && grade.isReadyForApproval) ? handleApproveFromView : undefined}
+                        />
+                    )}
                 </DialogContent>
             </Dialog>
         )

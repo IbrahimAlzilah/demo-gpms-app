@@ -42,10 +42,14 @@ export interface Grade extends BaseEntity {
   fd1FinalGrade?: number | null
   fd1Approved?: boolean
   fd1Published?: boolean
+  fd1ApprovalStatus?: 'pending' | 'approved' | 'published'
+  fd1GradeBreakdown?: GradeBreakdown & { defenseStage?: 'fd1' }
   /** FD2 specific fields */
   fd2FinalGrade?: number | null
   fd2Approved?: boolean
   fd2Published?: boolean
+  fd2ApprovalStatus?: 'pending' | 'approved' | 'published'
+  fd2GradeBreakdown?: GradeBreakdown & { defenseStage?: 'fd2' }
   /** Detailed component scores */
   fd1SupervisorScore?: number | null
   fd1CommitteeScore?: number | null
@@ -60,6 +64,14 @@ export interface Grade extends BaseEntity {
   committeeScore?: number | null
   isReadyForApproval?: boolean
   validationErrors?: string[]
+  /** Detailed grade breakdown with individual contributions */
+  gradeBreakdown?: GradeBreakdown
+  supervisorContribution?: number
+  committeeContribution?: number
+  projectCommitteeContribution?: number
+  committeeEvaluations?: DefenseEvaluation[]
+  supervisorEvaluation?: DefenseEvaluation | null
+  projectCommitteeEvaluations?: DefenseEvaluation[]
 }
 
 export type EvaluationPeriodType =
@@ -95,5 +107,52 @@ export interface DefenseEvaluation extends BaseEntity {
   criteria?: Record<string, unknown>
   notes?: string
   evaluator?: User
+  evaluatorName?: string
+  normalizedScore?: number
+  contribution?: number
+  formula?: string
+}
+
+export interface GradeBreakdown {
+  supervisor: {
+    id: string
+    evaluatorId: string
+    evaluatorName: string
+    rawScore: number
+    maxScore: number
+    normalizedScore: number
+    contribution: number
+    formula: string
+    notes?: string
+    createdAt?: string
+  } | null
+  supervisorContribution: number
+  committeeMembers: Array<{
+    id: string
+    evaluatorId: string
+    evaluatorName: string
+    rawScore: number
+    maxScore: number
+    normalizedScore: number
+    contribution: number
+    formula: string
+    notes?: string
+    createdAt?: string
+  }>
+  committeeContribution: number
+  projectCommitteeMembers: Array<{
+    id: string
+    evaluatorId: string
+    evaluatorName: string
+    rawScore: number
+    maxScore: number
+    normalizedScore: number
+    contribution: number
+    formula: string
+    notes?: string
+    createdAt?: string
+  }>
+  projectCommitteeContribution: number
+  finalGrade: number | null
 }
 

@@ -31,7 +31,7 @@ export function createProjectColumns({
         const group = row.original.assignedGroup || row.original.group
         // Prefer groupCode from assignedGroup/group, fallback to groupName or derive from other fields if possible
         const code = group?.groupCode || row.original.groupName
-        
+
         if (!code) {
           return <div className="text-muted-foreground text-sm">—</div>
         }
@@ -53,10 +53,11 @@ export function createProjectColumns({
       cell: ({ row }) => {
         const group = row.original.assignedGroup || row.original.group
         const memberCount = group?.memberCount || row.original.students?.length || 0
+        const maxMembers = row.original.maxStudents || 0
         return (
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">{memberCount}</span>
+            <span className="text-sm">{memberCount} / {maxMembers}</span>
           </div>
         )
       },
@@ -90,13 +91,13 @@ export function createProjectColumns({
       cell: ({ row }) => {
         const status = row.original.supervisorApprovalStatus;
         if (!status) return <div className="text-muted-foreground text-sm">—</div>;
-        
+
         const variant = status === 'approved' ? 'default' : status === 'rejected' ? 'destructive' : 'secondary';
-        let label = status;
+        let label: string | undefined = status;
         if (status === 'approved') label = t('common.approved');
         else if (status === 'rejected') label = t('common.rejected');
         else if (status === 'pending') label = t('common.pending') || 'Pending';
-        
+
         return <Badge variant={variant}>{label}</Badge>;
       },
       filterFn: (row, id, value) => {
@@ -110,9 +111,9 @@ export function createProjectColumns({
       ),
       cell: ({ row }) => {
         // Fallback logic if committeeStatus string is missing
-        const committeeStatus = row.original.committeeStatus 
-          ?? (row.original.projectCommitteeId || row.original.discussionCommitteeId ? 'assigned' : 'not_assigned')
-        
+        const committeeStatus = row.original.committeeStatus
+          ?? (row.original.committeeId || row.original.discussionCommitteeId ? 'assigned' : 'not_assigned')
+
         const isAssigned = committeeStatus === 'assigned'
         return (
           <div className="flex items-center gap-2">

@@ -129,76 +129,56 @@ class Grade extends Model
 
     /**
      * Calculate FD1 final grade from all evaluations
+     *
+     * Formula: (grade/100)/5 for committee, (grade/100)/2 for supervisor
+     * Final grade scaled to 0-100
      */
     public function calculateFD1FinalGrade(): ?float
     {
-        $evaluations = $this->fd1Evaluations();
-        
-        if ($evaluations->isEmpty()) {
-            return null;
-        }
-
-        // Separate evaluations by role
-        $supervisorEval = $evaluations->where('evaluator_role', 'supervisor')->first();
-        $committeeEvals = $evaluations->where('evaluator_role', 'committee_member');
-        $projectCommitteeEvals = $evaluations->where('evaluator_role', 'project_committee');
-
-        $supervisorScore = $supervisorEval ? $supervisorEval->normalized_score : null;
-        $committeeAvg = $committeeEvals->isNotEmpty() ? $committeeEvals->avg('normalized_score') : null;
-
-        // If project committee added evaluations, include them
-        if ($projectCommitteeEvals->isNotEmpty()) {
-            $projectCommitteeAvg = $projectCommitteeEvals->avg('normalized_score');
-            
-            // Weight: 40% supervisor, 40% committee, 20% project committee
-            if ($supervisorScore !== null && $committeeAvg !== null) {
-                return ($supervisorScore * 0.4) + ($committeeAvg * 0.4) + ($projectCommitteeAvg * 0.2);
-            }
-        }
-
-        // Default: 40% supervisor, 60% committee
-        if ($supervisorScore !== null && $committeeAvg !== null) {
-            return ($supervisorScore * 0.4) + ($committeeAvg * 0.6);
-        }
-
-        return $supervisorScore ?? $committeeAvg;
+        return $this->calculateStageFinalGrade('fd1');
     }
 
     /**
      * Calculate FD2 final grade from all evaluations
+     *
+     * Formula: (grade/100)/5 for committee, (grade/100)/2 for supervisor
+     * Final grade scaled to 0-100
      */
     public function calculateFD2FinalGrade(): ?float
     {
-        $evaluations = $this->fd2Evaluations();
-        
+        return $this->calculateStageFinalGrade('fd2');
+    }
+
+    /**
+     * Calculate final grade for a defense stage
+     */
+    protected function calculateStageFinalGrade(string $stage): ?float
+    {
+        $evaluations = $stage === 'fd1' ? $this->fd1Evaluations() : $this->fd2Evaluations();
+
         if ($evaluations->isEmpty()) {
             return null;
         }
 
-        // Separate evaluations by role
         $supervisorEval = $evaluations->where('evaluator_role', 'supervisor')->first();
         $committeeEvals = $evaluations->where('evaluator_role', 'committee_member');
         $projectCommitteeEvals = $evaluations->where('evaluator_role', 'project_committee');
 
-        $supervisorScore = $supervisorEval ? $supervisorEval->normalized_score : null;
-        $committeeAvg = $committeeEvals->isNotEmpty() ? $committeeEvals->avg('normalized_score') : null;
+        $supervisorContribution = $supervisorEval ? (($supervisorEval->normalized_score / 100) / 2) : 0;
 
-        // If project committee added evaluations, include them
-        if ($projectCommitteeEvals->isNotEmpty()) {
-            $projectCommitteeAvg = $projectCommitteeEvals->avg('normalized_score');
-            
-            // Weight: 40% supervisor, 40% committee, 20% project committee
-            if ($supervisorScore !== null && $committeeAvg !== null) {
-                return ($supervisorScore * 0.4) + ($committeeAvg * 0.4) + ($projectCommitteeAvg * 0.2);
-            }
+        $committeeContribution = 0;
+        foreach ($committeeEvals as $eval) {
+            $committeeContribution += (($eval->normalized_score / 100) / 5);
         }
 
-        // Default: 40% supervisor, 60% committee
-        if ($supervisorScore !== null && $committeeAvg !== null) {
-            return ($supervisorScore * 0.4) + ($committeeAvg * 0.6);
+        $projectCommitteeContribution = 0;
+        foreach ($projectCommitteeEvals as $eval) {
+            $projectCommitteeContribution += (($eval->normalized_score / 100) / 5);
         }
 
-        return $supervisorScore ?? $committeeAvg;
+        $rawSum = $supervisorContribution + $committeeContribution + $projectCommitteeContribution;
+
+        return $rawSum > 0 ? round($rawSum * 100, 2) : null;
     }
 
     /**

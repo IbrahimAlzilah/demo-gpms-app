@@ -206,14 +206,14 @@ export function PeriodForm({
           </div>
         )}
 
-        {!isEditMode && (
+        {/* {!isEditMode && (
           <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
             <Info className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
             <p className="text-xs text-amber-900 dark:text-amber-100">
               {t('committee.periods.scheduledPeriodInfo')}
             </p>
           </div>
-        )}
+        )} */}
 
         <div className="flex gap-2 justify-end">
           <Button

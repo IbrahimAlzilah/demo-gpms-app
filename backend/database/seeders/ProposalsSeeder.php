@@ -13,11 +13,14 @@ class ProposalsSeeder extends Seeder
     /**
      * Run the database seeds.
      * Creates demo proposals (all Arabic) in mixed statuses for committee workflow.
+     * Includes both supervisor-submitted and student-group-submitted proposals to test all workflows.
+     * Title/description from YemeniDataHelper satisfy backend min length (proposal_title_min_length >= 5, proposal_description_min_length >= 50).
      */
     public function run(): void
     {
         $supervisors = User::where('role', 'supervisor')->get();
         $projectsCommitteeMembers = User::where('role', 'projects_committee')->get();
+        $students = User::where('role', 'student')->get();
 
         if ($supervisors->isEmpty() || $projectsCommitteeMembers->isEmpty()) {
             $this->command->warn('Not enough users to create proposals. Ensure UsersSeeder runs first.');
@@ -37,8 +40,8 @@ class ProposalsSeeder extends Seeder
         $reviewer = $projectsCommitteeMembers->first();
         $supervisorList = $supervisors->values()->all();
 
-        // 8 pending_review (Arabic)
-        for ($i = 0; $i < 8; $i++) {
+        // 6 pending_review from supervisors (Arabic)
+        for ($i = 0; $i < 6; $i++) {
             $supervisor = $supervisorList[$i % count($supervisorList)];
             $pending->push(Proposal::create([
                 'title' => YemeniDataHelper::yemeniProposalTitle(),
@@ -56,7 +59,32 @@ class ProposalsSeeder extends Seeder
             ]));
         }
 
-        // 3 requires_modification (Arabic)
+        // 2 pending_review from student groups (if groups exist, created in ProjectsSeeder)
+        // Note: Student groups are created AFTER proposals in current seeding order,
+        // so we'll add these proposals in ProjectsSeeder after groups are created.
+        // We'll create placeholder proposals here that will be updated later.
+        if ($students->count() >= 6) {
+            for ($i = 0; $i < 2; $i++) {
+                $studentLeader = $students->get($i * 3); // Will become group leaders
+                $supervisor = $supervisorList[$i % count($supervisorList)];
+                $pending->push(Proposal::create([
+                    'title' => YemeniDataHelper::yemeniProposalTitle(),
+                    'description' => YemeniDataHelper::yemeniProposalDescription(),
+                    'submitter_id' => $studentLeader->id, // Student submitter
+                    'proposed_supervisor_id' => $supervisor->id,
+                    'team_members' => null,
+                    'status' => ProposalStatus::PENDING_REVIEW,
+                    'reviewed_by' => null,
+                    'reviewed_at' => null,
+                    'review_notes' => null,
+                    'project_id' => null,
+                    'student_group_id' => null, // Will be set in ProjectsSeeder after groups created
+                    'target_project_id' => null,
+                ]));
+            }
+        }
+
+        // 3 requires_modification (Arabic) - mix of supervisor and student submissions
         $modNotes = [
             'يرجى توضيح منهجية التنفيذ والجدول الزمني.',
             'يُنصح بإضافة خطة اختبار وتوثيق للمشروع.',
@@ -110,5 +138,6 @@ class ProposalsSeeder extends Seeder
         $this->command->info('- ' . $requiresModification->count() . ' يتطلب تعديلات / requires modification');
         $this->command->info('- ' . $rejected->count() . ' مرفوض / rejected');
         $this->command->info('المجموع / Total: ' . $total . ' مقترحات / proposals');
+        $this->command->info('ملاحظة / Note: student_group_id will be linked in ProjectsSeeder after groups are created.');
     }
 }

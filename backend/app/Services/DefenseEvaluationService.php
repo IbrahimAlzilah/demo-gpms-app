@@ -168,6 +168,7 @@ class DefenseEvaluationService
 
     /**
      * Update an existing evaluation (Project Committee only, or evaluator before approval)
+     * Project Committee cannot edit when stage is published (locked).
      */
     public function updateEvaluation(
         DefenseEvaluation $evaluation,
@@ -177,6 +178,15 @@ class DefenseEvaluationService
         // Check permissions
         if (!$evaluation->canModify($modifier)) {
             throw new \Exception('You cannot modify this evaluation.');
+        }
+
+        // Block all edits when stage is published (permanent lock)
+        $approval = DefenseApproval::where('project_id', $evaluation->project_id)
+            ->where('defense_stage', $evaluation->defense_stage)
+            ->first();
+
+        if ($approval && $approval->status === 'published') {
+            throw new \Exception('Cannot modify evaluations after the stage has been published. Records are permanently locked.');
         }
 
         return DB::transaction(function () use ($evaluation, $data, $modifier) {
@@ -217,6 +227,14 @@ class DefenseEvaluationService
         // Validate role
         if (!$committeeUser->isProjectsCommittee()) {
             throw new \Exception('Only project committee members can add adjustments.');
+        }
+
+        // Block when stage is published (Project Committee can add adjustments until publish)
+        $approval = DefenseApproval::where('project_id', $project->id)
+            ->where('defense_stage', $stage)
+            ->first();
+        if ($approval && $approval->status === 'published') {
+            throw new \Exception('Cannot add evaluations after the stage has been published. Records are permanently locked.');
         }
 
         return DB::transaction(function () use ($project, $student, $stage, $data, $committeeUser) {
@@ -326,8 +344,8 @@ class DefenseEvaluationService
                 ->where('defense_stage', $stage)
                 ->first();
 
-            if (!$approval) {
-                throw new \Exception('Stage must be approved before publishing.');
+            if ($approval->status === 'published') {
+                throw new \Exception('Stage is already published.');
             }
 
             if ($approval->status !== 'approved') {
@@ -348,6 +366,12 @@ class DefenseEvaluationService
 
     /**
      * Calculate final grade for a student in a defense stage
+     *
+     * Formula (as per requirements):
+     * - Committee contribution: sum of ((member_grade/100)/5) for each committee member
+     * - Supervisor contribution: (supervisor_grade/100)/2
+     * - Final grade: committee_total + supervisor_contribution
+     * - Scale to 0-100 for display: multiply by 100 (typical max ~1.1 with 3 committee + supervisor)
      */
     public function calculateStudentFinalGrade(Project $project, User $student, string $stage): ?float
     {
@@ -365,25 +389,27 @@ class DefenseEvaluationService
         $committeeEvals = $evaluations->where('evaluator_role', 'committee_member');
         $projectCommitteeEvals = $evaluations->where('evaluator_role', 'project_committee');
 
-        $supervisorScore = $supervisorEval ? $supervisorEval->normalized_score : null;
-        $committeeAvg = $committeeEvals->isNotEmpty() ? $committeeEvals->avg('normalized_score') : null;
+        // normalized_score is 0-100 (percentage)
+        // Supervisor: (grade/100)/2
+        $supervisorContribution = $supervisorEval ? (($supervisorEval->normalized_score / 100) / 2) : 0;
 
-        // If project committee added evaluations, include them
-        if ($projectCommitteeEvals->isNotEmpty()) {
-            $projectCommitteeAvg = $projectCommitteeEvals->avg('normalized_score');
-            
-            // Weight: 40% supervisor, 40% committee, 20% project committee
-            if ($supervisorScore !== null && $committeeAvg !== null) {
-                return round(($supervisorScore * 0.4) + ($committeeAvg * 0.4) + ($projectCommitteeAvg * 0.2), 2);
-            }
+        // Committee: (grade/100)/5 per member
+        $committeeContribution = 0;
+        foreach ($committeeEvals as $eval) {
+            $committeeContribution += (($eval->normalized_score / 100) / 5);
         }
 
-        // Default: 40% supervisor, 60% committee
-        if ($supervisorScore !== null && $committeeAvg !== null) {
-            return round(($supervisorScore * 0.4) + ($committeeAvg * 0.6), 2);
+        // Project committee: (grade/100)/5 per member (same as regular committee)
+        $projectCommitteeContribution = 0;
+        foreach ($projectCommitteeEvals as $eval) {
+            $projectCommitteeContribution += (($eval->normalized_score / 100) / 5);
         }
 
-        return $supervisorScore ?? $committeeAvg;
+        // Final grade: sum of contributions, scaled to 0-100 for consistency
+        $rawSum = $supervisorContribution + $committeeContribution + $projectCommitteeContribution;
+        $finalGrade = $rawSum > 0 ? round($rawSum * 100, 2) : null;
+
+        return $finalGrade;
     }
 
     /**
@@ -533,5 +559,146 @@ class DefenseEvaluationService
                 $project->id
             );
         }
+    }
+
+    /**
+     * Get detailed grade breakdown for a student (for Project Committee review)
+     * Returns raw grades, individual contributions, and final grade
+     */
+    public function getGradeBreakdown(Project $project, User $student, string $stage): array
+    {
+        $evaluations = DefenseEvaluation::where('project_id', $project->id)
+            ->where('student_id', $student->id)
+            ->where('defense_stage', $stage)
+            ->with('evaluator')
+            ->get();
+
+        // Separate by role
+        $supervisorEval = $evaluations->where('evaluator_role', 'supervisor')->first();
+        $committeeEvals = $evaluations->where('evaluator_role', 'committee_member');
+        $projectCommitteeEvals = $evaluations->where('evaluator_role', 'project_committee');
+
+        // Formula: (grade/100)/5 for committee, (grade/100)/2 for supervisor
+        // Contributions are 0-1 scale; final is scaled to 0-100
+        $supervisorContribution = 0;
+        $supervisorData = null;
+        if ($supervisorEval) {
+            $supervisorContribution = ($supervisorEval->normalized_score / 100) / 2;
+            $supervisorData = [
+                'id' => $supervisorEval->id,
+                'evaluatorId' => $supervisorEval->evaluator_id,
+                'evaluatorName' => $supervisorEval->evaluator->name ?? '',
+                'rawScore' => $supervisorEval->score,
+                'maxScore' => $supervisorEval->max_score,
+                'normalizedScore' => $supervisorEval->normalized_score,
+                'contribution' => round($supervisorContribution * 100, 2),
+                'formula' => '(grade/100)/2',
+                'notes' => $supervisorEval->notes,
+                'createdAt' => $supervisorEval->created_at?->toISOString(),
+            ];
+        }
+
+        // Committee: (grade/100)/5 per member
+        $committeeContribution = 0;
+        $committeeData = [];
+        foreach ($committeeEvals as $eval) {
+            $contribution = ($eval->normalized_score / 100) / 5;
+            $committeeContribution += $contribution;
+            $committeeData[] = [
+                'id' => $eval->id,
+                'evaluatorId' => $eval->evaluator_id,
+                'evaluatorName' => $eval->evaluator->name ?? '',
+                'rawScore' => $eval->score,
+                'maxScore' => $eval->max_score,
+                'normalizedScore' => $eval->normalized_score,
+                'contribution' => round($contribution * 100, 2),
+                'formula' => '(grade/100)/5',
+                'notes' => $eval->notes,
+                'createdAt' => $eval->created_at?->toISOString(),
+            ];
+        }
+
+        // Project committee: (grade/100)/5 per member
+        $projectCommitteeContribution = 0;
+        $projectCommitteeData = [];
+        foreach ($projectCommitteeEvals as $eval) {
+            $contribution = ($eval->normalized_score / 100) / 5;
+            $projectCommitteeContribution += $contribution;
+            $projectCommitteeData[] = [
+                'id' => $eval->id,
+                'evaluatorId' => $eval->evaluator_id,
+                'evaluatorName' => $eval->evaluator->name ?? '',
+                'rawScore' => $eval->score,
+                'maxScore' => $eval->max_score,
+                'normalizedScore' => $eval->normalized_score,
+                'contribution' => round($contribution * 100, 2),
+                'formula' => '(grade/100)/5',
+                'notes' => $eval->notes,
+                'createdAt' => $eval->created_at?->toISOString(),
+            ];
+        }
+
+        // Final grade: raw sum (0-~1.1) * 100 for 0-100 scale
+        $rawSum = $supervisorContribution + $committeeContribution + $projectCommitteeContribution;
+        $finalGrade = $rawSum > 0 ? round($rawSum * 100, 2) : null;
+
+        return [
+            'supervisor' => $supervisorData,
+            'supervisorContribution' => round($supervisorContribution * 100, 2),
+            'committeeMembers' => $committeeData,
+            'committeeContribution' => round($committeeContribution * 100, 2),
+            'projectCommitteeMembers' => $projectCommitteeData,
+            'projectCommitteeContribution' => round($projectCommitteeContribution * 100, 2),
+            'finalGrade' => $finalGrade,
+        ];
+    }
+
+    /**
+     * Validate that all required evaluations exist before approval
+     * Returns array of validation errors (empty if valid)
+     */
+    public function validateEvaluationsForApproval(Project $project, string $stage): array
+    {
+        $errors = [];
+        $students = $project->students;
+        $committeeMembers = $project->committeeMembers;
+
+        if ($students->isEmpty()) {
+            $errors[] = 'No students assigned to this project';
+            return $errors;
+        }
+
+        foreach ($students as $student) {
+            $studentErrors = [];
+
+            // Check supervisor evaluation
+            $supervisorEval = DefenseEvaluation::where('project_id', $project->id)
+                ->where('student_id', $student->id)
+                ->where('defense_stage', $stage)
+                ->where('evaluator_role', 'supervisor')
+                ->first();
+
+            if (!$supervisorEval) {
+                $studentErrors[] = 'Missing supervisor evaluation';
+            }
+
+            // Check committee evaluations
+            $committeeEvalCount = DefenseEvaluation::where('project_id', $project->id)
+                ->where('student_id', $student->id)
+                ->where('defense_stage', $stage)
+                ->where('evaluator_role', 'committee_member')
+                ->count();
+
+            $expectedCommitteeEvals = $committeeMembers->count();
+            if ($committeeEvalCount < $expectedCommitteeEvals) {
+                $studentErrors[] = "Missing committee evaluations ({$committeeEvalCount}/{$expectedCommitteeEvals})";
+            }
+
+            if (!empty($studentErrors)) {
+                $errors[] = "Student {$student->name} ({$student->username}): " . implode(', ', $studentErrors);
+            }
+        }
+
+        return $errors;
     }
 }

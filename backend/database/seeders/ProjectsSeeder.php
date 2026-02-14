@@ -47,13 +47,17 @@ class ProjectsSeeder extends Seeder
         $dcCount = $discussionCommittees->count();
 
         // 1) Create 12 projects with Arabic data and assign supervisors/committees
+        // First 6 projects: supervisor approved (from approved proposals later)
+        // Next 4 projects: pending supervisor approval (available for registration)
+        // Last 2 projects: no supervisor approval status (draft state)
         $created = [];
         for ($i = 0; $i < $targetProjects; $i++) {
             $title = YemeniDataHelper::yemeniProjectTitle();
             if ($i > 0) {
                 $title = $title . ' (' . ($i + 1) . ')';
             }
-            $created[] = Project::create([
+            
+            $projectData = [
                 'title' => $title,
                 'description' => YemeniDataHelper::yemeniProjectDescription(),
                 'status' => $i < 2 ? ProjectStatus::IN_PROGRESS->value : ProjectStatus::AVAILABLE_FOR_REGISTRATION->value,
@@ -63,9 +67,19 @@ class ProjectsSeeder extends Seeder
                 'specialization' => YemeniDataHelper::yemeniProjectSpecialization(),
                 'project_committee_id' => $projectCommittees->get($i % $pcCount)->id,
                 'discussion_committee_id' => $discussionCommittees->get($i % $dcCount)->id,
-                'supervisor_approval_status' => 'approved',
-                'supervisor_approval_at' => now(),
-            ]);
+            ];
+            
+            // Only set supervisor approval fields for projects that have been explicitly approved (first 6 from proposals)
+            // This matches real workflow where projects created from approved proposals have supervisor approval
+            if ($i < 6) {
+                $projectData['supervisor_approval_status'] = 'approved';
+                $projectData['supervisor_approval_at'] = now()->subDays(rand(1, 10)); // Approved in past 10 days
+                $projectData['supervisor_approval_comments'] = 'تمت الموافقة على المقترح. مشروع جيد ويتناسب مع تخصص الطلاب.';
+            }
+            // Projects 6-9 remain without approval fields (null) - representing projects pending approval
+            // Projects 10-11 remain without approval fields (null) - representing draft projects
+            
+            $created[] = Project::create($projectData);
         }
         $created = collect($created);
 
@@ -85,6 +99,7 @@ class ProjectsSeeder extends Seeder
         $groupNames = ['مجموعة النخبة', 'مجموعة الإبداع', 'مجموعة التميز', 'مجموعة الابتكار', 'مجموعة المستقبل'];
         $studentIds = $students->pluck('id')->values()->all();
         $studentsNeeded = 5 * 3; // 5 groups × 3 members
+        $groupsCreated = 0;
         if (count($studentIds) >= $studentsNeeded) {
             $groups = [];
             for ($gIndex = 0; $gIndex < 5; $gIndex++) {
@@ -97,6 +112,20 @@ class ProjectsSeeder extends Seeder
                 ]);
                 $group->members()->sync($memberIds);
                 $groups[] = $group;
+                $groupsCreated++;
+            }
+
+            // Link student-submitted proposals to first 2 groups (proposals where submitter is a student)
+            $studentProposals = Proposal::whereIn('submitter_id', $studentIds)
+                ->whereNull('student_group_id')
+                ->where('status', ProposalStatus::PENDING_REVIEW)
+                ->take(2)
+                ->get();
+            
+            foreach ($studentProposals as $index => $proposal) {
+                if ($index < count($groups)) {
+                    $proposal->update(['student_group_id' => $groups[$index]->id]);
+                }
             }
 
             // Assign first 2 projects to first 2 groups (in_progress with students and registrations)
@@ -123,8 +152,9 @@ class ProjectsSeeder extends Seeder
         }
 
         $this->command->info('تم إنشاء المشاريع والمجموعات (عربي) / Created projects & groups (Arabic):');
-        $this->command->info('- ' . count($created) . ' مشاريع / projects');
+        $this->command->info('- ' . count($created) . ' مشاريع / projects (6 approved by supervisor, 6 pending/draft)');
         $this->command->info('- 6 مقترحات معتمدة مرتبطة / proposals approved & linked');
-        $this->command->info('- 5 مجموعات طلاب / student groups');
+        $this->command->info('- ' . $groupsCreated . ' مجموعات طلاب / student groups');
+        $this->command->info('- 2 مقترحات طلاب مرتبطة بالمجموعات / student proposals linked to groups');
     }
 }

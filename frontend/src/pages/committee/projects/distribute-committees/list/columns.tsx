@@ -56,10 +56,13 @@ export function createDistributeCommitteesColumns({
       ),
       cell: ({ row }) => {
         const count = row.original.groupInfo?.memberCount ?? row.original.studentsCount ?? 0
+        const max = row.original.maxStudents ?? 0
         return (
           <div className="flex items-center gap-1">
             <Users className="h-4 w-4 text-muted-foreground" />
-            <span>{count}</span>
+            <span>
+              {count} / {max}
+            </span>
           </div>
         )
       },

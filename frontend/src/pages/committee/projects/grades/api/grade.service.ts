@@ -8,6 +8,7 @@ import type {
 export interface GradeListParams {
   is_approved?: boolean;
   project_id?: string;
+  stage?: 'fd1' | 'fd2';
   page?: number;
   pageSize?: number;
   search?: string;

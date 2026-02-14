@@ -1,15 +1,16 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useApproveGrade, usePublishGrades } from '../hooks/useGradeOperations'
-import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
-import { Card, CardContent, Badge, Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui'
-import { LoadingSpinner, ConfirmDialog, BlockContent, EmptyState, ActionsDropdown, type TableAction } from '@/components/common'
-import { Send, ChevronDown, User, Eye, Edit2, Check, Menu, ChevronUp, FileX } from 'lucide-react'
+import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui'
+import { Card, CardContent } from '@/components/ui'
+import { LoadingSpinner, ConfirmDialog, BlockContent, EmptyState } from '@/components/common'
+import { Send, FileX } from 'lucide-react'
 import type { Grade } from '@/types/evaluation.types'
 import { useGradesList } from './GradesList.hook'
 import { useToast } from '@/components/common'
 import { committeeGradeService } from '../api/grade.service'
 import { EditGradeModal } from '../components/EditGradeModal'
+import { ProjectGradeCard } from './ProjectGradeCard'
 
 export function GradesList() {
   const { t } = useTranslation()
@@ -43,6 +44,20 @@ export function GradesList() {
       return acc
     }, {} as Record<string, { project: Grade['project'], grades: Grade[] }>)
   }, [data?.grades])
+
+  const [expandedProjects, setExpandedProjects] = useState<Record<string, boolean>>({})
+
+  const handleExpandAll = () => {
+    const allExpanded = Object.keys(groupedGrades).reduce((acc, id) => {
+      acc[id] = true
+      return acc
+    }, {} as Record<string, boolean>)
+    setExpandedProjects(allExpanded)
+  }
+
+  const handleCollapseAll = () => {
+    setExpandedProjects({})
+  }
 
   const handleApprove = async () => {
     if (!state.selectedGrade) return
@@ -115,12 +130,18 @@ export function GradesList() {
         await committeeGradeService.publishDefenseResults(projectId, activeStage)
         toastSuccess(t('committee.grades.publishSuccess'))
       }
-      // Refresh list
-      // setState... or refetch
-      // For now force reload or invalidate query (if we had access to queryClient)
+      // Force reload to reflect changes
       window.location.reload()
-    } catch (err) {
-      toastError(err instanceof Error ? err.message : t('committee.grades.actionError'))
+    } catch (err: any) {
+      // Check for validation errors (422)
+      if (err.response?.status === 422 && err.response?.data?.errors) {
+        const errors = err.response.data.errors
+        // Format errors for display (e.g., join with newlines)
+        const errorMessage = Array.isArray(errors) ? errors.join('\n') : String(errors)
+        toastError(`${t('committee.grades.validationError')}:\n${errorMessage}`)
+      } else {
+        toastError(err instanceof Error ? err.message : t('committee.grades.actionError'))
+      }
     }
   }
 
@@ -135,7 +156,15 @@ export function GradesList() {
   }
 
   return (
-    <BlockContent title={t('committee.grades.management')}>
+    <BlockContent
+      title={t('committee.grades.management')}
+      actions={
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={handleExpandAll}>{t('common.expandAll')}</Button>
+          <Button variant="outline" size="sm" onClick={handleCollapseAll}>{t('common.collapseAll')}</Button>
+        </div>
+      }
+    >
       <Tabs value={activeStage} onValueChange={(v) => setActiveStage(v as 'fd1' | 'fd2')}>
         <div className="flex items-center justify-between gap-4 mb-4">
           <TabsList>
@@ -189,7 +218,8 @@ export function GradesList() {
                 onAction={handleActionClick}
                 onStageAction={(action) => handleStageAction(projectId, action)}
                 stage="fd1"
-                t={t}
+                isOpen={!!expandedProjects[projectId]}
+                onToggle={(open) => setExpandedProjects(prev => ({ ...prev, [projectId]: open }))}
               />
             ))
           )}
@@ -211,7 +241,8 @@ export function GradesList() {
                 onAction={handleActionClick}
                 onStageAction={(action) => handleStageAction(projectId, action)}
                 stage="fd2"
-                t={t}
+                isOpen={!!expandedProjects[projectId]}
+                onToggle={(open) => setExpandedProjects(prev => ({ ...prev, [projectId]: open }))}
               />
             ))
           )}
@@ -319,170 +350,4 @@ export function GradesList() {
   )
 }
 
-function ProjectGradeCard({ project, grades, onAction, onStageAction, stage, t }: {
-  project: Grade['project'],
-  grades: Grade[],
-  onAction: (grade: Grade, action: 'approve' | 'edit' | 'view') => void,
-  onStageAction: (action: 'approve' | 'publish') => void,
-  stage: 'fd1' | 'fd2',
-  t: (key: string) => string
-}) {
-  const [isOpen, setIsOpen] = useState(false)
 
-  return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="border rounded-lg bg-card">
-      <div className="flex items-center justify-between p-4 bg-muted/10">
-        <div className="flex items-center gap-2 flex-1">
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="sm" className="inline-flex h-8 w-8 items-center justify-center rounded-2xl font-extrabold bg-slate-100 text-slate-700">
-              <Menu className="h-4 w-4" />
-              {/* #{project?.id} */}
-            </Button>
-          </CollapsibleTrigger>
-          <div>
-            <h3 className="font-semibold text-base">{project?.title || 'Unknown Project'}</h3>
-            <p className="text-sm text-muted-foreground line-clamp-1">{project?.description}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <Badge variant="outline">{grades.length} {t('committee.grades.student')}</Badge>
-          <div className="flex gap-2">
-            <Button size="sm" variant="secondary" onClick={(e) => { e.stopPropagation(); onStageAction('approve'); }}>
-              {t('common.approve')} {stage.toUpperCase()}
-            </Button>
-            <Button size="sm" variant="default" onClick={(e) => { e.stopPropagation(); onStageAction('publish'); }}>
-              {t('common.publish')}
-            </Button>
-          </div>
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="sm" className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-slate-700 ring-1 ring-slate-200 transition group-open:rotate-180">
-              {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
-            </Button>
-          </CollapsibleTrigger>
-        </div>
-      </div>
-
-      <CollapsibleContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[25%] text-right">{t('committee.grades.student')}</TableHead>
-              <TableHead className="text-center">{t('committee.grades.supervisorGrade')}</TableHead>
-              <TableHead className="text-center">{t('committee.grades.committeeGrade')}</TableHead>
-              <TableHead className="text-center">{t('committee.grades.finalGrade')}</TableHead>
-              <TableHead className="text-center">{t('common.status')}</TableHead>
-              <TableHead className="text-center">{t('common.actions')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {grades.map(grade => (
-              <StudentGradeRow key={grade.id} grade={grade} onAction={onAction} stage={stage} t={t} />
-            ))}
-          </TableBody>
-        </Table>
-      </CollapsibleContent>
-    </Collapsible>
-  )
-}
-
-function StudentGradeRow({ grade, onAction, stage, t }: {
-  grade: Grade,
-  onAction: (grade: Grade, action: 'approve' | 'edit' | 'view') => void,
-  stage: 'fd1' | 'fd2',
-  t: (key: string) => string
-}) {
-  // Use stage specific grades if available
-  let supervisorScore, committeeScore, finalGrade
-
-  if (stage === 'fd1') {
-    // Fallback to legacy fields if FD1 specific fields are null (migration support)
-    // The legacy fields (supervisorScore/committeeScore) are computed from supervisor_grade/committee_grade JSON columns
-    supervisorScore = grade.fd1SupervisorScore ?? grade.supervisorScore ?? grade.supervisorGrade?.score
-    committeeScore = grade.fd1CommitteeScore ?? grade.committeeScore ?? grade.committeeGrade?.score
-    finalGrade = grade.fd1FinalGrade ?? grade.finalGrade
-  } else if (stage === 'fd2') {
-    supervisorScore = grade.fd2SupervisorScore
-    committeeScore = grade.fd2CommitteeScore
-    finalGrade = grade.fd2FinalGrade
-  } else {
-    supervisorScore = grade.supervisorScore ?? grade.supervisorGrade?.score
-    committeeScore = grade.committeeScore ?? grade.committeeGrade?.score
-    finalGrade = grade.finalGrade
-  }
-
-  // Fallback to legacy finalGrade if stage specific is missing (during migration)
-  const displayFinal = finalGrade // ?? grade.finalGrade
-
-  const actions: TableAction<Grade>[] = [
-    {
-      id: 'view',
-      label: t('common.view'),
-      icon: Eye,
-      onClick: (row) => onAction(row, 'view'),
-    },
-    {
-      id: 'edit',
-      label: t('common.edit'),
-      icon: Edit2,
-      onClick: (row) => onAction(row, 'edit'),
-      hidden: (row) => !!row.isApproved,
-    },
-    {
-      id: 'approve',
-      label: t('common.approve'),
-      icon: Check,
-      onClick: (row) => onAction(row, 'approve'),
-      hidden: (row) => !!row.isApproved,
-      disabled: (row) => !row.isReadyForApproval,
-      variant: 'success',
-    }
-  ]
-
-  return (
-    <TableRow className="hover:bg-muted/5">
-      <TableCell className="text-start">
-        <div className="flex items-center justify-start gap-3">
-          <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-            <User className="h-4 w-4 text-primary" />
-          </div>
-          <div className="flex flex-col items-start">
-            <span className="font-medium text-sm">{grade.student?.name}</span>
-            <span className="text-xs text-muted-foreground">{grade.student?.department}</span>
-          </div>
-        </div>
-      </TableCell>
-
-      <TableCell className="text-center font-medium">
-        {supervisorScore ? Number(supervisorScore).toFixed(2) : '-'}
-      </TableCell>
-
-      <TableCell className="text-center font-medium">
-        {committeeScore ? Number(committeeScore).toFixed(2) : '-'}
-      </TableCell>
-
-      <TableCell className="text-center">
-        <div className="flex items-center justify-center gap-1 font-bold">
-          {displayFinal ? <span>{Number(displayFinal).toFixed(2)}</span> : '-'}
-        </div>
-      </TableCell>
-
-      <TableCell className="text-center">
-        {grade.isApproved ? (
-          <Badge variant="outline" className="gap-1 border-green-600 text-green-600 bg-green-50">
-            {t('committee.grades.approved')}
-          </Badge>
-        ) : (
-          <Badge variant="secondary" className="bg-muted text-muted-foreground">
-            {t('committee.grades.pending')}
-          </Badge>
-        )}
-      </TableCell>
-
-      <TableCell className="text-center">
-        <div className="flex items-center justify-center">
-          <ActionsDropdown row={grade} actions={actions} />
-        </div>
-      </TableCell>
-    </TableRow>
-  )
-}

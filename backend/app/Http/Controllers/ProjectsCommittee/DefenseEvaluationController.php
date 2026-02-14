@@ -81,25 +81,8 @@ class DefenseEvaluationController extends Controller
         $data = [];
 
         foreach ($students as $student) {
-            // Get ALL evaluations for this student (supervisor + all committee members + project committee)
-            $evaluations = DefenseEvaluation::where('project_id', $project->id)
-                ->where('student_id', $student->id)
-                ->where('defense_stage', $stage)
-                ->with('evaluator')
-                ->get();
-
-            // Separate by role
-            $supervisorEval = $evaluations->where('evaluator_role', 'supervisor')->first();
-            $committeeEvals = $evaluations->where('evaluator_role', 'committee_member')->values();
-            $projectCommitteeEvals = $evaluations->where('evaluator_role', 'project_committee')->values();
-
-            // Calculate committee average
-            $committeeAvg = $committeeEvals->isNotEmpty() 
-                ? round($committeeEvals->avg('normalized_score'), 2) 
-                : null;
-
-            // Calculate final grade
-            $finalGrade = $this->evaluationService->calculateStudentFinalGrade($project, $student, $stage);
+            // Get detailed grade breakdown using the new service method
+            $breakdown = $this->evaluationService->getGradeBreakdown($project, $student, $stage);
 
             $data[] = [
                 'student' => [
@@ -108,44 +91,16 @@ class DefenseEvaluationController extends Controller
                     'email' => $student->email,
                     'studentId' => $student->student_id ?? $student->username,
                 ],
-                'supervisorEvaluation' => $supervisorEval ? [
-                    'id' => $supervisorEval->id,
-                    'evaluatorName' => $supervisorEval->evaluator->name ?? '',
-                    'score' => $supervisorEval->score,
-                    'maxScore' => $supervisorEval->max_score,
-                    'normalizedScore' => $supervisorEval->normalized_score,
-                    'criteria' => $supervisorEval->criteria,
-                    'notes' => $supervisorEval->notes,
-                    'createdAt' => $supervisorEval->created_at?->toISOString(),
-                ] : null,
-                'committeeEvaluations' => $committeeEvals->map(function ($eval) {
-                    return [
-                        'id' => $eval->id,
-                        'evaluatorId' => $eval->evaluator_id,
-                        'evaluatorName' => $eval->evaluator->name ?? '',
-                        'score' => $eval->score,
-                        'maxScore' => $eval->max_score,
-                        'normalizedScore' => $eval->normalized_score,
-                        'criteria' => $eval->criteria,
-                        'notes' => $eval->notes,
-                        'createdAt' => $eval->created_at?->toISOString(),
-                    ];
-                })->toArray(),
-                'committeeAverage' => $committeeAvg,
-                'projectCommitteeEvaluations' => $projectCommitteeEvals->map(function ($eval) {
-                    return [
-                        'id' => $eval->id,
-                        'evaluatorId' => $eval->evaluator_id,
-                        'evaluatorName' => $eval->evaluator->name ?? '',
-                        'score' => $eval->score,
-                        'maxScore' => $eval->max_score,
-                        'normalizedScore' => $eval->normalized_score,
-                        'criteria' => $eval->criteria,
-                        'notes' => $eval->notes,
-                        'createdAt' => $eval->created_at?->toISOString(),
-                    ];
-                })->toArray(),
-                'finalGrade' => $finalGrade,
+                // Detailed breakdown with individual contributions
+                'gradeBreakdown' => $breakdown,
+                // Legacy format for backward compatibility
+                'supervisorEvaluation' => $breakdown['supervisor'],
+                'committeeEvaluations' => $breakdown['committeeMembers'],
+                'committeeContribution' => $breakdown['committeeContribution'],
+                'projectCommitteeEvaluations' => $breakdown['projectCommitteeMembers'],
+                'projectCommitteeContribution' => $breakdown['projectCommitteeContribution'],
+                'supervisorContribution' => $breakdown['supervisorContribution'],
+                'finalGrade' => $breakdown['finalGrade'],
             ];
         }
 
@@ -156,6 +111,9 @@ class DefenseEvaluationController extends Controller
 
         // Get statistics
         $stats = $this->evaluationService->getEvaluationStatistics($project, $stage);
+
+        // Get validation errors (if any)
+        $validationErrors = $this->evaluationService->validateEvaluationsForApproval($project, $stage);
 
         return response()->json([
             'success' => true,
@@ -171,6 +129,8 @@ class DefenseEvaluationController extends Controller
                     'notes' => $approval->notes,
                 ] : null,
                 'statistics' => $stats,
+                'validationErrors' => $validationErrors,
+                'canApprove' => empty($validationErrors) && $stats['isComplete'],
             ],
         ]);
     }
@@ -313,9 +273,22 @@ class DefenseEvaluationController extends Controller
 
         $validated = $request->validate([
             'notes' => 'nullable|string|max:5000',
+            'skipValidation' => 'nullable|boolean', // Allow skipping validation if needed
         ]);
 
         $approver = $request->user();
+
+        // Validate all required evaluations exist
+        if (!($validated['skipValidation'] ?? false)) {
+            $validationErrors = $this->evaluationService->validateEvaluationsForApproval($project, $stage);
+            if (!empty($validationErrors)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot approve: Missing required evaluations',
+                    'errors' => $validationErrors,
+                ], 422);
+            }
+        }
 
         try {
             $approval = $this->evaluationService->approveStage($project, $stage, $approver);

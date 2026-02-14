@@ -27,6 +27,8 @@
     "yes": "نعم",
     "no": "لا",
     "all": "الكل",
+    "expandAll": "توسيع الكل",
+    "collapseAll": "طي الكل",
     "view": "عرض",
     "viewDetails": "عرض التفاصيل",
     "viewAll": "عرض الكل",
@@ -43,6 +45,8 @@
     "type": "النوع",
     "required": "مطلوب",
     "optional": "اختياري",
+    "selectAll": "تحديد الكل",
+    "deselectAll": "إلغاء تحديد الكل",
     "characters": "حرف",
     "accept": "قبول",
     "reject": "رفض",
@@ -110,7 +114,8 @@
     "completionRate": "نسبة الإنجاز",
     "noComments": "لا توجد ملاحظات",
     "updated": "آخر تحديث",
-    "by": "بواسطة"
+    "by": "بواسطة",
+    "unknown": "غير معروف"
   },
   "app": {
     "name": "نظام إدارة تقييم مشاريع التخرج",
@@ -373,8 +378,10 @@
       "systemSettingsDesc": "تكوين الخيارات العامة"
     },
     "supervisor": {
-      "loadError": "فشل تحميل بيانات لوحة التحكم."
+      "loadError": "فشل تحميل بيانات لوحة التحكم.",
+      "subtitle": "إدارة مشاريعك البحثية وتقدم الطلاب."
     },
+    "welcomeBack": "مرحباً بعودتك، {{name}}",
     "discussion": {
       "assignedProjects": "المشاريع المعينة",
       "assignedToCommittee": "مشروع معين للجنة",
@@ -2079,6 +2086,7 @@
       "finalGrade": "الدرجة النهائية",
       "pending": "قيد الانتظار",
       "approved": "معتمدة",
+      "published": "منشور",
       "approvedAt": "تم الاعتماد في",
       "approveTitle": "اعتماد الدرجة النهائية",
       "approveDescription": "هل أنت متأكد من اعتماد هذه الدرجة النهائية؟",
@@ -2110,7 +2118,13 @@
       "evaluators": "المقيّمون",
       "calculatedAutomatically": "يُحسب تلقائياً",
       "notCalculatedYet": "لم تُحسب بعد",
-      "averageOfEvaluators": "متوسط تقييم {{count}} مقيّم/مقيّمين"
+      "averageOfEvaluators": "متوسط تقييم {{count}} مقيّم/مقيّمين",
+      "approveAll": "اعتماد الكل",
+      "publishSelected": "نشر المحدد",
+      "committeeTotal": "مجموع اللجنة",
+      "committeeMember": "عضو اللجنة",
+      "completed": "مكتمل",
+      "supervisor": "المشرف"
     }
   },
   "project": {
@@ -2628,6 +2642,13 @@
     "noProjects": "لا توجد مشاريع",
     "noProjectsDescription": "ليس لديك أي مشاريع معينة حتى الآن.",
     "loadError": "فشل في تحميل المشاريع",
+    "noMeetings": "لا توجد لقاءات قادمة",
+    "allCaughtUp": "تم إنجاز كل شيء!",
+    "noUrgentTasks": "لا توجد مهام عاجلة حالياً",
+    "management": "الإدارة",
+    "supervisionRequestsCardDesc": "عرض والرد على طلبات تعيين الإشراف من لجنة المشاريع",
+    "projectsCardDesc": "إدارة المشاريع تحت إشرافك ومتابعة التقدم ومراجعة الوثائق",
+    "searchPlaceholder": "البحث في المشاريع...",
     "committeeStatus": "حالة اللجنة",
     "committee": {
       "assigned": "معينة",
@@ -2665,6 +2686,7 @@
     "backToProjects": "العودة إلى المشاريع",
     "studentIdRequired": "الطالب مطلوب",
     "studentIdRequiredMessage": "يرجى اختيار طالب من مجموعة المشروع لعرض أو إرسال التقييمات.",
+    "evaluationDescription": "قيّم الطلاب في مشاريعك للإشراف للمناقشة النهائية 1 و 2.",
     "projectDocuments": "وثائق المشروع",
     "noDocuments": "لم يتم تقديم وثائق بعد",
     "unnamedDocument": "وثيقة بدون اسم",
@@ -2677,7 +2699,36 @@
     "reviewCommentsPlaceholder": "أدخل ملاحظات المراجعة...",
     "finalGrades": "الدرجات النهائية",
     "noFinalGrades": "لا توجد درجات نهائية بعد",
-    "student": "الطالب"
+    "student": "الطالب",
+    "projectsUnderSupervision": "مشاريع تحت إشرافك",
+    "pendingRequests": "طلبات معلقة",
+    "pendingActions": "تحتاج إلى إجراء منك",
+    "upcomingMeetings": "لقاءات قادمة",
+    "pendingEvaluations": "تقييمات معلقة",
+    "needsGrading": "تحتاج تقييماً",
+    "urgentTasks": "مهام عاجلة",
+    "youHavePendingRequests": "لديك {{count}} طلب إشراف معلق",
+    "review": "مراجعة",
+    "youHavePendingEvaluations": "لديك {{count}} مشروع بتقييمات معلقة",
+    "overdueMilestones": "مراحل متأخرة",
+    "youHaveOverdueMilestones": "لديك {{count}} مرحلة متأخرة",
+    "studentGrades": "درجات الطلاب",
+    "supervisorNotes": "ملاحظات المشرف",
+    "addNote": "إضافة ملاحظة",
+    "notePlaceholder": "أدخل ملاحظتك...",
+    "previousNotes": "ملاحظات سابقة",
+    "addNotes": "إضافة ملاحظات",
+    "studentReplies": "ردود الطلاب",
+    "evaluations": "التقييمات",
+    "grade": "الدرجة",
+    "committeeRequests": "طلبات الإشراف",
+    "noCommitteeRequests": "لا توجد طلبات إشراف",
+    "approveRequest": "موافقة على الطلب",
+    "rejectRequest": "رفض الطلب",
+    "approveRequestConfirm": "هل أنت متأكد من الموافقة على طلب الإشراف هذا؟",
+    "rejectRequestConfirm": "هل أنت متأكد من رفض طلب الإشراف هذا؟",
+    "response": "الرد / التعليقات",
+    "addResponse": "أضف ردك أو تعليقاتك..."
   },
   "status": {
     "draft": "مسودة",

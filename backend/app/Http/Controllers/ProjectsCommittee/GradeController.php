@@ -25,7 +25,7 @@ class GradeController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Grade::with(['project.defenseEvaluations', 'student', 'approver']);
+        $query = Grade::with(['project' => fn ($q) => $q->with(['defenseEvaluations', 'committeeMembers', 'supervisor']), 'student', 'approver']);
 
         // Filter by approval status only when explicitly requested (omit for "All")
         if ($request->has('is_approved')) {

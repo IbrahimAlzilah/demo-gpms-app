@@ -20,7 +20,7 @@ class UsersSeeder extends Seeder
         // Ensure exactly 1 admin user
         $existingAdmins = User::where('role', 'admin')->get();
         if ($existingAdmins->isEmpty()) {
-            // Create admin user
+            // Create admin user (password min 8 chars per Settings; email_verified_at set after create - not in User fillable)
             $admin = User::create([
                 'name' => 'أحمد الأحد',
                 'email' => 'admin@gpms.local',
@@ -29,8 +29,8 @@ class UsersSeeder extends Seeder
                 'role' => 'admin',
                 'status' => 'active',
                 'phone' => YemeniDataHelper::yemeniPhoneNumber(),
-                'email_verified_at' => now(),
             ]);
+            $admin->update(['email_verified_at' => now()]);
         } else {
             // Keep only the first admin, delete extras
             $admin = $existingAdmins->first();
@@ -68,12 +68,12 @@ class UsersSeeder extends Seeder
                     'name' => $name,
                     'email' => $emailUsername . '@' . $emailDomain,
                     'username' => 'temp_' . Str::random(10) . '_' . time(),
-                    'email_verified_at' => now(),
                     'password' => Hash::make('password'),
                     'role' => 'supervisor',
                     'status' => 'active',
                     'phone' => YemeniDataHelper::yemeniPhoneNumber(),
                 ]);
+                $user->update(['email_verified_at' => now()]);
                 $newSupervisors->push($user);
             }
         }
@@ -119,12 +119,12 @@ class UsersSeeder extends Seeder
                     'name' => $maleName,
                     'email' => $emailUsername . '@' . $emailDomain,
                     'username' => 'temp_' . Str::random(10) . '_' . time(),
-                    'email_verified_at' => now(),
                     'password' => Hash::make('password'),
                     'role' => 'student',
                     'status' => 'active',
                     'phone' => YemeniDataHelper::yemeniPhoneNumber(),
                 ]);
+                $student->update(['email_verified_at' => now()]);
                 $newStudents->push($student);
             }
         }
@@ -170,12 +170,12 @@ class UsersSeeder extends Seeder
                     'name' => $name,
                     'email' => $emailUsername . '@' . $emailDomain,
                     'username' => 'temp_' . Str::random(10) . '_' . time(),
-                    'email_verified_at' => now(),
                     'password' => Hash::make('password'),
                     'role' => 'discussion_committee',
                     'status' => 'active',
                     'phone' => YemeniDataHelper::yemeniPhoneNumber(),
                 ]);
+                $user->update(['email_verified_at' => now()]);
                 $newDiscussion->push($user);
             }
         }
@@ -220,12 +220,12 @@ class UsersSeeder extends Seeder
                     'name' => $name,
                     'email' => $emailUsername . '@' . $emailDomain,
                     'username' => 'temp_' . Str::random(10) . '_' . time(),
-                    'email_verified_at' => now(),
                     'password' => Hash::make('password'),
                     'role' => 'projects_committee',
                     'status' => 'active',
                     'phone' => YemeniDataHelper::yemeniPhoneNumber(),
                 ]);
+                $user->update(['email_verified_at' => now()]);
                 $newProjects->push($user);
             }
         }
