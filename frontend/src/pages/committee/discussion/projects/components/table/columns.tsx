@@ -90,7 +90,7 @@ export function createProjectsColumns({
         }
         return (
           <Badge variant={statusVariants[status] as any || 'outline'}>
-            {t(`status.${status}`)}
+            {t(`status.${status}`, { defaultValue: status })}
           </Badge>
         )
       },

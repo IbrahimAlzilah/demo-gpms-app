@@ -71,7 +71,7 @@ export function AdminUsersTab({ filters }: AdminUsersTabProps) {
                   key={status}
                   className="text-xs px-2 py-0.5 rounded bg-muted"
                 >
-                  {status}: {count}
+                  {t(`status.${status}`, { defaultValue: status })}: {count}
                 </span>
               ))}
             </div>

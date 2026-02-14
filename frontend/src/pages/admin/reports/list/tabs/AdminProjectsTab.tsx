@@ -47,7 +47,10 @@ export function AdminProjectsTab({ filters }: AdminProjectsTabProps) {
     {
       accessorKey: 'phase',
       header: t('project.phase'),
-      cell: ({ row }: { row: { original: any } }) => row.original.phase || '-',
+      cell: ({ row }: { row: { original: any } }) => {
+        const phase = row.original.phase
+        return phase ? t(`committee.reports.phase.${phase}`, { defaultValue: phase }) : '-'
+      },
     },
     {
       accessorKey: 'specialization',
@@ -92,7 +95,7 @@ export function AdminProjectsTab({ filters }: AdminProjectsTabProps) {
               <div className="space-y-1">
                 {Object.entries(data.summary.byStatus || {}).slice(0, 5).map(([status, count]) => (
                   <div key={status} className="flex justify-between text-sm">
-                    <span>{status}</span>
+                    <span>{t(`status.${status}`, { defaultValue: status })}</span>
                     <span className="font-semibold">{String(count)}</span>
                   </div>
                 ))}
@@ -109,7 +112,7 @@ export function AdminProjectsTab({ filters }: AdminProjectsTabProps) {
               <div className="space-y-1">
                 {Object.entries(data.summary.byPhase || {}).slice(0, 5).map(([phase, count]) => (
                   <div key={phase} className="flex justify-between text-sm">
-                    <span>{phase}</span>
+                    <span>{t(`committee.reports.phase.${phase}`, { defaultValue: phase })}</span>
                     <span className="font-semibold">{String(count)}</span>
                   </div>
                 ))}

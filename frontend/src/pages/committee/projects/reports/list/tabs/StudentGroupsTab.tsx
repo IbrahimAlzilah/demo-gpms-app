@@ -170,7 +170,7 @@ export function StudentGroupsTab({ filters }: StudentGroupsTabProps) {
                 <div className="flex flex-wrap gap-4">
                   {(['all_completed', 'all_ready_fd2', 'all_ready_fd1', 'mixed', 'in_progress'] as const).map((readiness) => (
                     <div key={readiness} className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">{t(`committee.reports.readiness.${readiness}`)}:</span>
+                      <span className="text-xs text-muted-foreground">{t(`committee.reports.readiness.${readiness}`, { defaultValue: readiness })}:</span>
                       <span className="font-semibold">{data.summary.by_readiness?.[readiness] ?? 0}</span>
                     </div>
                   ))}

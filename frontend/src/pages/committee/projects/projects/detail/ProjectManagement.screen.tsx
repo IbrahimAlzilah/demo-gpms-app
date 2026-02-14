@@ -281,7 +281,7 @@ export function ProjectManagementScreen() {
                     <SelectContent>
                       {PROJECT_STATUS_OPTIONS.map((s) => (
                         <SelectItem key={s} value={s}>
-                          {t(`status.${s}`)}
+                          {t(`status.${s}`, { defaultValue: s })}
                         </SelectItem>
                       ))}
                     </SelectContent>

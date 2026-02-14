@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle, DataTable } from '@/components/ui'
-import { LoadingSpinner } from '@/components/common'
+import { LoadingSpinner, StatusBadge } from '@/components/common'
 import { useDiscussionCommitteesReport } from '../../hooks/useReports'
 import type { ReportFilters } from '../../api/report.service'
 import { Briefcase } from 'lucide-react'
@@ -47,7 +47,7 @@ export function DiscussionCommitteesTab({ filters }: DiscussionCommitteesTabProp
     {
       accessorKey: 'status',
       header: t('project.status'),
-      cell: ({ row }: any) => <span className="text-sm">{row.original.status ?? '-'}</span>,
+      cell: ({ row }: any) => row.original.status ? <StatusBadge status={row.original.status} /> : <span className="text-muted-foreground">-</span>,
     },
     {
       accessorKey: 'supervisor_name',
@@ -66,12 +66,18 @@ export function DiscussionCommitteesTab({ filters }: DiscussionCommitteesTabProp
     {
       accessorKey: 'fd1_status',
       header: t('committee.reports.fd1Status'),
-      cell: ({ row }: any) => row.original.fd1_status ?? '-',
+      cell: ({ row }: any) => {
+        const s = row.original.fd1_status
+        return s ? t(`status.${s}`, { defaultValue: s }) : '-'
+      },
     },
     {
       accessorKey: 'fd2_status',
       header: t('committee.reports.fd2Status'),
-      cell: ({ row }: any) => row.original.fd2_status ?? '-',
+      cell: ({ row }: any) => {
+        const s = row.original.fd2_status
+        return s ? t(`status.${s}`, { defaultValue: s }) : '-'
+      },
     },
     {
       accessorKey: 'students_count',
@@ -148,7 +154,7 @@ export function DiscussionCommitteesTab({ filters }: DiscussionCommitteesTabProp
                       <td className="py-2 px-2">
                         {(mw.projects || []).map((p, i) => (
                           <span key={i} className="block text-muted-foreground">
-                            {p.title} (FD1: {p.fd1_status}, FD2: {p.fd2_status})
+                            {p.title} (FD1: {p.fd1_status ? t(`status.${p.fd1_status}`, { defaultValue: p.fd1_status }) : '-'}, FD2: {p.fd2_status ? t(`status.${p.fd2_status}`, { defaultValue: p.fd2_status }) : '-'})
                           </span>
                         ))}
                       </td>

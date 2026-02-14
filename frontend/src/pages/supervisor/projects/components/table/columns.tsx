@@ -119,7 +119,7 @@ export function createProjectColumns({
           <div className="flex items-center gap-2">
             <ShieldCheck className={`h-4 w-4 ${isAssigned ? 'text-green-600' : 'text-muted-foreground'}`} />
             <Badge variant={isAssigned ? 'default' : 'outline'} className={isAssigned ? 'bg-green-600 text-white hover:bg-green-700' : ''}>
-              {t(`supervisor.committee.${committeeStatus}`)}
+              {t(`supervisor.committee.${committeeStatus}`, { defaultValue: committeeStatus })}
             </Badge>
           </div>
         )
@@ -144,7 +144,7 @@ export function createProjectColumns({
         return (
           <div className="flex items-center gap-2">
             <Badge variant={stage === 'FD1' ? 'default' : 'secondary'}>
-              {t(`evaluation.${defenseStage.current}`)}
+              {t(`evaluation.${defenseStage.current}`, { defaultValue: defenseStage.current })}
             </Badge>
             {isLocked && <span className="text-xs">🔒</span>}
           </div>
@@ -253,7 +253,7 @@ export function createProjectColumns({
             ? [
               {
                 id: 'view-evaluation',
-                label: `${t('discussion.viewEvaluation')} (${t(`evaluation.${currentStage}`)})`,
+                label: `${t('discussion.viewEvaluation')} (${t(`evaluation.${currentStage}`, { defaultValue: currentStage })})`,
                 icon: Eye,
                 onClick: () => onEvaluate(project),
                 hidden: () => !isLocked || !hasEvaluations,
@@ -262,7 +262,7 @@ export function createProjectColumns({
               },
               {
                 id: 'edit-evaluation',
-                label: `${t('discussion.editEvaluation')} (${t(`evaluation.${currentStage}`)})`,
+                label: `${t('discussion.editEvaluation')} (${t(`evaluation.${currentStage}`, { defaultValue: currentStage })})`,
                 icon: ClipboardCheck,
                 onClick: () => onEvaluate(project),
                 hidden: () => !hasEvaluations || isLocked,
@@ -271,7 +271,7 @@ export function createProjectColumns({
               },
               {
                 id: 'evaluate',
-                label: `${t('discussion.evaluateProject')} (${t(`evaluation.${currentStage}`)})`,
+                label: `${t('discussion.evaluateProject')} (${t(`evaluation.${currentStage}`, { defaultValue: currentStage })})`,
                 icon: ClipboardCheck,
                 onClick: () => onEvaluate(project),
                 hidden: () => hasEvaluations || isLocked,

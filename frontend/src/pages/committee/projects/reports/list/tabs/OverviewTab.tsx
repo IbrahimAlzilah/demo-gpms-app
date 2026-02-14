@@ -129,7 +129,7 @@ export function OverviewTab({ filters }: OverviewTabProps) {
                 return (
                   <div key={status} className="space-y-1.5">
                     <div className="flex justify-between items-center text-sm">
-                      <span className="font-medium text-muted-foreground">{status}</span>
+                      <span className="font-medium text-muted-foreground">{t(`status.${status}`, { defaultValue: status })}</span>
                       <span className="font-bold">{count as number} <span className="text-xs text-muted-foreground font-normal">({percentage}%)</span></span>
                     </div>
                     <div className="h-2.5 w-full bg-secondary/30 rounded-full overflow-hidden">
@@ -163,7 +163,7 @@ export function OverviewTab({ filters }: OverviewTabProps) {
                 return (
                   <div key={status} className="space-y-1.5">
                     <div className="flex justify-between items-center text-sm">
-                      <span className="font-medium text-muted-foreground">{status}</span>
+                      <span className="font-medium text-muted-foreground">{t(`status.${status}`, { defaultValue: status })}</span>
                       <span className="font-bold">{count as number} <span className="text-xs text-muted-foreground font-normal">({percentage}%)</span></span>
                     </div>
                     <div className="h-2.5 w-full bg-secondary/30 rounded-full overflow-hidden">
@@ -194,7 +194,7 @@ export function OverviewTab({ filters }: OverviewTabProps) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {(['completed', 'ready_for_fd2', 'ready_for_fd1', 'in_progress'] as const).map((status) => (
                 <div key={status} className="rounded-lg border p-3">
-                  <p className="text-xs text-muted-foreground font-medium">{t(`committee.reports.defenseStatus.${status}`)}</p>
+                  <p className="text-xs text-muted-foreground font-medium">{t(`committee.reports.defenseStatus.${status}`, { defaultValue: status })}</p>
                   <p className="text-2xl font-bold mt-1">{kpis.students.by_defense_status[status] ?? 0}</p>
                 </div>
               ))}

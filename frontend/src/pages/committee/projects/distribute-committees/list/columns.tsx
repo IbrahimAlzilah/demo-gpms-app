@@ -113,7 +113,7 @@ export function createDistributeCommitteesColumns({
             }
             className="shadow-none"
           >
-            {t(`committee.distribute.workflowStage.${stage}`)}
+            {t(`committee.distribute.workflowStage.${stage}`, { defaultValue: stage })}
           </Badge>
         )
       },

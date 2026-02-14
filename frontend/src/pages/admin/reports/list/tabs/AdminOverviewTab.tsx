@@ -169,7 +169,7 @@ export function AdminOverviewTab({ filters }: AdminOverviewTabProps) {
                 return (
                   <div key={status} className="space-y-1.5">
                     <div className="flex justify-between items-center text-sm">
-                      <span className="font-medium text-muted-foreground">{status}</span>
+                      <span className="font-medium text-muted-foreground">{t(`status.${status}`, { defaultValue: status })}</span>
                       <span className="font-bold">
                         {count} <span className="text-xs text-muted-foreground font-normal">({percentage}%)</span>
                       </span>

@@ -177,9 +177,9 @@ export function DiscussionCommitteeDashboardPage() {
                     <div className="bg-green-100 dark:bg-green-900/20 p-4 rounded-full mb-4 ring-4 ring-white dark:ring-background shadow-sm">
                       <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
                     </div>
-                    <h3 className="font-semibold text-lg">{t('dashboard.discussion.allCaughtUp', { defaultValue: 'All evaluations complete!' })}</h3>
+                    <h3 className="font-semibold text-lg">{t('dashboard.discussion.allCaughtUp')}</h3>
                     <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
-                      You have no pending evaluations.
+                      {t('dashboard.discussion.noPendingEvaluations')}
                     </p>
                   </div>
                 )}

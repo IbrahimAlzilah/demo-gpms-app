@@ -134,7 +134,7 @@ export function SupervisorDefenseEvaluationModal({
     if (!project) return null
 
     const students = project.students || []
-    const stageLabel = t(`evaluation.${currentStage}`)
+    const stageLabel = t(`evaluation.${currentStage}`, { defaultValue: currentStage })
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>

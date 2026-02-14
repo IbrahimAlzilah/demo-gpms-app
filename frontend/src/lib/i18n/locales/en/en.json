@@ -33,6 +33,9 @@
     "viewDetails": "View Details",
     "viewAll": "View All",
     "viewCalendar": "View Full Calendar",
+    "viewFullSchedule": "View Full Schedule",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
     "actions": "Actions",
     "status": "Status",
     "statuses": "statuses",
@@ -384,7 +387,17 @@
       "awaitingReview": "awaiting review",
       "quickActions": "Quick Actions",
       "viewProjects": "View Projects",
-      "finalEvaluation": "Final Evaluation"
+      "finalEvaluation": "Final Evaluation",
+      "loadError": "Failed to load dashboard data.",
+      "upcomingDefenses": "Upcoming Defenses",
+      "scheduledThisWeek": "Scheduled this week",
+      "completed": "Completed",
+      "totalEvaluated": "Total projects evaluated",
+      "evaluate": "Evaluate",
+      "allCaughtUp": "All evaluations complete!",
+      "noPendingEvaluations": "You have no pending evaluations.",
+      "defenseSchedule": "Defense Schedule",
+      "noDefensesScheduled": "No defense sessions scheduled."
     },
     "committee": {
       "proposals": "Proposals",
@@ -436,6 +449,7 @@
   },
   "status": {
     "draft": "Draft",
+    "registered": "Registered",
     "announced": "Announced",
     "pending_review": "Pending Review",
     "approved": "Approved",
@@ -457,7 +471,12 @@
     "reviewStatus_rejected": "Rejected",
     "active": "Active",
     "inactive": "Inactive",
-    "suspended": "Suspended"
+    "suspended": "Suspended",
+    "not_started": "Not Started",
+    "published": "Published",
+    "accepted": "Accepted",
+    "ready_for_fd1": "Ready for Final Defense-1",
+    "ready_for_fd2": "Ready for Final Defense-2"
   },
   "requests": {
     "change_supervisor": "Change Supervisor",
@@ -650,7 +669,9 @@
       "nameMinLength": "Name must be at least 2 characters",
       "emailRequired": "Email is required",
       "emailInvalid": "Invalid email address",
-      "phoneInvalid": "Invalid phone number"
+      "phoneInvalid": "Invalid phone number",
+      "roleRequired": "Please select a role",
+      "statusRequired": "Please select a status"
     }
   },
   "proposal": {
@@ -1429,6 +1450,10 @@
     }
   },
   "evaluation": {
+    "total": "Total Students",
+    "evaluated": "Evaluated",
+    "approved": "Approved",
+    "pending": "Pending",
     "evaluate": "Evaluate Project",
     "evaluateAll": "Evaluate All",
     "fd1": "Final Defense 1",
@@ -1446,7 +1471,11 @@
     "loadError": "Error loading evaluations",
     "searchPlaceholder": "Search evaluations..."
   },
+  "final": {
+    "grade": "Final Grade"
+  },
   "committee": {
+    "grade": "Committee Grade",
     "periodsDescription": "Manage project time periods (proposal submission, registration, document submission, evaluation, etc.)",
     "proposalsDescription": "Review proposals submitted by students and approve, reject, or request modifications",
     "announceDescription": "Announce approved projects for students to register",
@@ -1972,6 +2001,13 @@
       "defenseStatus.ready_for_fd2": "Ready for Final Defense-2",
       "defenseStatus.ready_for_fd1": "Ready for Final Defense-1",
       "defenseStatus.in_progress": "In progress",
+      "defenseStatus.not_started": "Not Started",
+      "phase.completed_phase": "Completed",
+      "phase.in_progress_phase": "In Progress",
+      "phase.registration_phase": "Registration",
+      "phase.proposal_phase": "Proposal",
+      "phase.evaluation_phase": "Evaluation",
+      "phase.draft_phase": "Draft",
       "discussionCommittee": "Discussion Committee",
       "assignedGroup": "Assigned Group",
       "fd1Status": "FD1 Status",
@@ -2250,7 +2286,11 @@
     "requests": "Requests",
     "searchPlaceholder": "Search groups, projects...",
     "allRequests": "All Requests",
-    "filterByProject": "Filter by Project"
+    "filterByProject": "Filter by Project",
+    "status": "Registration Status",
+    "noRegistrationRequest": "No registration request",
+    "noRegistrationRequestDescription": "You have not submitted any registration request yet. Browse available projects and register your group.",
+    "browseProjects": "Browse Projects"
   },
   "admin": {
     "usersDescription": "Full control over user accounts and permission management",
@@ -2684,6 +2724,7 @@
     "enterAtLeastOneGrade": "Please enter at least one valid grade"
   },
   "supervisor": {
+    "grade": "Supervisor Grade",
     "projects": "Projects",
     "myProjects": "My Projects",
     "noProjects": "No projects",
@@ -2759,6 +2800,13 @@
     "youHavePendingEvaluations": "You have {{count}} project(s) with pending evaluations",
     "overdueMilestones": "Overdue milestones",
     "youHaveOverdueMilestones": "You have {{count}} overdue milestone(s)",
+    "milestones": "Milestones",
+    "daysOverdue": "{{count}} days overdue",
+    "daysOverdue_one": "1 day overdue",
+    "daysOverdue_other": "{{count}} days overdue",
+    "dueIn": "Due in {{count}} days",
+    "dueIn_one": "Due in 1 day",
+    "dueIn_other": "Due in {{count}} days",
     "studentGrades": "Student grades",
     "supervisorNotes": "Supervisor notes",
     "addNote": "Add note",
@@ -2776,11 +2824,5 @@
     "rejectRequestConfirm": "Are you sure you want to reject this supervision request?",
     "response": "Response / Comments",
     "addResponse": "Add your response or comments..."
-  },
-  "status": {
-    "draft": "Draft",
-    "available_for_registration": "Available for Registration",
-    "in_progress": "In Progress",
-    "completed": "Completed"
   }
 }

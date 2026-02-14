@@ -204,7 +204,7 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSucce
                 <DialogHeader>
                     <DialogTitle>
                         {t('committee.grades.editGrade')}
-                        {stage ? ` - ${t(`committee.grades.${stage}`)}` : ''}
+                        {stage ? ` - ${t(`committee.grades.${stage}`, { defaultValue: stage })}` : ''}
                     </DialogTitle>
                     <DialogDescription>
                         {grade?.project?.title} - {grade?.student?.name}

@@ -159,7 +159,7 @@ export function StudentsTab({ filters }: StudentsTabProps) {
             <div className="flex flex-wrap gap-4">
               {(['completed', 'ready_for_fd2', 'ready_for_fd1', 'in_progress'] as const).map((status) => (
                 <div key={status} className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">{t(`committee.reports.defenseStatus.${status}`)}:</span>
+                  <span className="text-xs text-muted-foreground">{t(`committee.reports.defenseStatus.${status}`, { defaultValue: status })}:</span>
                   <span className="font-semibold">{data.summary?.by_defense_status?.[status] ?? 0}</span>
                 </div>
               ))}

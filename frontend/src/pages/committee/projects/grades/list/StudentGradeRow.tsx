@@ -45,7 +45,13 @@ export function StudentGradeRow({ grade, onAction, stage, committeeMemberCount }
     })
 
     // Fall back to general committeeGrade or stage-specific score if no evaluations exist
-    if (committeeEvals.length === 0 && !stageBreakdown) {
+    // Check if stageBreakdown has actual data (not just an empty object)
+    const hasStageBreakdownData = stageBreakdown && (
+        stageBreakdown.committeeContribution > 0 ||
+        (stageBreakdown.committeeMembers && stageBreakdown.committeeMembers.length > 0)
+    )
+
+    if (committeeEvals.length === 0 && !hasStageBreakdownData) {
         const existingTotal = (stage === 'fd1' ? grade.fd1CommitteeScore : grade.fd2CommitteeScore)
             ?? grade.committeeGrade?.score
             ?? grade.committeeScore
@@ -57,8 +63,15 @@ export function StudentGradeRow({ grade, onAction, stage, committeeMemberCount }
 
     let calculatedFinal = (stage === 'fd1' ? grade.fd1FinalGrade : grade.fd2FinalGrade)
     if (calculatedFinal == null && stageBreakdown?.finalGrade != null) calculatedFinal = stageBreakdown.finalGrade
-    if (calculatedFinal == null && (rawSupervisorScore != null || committeeEvals.length > 0)) {
+
+    // Only calculate from contributions if we have actual stage-specific breakdown data
+    if (calculatedFinal == null && hasStageBreakdownData && (rawSupervisorScore != null || committeeTotalContribution > 0)) {
         calculatedFinal = (stageBreakdown?.supervisorContribution ?? 0) + committeeTotalContribution + (stageBreakdown?.projectCommitteeContribution ?? 0)
+    }
+
+    // Fall back to general finalGrade if no stage-specific calculation exists
+    if (calculatedFinal == null || calculatedFinal === 0) {
+        calculatedFinal = grade.finalGrade
     }
 
     const memberScoresIndices = Array.from({ length: committeeMemberCount }, (_, i) => i)

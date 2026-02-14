@@ -33,6 +33,9 @@
     "viewDetails": "عرض التفاصيل",
     "viewAll": "عرض الكل",
     "viewCalendar": "عرض التقويم الكامل",
+    "viewFullSchedule": "عرض الجدول الكامل",
+    "today": "اليوم",
+    "tomorrow": "غداً",
     "actions": "الإجراءات",
     "status": "الحالة",
     "statuses": "حالات",
@@ -104,6 +107,11 @@
     "oneMember": "عضو واحد",
     "oneProposal": "مقترح واحد",
     "createdBy": "انشأ بواسطة",
+    "locked": "مقفل",
+    "totalProjects": "إجمالي المشاريع",
+    "complete": "مكتمل",
+    "individual": "فردي",
+    "group": "مجموعة",
     "proposals": "المقترحات",
     "evaluate": "تقييم",
     "note": "ملاحظة",
@@ -384,12 +392,22 @@
     "welcomeBack": "مرحباً بعودتك، {{name}}",
     "discussion": {
       "assignedProjects": "المشاريع المعينة",
-      "assignedToCommittee": "مشروع معين للجنة",
+      "assignedToCommittee": "مشاريع معينة للجنة",
       "pendingEvaluations": "التقييمات المعلقة",
       "awaitingReview": "في انتظار المراجعة",
       "quickActions": "إجراءات سريعة",
       "viewProjects": "عرض المشاريع",
-      "finalEvaluation": "التقييم النهائي"
+      "finalEvaluation": "التقييم النهائي",
+      "loadError": "فشل تحميل بيانات لوحة التحكم.",
+      "upcomingDefenses": "المناقشات القادمة",
+      "scheduledThisWeek": "مجدولة هذا الأسبوع",
+      "completed": "مكتمل",
+      "totalEvaluated": "إجمالي المشاريع المُقيّمة",
+      "evaluate": "تقييم",
+      "allCaughtUp": "اكتملت جميع التقييمات!",
+      "noPendingEvaluations": "لا توجد تقييمات معلقة.",
+      "defenseSchedule": "جدول المناقشات",
+      "noDefensesScheduled": "لا توجد مناقشات مجدولة."
     },
     "committee": {
       "proposals": "المقترحات",
@@ -441,6 +459,7 @@
   },
   "status": {
     "draft": "مسودة",
+    "registered": "مسجل",
     "announced": "تم الإعلان",
     "pending_review": "قيد المراجعة",
     "approved": "معتمد",
@@ -462,7 +481,12 @@
     "reviewStatus_rejected": "مرفوض",
     "active": "نشط",
     "inactive": "غير نشط",
-    "suspended": "موقوف"
+    "suspended": "موقوف",
+    "not_started": "لم يبدأ",
+    "published": "منشور",
+    "accepted": "مقبول",
+    "ready_for_fd1": "جاهز للمناقشة النهائية-1",
+    "ready_for_fd2": "جاهز للمناقشة النهائية-2"
   },
   "requests": {
     "change_supervisor": "تغيير المشرف",
@@ -665,7 +689,9 @@
       "nameMinLength": "الاسم يجب أن يكون حرفين على الأقل",
       "emailRequired": "البريد الإلكتروني مطلوب",
       "emailInvalid": "البريد الإلكتروني غير صحيح",
-      "phoneInvalid": "رقم الهاتف غير صحيح"
+      "phoneInvalid": "رقم الهاتف غير صحيح",
+      "roleRequired": "يرجى اختيار الدور",
+      "statusRequired": "يرجى اختيار الحالة"
     }
   },
   "proposal": {
@@ -1504,6 +1530,10 @@
     }
   },
   "evaluation": {
+    "total": "إجمالي الطلاب",
+    "evaluated": "مقيّم",
+    "approved": "معتمد",
+    "pending": "معلق",
     "evaluate": "تقييم المشروع",
     "evaluateAll": "تقييم الكل",
     "fd1": "المناقشة النهائية 1",
@@ -1521,7 +1551,11 @@
     "loadError": "خطأ في تحميل التقييمات",
     "searchPlaceholder": "البحث في التقييمات..."
   },
+  "final": {
+    "grade": "الدرجة النهائية"
+  },
   "committee": {
+    "grade": "درجة اللجنة",
     "periodsDescription": "إدارة الفترات الزمنية للمشاريع (تقديم المقترحات، التسجيل، تسليم الوثائق، التقييم، إلخ)",
     "proposalsDescription": "مراجعة المقترحات المقدمة من الطلاب وقبولها أو رفضها أو طلب تعديلها",
     "announceDescription": "إعلان المشاريع المعتمدة للطلاب للتسجيل فيها",
@@ -2039,6 +2073,13 @@
       "defenseStatus.ready_for_fd2": "جاهز للمناقشة النهائية-2",
       "defenseStatus.ready_for_fd1": "جاهز للمناقشة النهائية-1",
       "defenseStatus.in_progress": "قيد التنفيذ",
+      "defenseStatus.not_started": "لم يبدأ",
+      "phase.completed_phase": "مكتمل",
+      "phase.in_progress_phase": "قيد التنفيذ",
+      "phase.registration_phase": "التسجيل",
+      "phase.proposal_phase": "المقترح",
+      "phase.evaluation_phase": "التقييم",
+      "phase.draft_phase": "مسودة",
       "discussionCommittee": "لجنة المناقشة",
       "assignedGroup": "المجموعة المعينة",
       "fd1Status": "حالة المناقشة-1",
@@ -2637,6 +2678,7 @@
     "loadError": "فشل في تحميل المشاريع"
   },
   "supervisor": {
+    "grade": "درجة المشرف",
     "projects": "المشاريع",
     "myProjects": "مشاريعي",
     "noProjects": "لا توجد مشاريع",
@@ -2712,6 +2754,13 @@
     "youHavePendingEvaluations": "لديك {{count}} مشروع بتقييمات معلقة",
     "overdueMilestones": "مراحل متأخرة",
     "youHaveOverdueMilestones": "لديك {{count}} مرحلة متأخرة",
+    "milestones": "المراحل",
+    "daysOverdue": "متأخر {{count}} يوم",
+    "daysOverdue_one": "متأخر يوم واحد",
+    "daysOverdue_other": "متأخر {{count}} أيام",
+    "dueIn": "مستحق خلال {{count}} يوم",
+    "dueIn_one": "مستحق خلال يوم واحد",
+    "dueIn_other": "مستحق خلال {{count}} أيام",
     "studentGrades": "درجات الطلاب",
     "supervisorNotes": "ملاحظات المشرف",
     "addNote": "إضافة ملاحظة",
@@ -2729,11 +2778,5 @@
     "rejectRequestConfirm": "هل أنت متأكد من رفض طلب الإشراف هذا؟",
     "response": "الرد / التعليقات",
     "addResponse": "أضف ردك أو تعليقاتك..."
-  },
-  "status": {
-    "draft": "مسودة",
-    "available_for_registration": "متاح للتسجيل",
-    "in_progress": "قيد التنفيذ",
-    "completed": "مكتمل"
   }
 }

@@ -12,6 +12,8 @@ interface StatusBadgeProps {
 const statusVariants: Record<string, { labelKey: string; variant: StatusBadgeProps['variant'] }> = {
   // Project statuses
   draft: { labelKey: 'status.draft', variant: 'default' },
+  announced: { labelKey: 'status.announced', variant: 'info' },
+  archived: { labelKey: 'status.archived', variant: 'default' },
   pending_review: { labelKey: 'status.pending_review', variant: 'warning' },
   approved: { labelKey: 'status.approved', variant: 'success' },
   rejected: { labelKey: 'status.rejected', variant: 'error' },
@@ -40,6 +42,14 @@ const statusVariants: Record<string, { labelKey: string; variant: StatusBadgePro
   active: { labelKey: 'status.active', variant: 'success' },
   inactive: { labelKey: 'status.inactive', variant: 'default' },
   suspended: { labelKey: 'status.suspended', variant: 'error' },
+
+  // Defense / FD statuses
+  not_started: { labelKey: 'status.not_started', variant: 'default' },
+  published: { labelKey: 'status.published', variant: 'success' },
+  accepted: { labelKey: 'status.accepted', variant: 'success' },
+  ready_for_fd1: { labelKey: 'status.ready_for_fd1', variant: 'info' },
+  ready_for_fd2: { labelKey: 'status.ready_for_fd2', variant: 'info' },
+  registered: { labelKey: 'status.registered', variant: 'success' },
 }
 
 const variantStyles = {

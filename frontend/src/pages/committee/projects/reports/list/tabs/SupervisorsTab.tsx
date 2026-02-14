@@ -88,7 +88,7 @@ export function SupervisorsTab({ filters }: SupervisorsTabProps) {
           <div className="flex flex-wrap gap-1">
             {Object.entries(byStatus).map(([status, count]) => (
               <span key={status} className="inline-flex items-center rounded-md bg-secondary px-1.5 py-0.5 text-xs font-medium">
-                {status}: {String(count)}
+                {t(`status.${status}`, { defaultValue: status })}: {String(count)}
               </span>
             ))}
           </div>

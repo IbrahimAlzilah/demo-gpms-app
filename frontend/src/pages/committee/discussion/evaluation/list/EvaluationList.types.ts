@@ -2,17 +2,24 @@ import type { Project } from '@/types/project.types'
 import type { User } from '@/types/user.types'
 
 export interface EvaluationListItem {
-  project: Project
+  project: Project & {
+    supervisor?: {
+      id: string | number
+      firstName?: string | null
+      lastName?: string | null
+      name: string
+    }
+  }
   student: User
   hasEvaluation: boolean
   isLocked?: boolean
   evaluation?: {
-    id: string
+    id: string | number
     score: number | null
     maxScore: number | null
     supervisorScore?: number | null
     supervisorMaxScore?: number | null
-    finalGrade?: number | null
+    finalGrade?: string | number | null
     isApproved: boolean
     comments?: string | null
   }

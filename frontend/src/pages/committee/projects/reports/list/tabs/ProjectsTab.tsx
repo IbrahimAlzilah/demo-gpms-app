@@ -92,12 +92,18 @@ export function ProjectsTab({ filters }: ProjectsTabProps) {
     {
       accessorKey: 'fd1_status',
       header: t('committee.reports.fd1Status'),
-      cell: ({ row }: any) => row.original.fd1_status || '-',
+      cell: ({ row }: any) => {
+        const s = row.original.fd1_status
+        return s ? t(`status.${s}`, { defaultValue: s }) : '-'
+      },
     },
     {
       accessorKey: 'fd2_status',
       header: t('committee.reports.fd2Status'),
-      cell: ({ row }: any) => row.original.fd2_status || '-',
+      cell: ({ row }: any) => {
+        const s = row.original.fd2_status
+        return s ? t(`status.${s}`, { defaultValue: s }) : '-'
+      },
     },
     {
       accessorKey: 'current_students',
@@ -127,7 +133,7 @@ export function ProjectsTab({ filters }: ProjectsTabProps) {
               <div className="space-y-1">
                 {Object.entries(data.summary.byStatus || {}).slice(0, 3).map(([status, count]) => (
                   <div key={status} className="flex justify-between text-sm">
-                    <span>{status}</span>
+                    <span>{t(`status.${status}`, { defaultValue: status })}</span>
                     <span className="font-semibold">{count as number}</span>
                   </div>
                 ))}
@@ -143,7 +149,7 @@ export function ProjectsTab({ filters }: ProjectsTabProps) {
               <div className="space-y-1">
                 {Object.entries(data.summary.byPhase || {}).slice(0, 3).map(([phase, count]) => (
                   <div key={phase} className="flex justify-between text-sm">
-                    <span>{phase}</span>
+                    <span>{t(`committee.reports.phase.${phase}`, { defaultValue: phase })}</span>
                     <span className="font-semibold">{count as number}</span>
                   </div>
                 ))}
