@@ -137,9 +137,8 @@ export function GradesList() {
         await committeeGradeService.publishDefenseResults(projectId, activeStage)
         toastSuccess(t('committee.grades.publishSuccess'))
       }
-      refetchGrades()
+      await queryClient.refetchQueries({ queryKey: ['committee-grades-table'] })
     } catch (err: any) {
-      console.error('Stage action error:', err)
 
       // Check for validation errors (422)
       if (err.response?.status === 422) {

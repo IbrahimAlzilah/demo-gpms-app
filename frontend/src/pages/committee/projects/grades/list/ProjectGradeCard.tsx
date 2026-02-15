@@ -102,20 +102,24 @@ export function ProjectGradeCard({ project, grades, onAction, onStageAction, sta
                                 </Button>
                             )}
 
-                            {!anyPublished && <Button
-                                variant="default"
-                                size="sm"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (window.confirm(t('committee.grades.confirmPublish') || 'Are you sure you want to publish the results to students? This action cannot be undone.')) {
-                                        onStageAction('publish');
-                                    }
-                                }}
-                                disabled={!allApproved || anyPublished}
-                                className="h-8 px-3 shadow-sm active:scale-95 transition-all w-fit"
-                            >
-                                {t('committee.grades.publishSelected')}
-                            </Button>}
+                            {!anyPublished && (
+                                <Button
+                                    variant="default"
+                                    size="sm"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (!allApproved) return
+                                        if (window.confirm(t('committee.grades.confirmPublish') || 'Are you sure you want to publish the results to students? This action cannot be undone.')) {
+                                            onStageAction('publish');
+                                        }
+                                    }}
+                                    disabled={!allApproved}
+                                    title={!allApproved ? (t('committee.grades.approveFirstToPublish') || 'Approve all grades before publishing') : undefined}
+                                    className="h-8 px-3 shadow-sm active:scale-95 transition-all w-fit"
+                                >
+                                    {t('committee.grades.publishSelected')}
+                                </Button>
+                            )}
                         </div>
 
                         <CollapsibleTrigger asChild>

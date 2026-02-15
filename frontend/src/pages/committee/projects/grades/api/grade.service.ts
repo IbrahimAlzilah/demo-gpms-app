@@ -168,39 +168,31 @@ export const committeeGradeService = {
   },
 
   /**
-   * Approve a specific defense stage (FD1 / FD2)
+   * Approve a specific defense stage (FD1 / FD2).
+   * Only succeeds when all required evaluations are completed for the stage.
    */
   approveDefenseStage: async (
     projectId: string,
     stage: "fd1" | "fd2",
-  ): Promise<void> => {
-    try {
-      const response = await apiClient.post(
-        `/projects-committee/defense-approvals/${projectId}/approve/${stage}`,
-      );
-      console.log('Approve stage response:', response.data);
-    } catch (error: any) {
-      console.error('Approve stage error:', error.response?.data || error);
-      throw error;
-    }
+  ): Promise<{ status: string; canPublish: boolean }> => {
+    const response = await apiClient.post<{ status: string; canPublish: boolean }>(
+      `/projects-committee/defense-approvals/${projectId}/approve/${stage}`,
+    );
+    return response.data?.data ?? response.data ?? { status: 'approved', canPublish: true };
   },
 
   /**
-   * Publish results for a specific defense stage
+   * Publish results for a specific defense stage.
+   * Only allowed after the stage has been approved.
    */
   publishDefenseResults: async (
     projectId: string,
     stage: "fd1" | "fd2",
-  ): Promise<void> => {
-    try {
-      const response = await apiClient.post(
-        `/projects-committee/defense-approvals/${projectId}/publish/${stage}`,
-      );
-      console.log('Publish results response:', response.data);
-    } catch (error: any) {
-      console.error('Publish results error:', error.response?.data || error);
-      throw error;
-    }
+  ): Promise<{ status: string; publishedAt?: string }> => {
+    const response = await apiClient.post<{ status: string; publishedAt?: string }>(
+      `/projects-committee/defense-approvals/${projectId}/publish/${stage}`,
+    );
+    return response.data?.data ?? response.data ?? { status: 'published' };
   },
 
   /**

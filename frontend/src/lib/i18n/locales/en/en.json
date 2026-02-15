@@ -2098,7 +2098,10 @@
       "adjustmentHelp": "Optional value (-100 to 100) added to the calculated final grade.",
       "invalidAdjustment": "Adjustment must be between -100 and 100",
       "validationError": "Validation Error",
-      "loadError": "Failed to load grades. Please try again."
+      "loadError": "Failed to load grades. Please try again.",
+      "confirmApproveAll": "Are you sure you want to approve all pending grades for this project?",
+      "confirmPublish": "Are you sure you want to publish the results to students? This action cannot be undone.",
+      "approveFirstToPublish": "Approve all grades before publishing"
     }
   },
   "project": {

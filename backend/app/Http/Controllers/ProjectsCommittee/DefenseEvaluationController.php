@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\ProjectsCommittee;
 
 use App\Http\Controllers\Controller;
+use App\Models\Grade;
 use App\Models\DefenseEvaluation;
 use App\Models\DefenseApproval;
 use App\Models\Project;
@@ -299,6 +300,11 @@ class DefenseEvaluationController extends Controller
                 $approval->save();
             }
 
+            // Update Grade records
+            Grade::where('project_id', $project->id)->update([
+                "{$stage}_approved" => true
+            ]);
+
             // Notify project committee members that stage is ready to publish
             // (In a real system, you'd notify all project committee members)
 
@@ -339,12 +345,17 @@ class DefenseEvaluationController extends Controller
         try {
             $approval = $this->evaluationService->publishResults($project, $stage, $publisher);
 
+            // Update Grade records
+            Grade::where('project_id', $project->id)->update([
+                "{$stage}_published" => true
+            ]);
+
             // Notify all students in the project (bilingual, once per student, retry-safe)
             $students = $project->students;
             $stageLabel = strtoupper($stage);
 
             foreach ($students as $student) {
-                $grade = \App\Models\Grade::where('project_id', $project->id)
+                $grade = Grade::where('project_id', $project->id)
                     ->where('student_id', $student->id)
                     ->first();
 

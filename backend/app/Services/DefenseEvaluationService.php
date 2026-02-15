@@ -366,6 +366,10 @@ class DefenseEvaluationService
                 ->where('defense_stage', $stage)
                 ->first();
 
+            if (!$approval) {
+                throw new \Exception('Stage must be approved before it can be published.');
+            }
+
             if ($approval->status === 'published') {
                 throw new \Exception('Stage is already published.');
             }
