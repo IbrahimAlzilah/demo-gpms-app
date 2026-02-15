@@ -400,7 +400,8 @@
       "allCaughtUp": "All evaluations complete!",
       "noPendingEvaluations": "You have no pending evaluations.",
       "defenseSchedule": "Defense Schedule",
-      "noDefensesScheduled": "No defense sessions scheduled."
+      "noDefensesScheduled": "No defense sessions scheduled.",
+      "pleaseUseEvaluationDashboard": "Please access evaluations through the 'Final Evaluation' dashboard to ensure the correct defense stage (FD1/FD2) is selected."
     },
     "committee": {
       "proposals": "Proposals",
@@ -1210,7 +1211,8 @@
     "noGrades": "No grades available at the moment",
     "noGradesDescription": "Your project has not been evaluated yet",
     "loadError": "An error occurred while loading grades",
-    "showOnlyApproved": "Show approved only"
+    "showOnlyApproved": "Show approved only",
+    "total": "Total Score"
   },
   "meeting": {
     "management": "Meeting Management",

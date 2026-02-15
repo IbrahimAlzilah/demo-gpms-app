@@ -15,8 +15,12 @@ class GradeController extends Controller
         $query = Grade::where('student_id', $request->user()->id)
             ->with(['project', 'student']);
 
-        // UC-ST-08: Students can only view approved grades
-        $query->where('is_approved', true);
+        // UC-ST-08: Students can only view approved or published grades
+        $query->where(function ($q) {
+            $q->where('is_approved', true)
+              ->orWhere('fd1_published', true)
+              ->orWhere('fd2_published', true);
+        });
 
         // Order by most recent grades first
         $grades = $query->orderBy('created_at', 'desc')->get();

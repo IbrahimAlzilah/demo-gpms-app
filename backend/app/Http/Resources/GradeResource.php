@@ -57,6 +57,11 @@ class GradeResource extends JsonResource
             $fd2ApprovalStatus = $fd2Approval?->status ?? 'pending';
         }
 
+        $user = $request->user();
+        $isStudent = $user && $user->isStudent();
+        $showFd1 = !$isStudent || $this->fd1_published;
+        $showFd2 = !$isStudent || $this->fd2_published;
+
         return [
             'id' => (string) $this->id,
             'projectId' => (string) $this->project_id,
@@ -75,20 +80,20 @@ class GradeResource extends JsonResource
             'committeeScore' => ($this->display_committee_grade ?? [])['score'] ?? $this->getCommitteeScore(),
             'isReadyForApproval' => $this->isReadyForApproval(),
             'validationErrors' => $this->is_approved ? [] : $this->getApprovalValidationErrors(),
-            'fd1FinalGrade' => $this->fd1_final_grade ? (float) $this->fd1_final_grade : null,
-            'fd2FinalGrade' => $this->fd2_final_grade ? (float) $this->fd2_final_grade : null,
-            'fd1Adjustment' => $this->fd1_adjustment !== null ? (float) $this->fd1_adjustment : null,
-            'fd2Adjustment' => $this->fd2_adjustment !== null ? (float) $this->fd2_adjustment : null,
+            'fd1FinalGrade' => $showFd1 && $this->fd1_final_grade ? (float) $this->fd1_final_grade : null,
+            'fd2FinalGrade' => $showFd2 && $this->fd2_final_grade ? (float) $this->fd2_final_grade : null,
+            'fd1Adjustment' => $showFd1 && $this->fd1_adjustment !== null ? (float) $this->fd1_adjustment : null,
+            'fd2Adjustment' => $showFd2 && $this->fd2_adjustment !== null ? (float) $this->fd2_adjustment : null,
             'isFd1Approved' => (bool) $this->fd1_approved,
             'isFd2Approved' => (bool) $this->fd2_approved,
             'fd1Published' => (bool) $this->fd1_published,
             'fd2Published' => (bool) $this->fd2_published,
-            'fd1SupervisorScore' => $this->getFD1SupervisorScore(),
-            'fd1CommitteeScore' => $this->getFD1CommitteeScore(),
-            'fd2SupervisorScore' => $this->getFD2SupervisorScore(),
-            'fd2CommitteeScore' => $this->getFD2CommitteeScore(),
-            'fd1GradeBreakdown' => $fd1Breakdown,
-            'fd2GradeBreakdown' => $fd2Breakdown,
+            'fd1SupervisorScore' => $showFd1 ? $this->getFD1SupervisorScore() : null,
+            'fd1CommitteeScore' => $showFd1 ? $this->getFD1CommitteeScore() : null,
+            'fd2SupervisorScore' => $showFd2 ? $this->getFD2SupervisorScore() : null,
+            'fd2CommitteeScore' => $showFd2 ? $this->getFD2CommitteeScore() : null,
+            'fd1GradeBreakdown' => $showFd1 ? $fd1Breakdown : null,
+            'fd2GradeBreakdown' => $showFd2 ? $fd2Breakdown : null,
             'fd1ApprovalStatus' => $fd1ApprovalStatus,
             'fd2ApprovalStatus' => $fd2ApprovalStatus,
             'committeeEvaluations' => $this->buildCommitteeEvaluationsForStage($fd1Breakdown, $fd2Breakdown),

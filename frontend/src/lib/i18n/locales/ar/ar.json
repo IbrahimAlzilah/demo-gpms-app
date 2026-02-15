@@ -1289,7 +1289,8 @@
     "noGrades": "لا توجد درجات متاحة حالياً",
     "noGradesDescription": "لم يتم تقييم مشروعك بعد",
     "loadError": "حدث خطأ أثناء تحميل الدرجات",
-    "showOnlyApproved": "عرض المعتمدة فقط"
+    "showOnlyApproved": "عرض المعتمدة فقط",
+    "total": "الدرجة الكلية"
   },
   "meeting": {
     "management": "إدارة الاجتماعات",

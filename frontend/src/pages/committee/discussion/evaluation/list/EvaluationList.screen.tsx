@@ -80,22 +80,20 @@ export function EvaluationList() {
         <Tabs
           value={state.defenseStage}
           onValueChange={(value) => handleStageChange(value as 'fd1' | 'fd2')}
-          className="w-full"
+          className="w-full px-4"
         >
-          <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
+          <TabsList className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-muted p-1 text-muted-foreground">
             <TabsTrigger value="fd1" className="gap-2">
-              <GraduationCap className="h-4 w-4" />
               {t('evaluation.fd1') || 'Final Defense 1'}
             </TabsTrigger>
             <TabsTrigger value="fd2" className="gap-2">
-              <GraduationCap className="h-4 w-4" />
               {t('evaluation.fd2') || 'Final Defense 2'}
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value={state.defenseStage} className="space-y-6">
             {/* Statistics Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card className="p-4 border-border/60 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20">
                 <div className="flex items-center justify-between">
                   <div>
@@ -151,7 +149,7 @@ export function EvaluationList() {
                   </div>
                 </div>
               </Card>
-            </div>
+            </div> */}
 
             {/* Progress Overview */}
             <Card>
@@ -275,8 +273,8 @@ export function EvaluationList() {
                               <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                                 <div
                                   className={`h-full transition-all duration-500 rounded-full ${isComplete
-                                      ? 'bg-green-500'
-                                      : 'bg-gradient-to-r from-primary to-primary/80'
+                                    ? 'bg-green-500'
+                                    : 'bg-gradient-to-r from-primary to-primary/80'
                                     }`}
                                   style={{ width: `${progressPercent}%` }}
                                 />

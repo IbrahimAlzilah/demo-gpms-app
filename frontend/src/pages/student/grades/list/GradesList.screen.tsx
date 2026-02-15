@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
-import { CardTitle, CardDescription, Badge } from '@/components/ui'
-import { LoadingSpinner, EmptyState, BlockContent } from '@/components/common'
+import { CardDescription, Badge } from '@/components/ui'
+import { LoadingSpinner, EmptyState } from '@/components/common'
 import {
   Award,
   User,
@@ -41,16 +41,16 @@ export function GradesList() {
   }
 
   return (
-    <BlockContent title={t('grades.title')}>
+    <>
       {/* UC-ST-08: Students can only view approved grades - filter toggle removed */}
-      <div className="space-y-6">
+      <div className="space-y-1">
         {data.grades.map((grade) => (
           <div key={grade.id}>
-            <div className="flex items-center justify-between mb-4">
-              <CardTitle className="flex items-center gap-2">{t('grades.title')}</CardTitle>
-              <Badge variant={grade.isApproved ? 'default' : 'secondary'}>
+            <div className="flex items-center justify-between">
+              {/* <CardTitle className="flex items-center gap-2">{t('grades.title')}</CardTitle> */}
+              {/* <Badge variant={grade.isApproved ? 'default' : 'secondary'}>
                 {grade.isApproved ? t('grades.approved') : t('grades.notApproved')}
-              </Badge>
+              </Badge> */}
             </div>
             {grade.project && <CardDescription>{grade.project.title}</CardDescription>}
             <div className="space-y-6">
@@ -189,7 +189,7 @@ export function GradesList() {
               )}
 
               {/* Final Grade */}
-              {grade.finalGrade !== undefined && (
+              {grade.finalGrade !== undefined && grade.finalGrade !== null && (
                 <div className="pt-4 border-t">
                   <div className="flex items-center gap-2 mb-3">
                     <TrendingUp className="h-5 w-5 text-accent" />
@@ -209,7 +209,133 @@ export function GradesList() {
                 </div>
               )}
 
-              {!grade.isApproved && (
+              {/* FD1 Grade */}
+              {grade.fd1Published && (
+                <div className="pt-6 border-t mt-6">
+                  <h3 className="text-lg font-bold mb-4">{t('status.ready_for_fd1')}</h3>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {/* FD1 Supervisor */}
+                    <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <User className="h-4 w-4 text-primary" />
+                        <h4 className="font-semibold text-sm">{t('grades.supervisorGrade')}</h4>
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-2xl font-bold text-primary">
+                          {grade.fd1SupervisorScore?.toFixed(2) ?? '-'}
+                        </p>
+                        <span className="text-sm text-muted-foreground">/ 100</span>
+                      </div>
+                    </div>
+
+                    {/* FD1 Committee */}
+                    <div className="p-4 bg-success/5 rounded-lg border border-success/20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Users className="h-4 w-4 text-success" />
+                        <h4 className="font-semibold text-sm">{t('grades.committeeGrade')}</h4>
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-2xl font-bold text-success">
+                          {grade.fd1CommitteeScore?.toFixed(2) ?? '-'}
+                        </p>
+                        <span className="text-sm text-muted-foreground">/ 100</span>
+                      </div>
+
+                      {grade.fd1GradeBreakdown?.committeeMembers && grade.fd1GradeBreakdown.committeeMembers.length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-success/10 space-y-2">
+                          <p className="text-xs font-semibold text-muted-foreground">{t('grades.committeeMembers')}</p>
+                          {grade.fd1GradeBreakdown.committeeMembers.map((member, idx) => (
+                            <div key={idx} className="flex justify-between items-center text-xs">
+                              <span>{member.evaluatorName}</span>
+                              <span className="font-medium text-success">{Number(member.rawScore).toFixed(2)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* FD1 Final */}
+                  {grade.fd1FinalGrade !== undefined && grade.fd1FinalGrade !== null && (
+                    <div className="mt-4 p-4 bg-accent/5 rounded-lg border border-accent/20">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-semibold">{t('grades.total')}</h4>
+                        <div className="flex items-baseline gap-2">
+                          <p className="text-2xl font-bold text-foreground">
+                            {grade.fd1FinalGrade.toFixed(2)}
+                          </p>
+                          <span className="text-sm text-muted-foreground">/ 100</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* FD2 Grade */}
+              {grade.fd2Published && (
+                <div className="pt-6 border-t mt-6">
+                  <h3 className="text-lg font-bold mb-4">{t('status.ready_for_fd2')}</h3>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {/* FD2 Supervisor */}
+                    <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <User className="h-4 w-4 text-primary" />
+                        <h4 className="font-semibold text-sm">{t('grades.supervisorGrade')}</h4>
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-2xl font-bold text-primary">
+                          {grade.fd2SupervisorScore?.toFixed(2) ?? '-'}
+                        </p>
+                        <span className="text-sm text-muted-foreground">/ 100</span>
+                      </div>
+                    </div>
+
+                    {/* FD2 Committee */}
+                    <div className="p-4 bg-success/5 rounded-lg border border-success/20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Users className="h-4 w-4 text-success" />
+                        <h4 className="font-semibold text-sm">{t('grades.committeeGrade')}</h4>
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-2xl font-bold text-success">
+                          {grade.fd2CommitteeScore?.toFixed(2) ?? '-'}
+                        </p>
+                        <span className="text-sm text-muted-foreground">/ 100</span>
+                      </div>
+
+                      {grade.fd2GradeBreakdown?.committeeMembers && grade.fd2GradeBreakdown.committeeMembers.length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-success/10 space-y-2">
+                          <p className="text-xs font-semibold text-muted-foreground">{t('grades.committeeMembers')}</p>
+                          {grade.fd2GradeBreakdown.committeeMembers.map((member, idx) => (
+                            <div key={idx} className="flex justify-between items-center text-xs">
+                              <span>{member.evaluatorName}</span>
+                              <span className="font-medium text-success">{Number(member.rawScore).toFixed(2)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* FD2 Final */}
+                  {grade.fd2FinalGrade !== undefined && grade.fd2FinalGrade !== null && (
+                    <div className="mt-4 p-4 bg-accent/5 rounded-lg border border-accent/20">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-semibold">{t('grades.total')}</h4>
+                        <div className="flex items-baseline gap-2">
+                          <p className="text-2xl font-bold text-foreground">
+                            {grade.fd2FinalGrade.toFixed(2)}
+                          </p>
+                          <span className="text-sm text-muted-foreground">/ 100</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {!grade.isApproved && !grade.fd1Published && !grade.fd2Published && (
                 <div className="flex items-start gap-2 p-3 bg-warning/10 border border-warning/20 rounded-lg">
                   <Clock className="h-4 w-4 text-warning mt-0.5" />
                   <p className="text-sm text-warning-foreground">
@@ -221,6 +347,6 @@ export function GradesList() {
           </div>
         ))}
       </div>
-    </BlockContent>
+    </>
   )
 }

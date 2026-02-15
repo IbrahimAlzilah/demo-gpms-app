@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
@@ -7,8 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, Button, Badge } from '@/compo
 import { LoadingSpinner } from '@/components/common'
 import { ROUTES } from '@/lib/constants/constants'
 import { discussionCommitteeProjectService } from '../api/project.service'
-import { UnifiedEvaluationModal } from '../../evaluation/components/UnifiedEvaluationModal'
-import { useState } from 'react'
+
 import {
   ChevronLeft,
   FileText,
@@ -19,7 +19,6 @@ import {
   Loader2,
   Award,
 } from 'lucide-react'
-import { formatDate } from '@/lib/utils/format'
 
 export function ProjectDetailScreen() {
   const { projectId } = useParams<{ projectId: string }>()
@@ -263,13 +262,18 @@ export function ProjectDetailScreen() {
             // size="xl"
             className="lg:max-w-3xl"
           >
-            <UnifiedEvaluationModal
-              open={showEvaluateModal}
-              onOpenChange={setShowEvaluateModal}
-              projectId={projectId}
-              role="discussion_committee"
-              onSuccess={() => setShowEvaluateModal(false)}
-            />
+            {/* 
+              Redirecting to main evaluation page to ensure proper stage selection (FD1/FD2).
+              Legacy modal without stage context causes data overwrites.
+            */}
+            <div className="p-4 space-y-4">
+              <p>{t('discussion.pleaseUseEvaluationDashboard')}</p>
+              <Button asChild>
+                <Link to={ROUTES.DISCUSSION_COMMITTEE.EVALUATION}>
+                  {t('nav.finalEvaluation')}
+                </Link>
+              </Button>
+            </div>
           </ModalDialog>
         )}
       </div>
