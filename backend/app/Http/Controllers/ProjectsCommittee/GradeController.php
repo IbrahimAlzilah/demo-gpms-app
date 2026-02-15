@@ -38,7 +38,11 @@ class GradeController extends Controller
         // Filter by approval status only when explicitly requested (omit for "All")
         if ($request->has('is_approved')) {
             $isApproved = filter_var($request->is_approved, FILTER_VALIDATE_BOOLEAN);
-            $query->where('is_approved', $isApproved);
+            $query->where(function ($q) use ($isApproved) {
+                $q->where('is_approved', $isApproved)
+                  ->orWhere('fd1_approved', $isApproved)
+                  ->orWhere('fd2_approved', $isApproved);
+            });
         }
 
         // Filter by project if provided

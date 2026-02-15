@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { useApproveGrade, usePublishGrades } from '../hooks/useGradeOperations'
+import { useApproveGrade } from '../hooks/useGradeOperations'
 import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui'
 import { Card, CardContent } from '@/components/ui'
 import { LoadingSpinner, ConfirmDialog, BlockContent, EmptyState } from '@/components/common'
-import { Send, FileX, GraduationCap } from 'lucide-react'
+import { FileX, GraduationCap } from 'lucide-react'
 import type { Grade } from '@/types/evaluation.types'
 import { useGradesList } from './GradesList.hook'
 import { useToast } from '@/components/common'
@@ -18,7 +18,6 @@ export function GradesList() {
   const queryClient = useQueryClient()
   const { toastSuccess, toastError } = useToast()
   const approveGrade = useApproveGrade()
-  const publishGrades = usePublishGrades()
 
   const refetchGrades = () => {
     queryClient.invalidateQueries({ queryKey: ['committee-grades-table'] })
@@ -101,30 +100,22 @@ export function GradesList() {
     }))
   }
 
-  const handlePublishToStudents = async () => {
+
+
+  const handleAdjustmentSave = async (grade: Grade, value: number | null) => {
     try {
-      // Logic for publishing specific stage
-      // This assumes we want to publish ALL approved projects for the current stage
-      // But usually publishing is per project or batch. 
-      // Existing code publishes by grade IDs.
-      // New requirement is "Publish Defense Results".
-      // Let's implement per-project publish in ProjectGradeCard, or batch here.
-      // For now, let's keep the existing batch publish as a general "Publish pending grades" 
-      // or update it to use publishDefenseResults if we want batch stage publishing.
-
-      // We will focus on ProjectGradeCard actions first.
-
-      // Legacy batch publish (maybe keep for now or comment out if unused)
-      const { data } = await committeeGradeService.getAll({ is_approved: true, pageSize: 1000 })
-      const ids = (data || []).map((g: Grade) => g.id)
-      if (ids.length === 0) {
-        toastError(t('committee.grades.noApprovedToPublish'))
-        return
+      const payload: Parameters<typeof committeeGradeService.update>[1] = {}
+      if (activeStage === 'fd1') {
+        payload.fd1Adjustment = value
+      } else {
+        payload.fd2Adjustment = value
       }
-      await publishGrades.mutateAsync(ids)
-      toastSuccess(t('committee.grades.publishSuccess', { count: ids.length }))
+      await committeeGradeService.update(grade.id, payload)
+      toastSuccess(t('committee.grades.updateSuccess'))
+      await refetchGrades()
     } catch (err) {
-      toastError(err instanceof Error ? err.message : t('committee.grades.publishError'))
+      toastError(err instanceof Error ? err.message : t('committee.grades.updateError'))
+      throw err
     }
   }
 
@@ -246,18 +237,7 @@ export function GradesList() {
                 <SelectItem value="all">{t('common.all')}</SelectItem>
               </SelectContent>
             </Select>
-            {state.approvalFilter === 'approved' && (
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={handlePublishToStudents}
-                disabled={publishGrades.isPending}
-                className="gap-1"
-              >
-                <Send className="h-4 w-4" />
-                {t('committee.grades.publishToStudents')}
-              </Button>
-            )}
+            {/* Global publish button removed - Use per-project Publish action for stage isolation */}
           </div>
         </div>
 
@@ -276,6 +256,7 @@ export function GradesList() {
                 grades={group.grades}
                 onAction={handleActionClick}
                 onStageAction={(action) => handleStageAction(projectId, action)}
+                onAdjustmentSave={handleAdjustmentSave}
                 stage="fd1"
                 isOpen={!!expandedProjects[projectId]}
                 onToggle={(open) => setExpandedProjects(prev => ({ ...prev, [projectId]: open }))}
@@ -299,6 +280,7 @@ export function GradesList() {
                 grades={group.grades}
                 onAction={handleActionClick}
                 onStageAction={(action) => handleStageAction(projectId, action)}
+                onAdjustmentSave={handleAdjustmentSave}
                 stage="fd2"
                 isOpen={!!expandedProjects[projectId]}
                 onToggle={(open) => setExpandedProjects(prev => ({ ...prev, [projectId]: open }))}

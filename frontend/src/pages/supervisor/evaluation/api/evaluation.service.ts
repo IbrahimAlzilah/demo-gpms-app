@@ -76,14 +76,17 @@ export const evaluationService = {
     comments?: string;
     studentIds?: string[];
   }): Promise<Grade[]> => {
-    const response = await apiClient.post<Grade[]>("/supervisor/evaluations/batch", {
-      project_id: data.projectId,
-      score: data.score,
-      max_score: data.maxScore,
-      criteria: [],
-      comments: data.comments,
-      student_ids: data.studentIds,
-    });
+    const response = await apiClient.post<Grade[]>(
+      "/supervisor/evaluations/batch",
+      {
+        project_id: data.projectId,
+        score: data.score,
+        max_score: data.maxScore,
+        criteria: [],
+        comments: data.comments,
+        student_ids: data.studentIds,
+      },
+    );
     return Array.isArray(response.data) ? response.data : [];
   },
 
@@ -110,7 +113,9 @@ export const evaluationService = {
   /**
    * Get supervisor's projects with FD1/FD2 defense evaluation status
    */
-  getDefenseEvaluationProjects: async (): Promise<SupervisorDefenseEvaluationItem[]> => {
+  getDefenseEvaluationProjects: async (): Promise<
+    SupervisorDefenseEvaluationItem[]
+  > => {
     const response = await apiClient.get<SupervisorDefenseEvaluationItem[]>(
       `/supervisor/defense-evaluations`,
     );
@@ -132,7 +137,7 @@ export const evaluationService = {
   submitDefenseEvaluation: async (data: {
     projectId: string;
     studentId: string;
-    defenseStage: 'fd1' | 'fd2';
+    defenseStage: "fd1" | "fd2";
     grade: {
       score: number;
       maxScore: number;
@@ -154,29 +159,54 @@ export const evaluationService = {
   /**
    * Get defense evaluations for a project and stage
    */
-  getDefenseEvaluations: async (projectId: string, stage: 'fd1' | 'fd2'): Promise<Grade[]> => {
-    const response = await apiClient.get<{ evaluations: Array<{ student: { id: string; name?: string; email?: string }; evaluation: { id: string; score: number; max_score: number; notes?: string; criteria?: unknown } | null }> }>(
-      `/supervisor/defense-evaluations/${projectId}/stage/${stage}`
-    );
+  getDefenseEvaluations: async (
+    projectId: string,
+    stage: "fd1" | "fd2",
+  ): Promise<Grade[]> => {
+    const response = await apiClient.get<{
+      evaluations: Array<{
+        student: { id: string; name?: string; email?: string };
+        evaluation: {
+          id: string;
+          score: number;
+          max_score: number;
+          notes?: string;
+          criteria?: unknown;
+        } | null;
+      }>;
+    }>(`/supervisor/defense-evaluations/${projectId}/stage/${stage}`);
     const evaluations = response.data?.evaluations ?? [];
-    return evaluations.map((item: { student: { id: string }; evaluation: { score: number; max_score: number; notes?: string; criteria?: unknown } | null }) => ({
-      studentId: item.student.id,
-      student: item.student,
-      supervisorGrade: item.evaluation
-        ? {
-            score: item.evaluation.score,
-            maxScore: item.evaluation.max_score,
-            comments: item.evaluation.notes,
-            criteria: item.evaluation.criteria,
-          }
-        : undefined,
-    })) as Grade[];
+    return evaluations.map(
+      (item: {
+        student: { id: string };
+        evaluation: {
+          score: number;
+          max_score: number;
+          notes?: string;
+          criteria?: unknown;
+        } | null;
+      }) => ({
+        studentId: item.student.id,
+        student: item.student,
+        supervisorGrade: item.evaluation
+          ? {
+              score: item.evaluation.score,
+              maxScore: item.evaluation.max_score,
+              comments: item.evaluation.notes,
+              criteria: item.evaluation.criteria,
+            }
+          : undefined,
+      }),
+    ) as Grade[];
   },
-  
+
   /**
    * Check if defense grades are locked for a project/stage
    */
-  isDefenseLocked: async (projectId: string, stage: 'fd1' | 'fd2'): Promise<boolean> => {
+  isDefenseLocked: async (
+    projectId: string,
+    stage: "fd1" | "fd2",
+  ): Promise<boolean> => {
     const response = await apiClient.get<{ isLocked: boolean }>(
       `/supervisor/defense-evaluations/${projectId}/locked/${stage}`,
     );

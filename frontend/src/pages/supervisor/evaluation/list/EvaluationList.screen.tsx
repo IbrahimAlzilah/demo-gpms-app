@@ -1,9 +1,9 @@
 import { useMemo, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { DataTable } from '@/components/ui'
+import { DataTable, Card, CardContent } from '@/components/ui'
 import { BlockContent, ModalDialog } from '@/components/common'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, ShieldCheck } from 'lucide-react'
 import { evaluationService } from '../api/evaluation.service'
 import { projectService } from '../../projects/api/project.service'
 import { UnifiedEvaluationModal } from '../../../committee/discussion/evaluation/components/UnifiedEvaluationModal'
@@ -116,6 +116,14 @@ export function EvaluationList() {
   return (
     <>
       <BlockContent title={t('nav.evaluation')} variant="data-table">
+        <Card className="mb-6 border-emerald-200 bg-emerald-50/50 dark:bg-emerald-950/20 dark:border-emerald-900/50">
+          <CardContent className="p-3 flex items-center gap-3">
+            <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <p className="text-sm text-emerald-800 dark:text-emerald-200">
+              {t('evaluation.supervisorOnlyGrades') || "You are submitting your supervisor grades only. Committee members' grades are private."}
+            </p>
+          </CardContent>
+        </Card>
         <DataTable
           columns={columns}
           data={data.items}

@@ -119,7 +119,10 @@
     "noComments": "No comments",
     "updated": "Updated",
     "by": "By",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "of": "of",
+    "evaluated": "evaluated",
+    "student": "Student"
   },
   "app": {
     "name": "Graduation Project Management System",
@@ -1469,7 +1472,19 @@
     "enterAtLeastOneGrade": "Enter at least one student grade before saving",
     "noEvaluations": "No evaluations found",
     "loadError": "Error loading evaluations",
-    "searchPlaceholder": "Search evaluations..."
+    "searchPlaceholder": "Search evaluations...",
+    "onlyYourGrades": "You can only view and submit your own evaluations. Other committee members' grades remain private until the stage is approved.",
+    "supervisorOnlyGrades": "You are submitting your supervisor grades only. Committee members' grades are private.",
+    "committeeInfo": {
+      "title": "Discussion Committee Evaluation",
+      "description": "You can only view and submit your own evaluations. Other committee members' grades are private until the stage is approved by the Project Committee.",
+      "formula": "Grading Formula:",
+      "formulaDescription": "Each committee member's contribution = (grade ÷ 100) ÷ 5. All committee contributions are summed for the final committee score."
+    },
+    "totalProjects": "Total Projects",
+    "totalStudents": "Total Students",
+    "noProjects": "No projects assigned for this defense stage",
+    "myProgress": "My Evaluation Progress"
   },
   "final": {
     "grade": "Final Grade"
@@ -2101,7 +2116,10 @@
       "loadError": "Failed to load grades. Please try again.",
       "confirmApproveAll": "Are you sure you want to approve all pending grades for this project?",
       "confirmPublish": "Are you sure you want to publish the results to students? This action cannot be undone.",
-      "approveFirstToPublish": "Approve all grades before publishing"
+      "approveFirstToPublish": "Approve all grades before publishing",
+      "stageTabs": "Defense Stage",
+      "approveStage": "Approve Stage",
+      "publishStage": "Publish Stage"
     }
   },
   "project": {

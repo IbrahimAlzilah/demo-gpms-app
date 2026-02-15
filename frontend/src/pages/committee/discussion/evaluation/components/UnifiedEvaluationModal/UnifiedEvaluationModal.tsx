@@ -17,6 +17,7 @@ import {
   Users,
   FileText,
   User,
+  ShieldCheck,
 } from "lucide-react";
 import { PerStudentGradingTable } from "@/components/evaluation/PerStudentGradingTable";
 import { usePeriodCheck } from "@/hooks/usePeriodCheck";
@@ -94,6 +95,7 @@ export function UnifiedEvaluationModal({
   const [groupScore, setGroupScore] = useState("");
   const [groupComments, setGroupComments] = useState("");
   const [savingStudentId, setSavingStudentId] = useState<string | null>(null);
+  const [isSubmittingGroup, setIsSubmittingGroup] = useState(false);
 
   // Queries
   // Queries
@@ -185,31 +187,107 @@ export function UnifiedEvaluationModal({
     (role === "supervisor" && lockedQuery.data === true) ||
     grades.some((g: Grade) => g.isApproved === true);
 
-  // Apply group grade to all students (0-100)
-  const handleApplyGroupGrade = useCallback(() => {
-    const score = groupScore.trim();
-    if (!score) {
+  // Apply group grade to all students (0-100) and save to backend
+  const handleApplyGroupGrade = useCallback(async () => {
+    const scoreVal = groupScore.trim();
+    if (!scoreVal) {
       toastError(t("evaluation.enterGroupGrade"));
       return;
     }
-    const numScore = parseFloat(score);
+    const numScore = parseFloat(scoreVal);
     if (isNaN(numScore) || numScore < 0 || numScore > 100) {
       toastError(t("discussion.invalidScore"));
       return;
     }
-    const next: Record<string, StudentGradeEntry> = {};
-    students.forEach((s) => {
-      next[s.id] = {
-        studentId: s.id,
-        score,
-        maxScore: "100",
-        comments: groupComments,
-        hasExistingGrade: studentGrades[s.id]?.hasExistingGrade,
-      };
-    });
-    setStudentGrades(next);
-    toastSuccess(t("evaluation.groupGradeApplied"));
-  }, [groupScore, groupComments, students, studentGrades, t, toastError, toastSuccess]);
+
+    setIsSubmittingGroup(true);
+    try {
+      if (role === "discussion_committee") {
+        if (defenseStage) {
+          // Defense Bulk
+          const items = students.map((s) => ({
+            studentId: s.id,
+            score: numScore,
+            maxScore: 100,
+            notes: groupComments,
+          }));
+          await committeeEvaluationService.submitDefenseBulkEvaluation({
+            projectId,
+            stage: defenseStage,
+            items,
+          });
+        } else {
+          // Regular Batch
+          await committeeEvaluationService.submitBatchGrade({
+            projectId,
+            score: numScore,
+            maxScore: 100,
+            comments: groupComments,
+            studentIds: students.map((s) => s.id),
+          });
+        }
+      } else {
+        // Supervisor - use individual submissions concurrently
+        if (submitGradeProp) {
+          await Promise.all(
+            students.map((s) =>
+              submitGradeProp({
+                projectId,
+                studentId: s.id,
+                defenseStage,
+                grade: {
+                  score: numScore,
+                  maxScore: 100,
+                  criteria: {},
+                  comments: groupComments,
+                },
+              })
+            )
+          );
+        }
+      }
+
+      // Update local state to reflect saved status
+      const next: Record<string, StudentGradeEntry> = {};
+      students.forEach((s) => {
+        next[s.id] = {
+          studentId: s.id,
+          score: scoreVal,
+          maxScore: "100",
+          comments: groupComments,
+          hasExistingGrade: true,
+        };
+      });
+      setStudentGrades(next);
+      toastSuccess(t("evaluation.groupGradeApplied"));
+
+      // Invalidate queries
+      queryClient.invalidateQueries({
+        queryKey:
+          role === "discussion_committee"
+            ? ["discussion-grades", projectId, defenseStage]
+            : ["supervisor-grades", projectId, defenseStage],
+      });
+    } catch (error) {
+      toastError(
+        error instanceof Error ? error.message : t("discussion.evaluationError")
+      );
+    } finally {
+      setIsSubmittingGroup(false);
+    }
+  }, [
+    groupScore,
+    groupComments,
+    students,
+    role,
+    defenseStage,
+    projectId,
+    submitGradeProp,
+    queryClient,
+    t,
+    toastError,
+    toastSuccess,
+  ]);
 
   // Update individual student grade
   const setGradeForStudent = useCallback(
@@ -253,27 +331,27 @@ export function UnifiedEvaluationModal({
       try {
         const submit = submitGradeProp
           ? (p: {
-              projectId: string;
-              studentId: string;
-              defenseStage?: DefenseStage;
-              grade: {
-                score: number;
-                maxScore: number;
-                criteria: Record<string, unknown>;
-                comments?: string;
-              };
-            }) => submitGradeProp(p)
-          : (
-              p: Parameters<typeof committeeEvaluationService.submitFinalGrade>[0]
-            ) => {
-              if (defenseStage) {
-                return committeeEvaluationService.submitDefenseEvaluation({
-                  ...p,
-                  defenseStage,
-                });
-              }
-              return submitCommitteeGrade.mutateAsync(p);
+            projectId: string;
+            studentId: string;
+            defenseStage?: DefenseStage;
+            grade: {
+              score: number;
+              maxScore: number;
+              criteria: Record<string, unknown>;
+              comments?: string;
             };
+          }) => submitGradeProp(p)
+          : (
+            p: Parameters<typeof committeeEvaluationService.submitFinalGrade>[0]
+          ) => {
+            if (defenseStage) {
+              return committeeEvaluationService.submitDefenseEvaluation({
+                ...p,
+                defenseStage,
+              });
+            }
+            return submitCommitteeGrade.mutateAsync(p);
+          };
 
         await submit({
           projectId,
@@ -442,7 +520,7 @@ export function UnifiedEvaluationModal({
 
             {/* Progress Indicator */}
             <div className="flex flex-col items-center justify-center rounded-xl bg-background/80 px-6 py-4 shadow-inner">
-              <div className="relative h-10 w-10">
+              <div className="relative h-14 w-14">
                 <svg
                   className="h-full w-full -rotate-90"
                   viewBox="0 0 36 36"
@@ -506,7 +584,12 @@ export function UnifiedEvaluationModal({
                   className="h-10"
                 />
               </div>
-              <Button onClick={handleApplyGroupGrade} className="h-10 gap-2">
+              <Button
+                onClick={handleApplyGroupGrade}
+                className="h-10 gap-2"
+                disabled={isSubmittingGroup || !groupScore}
+              >
+                {isSubmittingGroup ? <LoadingSpinner size="sm" /> : null}
                 {t("evaluation.apply")}
               </Button>
             </div>

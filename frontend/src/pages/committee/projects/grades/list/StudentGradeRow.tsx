@@ -1,18 +1,46 @@
+import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { User, Eye, Edit2, Check } from 'lucide-react'
-import { TableRow, TableCell, Badge } from '@/components/ui'
+import { User, Eye, Edit2, Check, Loader2 } from 'lucide-react'
+import { TableRow, TableCell, Badge, Input } from '@/components/ui'
 import { ActionsDropdown, type TableAction } from '@/components/common'
 import type { Grade } from '@/types/evaluation.types'
 
 interface StudentGradeRowProps {
     grade: Grade
     onAction: (grade: Grade, action: 'approve' | 'edit' | 'view') => void
+    onAdjustmentSave?: (grade: Grade, value: number | null) => Promise<void>
     stage: 'fd1' | 'fd2'
     committeeMemberCount: number
 }
 
-export function StudentGradeRow({ grade, onAction, stage, committeeMemberCount }: StudentGradeRowProps) {
+export function StudentGradeRow({ grade, onAction, onAdjustmentSave, stage, committeeMemberCount }: StudentGradeRowProps) {
     const { t } = useTranslation()
+    const [adjustmentInput, setAdjustmentInput] = useState<string>('')
+    const [isEditingAdjustment, setIsEditingAdjustment] = useState(false)
+    const [savingAdjustment, setSavingAdjustment] = useState(false)
+
+    const currentAdjustment = stage === 'fd1' ? (grade as { fd1Adjustment?: number | null }).fd1Adjustment : (grade as { fd2Adjustment?: number | null }).fd2Adjustment
+
+    const handleAdjustmentBlur = useCallback(async () => {
+        if (!onAdjustmentSave || !isEditingAdjustment) return
+        setIsEditingAdjustment(false)
+        const trimmed = adjustmentInput.trim()
+        const val = trimmed === '' ? null : parseFloat(trimmed)
+        if (trimmed !== '' && (isNaN(val!) || val! < -100 || val! > 100)) return
+        const finalVal = trimmed === '' ? null : val!
+        if (finalVal === currentAdjustment || (finalVal === null && currentAdjustment == null)) return
+        setSavingAdjustment(true)
+        try {
+            await onAdjustmentSave(grade, finalVal)
+        } finally {
+            setSavingAdjustment(false)
+        }
+    }, [adjustmentInput, currentAdjustment, grade, isEditingAdjustment, onAdjustmentSave])
+
+    const handleAdjustmentFocus = useCallback(() => {
+        setIsEditingAdjustment(true)
+        setAdjustmentInput(currentAdjustment != null ? String(currentAdjustment) : '')
+    }, [currentAdjustment])
 
     // Use stage-specific grade breakdown from backend (committeeEvaluations with defenseStage)
     const stageBreakdown = (stage === 'fd1' ? grade.fd1GradeBreakdown : grade.fd2GradeBreakdown) ?? undefined
@@ -77,7 +105,7 @@ export function StudentGradeRow({ grade, onAction, stage, committeeMemberCount }
 
     const memberScoresIndices = Array.from({ length: committeeMemberCount }, (_, i) => i)
 
-    const isStageLocked = isStagePublished || stageApprovalStatus === 'approved'
+    // const isStageLocked = isStagePublished || stageApprovalStatus === 'approved' // Unused with hidden: true
 
     // Project Committee can always edit (including after publish, with audit trail)
     const actions: TableAction<Grade>[] = [
@@ -98,7 +126,7 @@ export function StudentGradeRow({ grade, onAction, stage, committeeMemberCount }
             label: t('common.approve'),
             icon: Check,
             onClick: (row) => onAction(row, 'approve'),
-            hidden: () => isStageLocked,
+            hidden: () => true, // Individual approval not supported for Defense Stages (use Project Approve All)
             disabled: (row) => !row.isReadyForApproval,
             variant: 'success',
         }
@@ -151,11 +179,41 @@ export function StudentGradeRow({ grade, onAction, stage, committeeMemberCount }
                 {committeeTotalContribution > 0 ? Number(committeeTotalContribution).toFixed(2) : '-'}
             </TableCell>
 
-            <TableCell className="text-center text-muted-foreground">
-                {(() => {
-                    const adj = stage === 'fd1' ? (grade as { fd1Adjustment?: number | null }).fd1Adjustment : (grade as { fd2Adjustment?: number | null }).fd2Adjustment
-                    return adj != null ? Number(adj).toFixed(2) : '—'
-                })()}
+            <TableCell className="text-center">
+                {onAdjustmentSave && !isStagePublished ? (
+                    <div className="flex items-center justify-center gap-1">
+                        {savingAdjustment ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        ) : isEditingAdjustment ? (
+                            <Input
+                                type="number"
+                                min={-100}
+                                max={100}
+                                step="0.01"
+                                value={adjustmentInput}
+                                onChange={(e) => setAdjustmentInput(e.target.value)}
+                                onBlur={handleAdjustmentBlur}
+                                onKeyDown={(e) => e.key === 'Enter' && handleAdjustmentBlur()}
+                                className="h-8 w-20 text-center text-sm"
+                                placeholder="0"
+                                autoFocus
+                            />
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={handleAdjustmentFocus}
+                                className="min-w-16 px-2 py-1 rounded border border-dashed border-muted-foreground/40 hover:border-primary/50 hover:bg-muted/50 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                                title={t('committee.grades.adjustment')}
+                            >
+                                {currentAdjustment != null ? Number(currentAdjustment).toFixed(2) : '—'}
+                            </button>
+                        )}
+                    </div>
+                ) : (
+                    <span className="text-muted-foreground">
+                        {currentAdjustment != null ? Number(currentAdjustment).toFixed(2) : '—'}
+                    </span>
+                )}
             </TableCell>
 
             <TableCell className="text-center bg-muted/10">

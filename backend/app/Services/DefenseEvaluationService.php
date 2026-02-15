@@ -735,7 +735,7 @@ class DefenseEvaluationService
     {
         $errors = [];
         $students = $project->students;
-        $committeeMembers = $project->committeeMembers;
+        $committeeMembers = $project->committeeMembers; // Assuming this returns all assigned members
 
         if ($students->isEmpty()) {
             $errors[] = 'No students assigned to this project';
@@ -750,26 +750,34 @@ class DefenseEvaluationService
                 ->where('student_id', $student->id)
                 ->where('defense_stage', $stage)
                 ->where('evaluator_role', 'supervisor')
-                ->first();
+                ->exists();
 
             if (!$supervisorEval) {
                 $studentErrors[] = 'Missing supervisor evaluation';
             }
 
             // Check committee evaluations
-            $committeeEvalCount = DefenseEvaluation::where('project_id', $project->id)
+            // we need to know exactly WHICH committee member is missing
+            $submittedMemberIds = DefenseEvaluation::where('project_id', $project->id)
                 ->where('student_id', $student->id)
                 ->where('defense_stage', $stage)
                 ->where('evaluator_role', 'committee_member')
-                ->count();
+                ->pluck('evaluator_id')
+                ->toArray();
 
-            $expectedCommitteeEvals = $committeeMembers->count();
-            if ($committeeEvalCount < $expectedCommitteeEvals) {
-                $studentErrors[] = "Missing committee evaluations ({$committeeEvalCount}/{$expectedCommitteeEvals})";
+            $missingMembers = [];
+            foreach ($committeeMembers as $member) {
+                if (!in_array($member->id, $submittedMemberIds)) {
+                    $missingMembers[] = $member->name;
+                }
+            }
+
+            if (!empty($missingMembers)) {
+                $studentErrors[] = "Missing committee evaluations from: " . implode(', ', $missingMembers);
             }
 
             if (!empty($studentErrors)) {
-                $errors[] = "Student {$student->name} ({$student->username}): " . implode(', ', $studentErrors);
+                $errors[] = "Student {$student->name}: " . implode(', ', $studentErrors);
             }
         }
 

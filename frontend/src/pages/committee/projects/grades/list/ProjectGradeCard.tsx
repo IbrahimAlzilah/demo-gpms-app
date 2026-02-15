@@ -10,12 +10,13 @@ interface ProjectGradeCardProps {
     grades: Grade[]
     onAction: (grade: Grade, action: 'approve' | 'edit' | 'view') => void
     onStageAction: (action: 'approve' | 'publish') => void
+    onAdjustmentSave?: (grade: Grade, value: number | null) => Promise<void>
     stage: 'fd1' | 'fd2'
     isOpen?: boolean
     onToggle?: (isOpen: boolean) => void
 }
 
-export function ProjectGradeCard({ project, grades, onAction, onStageAction, stage, isOpen: controlledIsOpen, onToggle }: ProjectGradeCardProps) {
+export function ProjectGradeCard({ project, grades, onAction, onStageAction, onAdjustmentSave, stage, isOpen: controlledIsOpen, onToggle }: ProjectGradeCardProps) {
     const { t } = useTranslation()
     const [internalIsOpen, setInternalIsOpen] = useState(false)
 
@@ -132,8 +133,8 @@ export function ProjectGradeCard({ project, grades, onAction, onStageAction, sta
 
                 <CollapsibleContent>
                     <CardContent className="p-0 border-t">
-                        <div className="overflow-x-auto">
-                            <Table>
+                        <div className="overflow-x-auto -mx-4 sm:mx-0">
+                            <Table className="min-w-[700px]">
                                 <TableHeader className="bg-muted/30">
                                     <TableRow className="hover:bg-transparent border-b border-border/50">
                                         <TableHead className="w-[200px] pl-6 font-semibold">{t('committee.grades.student')}</TableHead>
@@ -158,6 +159,7 @@ export function ProjectGradeCard({ project, grades, onAction, onStageAction, sta
                                             key={grade.id}
                                             grade={grade}
                                             onAction={onAction}
+                                            onAdjustmentSave={onAdjustmentSave}
                                             stage={stage}
                                             committeeMemberCount={committeeMemberCount}
                                         />

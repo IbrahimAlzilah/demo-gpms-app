@@ -121,8 +121,8 @@ export const committeeGradeService = {
       finalGrade?: number;
       fd1FinalGrade?: number;
       fd2FinalGrade?: number;
-      fd1Adjustment?: number;
-      fd2Adjustment?: number;
+      fd1Adjustment?: number | null;
+      fd2Adjustment?: number | null;
     },
   ): Promise<Grade> => {
     // Map to API structure

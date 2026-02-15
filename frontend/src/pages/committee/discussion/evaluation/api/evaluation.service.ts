@@ -4,7 +4,10 @@ import type {
   TableQueryParams,
   TableResponse,
 } from "../../../../../types/table.types";
-import type { EvaluationListItem, EvaluationProjectItem } from "../types/Evaluation.types";
+import type {
+  EvaluationListItem,
+  EvaluationProjectItem,
+} from "../types/Evaluation.types";
 
 export const committeeEvaluationService = {
   /**
@@ -122,7 +125,7 @@ export const committeeEvaluationService = {
   submitDefenseEvaluation: async (data: {
     projectId: string;
     studentId: string;
-    defenseStage: 'fd1' | 'fd2';
+    defenseStage: "fd1" | "fd2";
     grade: {
       score: number;
       maxScore: number;
@@ -144,43 +147,76 @@ export const committeeEvaluationService = {
   /**
    * Get defense evaluations for a project and stage
    */
-  getDefenseEvaluations: async (projectId: string, stage: 'fd1' | 'fd2'): Promise<Grade[]> => {
+  getDefenseEvaluations: async (
+    projectId: string,
+    stage: "fd1" | "fd2",
+  ): Promise<Grade[]> => {
     const response = await apiClient.get<any>(
-      `/discussion-committee/defense-evaluations/my-evaluations?project_id=${projectId}&stage=${stage}`
+      `/discussion-committee/defense-evaluations/my-evaluations?project_id=${projectId}&stage=${stage}`,
     );
-    
+
     // Controller returns { data: { evaluations: [...], isLocked: boolean, ... } }
     // Axios returns response.data as the body.
-    // So response.data.evaluations is likely correct if the interceptor unwraps 'data', 
-    // or response.data.data.evaluations if not. 
+    // So response.data.evaluations is likely correct if the interceptor unwraps 'data',
+    // or response.data.data.evaluations if not.
     // Usually existing patterns suggest unwrapping happens or we access directly.
     // Let's assume standard response like getMyEvaluations returns.
-    
-    const evaluations = response.data?.evaluations ?? response.data?.data?.evaluations ?? [];
-    
+
+    const evaluations =
+      response.data?.evaluations ?? response.data?.data?.evaluations ?? [];
+
     return evaluations.map((item: any) => ({
       ...item,
       studentId: item.student.id,
       student: item.student,
       // Map 'myEvaluation' to 'committeeGrade' for frontend compatibility
-      committeeGrade: item.myEvaluation ? {
-        score: item.myEvaluation.score,
-        maxScore: item.myEvaluation.maxScore,
-        comments: item.myEvaluation.notes,
-        criteria: item.myEvaluation.criteria,
-        evaluatedAt: item.myEvaluation.createdAt
-      } : undefined
+      committeeGrade: item.myEvaluation
+        ? {
+            score: item.myEvaluation.score,
+            maxScore: item.myEvaluation.maxScore,
+            comments: item.myEvaluation.notes,
+            criteria: item.myEvaluation.criteria,
+            evaluatedAt: item.myEvaluation.createdAt,
+          }
+        : undefined,
     })) as Grade[];
   },
 
   /**
    * Get projects assigned for defense evaluation
    */
-  getDefenseProjects: async (stage: 'fd1' | 'fd2'): Promise<EvaluationProjectItem[]> => {
+  getDefenseProjects: async (
+    stage: "fd1" | "fd2",
+  ): Promise<EvaluationProjectItem[]> => {
     const response = await apiClient.get<{ data: EvaluationProjectItem[] }>(
-      `/discussion-committee/defense-evaluations/projects/${stage}`
+      `/discussion-committee/defense-evaluations/projects/${stage}`,
     );
     const data = response.data?.data ?? response.data;
     return Array.isArray(data) ? data : [];
   },
+  /**
+   * Submit multiple defense evaluations in a single transaction (bulk grading)
+   */
+  submitDefenseBulkEvaluation: async (data: {
+    projectId: string;
+    stage: "fd1" | "fd2";
+    items: Array<{
+      studentId: string;
+      score: number;
+      maxScore?: number;
+      notes?: string;
+    }>;
+  }): Promise<void> => {
+    await apiClient.post("/discussion-committee/defense-evaluations/bulk", {
+      project_id: data.projectId,
+      stage: data.stage,
+      items: data.items.map((item) => ({
+        student_id: item.studentId,
+        score: item.score,
+        maxScore: item.maxScore ?? 100,
+        notes: item.notes,
+      })),
+    });
+  },
 };
+

@@ -17,6 +17,18 @@ import type { User as UserType } from "@/types/user.types";
 const MIN_GRADE = 0;
 const MAX_GRADE = 100;
 
+/** Inline validation: 0–100 range */
+export function validateGradeValue(value: string, t: (key: string, opts?: object) => string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const num = parseFloat(trimmed);
+  if (isNaN(num)) return t("evaluation.gradeInvalid");
+  if (num < MIN_GRADE || num > MAX_GRADE) {
+    return t("evaluation.gradeRange", { min: MIN_GRADE, max: MAX_GRADE });
+  }
+  return null;
+}
+
 export interface StudentGradeRow {
   studentId: string;
   score: string;
@@ -46,16 +58,10 @@ export function PerStudentGradingTable({
 }: PerStudentGradingTableProps) {
   const { t } = useTranslation();
 
-  const validateGrade = useCallback((value: string): string | null => {
-    const trimmed = value.trim();
-    if (!trimmed) return null;
-    const num = parseFloat(trimmed);
-    if (isNaN(num)) return t("evaluation.gradeInvalid");
-    if (num < MIN_GRADE || num > MAX_GRADE) {
-      return t("evaluation.gradeRange", { min: MIN_GRADE, max: MAX_GRADE });
-    }
-    return null;
-  }, [t]);
+  const validateGrade = useCallback(
+    (value: string): string | null => validateGradeValue(value, t),
+    [t]
+  );
 
   const handleSave = async (studentId: string) => {
     const entry = grades[studentId];
@@ -66,8 +72,8 @@ export function PerStudentGradingTable({
   };
 
   return (
-    <div className="overflow-x-auto rounded-lg border">
-      <Table>
+    <div className="overflow-x-auto rounded-lg border -mx-1 sm:mx-0" role="region" aria-label={t("evaluation.individualGrades")}>
+      <Table className="min-w-[560px] sm:min-w-0">
         <TableHeader>
           <TableRow className="bg-muted/30 hover:bg-muted/30">
             <TableHead className="w-[220px] font-semibold">

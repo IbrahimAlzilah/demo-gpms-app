@@ -62,16 +62,14 @@ export function EvaluationList() {
               <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
               <div className="space-y-1">
                 <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                  {t('evaluation.committeeInfo.title') || 'Discussion Committee Evaluation'}
+                  {t('evaluation.committeeInfo.title')}
                 </p>
                 <p className="text-xs text-blue-700 dark:text-blue-300">
-                  {t('evaluation.committeeInfo.description') ||
-                    'You can only view and submit your own evaluations. Other committee members\' grades are private until the stage is approved by the Project Committee.'}
+                  {t('evaluation.committeeInfo.description')}
                 </p>
                 <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
-                  <strong>{t('evaluation.committeeInfo.formula') || 'Grading Formula:'}</strong>{' '}
-                  {t('evaluation.committeeInfo.formulaDescription') ||
-                    'Each committee member\'s contribution = (grade ÷ 100) ÷ 5. All committee contributions are summed for the final committee score.'}
+                  <strong>{t('evaluation.committeeInfo.formula')}</strong>{' '}
+                  {t('evaluation.committeeInfo.formulaDescription')}
                 </p>
               </div>
             </div>
@@ -102,7 +100,7 @@ export function EvaluationList() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                      {t('evaluation.totalProjects') || 'Total Projects'}
+                      {t('evaluation.totalProjects')}
                     </p>
                     <p className="text-2xl font-bold text-foreground mt-1">{stats.totalProjects}</p>
                   </div>
@@ -116,7 +114,7 @@ export function EvaluationList() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                      {t('evaluation.totalStudents') || 'Total Students'}
+                      {t('evaluation.totalStudents')}
                     </p>
                     <p className="text-2xl font-bold text-foreground mt-1">{stats.totalStudents}</p>
                   </div>
@@ -130,7 +128,7 @@ export function EvaluationList() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                      {t('evaluation.evaluated') || 'Evaluated'}
+                      {t('evaluation.evaluated')}
                     </p>
                     <p className="text-2xl font-bold text-foreground mt-1">{stats.evaluatedStudents}</p>
                   </div>
@@ -144,7 +142,7 @@ export function EvaluationList() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                      {t('evaluation.pending') || 'Pending'}
+                      {t('evaluation.pending')}
                     </p>
                     <p className="text-2xl font-bold text-foreground mt-1">{stats.pendingStudents}</p>
                   </div>
@@ -160,7 +158,7 @@ export function EvaluationList() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-sm font-semibold text-foreground">
-                    {t('evaluation.myProgress') || 'My Evaluation Progress'}
+                    {t('evaluation.myProgress')}
                   </h3>
                   <Badge variant="secondary" className="font-mono">
                     {stats.progressPercentage}%
@@ -208,7 +206,7 @@ export function EvaluationList() {
                 <CardContent className="p-12 text-center">
                   <FileText className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
                   <p className="text-muted-foreground">
-                    {t('evaluation.noProjects') || 'No projects assigned for this defense stage'}
+                    {t('evaluation.noProjects')}
                   </p>
                 </CardContent>
               </Card>
