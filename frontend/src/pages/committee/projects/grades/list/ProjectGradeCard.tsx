@@ -62,7 +62,7 @@ export function ProjectGradeCard({ project, grades, onAction, onStageAction, onA
                     <div className="flex items-center justify-between p-4 cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
                         <div className="flex flex-col gap-1.5 flex-1">
                             <div className="flex items-center gap-3">
-                                <h3 className="font-bold text-md text-foreground tracking-tight">
+                                <h3 className="font-bold text-sm text-foreground tracking-tight">
                                     {t('committee.grades.project')}: {project?.title ?? t('common.unknown')}
                                 </h3>
                             </div>
