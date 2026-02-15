@@ -48,6 +48,7 @@ export function useDataTable<TData>({
     isLoading,
     error,
     isFetching,
+    refetch,
   } = useQuery({
     queryKey: [...queryKey, queryParams],
     queryFn: () => queryFn(queryParams!),
@@ -67,6 +68,7 @@ export function useDataTable<TData>({
     pageCount: tableData?.totalPages ?? 0,
     isLoading: isLoading || isFetching,
     error,
+    refetch,
     sorting,
     setSorting,
     columnFilters,

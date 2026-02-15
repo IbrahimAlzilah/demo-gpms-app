@@ -467,19 +467,86 @@ class ProjectService
     }
 
     /**
-     * Calculate progress percentage for a project based on completed milestones
+     * Calculate progress percentage for a project based on multiple factors:
+     * - Milestones completion (40% weight)
+     * - Document approvals (30% weight)
+     * - Defense stages completion (30% weight)
      */
     public function calculateProgressPercentage(Project $project): int
     {
-        $totalMilestones = $project->milestones()->count();
+        $weights = [
+            'milestones' => 40,
+            'documents' => 30,
+            'defenses' => 30,
+        ];
 
-        if ($totalMilestones === 0) {
+        $scores = [
+            'milestones' => 0,
+            'documents' => 0,
+            'defenses' => 0,
+        ];
+
+        // 1. Calculate milestone progress (40%)
+        $totalMilestones = $project->milestones()->count();
+        if ($totalMilestones > 0) {
+            $completedMilestones = $project->milestones()->where('completed', true)->count();
+            $scores['milestones'] = ($completedMilestones / $totalMilestones) * 100;
+        }
+
+        // 2. Calculate document approval progress (30%)
+        // Count approved documents vs total submitted documents
+        $totalDocuments = $project->documents()->count();
+        if ($totalDocuments > 0) {
+            $approvedDocuments = $project->documents()->where('review_status', 'approved')->count();
+            $scores['documents'] = ($approvedDocuments / $totalDocuments) * 100;
+        }
+
+        // 3. Calculate defense stages progress (30%)
+        // Check FD1 and FD2 completion (published status means completed)
+        $fd1Approval = $project->defenseApprovals()
+            ->where('defense_stage', 'fd1')
+            ->first();
+        $fd2Approval = $project->defenseApprovals()
+            ->where('defense_stage', 'fd2')
+            ->first();
+
+        $defenseProgress = 0;
+        if ($fd1Approval && $fd1Approval->isPublished()) {
+            $defenseProgress += 50; // FD1 completed = 50%
+        }
+        if ($fd2Approval && $fd2Approval->isPublished()) {
+            $defenseProgress += 50; // FD2 completed = 50%
+        }
+        $scores['defenses'] = $defenseProgress;
+
+        // Calculate weighted average
+        $totalProgress = 0;
+        $totalWeight = 0;
+
+        foreach ($scores as $category => $score) {
+            // Only include categories that have data
+            if ($category === 'milestones' && $totalMilestones > 0) {
+                $totalProgress += $score * ($weights[$category] / 100);
+                $totalWeight += $weights[$category];
+            } elseif ($category === 'documents' && $totalDocuments > 0) {
+                $totalProgress += $score * ($weights[$category] / 100);
+                $totalWeight += $weights[$category];
+            } elseif ($category === 'defenses') {
+                // Always include defense stages in calculation
+                $totalProgress += $score * ($weights[$category] / 100);
+                $totalWeight += $weights[$category];
+            }
+        }
+
+        // If no data exists at all, return 0
+        if ($totalWeight === 0) {
             return 0;
         }
 
-        $completedMilestones = $project->milestones()->where('completed', true)->count();
+        // Normalize to 100% scale
+        $finalProgress = ($totalProgress / $totalWeight) * 100;
 
-        return (int) round(($completedMilestones / $totalMilestones) * 100);
+        return (int) round(min(100, max(0, $finalProgress)));
     }
 }
 

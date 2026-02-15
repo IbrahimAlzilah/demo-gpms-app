@@ -169,6 +169,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('defense-evaluations', [App\Http\Controllers\Supervisor\DefenseEvaluationController::class, 'index']);
         Route::get('defense-evaluations/{project}/stage/{stage}', [App\Http\Controllers\Supervisor\DefenseEvaluationController::class, 'getEvaluations']);
         Route::post('defense-evaluations', [App\Http\Controllers\Supervisor\DefenseEvaluationController::class, 'submitEvaluation']);
+        Route::post('defense-evaluations/bulk', [App\Http\Controllers\Supervisor\DefenseEvaluationController::class, 'submitBulkEvaluation']);
         Route::put('defense-evaluations/{evaluation}', [App\Http\Controllers\Supervisor\DefenseEvaluationController::class, 'updateEvaluation']);
         Route::get('defense-evaluations/{project}/locked/{stage}', [App\Http\Controllers\Supervisor\DefenseEvaluationController::class, 'isLocked']);
         // Notes routes - custom routes to match frontend expectations (project-based)
@@ -261,6 +262,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('defense-approvals/{project}/approve/{stage}', [App\Http\Controllers\ProjectsCommittee\DefenseEvaluationController::class, 'approveStage']);
         Route::post('defense-approvals/{project}/publish/{stage}', [App\Http\Controllers\ProjectsCommittee\DefenseEvaluationController::class, 'publishResults']);
         Route::get('defense-evaluations/{project}/statistics/{stage}', [App\Http\Controllers\ProjectsCommittee\DefenseEvaluationController::class, 'getStatistics']);
+        // Grading engine - aggregation (Project Committee only)
+        Route::get('grading/aggregation/{project}/{stage}', [App\Http\Controllers\ProjectsCommittee\GradingController::class, 'getAggregation']);
     });
 
     // Discussion Committee routes
@@ -281,6 +284,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('defense-evaluations/projects/{stage}', [App\Http\Controllers\DiscussionCommittee\DefenseEvaluationController::class, 'index']);
         Route::get('defense-evaluations/my-evaluations', [App\Http\Controllers\DiscussionCommittee\DefenseEvaluationController::class, 'getMyEvaluations']);
         Route::post('defense-evaluations', [App\Http\Controllers\DiscussionCommittee\DefenseEvaluationController::class, 'submitEvaluation']);
+        Route::post('defense-evaluations/bulk', [App\Http\Controllers\DiscussionCommittee\DefenseEvaluationController::class, 'submitBulkEvaluation']);
         Route::put('defense-evaluations/{evaluation}', [App\Http\Controllers\DiscussionCommittee\DefenseEvaluationController::class, 'updateEvaluation']);
         Route::get('defense-evaluations/{project}/status/{stage}', [App\Http\Controllers\DiscussionCommittee\DefenseEvaluationController::class, 'getStatus']);
     });

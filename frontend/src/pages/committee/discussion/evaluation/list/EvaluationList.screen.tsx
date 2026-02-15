@@ -52,15 +52,6 @@ export function EvaluationList() {
     }))
   }
 
-  const handleEvaluationSuccess = () => {
-    setState((prev) => ({
-      ...prev,
-      showEvaluationForm: false,
-      selectedProjectId: null,
-    }))
-    refetch()
-  }
-
   return (
     <>
       <BlockContent title={t('nav.evaluations')} variant="data-table">
@@ -96,11 +87,11 @@ export function EvaluationList() {
           <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
             <TabsTrigger value="fd1" className="gap-2">
               <GraduationCap className="h-4 w-4" />
-              {t('defense.fd1') || 'Final Defense 1'}
+              {t('evaluation.fd1') || 'Final Defense 1'}
             </TabsTrigger>
             <TabsTrigger value="fd2" className="gap-2">
               <GraduationCap className="h-4 w-4" />
-              {t('defense.fd2') || 'Final Defense 2'}
+              {t('evaluation.fd2') || 'Final Defense 2'}
             </TabsTrigger>
           </TabsList>
 
@@ -335,29 +326,30 @@ export function EvaluationList() {
       {state.selectedProjectId && (
         <ModalDialog
           open={state.showEvaluationForm}
-          onOpenChange={(open) =>
+          onOpenChange={(open) => {
             setState((prev) => ({
               ...prev,
               showEvaluationForm: open,
               selectedProjectId: open ? prev.selectedProjectId : null,
             }))
-          }
+            if (!open) refetch()
+          }}
           title={`${t('evaluation.evaluate')} - ${state.defenseStage.toUpperCase()}`}
           size="xl"
         >
           <UnifiedEvaluationModal
             open={state.showEvaluationForm}
-            onOpenChange={(open) =>
+            onOpenChange={(open) => {
               setState((prev) => ({
                 ...prev,
                 showEvaluationForm: open,
-                selectedProjectId: open ? prev.selectedProjectId : null
+                selectedProjectId: open ? prev.selectedProjectId : null,
               }))
-            }
+              if (!open) refetch()
+            }}
             projectId={state.selectedProjectId}
             role="discussion_committee"
             defenseStage={state.defenseStage}
-            onSuccess={handleEvaluationSuccess}
           />
         </ModalDialog>
       )}

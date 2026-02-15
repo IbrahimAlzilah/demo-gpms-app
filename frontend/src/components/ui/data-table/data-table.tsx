@@ -169,7 +169,7 @@ export function DataTable<TData, TValue>({
       )}
 
       <div className="flex-1 min-h-0 overflow-auto 1bg-background">
-        <Table className="w-full">
+        <Table className="w-full" fixedHeight>
           <TableHeader className="sticky top-0 z-40 bg-muted border-b">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="border-b hover:bg-transparent">

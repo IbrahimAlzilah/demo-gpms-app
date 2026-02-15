@@ -73,16 +73,25 @@ export const committeeGradeService = {
       });
     }
 
-    const response = await apiClient.get<Grade[]>(
+    const response = await apiClient.get<Grade[] | { data?: Grade[] }>(
       `/projects-committee/grades?${queryParams.toString()}`,
     );
 
+    const raw = response.data;
+    const grades = Array.isArray(raw)
+      ? raw
+      : Array.isArray((raw as { data?: Grade[] })?.data)
+        ? (raw as { data: Grade[] }).data
+        : [];
+
+    const pagination = (response as { pagination?: { total?: number; page?: number; pageSize?: number; totalPages?: number } }).pagination ?? {};
+
     return {
-      data: Array.isArray(response.data) ? response.data : [],
-      totalCount: response.pagination?.total || 0,
-      page: response.pagination?.page || 1,
-      pageSize: response.pagination?.pageSize || 10,
-      totalPages: response.pagination?.totalPages || 0,
+      data: grades,
+      totalCount: pagination.total ?? 0,
+      page: pagination.page ?? 1,
+      pageSize: pagination.pageSize ?? 10,
+      totalPages: pagination.totalPages ?? 0,
     };
   },
 
@@ -112,6 +121,8 @@ export const committeeGradeService = {
       finalGrade?: number;
       fd1FinalGrade?: number;
       fd2FinalGrade?: number;
+      fd1Adjustment?: number;
+      fd2Adjustment?: number;
     },
   ): Promise<Grade> => {
     // Map to API structure
@@ -130,6 +141,12 @@ export const committeeGradeService = {
     }
     if (data.fd2FinalGrade !== undefined) {
       payload.fd2_final_grade = data.fd2FinalGrade;
+    }
+    if (data.fd1Adjustment !== undefined) {
+      payload.fd1_adjustment = data.fd1Adjustment;
+    }
+    if (data.fd2Adjustment !== undefined) {
+      payload.fd2_adjustment = data.fd2Adjustment;
     }
 
     const response = await apiClient.put<{ data: Grade }>(
@@ -157,9 +174,15 @@ export const committeeGradeService = {
     projectId: string,
     stage: "fd1" | "fd2",
   ): Promise<void> => {
-    await apiClient.post(
-      `/projects-committee/defense-approvals/${projectId}/approve/${stage}`,
-    );
+    try {
+      const response = await apiClient.post(
+        `/projects-committee/defense-approvals/${projectId}/approve/${stage}`,
+      );
+      console.log('Approve stage response:', response.data);
+    } catch (error: any) {
+      console.error('Approve stage error:', error.response?.data || error);
+      throw error;
+    }
   },
 
   /**
@@ -169,21 +192,45 @@ export const committeeGradeService = {
     projectId: string,
     stage: "fd1" | "fd2",
   ): Promise<void> => {
-    await apiClient.post(
-      `/projects-committee/defense-approvals/${projectId}/publish/${stage}`,
-    );
+    try {
+      const response = await apiClient.post(
+        `/projects-committee/defense-approvals/${projectId}/publish/${stage}`,
+      );
+      console.log('Publish results response:', response.data);
+    } catch (error: any) {
+      console.error('Publish results error:', error.response?.data || error);
+      throw error;
+    }
   },
 
   /**
-   * Get all evaluations for a project stage (for review)
+   * Get all evaluations for a project stage (for review).
+   * Returns { evaluations, approval, statistics, validationErrors, canApprove }.
    */
   getDefenseReview: async (
     projectId: string,
     stage: "fd1" | "fd2",
-  ): Promise<any[]> => {
-    const response = await apiClient.get<any[]>(
-      `/projects-committee/defense-evaluations/${projectId}/review/${stage}`,
-    );
-    return Array.isArray(response.data) ? response.data : [];
+  ): Promise<{
+    evaluations: any[];
+    approval: any;
+    statistics: any;
+    validationErrors: string[];
+    canApprove: boolean;
+  }> => {
+    const response = await apiClient.get<{
+      evaluations: any[];
+      approval: any;
+      statistics: any;
+      validationErrors: string[];
+      canApprove: boolean;
+    }>(`/projects-committee/defense-evaluations/${projectId}/review/${stage}`);
+    const data = response.data as any;
+    return {
+      evaluations: data?.evaluations ?? [],
+      approval: data?.approval ?? null,
+      statistics: data?.statistics ?? null,
+      validationErrors: data?.validationErrors ?? [],
+      canApprove: data?.canApprove ?? false,
+    };
   },
 };

@@ -65,6 +65,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['supervisor-notes', projectId] })
+      queryClient.invalidateQueries({ queryKey: ['project-progress', projectId] })
     },
   })
 
@@ -84,6 +85,8 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
   const handleUploadSuccess = () => {
     setShowUploadModal(false)
     queryClient.invalidateQueries({ queryKey: ['documents', projectId] })
+    queryClient.invalidateQueries({ queryKey: ['project-progress', projectId] })
+    queryClient.invalidateQueries({ queryKey: ['project-milestones', projectId] })
   }
 
   if (projectLoading) {

@@ -128,6 +128,7 @@ class DefenseEvaluation extends Model
 
     /**
      * Check if this evaluation can be modified by the given user
+     * Project Committee can modify even after publish (with audit trail)
      */
     public function canModify(User $user): bool
     {
@@ -135,14 +136,14 @@ class DefenseEvaluation extends Model
             ->where('defense_stage', $this->defense_stage)
             ->first();
 
-        // When published: no one can modify (permanent lock)
-        if ($approval && $approval->status === 'published') {
-            return false;
-        }
-
-        // Project committee can modify when pending or approved (before publish)
+        // Project committee can always modify (including after publish - with audit trail)
         if ($user->isProjectsCommittee()) {
             return true;
+        }
+
+        // When published: supervisor/committee members cannot modify
+        if ($approval && $approval->status === 'published') {
+            return false;
         }
 
         // Supervisor/committee: only when pending

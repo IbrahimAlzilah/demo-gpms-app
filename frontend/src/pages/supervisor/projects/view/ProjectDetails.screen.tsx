@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { MainLayout } from '@/layouts/MainLayout'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui'
-import { LoadingSpinner, StatusBadge, BlockContent, ModalDialog } from '@/components/common'
+import { LoadingSpinner, StatusBadge, BlockContent } from '@/components/common'
 import {
   AlertCircle,
   ArrowLeft,
@@ -15,7 +15,8 @@ import {
   Tag,
   Eye,
   TrendingUp,
-  ClipboardCheck
+  ClipboardCheck,
+  GraduationCap
 } from 'lucide-react'
 import { ROUTES } from '@/lib/constants/constants'
 import { useProjectDetails } from './ProjectDetails.hook'
@@ -23,7 +24,9 @@ import { formatDate } from '@/lib/utils/format'
 import { DocumentsSection } from './components/DocumentsSection'
 import { FinalGradesSection } from './components/FinalGradesSection'
 import { ProgressList } from '../../progress/list/ProgressList.screen'
-import { EvaluationForm } from '../../evaluation/components/EvaluationForm/EvaluationForm'
+import { UnifiedEvaluationModal } from '@/pages/committee/discussion/evaluation/components/UnifiedEvaluationModal/UnifiedEvaluationModal'
+import { projectService } from '../api/project.service'
+import { evaluationService } from '../../evaluation/api/evaluation.service'
 import type { Project } from '@/types/project.types'
 import type { Document } from '@/types/request.types'
 import type { Grade } from '@/types/evaluation.types'
@@ -37,33 +40,8 @@ export function ProjectDetails() {
 
   // Get active tab from URL params, default to 'view'
   const activeTab = searchParams.get('tab') || 'view'
-  const urlStudentId = searchParams.get('studentId') || null
 
-  const [evaluationModal, setEvaluationModal] = useState<{
-    open: boolean
-    studentId: string | null
-  }>({
-    open: false,
-    studentId: null
-  })
-
-  // Handle deep linking for evaluation
-  useEffect(() => {
-    if (activeTab === 'evaluate' && urlStudentId && !evaluationModal.open) {
-      setEvaluationModal({
-        open: true,
-        studentId: urlStudentId
-      })
-    }
-  }, [activeTab, urlStudentId])
-
-  const handleCloseEvaluationModal = () => {
-    setEvaluationModal({ open: false, studentId: null })
-    // Optionally clean up URL
-    const params = new URLSearchParams(searchParams)
-    params.delete('studentId')
-    setSearchParams(params)
-  }
+  const [evaluateDefenseStage, setEvaluateDefenseStage] = useState<'fd1' | 'fd2'>('fd1')
 
   if (!id) {
     return (
@@ -159,7 +137,7 @@ export function ProjectDetails() {
     <MainLayout>
       <BlockContent title={t('project.projectDetails')} actions={actions}>
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-muted p-1 text-muted-foreground">
             <TabsTrigger value="view" className="flex items-center gap-2">
               <Eye className="h-4 w-4" />
               {t('common.view')}
@@ -338,40 +316,48 @@ export function ProjectDetails() {
           <TabsContent value="evaluate" className="mt-6">
             {id && project?.students && project.students.length > 0 ? (
               <div className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{t('nav.evaluation')}</CardTitle>
-                    <CardDescription>
-                      {t('supervisor.evaluationDescription')}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {project.students.map((student) => (
-                        <div
-                          key={student.id}
-                          className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                          onClick={() => setEvaluationModal({ open: true, studentId: student.id })}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                              <User className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium">{student.name}</p>
-                              {student.email && (
-                                <p className="text-xs text-muted-foreground">{student.email}</p>
-                              )}
-                            </div>
-                          </div>
-                          <Button variant="outline" size="sm">
-                            {t('nav.evaluation')}
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                <Tabs value={evaluateDefenseStage} onValueChange={(v) => setEvaluateDefenseStage(v as 'fd1' | 'fd2')} className="w-full">
+                  <TabsList className="grid w-full max-w-md grid-cols-2 mb-4">
+                    <TabsTrigger value="fd1" className="gap-2">
+                      <GraduationCap className="h-4 w-4" />
+                      {t('evaluation.fd1') || 'Final Defense 1'}
+                    </TabsTrigger>
+                    <TabsTrigger value="fd2" className="gap-2">
+                      <GraduationCap className="h-4 w-4" />
+                      {t('evaluation.fd2') || 'Final Defense 2'}
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent value={evaluateDefenseStage} className="mt-0">
+                    <UnifiedEvaluationModal
+                      open={true}
+                      onOpenChange={() => {}}
+                      inline
+                      projectId={id}
+                      role="supervisor"
+                      defenseStage={evaluateDefenseStage}
+                      fetchProject={projectService.getById}
+                      fetchGrades={(projectId) =>
+                        evaluationService.getDefenseEvaluations(projectId, evaluateDefenseStage)
+                      }
+                      submitGrade={async (params) => {
+                        await evaluationService.submitDefenseEvaluation({
+                          projectId: params.projectId,
+                          studentId: params.studentId,
+                          defenseStage: evaluateDefenseStage,
+                          grade: {
+                            score: params.grade.score,
+                            maxScore: params.grade.maxScore,
+                            criteria: params.grade.criteria,
+                            comments: params.grade.comments,
+                          },
+                        })
+                      }}
+                      getLocked={(projectId) =>
+                        evaluationService.isDefenseLocked(projectId, evaluateDefenseStage)
+                      }
+                    />
+                  </TabsContent>
+                </Tabs>
               </div>
             ) : (
               <Card>
@@ -392,25 +378,6 @@ export function ProjectDetails() {
         </Tabs>
       </BlockContent>
 
-      {/* Evaluation Modal */}
-      {id && evaluationModal.open && evaluationModal.studentId && (
-        <ModalDialog
-          open={evaluationModal.open}
-          onOpenChange={(open) => !open && handleCloseEvaluationModal()}
-          title={t('supervisor.evaluateProject')}
-          className="sm:max-w-[600px]"
-        >
-          <div className="mt-2">
-            <EvaluationForm
-              projectId={id}
-              studentId={evaluationModal.studentId}
-              onSuccess={() => {
-                handleCloseEvaluationModal()
-              }}
-            />
-          </div>
-        </ModalDialog>
-      )}
     </MainLayout>
   )
 }

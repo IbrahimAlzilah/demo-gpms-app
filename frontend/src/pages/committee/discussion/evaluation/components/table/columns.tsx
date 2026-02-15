@@ -119,10 +119,10 @@ export function createEvaluationColumns({
             <Badge
               variant="outline"
               className={`font-bold text-sm px-3 py-1 ${percentage >= 80
-                  ? 'border-green-300 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                  : percentage >= 60
-                    ? 'border-amber-300 bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                    : 'border-red-300 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                ? 'border-green-300 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                : percentage >= 60
+                  ? 'border-amber-300 bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                  : 'border-red-300 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                 }`}
             >
               <Award className="h-3.5 w-3.5 mr-1.5" />
@@ -200,10 +200,10 @@ export function createEvaluationColumns({
               size="sm"
               onClick={() => onEvaluate(item)}
               className={`gap-1.5 h-8 px-3 text-xs transition-all ${isReadOnly
-                  ? 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                  : hasEvaluation
-                    ? 'hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300'
-                    : 'bg-primary hover:bg-primary/90 shadow-sm'
+                ? 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                : hasEvaluation
+                  ? 'hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300'
+                  : 'bg-primary hover:bg-primary/90 shadow-sm'
                 }`}
             >
               {isReadOnly ? (

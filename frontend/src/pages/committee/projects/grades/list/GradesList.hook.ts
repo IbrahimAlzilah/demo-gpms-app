@@ -23,6 +23,7 @@ export function useGradesList() {
     pageCount,
     isLoading,
     error,
+    refetch,
     sorting,
     setSorting,
     columnFilters,
@@ -53,6 +54,7 @@ export function useGradesList() {
     data,
     state,
     setState,
+    refetch,
     // Table controls
     totalCount,
     pageCount,

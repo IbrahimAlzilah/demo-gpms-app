@@ -6,13 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Project;
 use App\Models\User;
 use App\Services\DefenseEvaluationService;
+use App\Services\GradingEngineService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class DefenseEvaluationController extends Controller
 {
     public function __construct(
-        protected DefenseEvaluationService $evaluationService
+        protected DefenseEvaluationService $evaluationService,
+        protected GradingEngineService $gradingEngine
     ) {}
 
     /**
@@ -140,7 +142,8 @@ class DefenseEvaluationController extends Controller
         $validated = $request->validate([
             'project_id' => 'required|exists:projects,id',
             'student_id' => 'required|exists:users,id',
-            'stage' => 'required|in:fd1,fd2',
+            'stage' => 'required_without:defense_stage|in:fd1,fd2',
+            'defense_stage' => 'required_without:stage|in:fd1,fd2',
             'score' => 'required|numeric|min:0|max:100',
             'max_score' => 'nullable|numeric|min:0',
             'maxScore' => 'nullable|numeric|min:0',
@@ -151,12 +154,13 @@ class DefenseEvaluationController extends Controller
         $supervisor = $request->user();
         $project = Project::findOrFail($validated['project_id']);
         $student = User::findOrFail($validated['student_id']);
+        $stage = $validated['stage'] ?? $validated['defense_stage'];
 
         try {
             $evaluation = $this->evaluationService->submitSupervisorEvaluation(
                 $project,
                 $student,
-                $validated['stage'],
+                $stage,
                 [
                     'score' => $validated['score'],
                     'maxScore' => $validated['max_score'] ?? $validated['maxScore'] ?? 100,
@@ -177,6 +181,55 @@ class DefenseEvaluationController extends Controller
                     'criteria' => $evaluation->criteria,
                     'notes' => $evaluation->notes,
                     'stage' => $evaluation->defense_stage,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Submit multiple evaluations in a single transaction (bulk grading).
+     * RBAC: Only assigned supervisor can grade.
+     * POST /supervisor/defense-evaluations/bulk
+     */
+    public function submitBulkEvaluation(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'project_id' => 'required|exists:projects,id',
+            'stage' => 'required|in:fd1,fd2',
+            'items' => 'required|array|min:1',
+            'items.*.student_id' => 'required|exists:users,id',
+            'items.*.score' => 'required|numeric|min:0|max:100',
+            'items.*.maxScore' => 'nullable|numeric|min:0',
+            'items.*.notes' => 'nullable|string|max:5000',
+        ]);
+
+        $project = Project::findOrFail($validated['project_id']);
+        $supervisor = $request->user();
+
+        try {
+            $created = $this->gradingEngine->submitBulkSupervisorEvaluations(
+                $project,
+                $supervisor,
+                $validated['stage'],
+                $validated['items']
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => count($created) . ' evaluation(s) submitted successfully',
+                'data' => [
+                    'count' => $created->count(),
+                    'evaluations' => $created->map(fn ($e) => [
+                        'id' => $e->id,
+                        'studentId' => $e->student_id,
+                        'score' => $e->score,
+                        'stage' => $e->defense_stage,
+                    ])->values()->all(),
                 ],
             ]);
         } catch (\Exception $e) {

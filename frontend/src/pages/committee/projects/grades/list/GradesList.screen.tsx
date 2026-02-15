@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useApproveGrade, usePublishGrades } from '../hooks/useGradeOperations'
 import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui'
 import { Card, CardContent } from '@/components/ui'
 import { LoadingSpinner, ConfirmDialog, BlockContent, EmptyState } from '@/components/common'
-import { Send, FileX } from 'lucide-react'
+import { Send, FileX, GraduationCap } from 'lucide-react'
 import type { Grade } from '@/types/evaluation.types'
 import { useGradesList } from './GradesList.hook'
 import { useToast } from '@/components/common'
@@ -14,9 +15,14 @@ import { ProjectGradeCard } from './ProjectGradeCard'
 
 export function GradesList() {
   const { t } = useTranslation()
+  const queryClient = useQueryClient()
   const { toastSuccess, toastError } = useToast()
   const approveGrade = useApproveGrade()
   const publishGrades = usePublishGrades()
+
+  const refetchGrades = () => {
+    queryClient.invalidateQueries({ queryKey: ['committee-grades-table'] })
+  }
 
   const {
     data,
@@ -25,6 +31,7 @@ export function GradesList() {
     setPagination,
     pagination,
     pageCount,
+    refetch,
   } = useGradesList()
 
   const [activeStage, setActiveStage] = useState<'fd1' | 'fd2'>('fd1')
@@ -130,28 +137,75 @@ export function GradesList() {
         await committeeGradeService.publishDefenseResults(projectId, activeStage)
         toastSuccess(t('committee.grades.publishSuccess'))
       }
-      // Force reload to reflect changes
-      window.location.reload()
+      refetchGrades()
     } catch (err: any) {
+      console.error('Stage action error:', err)
+
       // Check for validation errors (422)
-      if (err.response?.status === 422 && err.response?.data?.errors) {
-        const errors = err.response.data.errors
-        // Format errors for display (e.g., join with newlines)
-        const errorMessage = Array.isArray(errors) ? errors.join('\n') : String(errors)
-        toastError(`${t('committee.grades.validationError')}:\n${errorMessage}`)
+      if (err.response?.status === 422) {
+        const errors = err.response?.data?.errors
+        const message = err.response?.data?.message
+
+        if (errors) {
+          // Format errors for display
+          const errorMessage = Array.isArray(errors)
+            ? errors.join('\n')
+            : typeof errors === 'object'
+              ? Object.values(errors).flat().join('\n')
+              : String(errors)
+          toastError(`${t('committee.grades.validationError') || 'Validation Error'}:\n${errorMessage}`)
+        } else if (message) {
+          toastError(message)
+        } else {
+          toastError(t('committee.grades.validationError') || 'Validation failed')
+        }
+      } else if (err.response?.status === 400) {
+        const message = err.response?.data?.message || err.message
+        toastError(message || t('committee.grades.actionError'))
+      } else if (err.response?.status === 403) {
+        toastError(t('common.unauthorized') || 'You do not have permission to perform this action')
       } else {
-        toastError(err instanceof Error ? err.message : t('committee.grades.actionError'))
+        const message = err.response?.data?.message || err.message
+        toastError(message || t('committee.grades.actionError') || 'An error occurred')
       }
     }
   }
 
   if (data.isLoading) {
     return (
-      <Card>
-        <CardContent className="pt-6">
-          <LoadingSpinner />
-        </CardContent>
-      </Card>
+      <BlockContent title={t('committee.grades.management')}>
+        <Card>
+          <CardContent className="pt-6">
+            <LoadingSpinner />
+          </CardContent>
+        </Card>
+      </BlockContent>
+    )
+  }
+
+  if (data.error) {
+    return (
+      <BlockContent title={t('committee.grades.management')}>
+        <Card className="border-destructive/50 bg-destructive/5">
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center gap-3 text-center">
+              <p className="text-sm font-medium text-destructive">
+                {t('committee.grades.loadError') || t('common.error')}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {data.error?.message ?? t('committee.grades.loadError')}
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => refetch()}
+              >
+                {t('common.retry')}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </BlockContent>
     )
   }
 
@@ -167,9 +221,15 @@ export function GradesList() {
     >
       <Tabs value={activeStage} onValueChange={(v) => setActiveStage(v as 'fd1' | 'fd2')}>
         <div className="flex items-center justify-between gap-4 mb-4">
-          <TabsList>
-            <TabsTrigger value="fd1">{t('committee.grades.fd1')}</TabsTrigger>
-            <TabsTrigger value="fd2">{t('committee.grades.fd2')}</TabsTrigger>
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="fd1" className="gap-2">
+              <GraduationCap className="h-4 w-4" />
+              {t('evaluation.fd1') || t('committee.grades.fd1')}
+            </TabsTrigger>
+            <TabsTrigger value="fd2" className="gap-2">
+              <GraduationCap className="h-4 w-4" />
+              {t('evaluation.fd2') || t('committee.grades.fd2')}
+            </TabsTrigger>
           </TabsList>
           <div className="flex items-center gap-2">
             <Select
@@ -338,9 +398,7 @@ export function GradesList() {
           grade={state.selectedGrade}
           mode={state.action === 'view' ? 'view' : 'edit'}
           stage={activeStage}
-          onSuccess={() => {
-            window.location.reload()
-          }}
+          onSuccess={refetchGrades}
           onApprove={() => {
             setState((prev) => ({ ...prev, action: 'approve' }))
           }}

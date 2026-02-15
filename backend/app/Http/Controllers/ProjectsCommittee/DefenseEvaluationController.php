@@ -78,11 +78,11 @@ class DefenseEvaluationController extends Controller
         }
 
         $students = $project->students;
+        $breakdowns = $this->evaluationService->getGradeBreakdownsForProject($project, $stage);
         $data = [];
 
         foreach ($students as $student) {
-            // Get detailed grade breakdown using the new service method
-            $breakdown = $this->evaluationService->getGradeBreakdown($project, $student, $stage);
+            $breakdown = $breakdowns[$student->id] ?? [];
 
             $data[] = [
                 'student' => [

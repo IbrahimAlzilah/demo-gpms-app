@@ -15,8 +15,8 @@ export function StudentGradeRow({ grade, onAction, stage, committeeMemberCount }
     const { t } = useTranslation()
 
     // Use stage-specific grade breakdown from backend (committeeEvaluations with defenseStage)
-    const stageBreakdown = stage === 'fd1' ? grade.fd1GradeBreakdown : grade.fd2GradeBreakdown
-    const committeeEvals = (grade.committeeEvaluations ?? [])
+    const stageBreakdown = (stage === 'fd1' ? grade.fd1GradeBreakdown : grade.fd2GradeBreakdown) ?? undefined
+    const committeeEvals = (Array.isArray(grade.committeeEvaluations) ? grade.committeeEvaluations : [])
         .filter((e: { defenseStage?: string }) => e.defenseStage === stage)
         .sort((a: { evaluatorName?: string }, b: { evaluatorName?: string }) => (a.evaluatorName || '').localeCompare(b.evaluatorName || ''))
 
@@ -51,11 +51,12 @@ export function StudentGradeRow({ grade, onAction, stage, committeeMemberCount }
         (stageBreakdown.committeeMembers && stageBreakdown.committeeMembers.length > 0)
     )
 
-    if (committeeEvals.length === 0 && !hasStageBreakdownData) {
-        const existingTotal = (stage === 'fd1' ? grade.fd1CommitteeScore : grade.fd2CommitteeScore)
-            ?? grade.committeeGrade?.score
-            ?? grade.committeeScore
-        if (existingTotal != null) committeeTotalContribution = existingTotal
+    // Use aggregate committee score when: no evals, no stage breakdown, or contributions are 0 (legacy/synthesized)
+    const existingTotal = (stage === 'fd1' ? grade.fd1CommitteeScore : grade.fd2CommitteeScore)
+        ?? grade.committeeGrade?.score
+        ?? grade.committeeScore
+    if (existingTotal != null && (committeeEvals.length === 0 && !hasStageBreakdownData || committeeTotalContribution === 0)) {
+        committeeTotalContribution = existingTotal
     }
 
     const stageApprovalStatus = stage === 'fd1' ? (grade as { fd1ApprovalStatus?: string }).fd1ApprovalStatus : (grade as { fd2ApprovalStatus?: string }).fd2ApprovalStatus
@@ -78,6 +79,7 @@ export function StudentGradeRow({ grade, onAction, stage, committeeMemberCount }
 
     const isStageLocked = isStagePublished || stageApprovalStatus === 'approved'
 
+    // Project Committee can always edit (including after publish, with audit trail)
     const actions: TableAction<Grade>[] = [
         {
             id: 'view',
@@ -90,7 +92,6 @@ export function StudentGradeRow({ grade, onAction, stage, committeeMemberCount }
             label: t('common.edit'),
             icon: Edit2,
             onClick: (row) => onAction(row, 'edit'),
-            hidden: () => isStageLocked,
         },
         {
             id: 'approve',
@@ -111,7 +112,9 @@ export function StudentGradeRow({ grade, onAction, stage, committeeMemberCount }
                         <User className="h-4 w-4 text-primary" />
                     </div>
                     <div className="flex flex-col items-start gap-0.5">
-                        <span className="font-medium text-sm text-foreground">{grade.student?.name}</span>
+                        <span className="font-medium text-sm text-foreground">
+                            {grade.student?.name ?? grade.studentId ?? '—'}
+                        </span>
                         {/* <span className="text-xs text-muted-foreground">{grade.student?.department}</span> */}
                     </div>
                 </div>
@@ -146,6 +149,13 @@ export function StudentGradeRow({ grade, onAction, stage, committeeMemberCount }
 
             <TableCell className="text-center font-medium bg-muted/5">
                 {committeeTotalContribution > 0 ? Number(committeeTotalContribution).toFixed(2) : '-'}
+            </TableCell>
+
+            <TableCell className="text-center text-muted-foreground">
+                {(() => {
+                    const adj = stage === 'fd1' ? (grade as { fd1Adjustment?: number | null }).fd1Adjustment : (grade as { fd2Adjustment?: number | null }).fd2Adjustment
+                    return adj != null ? Number(adj).toFixed(2) : '—'
+                })()}
             </TableCell>
 
             <TableCell className="text-center bg-muted/10">

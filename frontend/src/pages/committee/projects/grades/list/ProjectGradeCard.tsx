@@ -29,7 +29,8 @@ export function ProjectGradeCard({ project, grades, onAction, onStageAction, sta
     }
 
     // Committee member count: from project.committeeMembers or max evaluations per stage
-    const fromProject = (project as { committeeMembers?: unknown[] })?.committeeMembers?.length
+    const projectSafe = project ?? {}
+    const fromProject = (projectSafe as { committeeMembers?: unknown[] })?.committeeMembers?.length
     const fromEvals = grades.reduce((max, grade) => {
         const stageEvaluations = grade.committeeEvaluations?.filter((e: { defenseStage?: string }) => e.defenseStage === stage) || []
         return Math.max(max, stageEvaluations.length)
@@ -61,7 +62,7 @@ export function ProjectGradeCard({ project, grades, onAction, onStageAction, sta
                         <div className="flex flex-col gap-1.5 flex-1">
                             <div className="flex items-center gap-3">
                                 <h3 className="font-bold text-md text-foreground tracking-tight">
-                                    {t('committee.grades.project')}: {project?.title || t('common.unknown')}
+                                    {t('committee.grades.project')}: {project?.title ?? t('common.unknown')}
                                 </h3>
                             </div>
                             <div className="flex items-center flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground font-medium">
@@ -89,7 +90,12 @@ export function ProjectGradeCard({ project, grades, onAction, onStageAction, sta
                                 <Button
                                     variant="default"
                                     size="sm"
-                                    onClick={(e) => { e.stopPropagation(); onStageAction('approve'); }}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (window.confirm(t('committee.grades.confirmApproveAll') || `Are you sure you want to approve all ${pendingCount} pending grades for this project?`)) {
+                                            onStageAction('approve');
+                                        }
+                                    }}
                                     className="h-8 px-3 shadow-sm active:scale-95 transition-all bg-emerald-600 hover:bg-emerald-700 text-white"
                                 >
                                     {t('committee.grades.approveAll')}
@@ -99,7 +105,12 @@ export function ProjectGradeCard({ project, grades, onAction, onStageAction, sta
                             {!anyPublished && <Button
                                 variant="default"
                                 size="sm"
-                                onClick={(e) => { e.stopPropagation(); onStageAction('publish'); }}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (window.confirm(t('committee.grades.confirmPublish') || 'Are you sure you want to publish the results to students? This action cannot be undone.')) {
+                                        onStageAction('publish');
+                                    }
+                                }}
                                 disabled={!allApproved || anyPublished}
                                 className="h-8 px-3 shadow-sm active:scale-95 transition-all w-fit"
                             >
@@ -131,6 +142,7 @@ export function ProjectGradeCard({ project, grades, onAction, onStageAction, sta
                                         ))}
 
                                         <TableHead className="text-center font-semibold">{t('committee.grades.committeeTotal')}</TableHead>
+                                        <TableHead className="text-center font-semibold">{t('committee.grades.adjustment')}</TableHead>
                                         <TableHead className="text-center font-semibold">{t('committee.grades.finalGrade')}</TableHead>
                                         <TableHead className="text-center font-semibold">{t('common.status')}</TableHead>
                                         <TableHead className="text-center font-semibold w-[140px]">{t('common.actions')}</TableHead>

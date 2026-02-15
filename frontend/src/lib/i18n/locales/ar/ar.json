@@ -1538,6 +1538,13 @@
     "evaluateAll": "تقييم الكل",
     "fd1": "المناقشة النهائية 1",
     "fd2": "المناقشة النهائية 2",
+    "grade": "الدرجة",
+    "gradeInvalid": "يرجى إدخال رقم صحيح",
+    "gradeRange": "يجب أن تكون الدرجة بين {{min}} و {{max}}",
+    "statusDraft": "مسودة",
+    "statusSubmitted": "مُقدّم",
+    "save": "حفظ",
+    "update": "تحديث",
     "applyGroupGrade": "تطبيق درجة المجموعة",
     "apply": "تطبيق",
     "individualGrades": "الدرجات الفردية",
@@ -2165,7 +2172,12 @@
       "committeeTotal": "مجموع اللجنة",
       "committeeMember": "عضو اللجنة",
       "completed": "مكتمل",
-      "supervisor": "المشرف"
+      "supervisor": "المشرف",
+      "adjustment": "تعديل اختياري",
+      "adjustmentHelp": "قيمة اختيارية (من -100 إلى 100) تُضاف للدرجة النهائية المحسوبة.",
+      "invalidAdjustment": "يجب أن يكون التعديل بين -100 و 100",
+      "validationError": "خطأ في التحقق",
+      "loadError": "فشل تحميل الدرجات. يرجى المحاولة مرة أخرى."
     }
   },
   "project": {

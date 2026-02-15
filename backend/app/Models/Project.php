@@ -144,6 +144,15 @@ class Project extends Model
     }
 
     /**
+     * Get all defense approvals for this project
+     */
+    public function defenseApprovals(): HasMany
+    {
+        return $this->hasMany(DefenseApproval::class);
+    }
+
+
+    /**
      * Get all requests related to this project
      */
     public function requests(): HasMany

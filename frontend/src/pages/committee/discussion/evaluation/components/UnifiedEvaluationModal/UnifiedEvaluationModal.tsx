@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Card,
   CardContent,
@@ -9,25 +9,16 @@ import {
   Button,
   Input,
   Label,
-  Textarea,
-  Badge,
 } from "@/components/ui";
 import { LoadingSpinner } from "@/components/common";
 import { useToast } from "@/components/common";
 import {
   AlertCircle,
-  Loader2,
   Users,
   FileText,
   User,
-  Lock,
-  CheckCircle2,
-  ClipboardCheck,
-  ChevronDown,
-  ChevronUp,
-  Sparkles,
-  GraduationCap,
 } from "lucide-react";
+import { PerStudentGradingTable } from "@/components/evaluation/PerStudentGradingTable";
 import { usePeriodCheck } from "@/hooks/usePeriodCheck";
 import { discussionCommitteeProjectService } from "../../../projects/api/project.service";
 import { committeeEvaluationService } from "../../api/evaluation.service";
@@ -35,7 +26,7 @@ import { useSubmitFinalGrade } from "../../hooks/useEvaluationOperations";
 import type { Project } from "@/types/project.types";
 import type { User as UserType } from "@/types/user.types";
 import type { Grade, DefenseStage } from "@/types/evaluation.types";
-import type { EvaluationMode, StudentGradeEntry } from "../../types/Evaluation.types";
+import type { StudentGradeEntry } from "../../types/Evaluation.types";
 
 export type EvaluationRole = "discussion_committee" | "supervisor";
 
@@ -44,6 +35,7 @@ export interface UnifiedEvaluationModalProps {
   onOpenChange: (open: boolean) => void;
   projectId: string;
   role: EvaluationRole;
+  /** Called when user explicitly closes the modal (optional) */
   onSuccess?: () => void;
   /** For supervisor: fetch project via supervisor API */
   fetchProject?: (id: string) => Promise<Project | null>;
@@ -51,6 +43,8 @@ export interface UnifiedEvaluationModalProps {
   defenseStage?: DefenseStage;
   /** For supervisor: check if stage is locked (read-only after approval) */
   getLocked?: (projectId: string) => Promise<boolean>;
+  /** When true, hides Close button (e.g. when embedded inline in Evaluate tab) */
+  inline?: boolean;
   submitGrade?: (params: {
     projectId: string;
     studentId: string;
@@ -75,6 +69,7 @@ export function UnifiedEvaluationModal({
   submitGrade: submitGradeProp,
   defenseStage,
   getLocked,
+  inline = false,
 }: UnifiedEvaluationModalProps) {
   const { t } = useTranslation();
   const { toastSuccess, toastError } = useToast();
@@ -90,18 +85,15 @@ export function UnifiedEvaluationModal({
   const isPeriodActiveComputed =
     role === "supervisor" ? true : isPeriodActive || isPhase2Active;
 
+  const queryClient = useQueryClient();
+
   // State
-  const [evaluationMode, setEvaluationMode] = useState<EvaluationMode>("group");
   const [studentGrades, setStudentGrades] = useState<
     Record<string, StudentGradeEntry>
   >({});
   const [groupScore, setGroupScore] = useState("");
-  const [groupMaxScore, setGroupMaxScore] = useState("100");
   const [groupComments, setGroupComments] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [expandedStudentId, setExpandedStudentId] = useState<string | null>(
-    null
-  );
+  const [savingStudentId, setSavingStudentId] = useState<string | null>(null);
 
   // Queries
   // Queries
@@ -170,18 +162,17 @@ export function UnifiedEvaluationModal({
     students.forEach((s) => {
       const g = gradesByStudent.get(s.id);
       const committeeGrade =
-        g?.committeeGrade ?? (g as Record<string, unknown>)?.committee_grade;
+        g?.committeeGrade ?? (g as unknown as Record<string, unknown>)?.committee_grade;
       const supervisorGrade =
-        g?.supervisorGrade ?? (g as Record<string, unknown>)?.supervisor_grade;
+        g?.supervisorGrade ?? (g as unknown as Record<string, unknown>)?.supervisor_grade;
       const source =
         role === "discussion_committee" ? committeeGrade : supervisorGrade;
       const sourceObj = source as Record<string, unknown> | undefined;
       const score = sourceObj?.score ?? "";
-      const maxScore = sourceObj?.maxScore ?? sourceObj?.max_score ?? "100";
       next[s.id] = {
         studentId: s.id,
         score: String(score),
-        maxScore: String(maxScore),
+        maxScore: "100",
         comments: (sourceObj?.comments as string) ?? "",
         hasExistingGrade: !!sourceObj?.score,
       };
@@ -194,17 +185,15 @@ export function UnifiedEvaluationModal({
     (role === "supervisor" && lockedQuery.data === true) ||
     grades.some((g: Grade) => g.isApproved === true);
 
-  // Apply group grade to all students
+  // Apply group grade to all students (0-100)
   const handleApplyGroupGrade = useCallback(() => {
     const score = groupScore.trim();
-    const max = groupMaxScore.trim();
-    if (!score || !max) {
+    if (!score) {
       toastError(t("evaluation.enterGroupGrade"));
       return;
     }
     const numScore = parseFloat(score);
-    const numMax = parseFloat(max);
-    if (isNaN(numScore) || isNaN(numMax) || numScore < 0 || numScore > numMax) {
+    if (isNaN(numScore) || numScore < 0 || numScore > 100) {
       toastError(t("discussion.invalidScore"));
       return;
     }
@@ -213,20 +202,20 @@ export function UnifiedEvaluationModal({
       next[s.id] = {
         studentId: s.id,
         score,
-        maxScore: max,
+        maxScore: "100",
         comments: groupComments,
         hasExistingGrade: studentGrades[s.id]?.hasExistingGrade,
       };
     });
     setStudentGrades(next);
     toastSuccess(t("evaluation.groupGradeApplied"));
-  }, [groupScore, groupMaxScore, groupComments, students, studentGrades, t, toastError, toastSuccess]);
+  }, [groupScore, groupComments, students, studentGrades, t, toastError, toastSuccess]);
 
   // Update individual student grade
   const setGradeForStudent = useCallback(
     (
       studentId: string,
-      field: keyof Omit<StudentGradeEntry, "studentId" | "isLoading" | "hasExistingGrade">,
+      field: "score" | "comments",
       value: string
     ) => {
       setStudentGrades((prev) => ({
@@ -245,94 +234,97 @@ export function UnifiedEvaluationModal({
     []
   );
 
-  // Submit all grades
-  const handleSubmit = async () => {
-    if (!isPeriodActiveComputed) {
-      toastError(t("discussion.evaluationPeriodClosed"));
-      return;
-    }
-
-    const toSubmit: Array<{
-      studentId: string;
-      score: number;
-      maxScore: number;
-      comments?: string;
-    }> = [];
-
-    students.forEach((s) => {
-      const entry = studentGrades[s.id];
-      if (!entry?.score?.trim() || !entry?.maxScore?.trim()) return;
-      let score = parseFloat(entry.score);
-      let maxScore = parseFloat(entry.maxScore);
-      if (role === "supervisor" && defenseStage) {
-        maxScore = 100;
-        if (isNaN(score) || score < 0 || score > 100) return;
-      } else if (isNaN(score) || isNaN(maxScore) || score < 0 || score > maxScore) {
+  // Submit single student grade
+  const handleSaveStudent = useCallback(
+    async (studentId: string) => {
+      if (!isPeriodActiveComputed) {
+        toastError(t("discussion.evaluationPeriodClosed"));
         return;
       }
-      toSubmit.push({
-        studentId: s.id,
-        score,
-        maxScore,
-        comments: entry.comments?.trim() || undefined,
-      });
-    });
+      const entry = studentGrades[studentId];
+      if (!entry?.score?.trim()) return;
+      const score = parseFloat(entry.score);
+      if (isNaN(score) || score < 0 || score > 100) {
+        toastError(t("discussion.invalidScore"));
+        return;
+      }
 
-    if (toSubmit.length === 0) {
-      toastError(t("evaluation.enterAtLeastOneGrade"));
-      return;
-    }
+      setSavingStudentId(studentId);
+      try {
+        const submit = submitGradeProp
+          ? (p: {
+              projectId: string;
+              studentId: string;
+              defenseStage?: DefenseStage;
+              grade: {
+                score: number;
+                maxScore: number;
+                criteria: Record<string, unknown>;
+                comments?: string;
+              };
+            }) => submitGradeProp(p)
+          : (
+              p: Parameters<typeof committeeEvaluationService.submitFinalGrade>[0]
+            ) => {
+              if (defenseStage) {
+                return committeeEvaluationService.submitDefenseEvaluation({
+                  ...p,
+                  defenseStage,
+                });
+              }
+              return submitCommitteeGrade.mutateAsync(p);
+            };
 
-    setSubmitting(true);
-    try {
-      const submit = submitGradeProp
-        ? (p: {
-          projectId: string;
-          studentId: string;
-          defenseStage?: DefenseStage;
-          grade: {
-            score: number;
-            maxScore: number;
-            criteria: Record<string, unknown>;
-            comments?: string;
-          };
-        }) => submitGradeProp(p)
-        : (
-          p: Parameters<typeof committeeEvaluationService.submitFinalGrade>[0]
-        ) => {
-          if (defenseStage) {
-            return committeeEvaluationService.submitDefenseEvaluation({
-              ...p,
-              defenseStage
-            });
-          }
-          return submitCommitteeGrade.mutateAsync(p);
-        };
-
-      for (const item of toSubmit) {
         await submit({
           projectId,
-          studentId: item.studentId,
+          studentId,
           ...(defenseStage ? { defenseStage } : {}),
           grade: {
-            score: item.score,
-            maxScore: item.maxScore,
+            score,
+            maxScore: 100,
             criteria: {} as Record<string, unknown>,
-            comments: item.comments,
+            comments: entry.comments?.trim() || undefined,
           },
         });
+
+        toastSuccess(t("discussion.evaluationSaved"));
+        setStudentGrades((prev) => ({
+          ...prev,
+          [studentId]: {
+            ...(prev[studentId] ?? { studentId, score: "", maxScore: "100", comments: "" }),
+            hasExistingGrade: true,
+          },
+        }));
+
+        // Refetch grades (keep modal open for per-row grading)
+        queryClient.invalidateQueries({
+          queryKey:
+            role === "discussion_committee"
+              ? ["discussion-grades", projectId, defenseStage]
+              : ["supervisor-grades", projectId, defenseStage],
+        });
+      } catch (err) {
+        toastError(
+          err instanceof Error ? err.message : t("discussion.evaluationError")
+        );
+      } finally {
+        setSavingStudentId(null);
       }
-      toastSuccess(t("discussion.evaluationSaved"));
-      onSuccess?.();
-      onOpenChange(false);
-    } catch (err) {
-      toastError(
-        err instanceof Error ? err.message : t("discussion.evaluationError")
-      );
-    } finally {
-      setSubmitting(false);
-    }
-  };
+    },
+    [
+      studentGrades,
+      isPeriodActiveComputed,
+      submitGradeProp,
+      defenseStage,
+      projectId,
+      role,
+      queryClient,
+      t,
+      toastError,
+      toastSuccess,
+      submitCommitteeGrade,
+    ]
+  );
 
   if (!projectId) return null;
 
@@ -485,308 +477,90 @@ export function UnifiedEvaluationModal({
         </CardContent>
       </Card>
 
-      {/* Evaluation Mode Toggle & Group Grade */}
-      {!gradesLocked && (
+      {/* Apply Group Grade (quick action) */}
+      {!gradesLocked && students.length > 1 && (
         <Card className="border shadow-none">
           <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-base">
-                {t("evaluation.applyGroupGrade")}
-              </CardTitle>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant={evaluationMode === "group" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setEvaluationMode("group")}
-                  className="h-8"
-                >
-                  <Users className="mr-1.5 h-3.5 w-3.5" />
-                  {t("common.group")}
-                </Button>
-                <Button
-                  variant={evaluationMode === "individual" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setEvaluationMode("individual")}
-                  className="h-8"
-                >
-                  <User className="mr-1.5 h-3.5 w-3.5" />
-                  {t("common.individual")}
-                </Button>
-              </div>
-            </div>
+            <CardTitle className="text-base">{t("evaluation.applyGroupGrade")}</CardTitle>
           </CardHeader>
-          {evaluationMode === "group" && (
-            <CardContent className="space-y-6">
-              <div className="grid gap-4 sm:grid-cols-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">
-                    {t("discussion.score")}
-                  </Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={groupScore}
-                    onChange={(e) => setGroupScore(e.target.value)}
-                    placeholder="0"
-                    className="h-10"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">
-                    {t("discussion.maxScore")}
-                  </Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={groupMaxScore}
-                    onChange={(e) => setGroupMaxScore(e.target.value)}
-                    placeholder="100"
-                    className="h-10"
-                  />
-                </div>
-                <div className="flex items-end">
-                  <Button
-                    type="button"
-                    onClick={handleApplyGroupGrade}
-                    className="w-full h-10 gap-2"
-                  >
-                    {t("evaluation.apply")}
-                  </Button>
-                </div>
+          <CardContent>
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="space-y-1.5 flex-1 min-w-[120px]">
+                <Label className="text-xs font-medium">{t("evaluation.grade")} (0–100)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={groupScore}
+                  onChange={(e) => setGroupScore(e.target.value)}
+                  placeholder="0"
+                  className="h-10"
+                />
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">
-                  {t("discussion.comments")} ({t("common.optional")})
-                </Label>
-                <Textarea
+              <div className="space-y-1.5 flex-1 min-w-[180px]">
+                <Label className="text-xs font-medium">{t("discussion.comments")} ({t("common.optional")})</Label>
+                <Input
                   value={groupComments}
                   onChange={(e) => setGroupComments(e.target.value)}
                   placeholder={t("discussion.commentsPlaceholder")}
-                  rows={2}
-                  className="resize-none"
+                  className="h-10"
                 />
               </div>
-            </CardContent>
-          )}
-
-          {evaluationMode === "individual" && (
-            < Card className="border-0 shadow-none">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-xs text-muted-foreground">
-                  {t("evaluation.studentGroupMembers")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 pt-0">
-                {students.map((student, index) => {
-                  const entry = studentGrades[student.id] ?? {
-                    studentId: student.id,
-                    score: "",
-                    maxScore: "100",
-                    comments: "",
-                  };
-                  const isExpanded = expandedStudentId === student.id;
-                  const hasGrade = entry.score && parseFloat(entry.score) >= 0;
-
-                  return (
-                    <div
-                      key={student.id}
-                      className={`overflow-hidden rounded-xl border transition-all duration-200 ${isExpanded
-                        ? "border-primary/20"
-                        : "border-border/50 hover:border-border"
-                        }`}
-                    >
-                      {/* Student Header Row */}
-                      <div
-                        className={`flex items-center justify-between gap-4 p-4 cursor-pointer transition-colors ${isExpanded
-                          ? "bg-primary/5"
-                          : "hover:bg-muted/50"
-                          }`}
-                        onClick={() =>
-                          setExpandedStudentId(isExpanded ? null : student.id)
-                        }
-                      >
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`flex h-10 w-10 items-center justify-center rounded-full font-semibold text-sm ${hasGrade
-                              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                              : "bg-muted text-muted-foreground"
-                              }`}
-                          >
-                            {hasGrade ? (
-                              <CheckCircle2 className="h-5 w-5" />
-                            ) : (
-                              index + 1
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="font-medium text-sm truncate">
-                              {student.name}
-                            </p>
-                            {student.email && (
-                              <p className="text-xs text-muted-foreground truncate">
-                                {student.department}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          {hasGrade && (
-                            <Badge
-                              variant="secondary"
-                              className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                            >
-                              {entry.score}/{entry.maxScore}
-                            </Badge>
-                          )}
-                          {gradesLocked && (
-                            <Lock className="h-4 w-4 text-muted-foreground" />
-                          )}
-                          {isExpanded ? (
-                            <ChevronUp className="h-5 w-5 text-muted-foreground" />
-                          ) : (
-                            <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Expanded Content */}
-                      {isExpanded && (
-                        <div className="border-t bg-muted/20 p-4 space-y-4">
-                          {gradesLocked ? (
-                            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                              <div>
-                                <span className="text-xs text-muted-foreground block mb-1">
-                                  {t("discussion.score")}
-                                </span>
-                                <p className="font-semibold text-lg">
-                                  {entry.score || "—"}
-                                </p>
-                              </div>
-                              <div>
-                                <span className="text-xs text-muted-foreground block mb-1">
-                                  {t("discussion.maxScore")}
-                                </span>
-                                <p className="font-semibold text-lg">
-                                  {entry.maxScore || "—"}
-                                </p>
-                              </div>
-                              {entry.comments && (
-                                <div className="col-span-2">
-                                  <span className="text-xs text-muted-foreground block mb-1">
-                                    {t("discussion.comments")}
-                                  </span>
-                                  <p className="text-sm">{entry.comments}</p>
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <>
-                              <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1.5">
-                                  <Label className="text-xs font-medium">
-                                    {t("discussion.score")} *
-                                  </Label>
-                                  <Input
-                                    type="number"
-                                    min={0}
-                                    value={entry.score}
-                                    onChange={(e) =>
-                                      setGradeForStudent(
-                                        student.id,
-                                        "score",
-                                        e.target.value
-                                      )
-                                    }
-                                    placeholder="0"
-                                    className="h-9"
-                                  />
-                                </div>
-                                <div className="space-y-1.5">
-                                  <Label className="text-xs font-medium">
-                                    {t("discussion.maxScore")} *
-                                  </Label>
-                                  <Input
-                                    type="number"
-                                    min={0}
-                                    value={entry.maxScore}
-                                    onChange={(e) =>
-                                      setGradeForStudent(
-                                        student.id,
-                                        "maxScore",
-                                        e.target.value
-                                      )
-                                    }
-                                    placeholder="100"
-                                    className="h-9"
-                                    disabled={true}
-                                  />
-                                </div>
-                              </div>
-                              <div className="space-y-1.5">
-                                <Label className="text-xs font-medium">
-                                  {t("discussion.comments")} ({t("common.optional")})
-                                </Label>
-                                <Textarea
-                                  value={entry.comments}
-                                  onChange={(e) =>
-                                    setGradeForStudent(
-                                      student.id,
-                                      "comments",
-                                      e.target.value
-                                    )
-                                  }
-                                  placeholder={t("discussion.commentsPlaceholder")}
-                                  rows={2}
-                                  className="resize-none"
-                                />
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </CardContent>
-            </Card>
-          )}
+              <Button onClick={handleApplyGroupGrade} className="h-10 gap-2">
+                {t("evaluation.apply")}
+              </Button>
+            </div>
+          </CardContent>
         </Card>
-      )
-      }
+      )}
 
+      {/* Per-student grading table */}
+      <Card className="border shadow-none">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">{t("evaluation.individualGrades")}</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            {t("evaluation.studentGroupMembers")}
+          </p>
+        </CardHeader>
+        <CardContent>
+          <PerStudentGradingTable
+            students={students}
+            grades={Object.fromEntries(
+              students.map((s) => {
+                const e = studentGrades[s.id] ?? { studentId: s.id, score: "", maxScore: "100", comments: "", hasExistingGrade: false };
+                return [
+                  s.id,
+                  {
+                    studentId: s.id,
+                    score: e.score,
+                    comments: e.comments,
+                    hasExistingGrade: e.hasExistingGrade ?? false,
+                  },
+                ];
+              })
+            )}
+            onGradeChange={setGradeForStudent}
+            onSave={handleSaveStudent}
+            gradesLocked={gradesLocked}
+            savingStudentId={savingStudentId}
+          />
+        </CardContent>
+      </Card>
 
-
-      {/* Action Buttons */}
-      <div className="flex justify-end gap-3 pt-2">
-        {gradesLocked ? (
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+      {/* Action Buttons - hide Close when embedded inline */}
+      {!inline && (
+        <div className="flex justify-end gap-3 pt-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              onSuccess?.();
+              onOpenChange(false);
+            }}
+          >
             {t("common.close")}
           </Button>
-        ) : (
-          <>
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={submitting}
-            >
-              {t("common.cancel")}
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={submitting}
-              className="min-w-[140px] gap-2"
-            >
-              {submitting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <CheckCircle2 className="h-4 w-4" />
-              )}
-              {t("discussion.saveEvaluation")}
-            </Button>
-          </>
-        )}
-      </div>
+        </div>
+      )}
     </div >
   );
 }

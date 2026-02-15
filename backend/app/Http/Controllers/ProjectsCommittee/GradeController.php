@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\GradeResource;
 use App\Http\Traits\HasTableQuery;
 use App\Models\Grade;
+use App\Models\Project;
+use App\Models\User;
+use App\Services\DefenseEvaluationService;
 use App\Services\EvaluationService;
 use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
@@ -17,15 +20,20 @@ class GradeController extends Controller
 
     public function __construct(
         protected EvaluationService $evaluationService,
+        protected DefenseEvaluationService $defenseEvaluationService,
         protected NotificationService $notificationService
     ) {}
 
     /**
-     * List grades for approval
+     * List grades for approval.
+     * Ensures all students in projects with committee assignment have grade records.
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Grade::with(['project' => fn ($q) => $q->with(['defenseEvaluations', 'committeeMembers', 'supervisor']), 'student', 'approver']);
+        // Ensure grade records exist for all students in projects with committee assigned
+        $this->ensureGradesExistForCommitteeProjects();
+
+        $query = Grade::with(['project' => fn ($q) => $q->with(['committeeMembers', 'supervisor', 'students']), 'student', 'approver']);
 
         // Filter by approval status only when explicitly requested (omit for "All")
         if ($request->has('is_approved')) {
@@ -38,18 +46,43 @@ class GradeController extends Controller
             $query->where('project_id', $request->project_id);
         }
 
-        // Show grades that have started evaluation (supervisor, committee, or defense stages)
-        $query->where(function ($q) {
-            $q->whereNotNull('final_grade')
-              ->orWhereNotNull('supervisor_grade')
-              ->orWhereNotNull('committee_grade')
-              ->orWhereNotNull('fd1_final_grade')
-              ->orWhereNotNull('fd2_final_grade');
+        // Include all grades for projects with committee assigned (even if no evaluations yet)
+        $query->whereHas('project', function ($q) {
+            $q->whereNotNull('discussion_committee_id')
+              ->whereHas('students');
         });
 
         $query = $this->applyTableQuery($query, $request);
 
         return response()->json($this->getPaginatedResponse($query, $request, GradeResource::class));
+    }
+
+    /**
+     * Ensure Grade records exist for every student in every project with committee assigned.
+     */
+    protected function ensureGradesExistForCommitteeProjects(): void
+    {
+        $projectIds = Project::whereNotNull('discussion_committee_id')
+            ->whereHas('students')
+            ->pluck('id');
+
+        foreach ($projectIds as $projectId) {
+            $project = Project::with('students')->find($projectId);
+            if (!$project || $project->students->isEmpty()) {
+                continue;
+            }
+            foreach ($project->students as $student) {
+                Grade::firstOrCreate(
+                    [
+                        'project_id' => $projectId,
+                        'student_id' => $student->id,
+                    ],
+                    [
+                        'is_approved' => false,
+                    ]
+                );
+            }
+        }
     }
 
     /**
@@ -61,7 +94,7 @@ class GradeController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => new GradeResource($grade->load(['project', 'student', 'approver'])),
+            'data' => new GradeResource($grade->load(['project' => fn ($q) => $q->with(['committeeMembers', 'supervisor', 'students']), 'student', 'approver'])),
         ]);
     }
 
@@ -107,7 +140,7 @@ class GradeController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => new GradeResource($approved->load(['project', 'student', 'approver'])),
+                'data' => new GradeResource($approved->load(['project' => fn ($q) => $q->with(['committeeMembers', 'supervisor', 'students']), 'student', 'approver'])),
                 'message' => 'Grade approved successfully',
             ]);
         } catch (\Exception $e) {
@@ -134,10 +167,12 @@ class GradeController extends Controller
             'final_grade' => 'nullable|numeric|min:0|max:100',
             'fd1_final_grade' => 'nullable|numeric|min:0|max:100',
             'fd2_final_grade' => 'nullable|numeric|min:0|max:100',
+            'fd1_adjustment' => 'nullable|numeric|min:-100|max:100',
+            'fd2_adjustment' => 'nullable|numeric|min:-100|max:100',
         ]);
 
-        // Check lock state
-        if ($grade->is_approved) {
+        // Check lock state for legacy approval (fd1/fd2 use DefenseApproval)
+        if ($grade->is_approved && !isset($validated['fd1_adjustment']) && !isset($validated['fd2_adjustment'])) {
              return response()->json(['message' => 'Cannot update approved grade'], 400);
         }
 
@@ -165,18 +200,40 @@ class GradeController extends Controller
             }
             $grade->fd2_final_grade = $validated['fd2_final_grade'];
         }
+        if (array_key_exists('fd1_adjustment', $validated)) {
+            $grade->fd1_adjustment = $validated['fd1_adjustment'];
+        }
+        if (array_key_exists('fd2_adjustment', $validated)) {
+            $grade->fd2_adjustment = $validated['fd2_adjustment'];
+        }
+
+        $grade->save();
+
+        // Recalculate FD1/FD2 final grade when adjustment changes
+        if (array_key_exists('fd1_adjustment', $validated) || array_key_exists('fd2_adjustment', $validated)) {
+            $project = Project::find($grade->project_id);
+            $student = User::find($grade->student_id);
+            if ($project && $student) {
+                if (array_key_exists('fd1_adjustment', $validated)) {
+                    $grade->fd1_final_grade = $this->defenseEvaluationService->calculateStudentFinalGrade($project, $student, 'fd1');
+                }
+                if (array_key_exists('fd2_adjustment', $validated)) {
+                    $grade->fd2_final_grade = $this->defenseEvaluationService->calculateStudentFinalGrade($project, $student, 'fd2');
+                }
+                $grade->save();
+            }
+        }
 
         // Recalculate final if not explicitly set and components changed (legacy flow)
         if (!isset($validated['final_grade']) && (isset($validated['supervisor_grade']) || isset($validated['committee_grade']))) {
             $grade->final_grade = $grade->calculateFinalGrade();
+            $grade->save();
         }
 
-        $grade->save();
-        
         return response()->json([
             'success' => true,
             'message' => 'Grade updated',
-            'data' => new GradeResource($grade->refresh()->load(['project', 'student', 'approver'])),
+            'data' => new GradeResource($grade->refresh()->load(['project' => fn ($q) => $q->with(['committeeMembers', 'supervisor', 'students']), 'student', 'approver'])),
         ]);
     }
 

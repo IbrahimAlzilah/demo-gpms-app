@@ -323,6 +323,13 @@ export function EnhancedGradeDetailsView({
                                         </div>
                                     )}
 
+                                    {(breakdown as { adjustment?: number })?.adjustment != null && (breakdown as { adjustment?: number }).adjustment !== 0 && (
+                                        <div className="flex justify-between items-center p-2 bg-slate-50 rounded">
+                                            <span className="text-sm text-slate-800">Optional Adjustment</span>
+                                            <span className="text-sm font-bold text-slate-900">{(breakdown as { adjustment?: number }).adjustment!.toFixed(2)}</span>
+                                        </div>
+                                    )}
+
                                     <Separator className="my-2" />
 
                                     <div className="flex justify-between items-center p-3 bg-primary/5 rounded font-semibold">

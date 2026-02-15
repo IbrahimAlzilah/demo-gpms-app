@@ -260,7 +260,8 @@ export function ProjectDetailScreen() {
             open={showEvaluateModal}
             onOpenChange={setShowEvaluateModal}
             title={t('evaluation.evaluate')}
-            size="xl"
+            // size="xl"
+            className="lg:max-w-3xl"
           >
             <UnifiedEvaluationModal
               open={showEvaluateModal}

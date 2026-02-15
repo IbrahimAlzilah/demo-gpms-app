@@ -180,16 +180,22 @@ class DefenseEvaluationService
             throw new \Exception('You cannot modify this evaluation.');
         }
 
-        // Block all edits when stage is published (permanent lock)
+        // Project Committee can edit even after publish (with audit trail)
         $approval = DefenseApproval::where('project_id', $evaluation->project_id)
             ->where('defense_stage', $evaluation->defense_stage)
             ->first();
 
-        if ($approval && $approval->status === 'published') {
-            throw new \Exception('Cannot modify evaluations after the stage has been published. Records are permanently locked.');
+        $wasPublished = $approval && $approval->status === 'published';
+
+        // Only Project Committee can modify when published
+        if ($wasPublished && !$modifier->isProjectsCommittee()) {
+            throw new \Exception('Cannot modify evaluations after the stage has been published.');
         }
 
-        return DB::transaction(function () use ($evaluation, $data, $modifier) {
+        return DB::transaction(function () use ($evaluation, $data, $modifier, $wasPublished) {
+            $scoreBefore = $evaluation->score;
+            $notesBefore = $evaluation->notes;
+
             $evaluation->update([
                 'score' => $data['score'] ?? $evaluation->score,
                 'max_score' => $data['maxScore'] ?? $evaluation->max_score,
@@ -197,6 +203,22 @@ class DefenseEvaluationService
                 'notes' => $data['notes'] ?? $evaluation->notes,
                 'modified_by' => $modifier->id,
             ]);
+
+            // Audit log for post-publish edits
+            if ($wasPublished) {
+                \DB::table('defense_evaluation_audit_log')->insert([
+                    'defense_evaluation_id' => $evaluation->id,
+                    'action' => 'updated',
+                    'score_before' => $scoreBefore,
+                    'score_after' => $evaluation->score,
+                    'notes_before' => $notesBefore,
+                    'notes_after' => $evaluation->notes,
+                    'modified_by' => $modifier->id,
+                    'was_published' => true,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
 
             // Update aggregated grade
             $this->updateAggregatedGrade(
@@ -405,9 +427,21 @@ class DefenseEvaluationService
             $projectCommitteeContribution += (($eval->normalized_score / 100) / 5);
         }
 
-        // Final grade: sum of contributions, scaled to 0-100 for consistency
+        // Optional Project Committee adjustment (stored in grades table)
+        $grade = Grade::where('project_id', $project->id)->where('student_id', $student->id)->first();
+        $adjustment = 0;
+        if ($grade) {
+            $adjustment = $stage === 'fd1'
+                ? (float) ($grade->fd1_adjustment ?? 0)
+                : (float) ($grade->fd2_adjustment ?? 0);
+        }
+
+        // Final grade: Committee Total + Supervisor Contribution + Project Committee + Optional adjustment
         $rawSum = $supervisorContribution + $committeeContribution + $projectCommitteeContribution;
-        $finalGrade = $rawSum > 0 ? round($rawSum * 100, 2) : null;
+        $scaledSum = $rawSum > 0 ? $rawSum * 100 : 0;
+        $finalGrade = $scaledSum > 0 || $adjustment !== 0.0
+            ? round($scaledSum + $adjustment, 2)
+            : null;
 
         return $finalGrade;
     }
@@ -439,7 +473,7 @@ class DefenseEvaluationService
     protected function updateGradesApprovalStatus(Project $project, string $stage, bool $approved): void
     {
         $column = $stage === 'fd1' ? 'fd1_approved' : 'fd2_approved';
-        
+
         Grade::where('project_id', $project->id)->update([
             $column => $approved,
         ]);
@@ -451,7 +485,7 @@ class DefenseEvaluationService
     protected function updateGradesPublishedStatus(Project $project, string $stage, bool $published): void
     {
         $column = $stage === 'fd1' ? 'fd1_published' : 'fd2_published';
-        
+
         Grade::where('project_id', $project->id)->update([
             $column => $published,
         ]);
@@ -487,7 +521,7 @@ class DefenseEvaluationService
 
         $committeeMembers = $project->committeeMembers;
         $expectedCommitteeEvals = $totalStudents * $committeeMembers->count();
-        
+
         $actualCommitteeEvals = DefenseEvaluation::where('project_id', $project->id)
             ->where('defense_stage', $stage)
             ->where('evaluator_role', 'committee_member')
@@ -502,8 +536,8 @@ class DefenseEvaluationService
             'supervisorEvaluated' => $supervisorCount,
             'committeeExpected' => $expectedCommitteeEvals,
             'committeeSubmitted' => $actualCommitteeEvals,
-            'committeeProgress' => $expectedCommitteeEvals > 0 
-                ? round(($actualCommitteeEvals / $expectedCommitteeEvals) * 100, 2) 
+            'committeeProgress' => $expectedCommitteeEvals > 0
+                ? round(($actualCommitteeEvals / $expectedCommitteeEvals) * 100, 2)
                 : 0,
             'isComplete' => $supervisorCount === $totalStudents && $actualCommitteeEvals === $expectedCommitteeEvals,
             'status' => $approval?->status ?? 'pending',
@@ -562,24 +596,44 @@ class DefenseEvaluationService
     }
 
     /**
-     * Get detailed grade breakdown for a student (for Project Committee review)
-     * Returns raw grades, individual contributions, and final grade
+     * Get grade breakdowns for all students in a project/stage (optimized, no N+1).
+     * Returns map of student_id => breakdown array.
      */
-    public function getGradeBreakdown(Project $project, User $student, string $stage): array
+    public function getGradeBreakdownsForProject(Project $project, string $stage): array
     {
+        $project->loadMissing('students');
         $evaluations = DefenseEvaluation::where('project_id', $project->id)
-            ->where('student_id', $student->id)
             ->where('defense_stage', $stage)
-            ->with('evaluator')
+            ->with('evaluator:id,name')
             ->get();
+        $grades = Grade::where('project_id', $project->id)
+            ->whereIn('student_id', $project->students->pluck('id'))
+            ->get()
+            ->keyBy('student_id');
 
-        // Separate by role
-        $supervisorEval = $evaluations->where('evaluator_role', 'supervisor')->first();
-        $committeeEvals = $evaluations->where('evaluator_role', 'committee_member');
-        $projectCommitteeEvals = $evaluations->where('evaluator_role', 'project_committee');
+        $result = [];
+        foreach ($project->students as $student) {
+            $result[$student->id] = $this->computeBreakdownFromEvaluations(
+                $evaluations->where('student_id', $student->id),
+                $grades->get($student->id),
+                $stage
+            );
+        }
+        return $result;
+    }
 
-        // Formula: (grade/100)/5 for committee, (grade/100)/2 for supervisor
-        // Contributions are 0-1 scale; final is scaled to 0-100
+    /**
+     * Compute breakdown from pre-fetched evaluations collection
+     */
+    protected function computeBreakdownFromEvaluations(
+        Collection $studentEvals,
+        ?Grade $grade,
+        string $stage
+    ): array {
+        $supervisorEval = $studentEvals->where('evaluator_role', 'supervisor')->first();
+        $committeeEvals = $studentEvals->where('evaluator_role', 'committee_member');
+        $projectCommitteeEvals = $studentEvals->where('evaluator_role', 'project_committee');
+
         $supervisorContribution = 0;
         $supervisorData = null;
         if ($supervisorEval) {
@@ -598,7 +652,6 @@ class DefenseEvaluationService
             ];
         }
 
-        // Committee: (grade/100)/5 per member
         $committeeContribution = 0;
         $committeeData = [];
         foreach ($committeeEvals as $eval) {
@@ -618,7 +671,6 @@ class DefenseEvaluationService
             ];
         }
 
-        // Project committee: (grade/100)/5 per member
         $projectCommitteeContribution = 0;
         $projectCommitteeData = [];
         foreach ($projectCommitteeEvals as $eval) {
@@ -638,9 +690,10 @@ class DefenseEvaluationService
             ];
         }
 
-        // Final grade: raw sum (0-~1.1) * 100 for 0-100 scale
+        $adjustment = $grade ? (float) ($stage === 'fd1' ? ($grade->fd1_adjustment ?? 0) : ($grade->fd2_adjustment ?? 0)) : 0;
         $rawSum = $supervisorContribution + $committeeContribution + $projectCommitteeContribution;
-        $finalGrade = $rawSum > 0 ? round($rawSum * 100, 2) : null;
+        $scaledSum = $rawSum > 0 ? $rawSum * 100 : 0;
+        $finalGrade = $scaledSum > 0 || $adjustment !== 0.0 ? round($scaledSum + $adjustment, 2) : null;
 
         return [
             'supervisor' => $supervisorData,
@@ -649,8 +702,25 @@ class DefenseEvaluationService
             'committeeContribution' => round($committeeContribution * 100, 2),
             'projectCommitteeMembers' => $projectCommitteeData,
             'projectCommitteeContribution' => round($projectCommitteeContribution * 100, 2),
+            'adjustment' => $adjustment,
             'finalGrade' => $finalGrade,
         ];
+    }
+
+    /**
+     * Get detailed grade breakdown for a student (for Project Committee review)
+     * Returns raw grades, individual contributions, and final grade
+     */
+    public function getGradeBreakdown(Project $project, User $student, string $stage): array
+    {
+        $evaluations = DefenseEvaluation::where('project_id', $project->id)
+            ->where('student_id', $student->id)
+            ->where('defense_stage', $stage)
+            ->with('evaluator:id,name')
+            ->get();
+        $grade = Grade::where('project_id', $project->id)->where('student_id', $student->id)->first();
+
+        return $this->computeBreakdownFromEvaluations($evaluations, $grade, $stage);
     }
 
     /**

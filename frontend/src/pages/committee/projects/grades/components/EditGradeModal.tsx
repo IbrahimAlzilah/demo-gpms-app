@@ -33,6 +33,7 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSucce
     const [supervisorScore, setSupervisorScore] = useState<string>('')
     const [committeeScore, setCommitteeScore] = useState<string>('')
     const [finalGrade, setFinalGrade] = useState<string>('')
+    const [adjustment, setAdjustment] = useState<string>('')
 
     // Fetch detailed breakdown when in view mode and stage is specified
     useEffect(() => {
@@ -40,21 +41,18 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSucce
             if (mode === 'view' && grade && stage && grade.project?.id) {
                 setFetchingDetails(true)
                 try {
-                    const response = await committeeGradeService.getDefenseReview(grade.project.id, stage)
-                    // The response is an object with { data: { evaluations: [...], approval, statistics, validationErrors, canApprove } }
-                    const data = response as any
+                    const data = await committeeGradeService.getDefenseReview(grade.project.id, stage)
                     
-                    if (data.data?.evaluations) {
-                        // Find the evaluation for this specific student
-                        const studentEvaluation = data.data.evaluations.find(
+                    if (data.evaluations?.length) {
+                        const studentEvaluation = data.evaluations.find(
                             (e: any) => e.student.id === grade.studentId
                         )
                         
                         if (studentEvaluation) {
-                            // Merge the detailed breakdown with the grade object
+                            const breakdown = studentEvaluation.gradeBreakdown || {}
                             setDetailedGrade({
                                 ...grade,
-                                gradeBreakdown: studentEvaluation.gradeBreakdown,
+                                gradeBreakdown: { ...breakdown, adjustment: breakdown.adjustment },
                                 supervisorEvaluation: studentEvaluation.supervisorEvaluation,
                                 committeeEvaluations: studentEvaluation.committeeEvaluations,
                                 projectCommitteeEvaluations: studentEvaluation.projectCommitteeEvaluations,
@@ -65,11 +63,8 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSucce
                         }
                     }
                     
-                    // Set validation errors and approval status
-                    if (data.data) {
-                        setValidationErrors(data.data.validationErrors || [])
-                        setCanApprove(data.data.canApprove || false)
-                    }
+                    setValidationErrors(data.validationErrors || [])
+                    setCanApprove(data.canApprove || false)
                 } catch (error) {
                     console.error('Failed to fetch detailed breakdown:', error)
                     setDetailedGrade(grade)
@@ -89,17 +84,18 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSucce
     useEffect(() => {
         if (grade) {
             let sup, com, fin
-
+            const g = grade as { fd1Adjustment?: number; fd2Adjustment?: number }
             if (stage === 'fd1') {
                 fin = grade.fd1FinalGrade
-                // FD1 specific components not currently stored on grade object in same way
-                // Leave empty or populate if we add them to GradeResource
+                setAdjustment(g.fd1Adjustment != null ? String(g.fd1Adjustment) : '')
             } else if (stage === 'fd2') {
                 fin = grade.fd2FinalGrade
+                setAdjustment(g.fd2Adjustment != null ? String(g.fd2Adjustment) : '')
             } else {
                 sup = grade.supervisorScore ?? grade.supervisorGrade?.score ?? grade.displaySupervisorGrade?.score
                 com = grade.committeeScore ?? grade.committeeGrade?.score ?? grade.displayCommitteeGrade?.score
                 fin = grade.finalGrade
+                setAdjustment('')
             }
 
             setSupervisorScore(sup?.toString() ?? '')
@@ -114,10 +110,15 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSucce
         const sScore = supervisorScore ? parseFloat(supervisorScore) : undefined
         const cScore = committeeScore ? parseFloat(committeeScore) : undefined
         const fGrade = finalGrade ? parseFloat(finalGrade) : undefined
+        const adj = adjustment.trim() !== '' ? parseFloat(adjustment) : undefined
 
         // Validate
         if ((sScore && (sScore < 0 || sScore > 100)) || (cScore && (cScore < 0 || cScore > 100))) {
             toastError(t('committee.grades.invalidScore'))
+            return
+        }
+        if (adj !== undefined && (adj < -100 || adj > 100)) {
+            toastError(t('committee.grades.invalidAdjustment') || 'Adjustment must be between -100 and 100')
             return
         }
 
@@ -127,8 +128,10 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSucce
 
             if (stage === 'fd1') {
                 payload.fd1FinalGrade = fGrade
+                if (adj !== undefined) payload.fd1Adjustment = adj
             } else if (stage === 'fd2') {
                 payload.fd2FinalGrade = fGrade
+                if (adj !== undefined) payload.fd2Adjustment = adj
             } else {
                 payload.supervisorScore = sScore
                 payload.committeeScore = cScore
@@ -165,7 +168,8 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSucce
         }
     }
 
-    const isReadOnly = mode === 'view' || grade?.isApproved
+    // Project Committee can edit FD1/FD2 even when published (with audit trail)
+    const isReadOnly = mode === 'view' || (!!stage ? false : !!grade?.isApproved)
     const isStageGrade = !!stage
 
     if (mode === 'view' && grade) {
@@ -264,6 +268,26 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSucce
                         </>
                     )}
 
+                    {isStageGrade && (
+                        <div className="grid gap-2">
+                            <Label htmlFor="adjustment">{t('committee.grades.adjustment') || 'Optional Adjustment'}</Label>
+                            <Input
+                                id="adjustment"
+                                type="number"
+                                value={adjustment}
+                                onChange={(e) => setAdjustment(e.target.value)}
+                                disabled={isReadOnly}
+                                placeholder="0"
+                                min={-100}
+                                max={100}
+                                step="0.01"
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                {t('committee.grades.adjustmentHelp') || 'Optional value (-100 to 100) added to the calculated final grade.'}
+                            </p>
+                        </div>
+                    )}
+
                     <div className="grid gap-2">
                         <Label htmlFor="finalGrade">{t('committee.grades.finalGrade')}</Label>
                         <Input
@@ -271,7 +295,7 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSucce
                             type="number"
                             value={finalGrade}
                             onChange={(e) => setFinalGrade(e.target.value)}
-                            disabled={isReadOnly} // Typically computed, but allow override if needed or just display
+                            disabled={isReadOnly}
                             placeholder={t('committee.grades.calculatedAutomatically')}
                         />
                         {isReadOnly && !finalGrade && <p className="text-xs text-muted-foreground">{t('committee.grades.notCalculatedYet')}</p>}

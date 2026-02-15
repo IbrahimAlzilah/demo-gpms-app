@@ -2093,7 +2093,12 @@
       "committeeTotal": "Committee Total",
       "committeeMember": "Committee Member",
       "completed": "Completed",
-      "supervisor": "Supervisor"
+      "supervisor": "Supervisor",
+      "adjustment": "Optional Adjustment",
+      "adjustmentHelp": "Optional value (-100 to 100) added to the calculated final grade.",
+      "invalidAdjustment": "Adjustment must be between -100 and 100",
+      "validationError": "Validation Error",
+      "loadError": "Failed to load grades. Please try again."
     }
   },
   "project": {
@@ -2713,6 +2718,13 @@
   "evaluation": {
     "fd1": "Final Defense 1",
     "fd2": "Final Defense 2",
+    "grade": "Grade",
+    "gradeInvalid": "Please enter a valid number",
+    "gradeRange": "Grade must be between {{min}} and {{max}}",
+    "statusDraft": "Draft",
+    "statusSubmitted": "Submitted",
+    "save": "Save",
+    "update": "Update",
     "evaluate": "Evaluate Project",
     "gradesLockedReadOnly": "Grades have been approved by the Projects Committee and cannot be modified.",
     "applyGroupGrade": "Apply Group Grade",
