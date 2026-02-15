@@ -136,7 +136,7 @@ export const committeeEvaluationService = {
     await apiClient.post("/discussion-committee/defense-evaluations", {
       project_id: data.projectId,
       student_id: data.studentId,
-      defense_stage: data.defenseStage,
+      stage: data.defenseStage,
       score: data.grade.score,
       max_score: data.grade.maxScore,
       criteria: data.grade.criteria,

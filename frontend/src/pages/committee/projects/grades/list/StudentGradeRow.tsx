@@ -94,7 +94,17 @@ export function StudentGradeRow({ grade, onAction, onAdjustmentSave, stage, comm
     if (calculatedFinal == null && stageBreakdown?.finalGrade != null) calculatedFinal = stageBreakdown.finalGrade
 
     // Only calculate from contributions if we have actual stage-specific breakdown data
-    if (calculatedFinal == null && hasStageBreakdownData && (rawSupervisorScore != null || committeeTotalContribution > 0)) {
+    const canCalculate = hasStageBreakdownData && (rawSupervisorScore != null || committeeTotalContribution > 0)
+
+    // Use live adjustment input if editing
+    if (canCalculate && (isEditingAdjustment || savingAdjustment)) {
+        const liveAdjustment = adjustmentInput.trim() === '' ? 0 : parseFloat(adjustmentInput)
+        if (!isNaN(liveAdjustment)) {
+            calculatedFinal = (stageBreakdown?.supervisorContribution ?? 0) + committeeTotalContribution + liveAdjustment
+        }
+    }
+
+    if (calculatedFinal == null && canCalculate) {
         calculatedFinal = (stageBreakdown?.supervisorContribution ?? 0) + committeeTotalContribution + (stageBreakdown?.projectCommitteeContribution ?? 0)
     }
 

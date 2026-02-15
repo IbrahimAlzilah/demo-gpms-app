@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChevronDown, ChevronUp, Users, CheckCircle, Clock, AlertCircle } from 'lucide-react'
 import { Card, CardContent, CardHeader, Table, TableBody, TableHead, TableHeader, TableRow, Button, Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui'
+import { ConfirmDialog } from '@/components/common'
 import type { Grade } from '@/types/evaluation.types'
 import { StudentGradeRow } from './StudentGradeRow'
 
@@ -19,6 +20,7 @@ interface ProjectGradeCardProps {
 export function ProjectGradeCard({ project, grades, onAction, onStageAction, onAdjustmentSave, stage, isOpen: controlledIsOpen, onToggle }: ProjectGradeCardProps) {
     const { t } = useTranslation()
     const [internalIsOpen, setInternalIsOpen] = useState(false)
+    const [showApproveAllConfirm, setShowApproveAllConfirm] = useState(false)
 
     const isOpen = controlledIsOpen ?? internalIsOpen
     const setIsOpen = (open: boolean) => {
@@ -56,6 +58,7 @@ export function ProjectGradeCard({ project, grades, onAction, onStageAction, onA
     const anyPublished = grades.some((g: Grade) => stage === 'fd1' ? !!g.fd1Published : !!g.fd2Published)
 
     return (
+        <>
         <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-6">
             <Card className="border hover:shadow-sm transition-all duration-200">
                 <CardHeader className="p-0">
@@ -93,9 +96,7 @@ export function ProjectGradeCard({ project, grades, onAction, onStageAction, onA
                                     size="sm"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        if (window.confirm(t('committee.grades.confirmApproveAll') || `Are you sure you want to approve all ${pendingCount} pending grades for this project?`)) {
-                                            onStageAction('approve');
-                                        }
+                                        setShowApproveAllConfirm(true);
                                     }}
                                     className="h-8 px-3 shadow-sm active:scale-95 transition-all bg-emerald-600 hover:bg-emerald-700 text-white"
                                 >
@@ -171,6 +172,25 @@ export function ProjectGradeCard({ project, grades, onAction, onStageAction, onA
                     </CardContent>
                 </CollapsibleContent>
             </Card>
-        </Collapsible >
+        </Collapsible>
+
+        <ConfirmDialog
+            open={showApproveAllConfirm}
+            onOpenChange={setShowApproveAllConfirm}
+            title={t('committee.grades.approveAll')}
+            description={t('committee.grades.confirmApproveAll') || `Are you sure you want to approve all ${pendingCount} pending grades for this project?`}
+            confirmLabel={t('common.confirm')}
+            cancelLabel={t('common.cancel')}
+            variant="default"
+            icon={
+                <div className="rounded-full bg-emerald-500/10 p-2">
+                    <CheckCircle className="h-5 w-5 text-emerald-600" />
+                </div>
+            }
+            onConfirm={() => {
+                onStageAction('approve');
+            }}
+        />
+        </>
     )
 }
