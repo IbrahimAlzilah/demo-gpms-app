@@ -35,9 +35,9 @@ interface SupervisorDefenseEvaluationModalProps {
 // Validation schema
 const createEvaluationSchema = (t: (key: string) => string) => z.object({
     score: z.coerce
-        .number({ message: t('supervisor.requiredField') })
-        .min(0, t('supervisor.invalidGrade'))
-        .max(100, t('supervisor.invalidGrade')),
+        .number({ message: t('supervisor_dashboard.requiredField') })
+        .min(0, t('supervisor_dashboard.invalidGrade'))
+        .max(100, t('supervisor_dashboard.invalidGrade')),
     notes: z.string().optional(),
 })
 
@@ -106,20 +106,20 @@ export function SupervisorDefenseEvaluationModal({
                 },
             }),
         onSuccess: () => {
-            toastSuccess(t('supervisor.evaluationSubmitted'))
+            toastSuccess(t('supervisor_dashboard.evaluationSubmitted'))
             queryClient.invalidateQueries({ queryKey: ['supervisor-defense-evaluations', project?.id, currentStage] })
             queryClient.invalidateQueries({ queryKey: ['supervisor-projects'] })
             setSelectedStudentId(null)
             reset()
         },
         onError: (error: any) => {
-            toastError(error?.message || t('supervisor.evaluationFailed'))
+            toastError(error?.message || t('supervisor_dashboard.evaluationFailed'))
         },
     })
 
     const onSubmit = async (data: { score: number; notes?: string }) => {
         if (isLocked) {
-            toastError(t('supervisor.evaluationLockedMessage'))
+            toastError(t('supervisor_dashboard.evaluationLockedMessage'))
             return
         }
         submitMutation.mutate(data)
@@ -142,8 +142,8 @@ export function SupervisorDefenseEvaluationModal({
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         {selectedStudentId
-                            ? t('supervisor.evaluationForm')
-                            : t('supervisor.selectStudentToEvaluate')
+                            ? t('supervisor_dashboard.evaluationForm')
+                            : t('supervisor_dashboard.selectStudentToEvaluate')
                         }
                         <Badge variant={currentStage === 'fd1' ? 'default' : 'secondary'}>
                             {stageLabel}
@@ -152,7 +152,7 @@ export function SupervisorDefenseEvaluationModal({
                     </DialogTitle>
                     {!selectedStudentId && (
                         <DialogDescription>
-                            {t('supervisor.selectStudentDescription')}
+                            {t('supervisor_dashboard.selectStudentDescription')}
                         </DialogDescription>
                     )}
                 </DialogHeader>
@@ -195,7 +195,7 @@ export function SupervisorDefenseEvaluationModal({
                                     </div>
                                     {selectedStudentEvaluation?.supervisorGrade && (
                                         <Badge variant="default" className="bg-green-600">
-                                            {t('supervisor.evaluated')}
+                                            {t('supervisor_dashboard.evaluated')}
                                         </Badge>
                                     )}
                                 </div>
@@ -208,9 +208,9 @@ export function SupervisorDefenseEvaluationModal({
                                 <CardContent className="p-4 flex items-start gap-3">
                                     <Lock className="h-5 w-5 text-warning mt-0.5" />
                                     <div>
-                                        <p className="font-medium text-warning">{t('supervisor.evaluationLocked')}</p>
+                                        <p className="font-medium text-warning">{t('supervisor_dashboard.evaluationLocked')}</p>
                                         <p className="text-sm text-muted-foreground mt-1">
-                                            {t('supervisor.evaluationLockedMessage')}
+                                            {t('supervisor_dashboard.evaluationLockedMessage')}
                                         </p>
                                     </div>
                                 </CardContent>
@@ -221,7 +221,7 @@ export function SupervisorDefenseEvaluationModal({
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="score">
-                                    {t('supervisor.studentGrade')} *
+                                    {t('supervisor_dashboard.studentGrade')} *
                                 </Label>
                                 <Input
                                     id="score"
@@ -242,18 +242,18 @@ export function SupervisorDefenseEvaluationModal({
                                     </p>
                                 )}
                                 <p className="text-xs text-muted-foreground">
-                                    {t('supervisor.gradeRange')}
+                                    {t('supervisor_dashboard.gradeRange')}
                                 </p>
                             </div>
 
                             <div className="space-y-2">
                                 <Label htmlFor="notes">
-                                    {t('supervisor.notes')} ({t('common.optional')})
+                                    {t('supervisor_dashboard.notes')} ({t('common.optional')})
                                 </Label>
                                 <Textarea
                                     id="notes"
                                     {...register('notes')}
-                                    placeholder={t('supervisor.notesPlaceholder')}
+                                    placeholder={t('supervisor_dashboard.notesPlaceholder')}
                                     rows={4}
                                     disabled={isLocked}
                                 />
@@ -282,8 +282,8 @@ export function SupervisorDefenseEvaluationModal({
                                         <>
                                             <CheckCircle2 className="mr-2 h-4 w-4" />
                                             {selectedStudentEvaluation?.supervisorGrade
-                                                ? t('supervisor.submitEvaluation')
-                                                : t('supervisor.submitEvaluation')}
+                                                ? t('supervisor_dashboard.submitEvaluation')
+                                                : t('supervisor_dashboard.submitEvaluation')}
                                         </>
                                     )}
                                 </Button>

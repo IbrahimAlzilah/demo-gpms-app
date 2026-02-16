@@ -100,12 +100,12 @@ export function DocumentsSection({ documents, isLoading, projectId }: DocumentsS
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
-            {t('supervisor.projectDocuments')}
+            {t('supervisor_dashboard.projectDocuments')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-center py-4">
-            {t('supervisor.noDocuments')}
+            {t('supervisor_dashboard.noDocuments')}
           </p>
         </CardContent>
       </Card>
@@ -117,7 +117,7 @@ export function DocumentsSection({ documents, isLoading, projectId }: DocumentsS
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <FileText className="h-5 w-5 text-primary" />
-          {t('supervisor.projectDocuments')} ({documents.length})
+          {t('supervisor_dashboard.projectDocuments')} ({documents.length})
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -131,7 +131,7 @@ export function DocumentsSection({ documents, isLoading, projectId }: DocumentsS
                 <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">
-                    {document.fileName || t('supervisor.unnamedDocument')}
+                    {document.fileName || t('supervisor_dashboard.unnamedDocument')}
                   </p>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
                     <span className="capitalize">{document.type}</span>
@@ -153,7 +153,7 @@ export function DocumentsSection({ documents, isLoading, projectId }: DocumentsS
                       className="text-green-600 hover:text-green-700"
                     >
                       <CheckCircle className="h-4 w-4 mr-1" />
-                      {t('supervisor.approve')}
+                      {t('supervisor_dashboard.approve')}
                     </Button>
                     <Button
                       size="sm"
@@ -162,7 +162,7 @@ export function DocumentsSection({ documents, isLoading, projectId }: DocumentsS
                       className="text-red-600 hover:text-red-700"
                     >
                       <XCircle className="h-4 w-4 mr-1" />
-                      {t('supervisor.reject')}
+                      {t('supervisor_dashboard.reject')}
                     </Button>
                   </>
                 )}
@@ -188,21 +188,21 @@ export function DocumentsSection({ documents, isLoading, projectId }: DocumentsS
         }
         title={
           reviewState.status === 'approved'
-            ? t('supervisor.approveDocument')
-            : t('supervisor.rejectDocument')
+            ? t('supervisor_dashboard.approveDocument')
+            : t('supervisor_dashboard.rejectDocument')
         }
       >
         <div className="space-y-4">
           {reviewState.document && (
             <div>
               <p className="text-sm text-muted-foreground mb-2">
-                {t('supervisor.document')}: {reviewState.document.fileName}
+                {t('supervisor_dashboard.document')}: {reviewState.document.fileName}
               </p>
             </div>
           )}
           <div className="space-y-2">
             <Label htmlFor="review-comments">
-              {t('supervisor.reviewComments')} ({t('common.optional')})
+              {t('supervisor_dashboard.reviewComments')} ({t('common.optional')})
             </Label>
             <Textarea
               id="review-comments"
@@ -210,7 +210,7 @@ export function DocumentsSection({ documents, isLoading, projectId }: DocumentsS
               onChange={(e) =>
                 setReviewState((prev) => ({ ...prev, comments: e.target.value }))
               }
-              placeholder={t('supervisor.reviewCommentsPlaceholder')}
+              placeholder={t('supervisor_dashboard.reviewCommentsPlaceholder')}
               rows={4}
               className="resize-none"
             />
@@ -238,8 +238,8 @@ export function DocumentsSection({ documents, isLoading, projectId }: DocumentsS
               {reviewMutation.isPending
                 ? t('common.saving')
                 : reviewState.status === 'approved'
-                  ? t('supervisor.approve')
-                  : t('supervisor.reject')}
+                  ? t('supervisor_dashboard.approve')
+                  : t('supervisor_dashboard.reject')}
             </Button>
           </div>
         </div>

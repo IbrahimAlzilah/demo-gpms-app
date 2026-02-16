@@ -517,7 +517,7 @@
   "groups": {
     "title": "Group Management",
     "members": "Members",
-    "leader": "Leader",
+    "leader": "Group Leader",
     "management": "Group Management",
     "myGroup": "My Group",
     "noGroup": "No group",
@@ -548,7 +548,6 @@
     "groupMembers": "Group Members",
     "noMembers": "No members",
     "membersCount": "Members Count",
-    "leader": "Group Leader",
     "full": "Full",
     "groupFull": "Group is full. Cannot invite new members or accept join requests.",
     "groupFullCannotAccept": "Group is full. You cannot accept new join requests.",
@@ -559,7 +558,6 @@
     "registrationRequiredTitle": "You must be registered in an approved project",
     "registrationPendingMessage": "Your registration request is pending review. Please wait until it is approved.",
     "registrationNotApprovedMessage": "You must be registered in an approved project before viewing group information.",
-    "members": "Group Members",
     "groupDetails": "Group Details",
     "loadError": "An error occurred while loading the group",
     "studentId": "Student ID",
@@ -782,7 +780,6 @@
     "addNewProposal": "Add New Proposal",
     "newProposal": "New Proposal",
     "editProposals": "Edit Proposals",
-    "edit": "Edit Proposals",
     "readOnlyAccess": "Read-Only Access",
     "readOnlyDescription": "You are viewing proposals submitted by your group leader. You can view but cannot modify proposals.",
     "readOnlyView": "You are viewing this proposal in read-only mode. Only the group leader can modify proposals.",
@@ -1305,7 +1302,7 @@
     "confirmReject": "Confirm Rejection of Supervision Request",
     "confirmRejectDescription": "Are you sure you want to reject this supervision request?"
   },
-  "supervisor": {
+  "supervisor_assignments": {
     "projectsDescription": "Browse projects linked to you and access their details and documents",
     "progressDescription": "Follow projects you supervise by viewing progress status and documents, adding notes, and scheduling meetings",
     "evaluationDescription": "Enter grades and evaluations for students in projects you supervise",
@@ -1343,7 +1340,6 @@
     "noFinalGrades": "No final grades",
     "backToProjects": "Back to Projects",
     "projectIdRequired": "Project ID Required",
-    "projectIdRequiredMessage": "Project ID must be provided to view details",
     "failedToSaveNote": "Failed to save note",
     "upcomingMeetings": "Upcoming meetings",
     "pendingEvaluations": "Pending evaluations",
@@ -1357,7 +1353,6 @@
       "maxScoreRequired": "Max score is required",
       "maxScoreInvalid": "Invalid max score"
     },
-    "projectIdRequired": "Project ID Required",
     "projectIdRequiredMessage": "Please select a project to view its progress. You can navigate to the projects page and select a project from there.",
     "studentIdRequired": "Student ID Required",
     "studentIdRequiredMessage": "Please select a student to evaluate. You can navigate to the projects page and select a project with students from there.",
@@ -1728,8 +1723,6 @@
       "projectChangeDetails": "Project change details",
       "projectChangeDescription": "Student requests to move from current project to the target project.",
       "targetProject": "Target project",
-      "groupChangeDetails": "Group change details",
-      "groupChangeDescription": "Current group, target group, and project context for the request.",
       "newProjectTitle": "New Project Title",
       "requestAlreadyProcessed": "This request has already been processed and cannot be modified."
     },
@@ -1904,14 +1897,7 @@
         "committeeCount": "Committee members",
         "gradesSubmitted": "Grades submitted",
         "gradesApproved": "Grades approved"
-      },
-      "phaseProposal": "Proposal Phase",
-      "phaseRegistration": "Registration Phase",
-      "phaseSupervision": "Supervision Phase",
-      "phaseDocuments": "Documents Phase",
-      "phaseMilestones": "Milestones Phase",
-      "phaseEvaluation": "Evaluation Phase",
-      "workflowProgress": "Workflow Progress"
+      }
     },
     "projects": {
       "noProjects": "No projects found",
@@ -2306,8 +2292,6 @@
     "loadError": "An error occurred while loading registration requests",
     "autoApprove": "Auto-approve registration",
     "autoApproveNote": "The registration will remain pending until manually approved",
-    "groupHasApprovedProject": "This group already has an approved project: {{project}}. Only one project can be approved per group.",
-    "cannotApproveAnother": "Cannot approve another project - group already has an approved project",
     "approvedProject": "Approved Project",
     "registrationRequests": "Registration Requests",
     "request": "Request",
@@ -2474,11 +2458,46 @@
   },
   "notifications": {
     "title": "Notifications",
-    "markAllAsRead": "Mark all as read",
-    "deleteAll": "Delete all",
-    "noNotifications": "No notifications",
-    "loading": "Loading...",
-    "confirmDeleteAll": "Are you sure you want to delete all notifications?",
+    "request": {
+      "submitted_supervisor": "New request submitted: {{request_type}} by {{student_name}}",
+      "submitted_committee": "New request submitted: {{request_type}} by {{student_name}} for project: {{project_title}}",
+      "supervisor_approved": "Your request: {{request_type}} has been approved by the supervisor",
+      "supervisor_rejected": "Your request: {{request_type}} has been rejected by the supervisor. Comments: {{comments}}",
+      "committee_approved": "Your request: {{request_type}} has been approved by the committee. Comments: {{comments}}",
+      "committee_rejected": "Your request: {{request_type}} has been rejected by the committee. Comments: {{comments}}"
+    },
+    "proposal": {
+      "submitted": "New proposal submitted: {{proposal_title}} by {{submitter_name}}",
+      "batch_submitted": "{{count}} new proposals submitted by {{submitter_name}}",
+      "approved": "Your proposal: {{proposal_title}} has been approved",
+      "rejected": "Your proposal: {{proposal_title}} has been rejected. Notes: {{notes}}",
+      "modification_required": "Your proposal requires modification: {{proposal_title}}. Notes: {{notes}}"
+    },
+    "project": {
+      "registration_submitted": "New registration request from group {{group_name}} for project: {{project_title}}",
+      "registration_batch_submitted": "New registration request from group {{group_name}} for projects: {{project_titles}}",
+      "registration_approved": "Registration approved for project: {{project_title}}",
+      "registration_rejected": "Registration rejected for project: {{project_title}}. Comments: {{comments}}",
+      "batch_registration_rejected": "Your group registration request was rejected. Comments: {{comments}}",
+      "announced": "New projects available for registration: {{project_titles}}",
+      "unannounced": "Projects removed from announcements: {{project_titles}}",
+      "deleted": "Project deleted: {{project_title}}",
+      "status_changed": "Project '{{project_title}}' status changed from {{old_status}} to {{new_status}}"
+    },
+    "defense": {
+      "evaluations_ready": "All evaluations for project \"{{project_title}}\" ({{stage}}) have been submitted and are ready for review."
+    },
+    "committee": {
+      "assigned": "You have been assigned to evaluate project '{{project_title}}' for {{stage}}",
+      "removed": "You have been removed from evaluating project '{{project_title}}'"
+    },
+    "meeting": {
+      "scheduled": "New meeting scheduled for project '{{project_title}}' on {{date}}",
+      "updated": "Meeting for project '{{project_title}}' updated to {{date}} - {{location}}"
+    },
+    "deadline": {
+      "reminder": "Deadline approaching: {{period_type}} - {{days_remaining}} days remaining"
+    },
     "types": {
       "proposal_approved": "Proposal Approved",
       "proposal_rejected": "Proposal Rejected",
@@ -2497,24 +2516,55 @@
       "group_invitation": "Group Invitation",
       "group_invitation_accepted": "Invitation Accepted",
       "group_invitation_rejected": "Invitation Rejected",
-      "group_join_request": "Join Request",
+      "group_join_request": "Group Join Request",
       "group_join_request_approved": "Join Request Approved",
       "group_join_request_rejected": "Join Request Rejected",
       "supervisor_assignment_request": "Supervisor Assignment Request",
-      "supervisor_assigned": "Assigned as Supervisor",
-      "supervisor_assignment_cancelled": "Assignment Request Cancelled"
+      "supervisor_assigned": "Supervisor Assigned",
+      "supervisor_assignment_cancelled": "Supervisor Assignment Cancelled",
+      "change_supervisor": "Change Supervisor",
+      "change_group": "Change Group",
+      "change_project": "Change Project",
+      "change_project_title": "Change Project Title",
+      "document_uploaded": "Document Uploaded",
+      "document_resubmitted": "Document Resubmitted",
+      "document_approved": "Document Approved",
+      "document_rejected": "Document Rejected",
+      "project_status_changed": "Project Status Changed",
+      "projects_announced": "Projects Announced",
+      "projects_unannounced": "Projects Unannounced",
+      "project_deleted": "Project Deleted"
     },
     "groups": {
       "invitation_received": "You have been invited to join group '{{group_name}}' by {{inviter_name}}",
       "invitation_accepted": "Student {{student_name}} accepted your invitation to join group '{{group_name}}'",
       "invitation_rejected": "Student {{student_name}} rejected your invitation to join group '{{group_name}}'",
       "join_request_received": "Student {{student_name}} requested to join your group '{{group_name}}'",
-      "join_request_approved": "Your request to join group '{{group_name}}' has been approved",
-      "join_request_rejected": "Your request to join group '{{group_name}}' has been rejected"
+      "join_request_approved": "Your request to join group '{{group_name}}' was approved",
+      "join_request_rejected": "Your request to join group '{{group_name}}' was rejected"
     },
     "periods": {
       "new_announcement": "A new {{type}} period '{{name}}' has been announced",
       "activated": "The {{type}} period '{{name}}' is now open"
+    },
+    "grade": {
+      "approved": "Your final grade for project: {{project_title}} has been approved. Final Grade: {{final_grade}}",
+      "published": "Your final results for project: {{project_title}} have been published. Final Grade: {{final_grade}}"
+    },
+    "document": {
+      "chapter_uploaded": "New Chapter {{chapter_number}} uploaded for project: {{project_title}}",
+      "file_uploaded": "New document uploaded for project: {{project_title}}",
+      "chapter_resubmitted": "Chapter {{chapter_number}} resubmitted for project: {{project_title}}",
+      "file_resubmitted": "Document resubmitted for project: {{project_title}}",
+      "chapter_approved": "Chapter {{chapter_number}} approved for project: {{project_title}}. Comments: {{comments}}",
+      "chapter_rejected": "Chapter {{chapter_number}} rejected for project: {{project_title}}. Comments: {{comments}}",
+      "file_approved": "Document approved for project: {{project_title}}. Comments: {{comments}}",
+      "file_rejected": "Document rejected for project: {{project_title}}. Comments: {{comments}}"
+    },
+    "supervisor": {
+      "assignment_request": "You have been nominated to supervise project: {{project_title}}. Please approve or reject.",
+      "assigned": "You have been assigned as supervisor for project: {{project_title}}",
+      "assignment_cancelled": "Supervisor assignment request for project: {{project_title}} has been cancelled by the committee."
     }
   },
   "phase": {
@@ -2630,7 +2680,7 @@
     },
     "loadError": "Failed to load projects"
   },
-  "supervisor": {
+  "supervisor_dashboard": {
     "projects": "Projects",
     "myProjects": "My Projects",
     "noProjects": "No Projects",
@@ -2759,7 +2809,6 @@
     "enterAtLeastOneGrade": "Please enter at least one valid grade"
   },
   "supervisor": {
-    "grade": "Supervisor Grade",
     "projects": "Projects",
     "myProjects": "My Projects",
     "noProjects": "No projects",

@@ -48,13 +48,12 @@ export function StudentGradeRow({ grade, onAction, onAdjustmentSave, stage, comm
         .filter((e: { defenseStage?: string }) => e.defenseStage === stage)
         .sort((a: { evaluatorName?: string }, b: { evaluatorName?: string }) => (a.evaluatorName || '').localeCompare(b.evaluatorName || ''))
 
-    // Supervisor: use breakdown or fallback to general supervisorGrade
-    const supervisorEval = stageBreakdown?.supervisor ?? grade.supervisorEvaluation
+    // Supervisor: use strict stage breakdown
+    // Do NOT fallback to generic supervisorEvaluation/supervisorGrade which may belong to another stage
+    const supervisorEval = stageBreakdown?.supervisor
     const rawSupervisorScore = supervisorEval
         ? ((supervisorEval as { rawScore?: number }).rawScore ?? (supervisorEval as { score?: number }).score)
         : (stage === 'fd1' ? grade.fd1SupervisorScore : grade.fd2SupervisorScore)
-        ?? grade.supervisorGrade?.score
-        ?? grade.supervisorScore
 
     // Contributions: Formula (grade/100)/5 for committee, (grade/100)/2 for supervisor
     // Backend sends contribution already scaled to 0-100

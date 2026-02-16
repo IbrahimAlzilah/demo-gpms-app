@@ -98,6 +98,36 @@ export function NotificationsPopover({ className }: NotificationsPopoverProps) {
             params.type = translatedType;
           }
         }
+
+        // Handle period_type param for deadlines
+        if (params?.period_type && typeof params.period_type === 'string') {
+          const camelCaseType = params.period_type.replace(/_([a-z])/g, (_: string, letter: string) => letter.toUpperCase());
+          const typeKey = `phase.${camelCaseType}`;
+          const translatedType = t(typeKey);
+          if (translatedType !== typeKey) {
+            params.period_type = translatedType;
+          }
+        }
+
+        // Handle request_type param
+        if (params?.request_type && typeof params.request_type === 'string') {
+          const typeKey = `notifications.types.${params.request_type}`;
+          const translatedType = t(typeKey);
+          if (translatedType !== typeKey) {
+            params.request_type = translatedType;
+          }
+        }
+
+        // Handle project status params
+        ['old_status', 'new_status'].forEach(statusParam => {
+          if (params?.[statusParam] && typeof params[statusParam] === 'string') {
+            const statusKey = `projectManagement.status.${params[statusParam]}`;
+            const translatedStatus = t(statusKey);
+            if (translatedStatus !== statusKey) {
+              params[statusParam] = translatedStatus;
+            }
+          }
+        });
         const translated = t(parsed.key, params);
         // Ensure we always return a string
         return String(translated);

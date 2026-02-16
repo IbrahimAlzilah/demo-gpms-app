@@ -88,7 +88,13 @@ class ProjectService
             if (!empty($committeeMembers) && $this->notificationService) {
                 $this->notificationService->createForUsers(
                     $committeeMembers,
-                    "طلب تسجيل جديد من المجموعة {$group->name} في المشروع: {$project->title}",
+                    json_encode([
+                        'key' => 'notifications.project.registration_submitted',
+                        'params' => [
+                            'group_name' => $group->name,
+                            'project_title' => $project->title
+                        ]
+                    ]),
                     'registration_submitted',
                     'project',
                     $project->id
@@ -201,7 +207,13 @@ class ProjectService
                 $projectTitles = $projects->pluck('title')->implode(', ');
                 $this->notificationService->createForUsers(
                     $committeeMembers,
-                    "طلب تسجيل جديد من المجموعة {$group->name} في المشاريع: {$projectTitles}",
+                    json_encode([
+                        'key' => 'notifications.project.registration_batch_submitted',
+                        'params' => [
+                            'group_name' => $group->name,
+                            'project_titles' => $projectTitles
+                        ]
+                    ]),
                     'registration_submitted',
                     'project',
                     $projects->first()->id

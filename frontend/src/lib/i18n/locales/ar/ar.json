@@ -569,11 +569,6 @@
     "registrationRequiredTitle": "يجب أن تكون مسجلاً في مشروع معتمد",
     "registrationPendingMessage": "طلب التسجيل الخاص بك قيد المراجعة. يرجى الانتظار حتى يتم الموافقة عليه.",
     "registrationNotApprovedMessage": "يجب أن تكون مسجلاً في مشروع معتمد قبل عرض معلومات المجموعة.",
-    "members": "أعضاء المجموعة",
-    "groupDetails": "تفاصيل المجموعة",
-    "loadError": "حدث خطأ أثناء تحميل المجموعة",
-    "studentId": "معرف الطالب",
-    "studentIdPlaceholder": "أدخل معرف الطالب",
     "selectStudent": "اختر طالباً",
     "selectStudentRequired": "يرجى اختيار طالب لدعوته",
     "searchStudentPlaceholder": "البحث بالاسم أو معرف الطالب...",
@@ -1383,7 +1378,7 @@
     "confirmReject": "تأكيد رفض تعيين المشروع",
     "confirmRejectDescription": "هل أنت متأكد من رفض الإشراف على هذا المشروع؟"
   },
-  "supervisor": {
+  "supervisor_assignments": {
     "projectsDescription": "استعراض المشاريع المرتبطة بك والوصول إلى تفاصيلها ووثائقها",
     "progressDescription": "متابعة المشاريع التي تشرف عليها، من خلال الاطلاع على حالة التقدم والوثائق، إضافة ملاحظات، وتحديد مواعيد لقاءات",
     "evaluationDescription": "إدخال درجات وتقييمات الطلاب للمشاريع التي تشرف عليها",
@@ -1984,14 +1979,7 @@
         "committeeCount": "أعضاء اللجنة",
         "gradesSubmitted": "الدرجات المقدمة",
         "gradesApproved": "الدرجات المعتمدة"
-      },
-      "phaseProposal": "مرحلة المقترح",
-      "phaseRegistration": "مرحلة التسجيل",
-      "phaseSupervision": "مرحلة الإشراف",
-      "phaseDocuments": "مرحلة المستندات",
-      "phaseMilestones": "مرحلة المعالم",
-      "phaseEvaluation": "مرحلة التقييم",
-      "workflowProgress": "تقدم سير العمل"
+      }
     },
     "projects": {
       "noProjects": "لا توجد مشاريع",
@@ -2206,7 +2194,6 @@
     "browseDescription": "تصفح المشاريع المتاحة للتسجيل واختر المشروع المناسب لك",
     "backToProjects": "العودة إلى قائمة المشاريع",
     "studentGroup": "مجموعة الطلاب",
-    "members": "الأعضاء",
     "department": "القسم",
     "workflowStatus": "حالة سير العمل",
     "noProjects": "لا توجد مشاريع",
@@ -2222,7 +2209,6 @@
     "registeredStudents": "الطلاب المسجلون",
     "groups": "المجموعات",
     "groupsCount": "مجموعة",
-    "group": "المجموعة",
     "specialization": "التخصص",
     "keywords": "الكلمات المفتاحية",
     "documents": "المستندات",
@@ -2262,7 +2248,6 @@
     "selectGroupPlaceholder": "اختر مجموعة للتسجيل",
     "noGroupRequired": "يجب أن تكون عضوًا في مجموعة للتسجيل في المشروع",
     "createGroupFirst": "يجب إنشاء مجموعة أولاً قبل التسجيل في المشروع",
-    "members": "أعضاء",
     "cancelRegistrationError": "فشل إلغاء طلب التسجيل",
     "registrationPendingDescription": "تم إرسال طلبك بنجاح وهو الآن قيد المراجعة من قبل لجنة المشاريع. لم يتم اتخاذ قرار بعد بشأن طلبك.",
     "whatYouCanDo": "ما يمكنك فعله",
@@ -2533,7 +2518,6 @@
       "average_grade": "متوسط الدرجات",
       "pending_evaluations": "التقييمات المعلقة",
       "projectsCount": "عدد المشاريع",
-      "studentsCount": "عدد الطلاب",
       "fd1_status": "حالة المناقشة-1",
       "fd2_status": "حالة المناقشة-2",
       "overall_readiness": "جاهزية المجموعة",
@@ -2555,11 +2539,46 @@
   },
   "notifications": {
     "title": "الإشعارات",
-    "markAllAsRead": "تمييز الكل كمقروء",
-    "deleteAll": "حذف الكل",
-    "noNotifications": "لا توجد إشعارات",
-    "loading": "جاري التحميل...",
-    "confirmDeleteAll": "هل أنت متأكد من حذف جميع الإشعارات؟",
+    "request": {
+      "submitted_supervisor": "تم تقديم طلب جديد: {{request_type}} من قبل {{student_name}}",
+      "submitted_committee": "تم تقديم طلب جديد: {{request_type}} من قبل {{student_name}} لمشروع: {{project_title}}",
+      "supervisor_approved": "وافق المشرف على طلب {{request_type}} للطالب {{student_name}}",
+      "supervisor_rejected": "رفض المشرف طلب {{request_type}}. ملاحظات: {{comments}}",
+      "committee_approved": "وافقت اللجنة على طلب {{request_type}}. ملاحظات: {{comments}}",
+      "committee_rejected": "رفضت اللجنة طلب {{request_type}}. ملاحظات: {{comments}}"
+    },
+    "proposal": {
+      "submitted": "تم تقديم مقترح جديد: {{proposal_title}} من قبل {{submitter_name}}",
+      "batch_submitted": "تم تقديم {{count}} مقترحات جديدة من قبل {{submitter_name}}",
+      "approved": "تمت الموافقة على مقترحك: {{proposal_title}}",
+      "rejected": "تم رفض مقترحك: {{proposal_title}}. ملاحظات: {{notes}}",
+      "modification_required": "مقترحك يتطلب تعديلات: {{proposal_title}}. ملاحظات: {{notes}}"
+    },
+    "project": {
+      "registration_submitted": "طلب تسجيل جديد من المجموعة {{group_name}} في المشروع: {{project_title}}",
+      "registration_batch_submitted": "طلب تسجيل جديد من المجموعة {{group_name}} في المشاريع: {{project_titles}}",
+      "registration_approved": "تم قبول طلب تسجيلك في المشروع: {{project_title}}",
+      "registration_rejected": "تم رفض طلب تسجيلك في المشروع: {{project_title}}. ملاحظات: {{comments}}",
+      "batch_registration_rejected": "تم رفض طلب التسجيل الخاص بمجموعتك. ملاحظات: {{comments}}",
+      "announced": "تم إعلان مشاريع جديدة متاحة للتسجيل: {{project_titles}}",
+      "unannounced": "تم إلغاء إعلان المشاريع التالية: {{project_titles}}",
+      "deleted": "تم حذف المشروع: {{project_title}}",
+      "status_changed": "تم تغيير حالة المشروع '{{project_title}}' من {{old_status}} إلى {{new_status}}"
+    },
+    "defense": {
+      "evaluations_ready": "تم استلام جميع التقييمات للمشروع \"{{project_title}}\" ({{stage}}) وهي جاهزة للمراجعة."
+    },
+    "committee": {
+      "assigned": "تم تعيينك لتقييم مشروع '{{project_title}}' لـ {{stage}}",
+      "removed": "تم إزالتك من تقييم مشروع '{{project_title}}'"
+    },
+    "meeting": {
+      "scheduled": "تم جدولة اجتماع جديد للمشروع '{{project_title}}' في {{date}}",
+      "updated": "تم تحديث اجتماع المشروع '{{project_title}}' إلى {{date}} - {{location}}"
+    },
+    "deadline": {
+      "reminder": "موعد تسليم قريب: {{period_type}} - متبقي {{days_remaining}} يوم"
+    },
     "types": {
       "proposal_approved": "تم قبول مقترح المشروع",
       "proposal_rejected": "تم رفض المقترح",
@@ -2583,7 +2602,19 @@
       "group_join_request_rejected": "تم رفض طلب الانضمام",
       "supervisor_assignment_request": "طلب إشراف على مشروع",
       "supervisor_assigned": "تم تعيينك مشرفاً",
-      "supervisor_assignment_cancelled": "تم إلغاء طلب الإشراف"
+      "supervisor_assignment_cancelled": "تم إلغاء طلب الإشراف",
+      "change_supervisor": "تغيير مشرف",
+      "change_group": "تغيير مجموعة",
+      "change_project": "تغيير مشروع",
+      "change_project_title": "تغيير عنوان المشروع",
+      "document_uploaded": "تم رفع مستند",
+      "document_resubmitted": "تم إعادة رفع مستند",
+      "document_approved": "تم قبول المستند",
+      "document_rejected": "تم رفض المستند",
+      "project_status_changed": "تم تغيير حالة المشروع",
+      "projects_announced": "إعلان مشاريع",
+      "projects_unannounced": "إلغاء إعلان مشاريع",
+      "project_deleted": "حذف مشروع"
     },
     "groups": {
       "invitation_received": "تم دعوتك للانضمام إلى المجموعة '{{group_name}}' بواسطة {{inviter_name}}",
@@ -2596,6 +2627,25 @@
     "periods": {
       "new_announcement": "تم الإعلان عن فترة {{type}} جديدة: '{{name}}'",
       "activated": "الفترة {{type}} '{{name}}' مفتوحة الآن"
+    },
+    "grade": {
+      "approved": "تم اعتماد درجتك النهائية في المشروع: {{project_title}}. الدرجة النهائية: {{final_grade}}",
+      "published": "تم إعلان نتيجتك النهائية في المشروع: {{project_title}}. الدرجة النهائية: {{final_grade}}"
+    },
+    "document": {
+      "chapter_uploaded": "تم رفع الفصل {{chapter_number}} جديد للمشروع: {{project_title}}",
+      "file_uploaded": "تم رفع مستند جديد للمشروع: {{project_title}}",
+      "chapter_resubmitted": "تم إعادة رفع الفصل {{chapter_number}} للمشروع: {{project_title}}",
+      "file_resubmitted": "تم إعادة رفع مستند للمشروع: {{project_title}}",
+      "chapter_approved": "تم قبول الفصل {{chapter_number}} للمشروع: {{project_title}}. ملاحظات: {{comments}}",
+      "chapter_rejected": "تم رفض الفصل {{chapter_number}} للمشروع: {{project_title}}. ملاحظات: {{comments}}",
+      "file_approved": "تم قبول المستند للمشروع: {{project_title}}. ملاحظات: {{comments}}",
+      "file_rejected": "تم رفض المستند للمشروع: {{project_title}}. ملاحظات: {{comments}}"
+    },
+    "supervisor": {
+      "assignment_request": "تم ترشيحك للإشراف على المشروع: {{project_title}}. يرجى الموافقة أو الرفض.",
+      "assigned": "تم تعيينك مشرفاً على المشروع: {{project_title}}",
+      "assignment_cancelled": "تم إلغاء طلب الإشراف على المشروع: {{project_title}} من قبل اللجنة."
     }
   },
   "phase": {
@@ -2711,8 +2761,7 @@
     },
     "loadError": "فشل في تحميل المشاريع"
   },
-  "supervisor": {
-    "grade": "درجة المشرف",
+  "supervisor_dashboard": {
     "projects": "المشاريع",
     "myProjects": "مشاريعي",
     "noProjects": "لا توجد مشاريع",

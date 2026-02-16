@@ -578,10 +578,13 @@ class DefenseEvaluationService
         $approval->save();
 
         $stageLabel = strtoupper($stage);
-        $message = [
-            'en' => "All evaluations for project \"{$project->title}\" ({$stageLabel}) have been submitted and are ready for review.",
-            'ar' => "تم استلام جميع التقييمات للمشروع \"{$project->title}\" ({$stageLabel}) وهي جاهزة للمراجعة.",
-        ];
+        $message = json_encode([
+            'key' => 'notifications.defense.evaluations_ready',
+            'params' => [
+                'project_title' => $project->title,
+                'stage' => $stageLabel
+            ]
+        ]);
 
         $projectCommitteeUserIds = User::where('role', 'projects_committee')
             ->where('status', 'active')
@@ -591,7 +594,7 @@ class DefenseEvaluationService
         if (!empty($projectCommitteeUserIds)) {
             $this->notificationService->createForUsers(
                 $projectCommitteeUserIds,
-                json_encode($message),
+                $message,
                 'evaluations_ready_for_review',
                 Project::class,
                 $project->id

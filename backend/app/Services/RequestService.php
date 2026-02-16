@@ -35,30 +35,25 @@ class RequestService
         ]);
 
         if (!$this->notificationService) {
-            return $request;
         }
-
-        $requestTypeLabel = match($request->type) {
-            'change_supervisor' => 'تغيير مشرف',
-            'change_group' => 'تغيير مجموعة',
-            'change_project' => 'تغيير مشروع',
-            'change_project_title' => 'تغيير عنوان المشروع',
-            default => 'طلب آخر',
-        };
 
         $projectTitle = $request->project_id
             ? (\App\Models\Project::find($request->project_id)?->title ?? '')
             : '';
-        $message = $projectTitle
-            ? "طلب جديد من الطالب {$student->name}: {$requestTypeLabel} - {$projectTitle}"
-            : "طلب جديد من الطالب {$student->name}: {$requestTypeLabel}";
 
         if ($request->type === 'change_supervisor' && $request->project_id) {
             $project = \App\Models\Project::find($request->project_id);
             if ($project && $project->supervisor_id) {
                 $this->notificationService->create(
                     $project->supervisor,
-                    $message,
+                    json_encode([
+                        'key' => 'notifications.request.submitted_supervisor',
+                        'params' => [
+                            'student_name' => $student->name,
+                            'request_type' => $request->type,
+                            'project_title' => $projectTitle
+                        ]
+                    ]),
                     'request_submitted',
                     'request',
                     $request->id
@@ -71,7 +66,14 @@ class RequestService
             foreach ($committeeMembers as $member) {
                 $this->notificationService->create(
                     $member,
-                    $message,
+                    json_encode([
+                        'key' => 'notifications.request.submitted_committee',
+                        'params' => [
+                            'student_name' => $student->name,
+                            'request_type' => $request->type,
+                            'project_title' => $projectTitle
+                        ]
+                    ]),
                     'request_submitted',
                     'request',
                     $request->id
@@ -110,7 +112,13 @@ class RequestService
 
         $committeeMembers = User::where('role', 'projects_committee')->where('status', 'active')->get();
         $student = $request->student;
-        $message = "طلب تغيير مشرف من الطالب {$student->name} تمت موافقته من المشرف الحالي وينتظر قرار اللجنة.";
+        $message = json_encode([
+            'key' => 'notifications.request.supervisor_approved',
+            'params' => [
+                'student_name' => $student->name,
+                'request_type' => $request->type
+            ]
+        ]);
         foreach ($committeeMembers as $member) {
             $this->notificationService?->create($member, $message, 'request_submitted', 'request', $request->id);
         }
@@ -146,7 +154,13 @@ class RequestService
         if ($this->notificationService && $request->student) {
             $this->notificationService->create(
                 $request->student,
-                'تم رفض طلب تغيير المشرف من قبل المشرف الحالي.' . ($comments ? "\nملاحظات: {$comments}" : ''),
+                json_encode([
+                    'key' => 'notifications.request.supervisor_rejected',
+                    'params' => [
+                        'request_type' => $request->type,
+                        'comments' => $comments
+                    ]
+                ]),
                 'request_rejected',
                 'request',
                 $request->id
@@ -179,22 +193,15 @@ class RequestService
         $this->processRequest($request);
 
         if ($this->notificationService && $request->student) {
-            $requestTypeLabel = match($request->type) {
-                'change_supervisor' => 'تغيير المشرف',
-                'change_group' => 'تغيير المجموعة',
-                'change_project' => 'تغيير المشروع',
-                'change_project_title' => 'تغيير عنوان المشروع',
-                default => 'الطلب',
-            };
-
-                $message = "تم قبول {$requestTypeLabel}";
-                if ($comments) {
-                    $message .= "\nملاحظات: {$comments}";
-                }
-
             $this->notificationService->create(
                 $request->student,
-                $message,
+                json_encode([
+                    'key' => 'notifications.request.committee_approved',
+                    'params' => [
+                        'request_type' => $request->type,
+                        'comments' => $comments
+                    ]
+                ]),
                 'request_approved',
                 'request',
                 $request->id
@@ -226,24 +233,15 @@ class RequestService
 
         // Notify student about rejection
         if ($this->notificationService && $request->student) {
-            $requestTypeLabel = match($request->type) {
-                'change_supervisor' => 'تغيير المشرف',
-                'change_group' => 'تغيير المجموعة',
-                'change_project' => 'تغيير المشروع',
-                'change_project_title' => 'تغيير عنوان المشروع',
-                default => 'الطلب',
-            };
-
-            $message = "تم رفض {$requestTypeLabel}";
-            if ($comments) {
-                $message .= "\nملاحظات: {$comments}";
-            } else {
-                $message .= ". يرجى مراجعة الملاحظات";
-            }
-
             $this->notificationService->create(
                 $request->student,
-                $message,
+                json_encode([
+                    'key' => 'notifications.request.committee_rejected',
+                    'params' => [
+                        'request_type' => $request->type,
+                        'comments' => $comments
+                    ]
+                ]),
                 'request_rejected',
                 'request',
                 $request->id

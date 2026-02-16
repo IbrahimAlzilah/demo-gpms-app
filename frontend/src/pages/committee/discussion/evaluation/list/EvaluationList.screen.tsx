@@ -331,7 +331,7 @@ export function EvaluationList() {
             if (!open) refetch()
           }}
           title={`${t('evaluation.evaluate')} - ${state.defenseStage.toUpperCase()}`}
-          size="xl"
+          className="lg:max-w-3xl"
         >
           <UnifiedEvaluationModal
             open={state.showEvaluationForm}

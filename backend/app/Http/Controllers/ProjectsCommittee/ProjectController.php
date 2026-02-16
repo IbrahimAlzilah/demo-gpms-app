@@ -129,7 +129,12 @@ class ProjectController extends Controller
                 if ($validated['supervisor_id']) {
                     $this->notificationService->create(
                         User::find($validated['supervisor_id']),
-                        "تم تعيينك كمشرف على المشروع: {$project->title}",
+                        json_encode([
+                            'key' => 'notifications.supervisor.assigned',
+                            'params' => [
+                                'project_title' => $project->title
+                            ]
+                        ]),
                         'supervisor_assigned',
                         'project',
                         $project->id
@@ -343,11 +348,15 @@ class ProjectController extends Controller
 
             if (!empty($students) && !empty($announcedProjects)) {
                 $projectTitles = $announcedProjects->pluck('title')->implode(', ');
-                $message = "تم إعلان مشاريع جديدة متاحة للتسجيل: {$projectTitles}";
 
                 $this->notificationService->createForUsers(
                     $students,
-                    $message,
+                    json_encode([
+                        'key' => 'notifications.project.announced',
+                        'params' => [
+                            'project_titles' => $projectTitles
+                        ]
+                    ]),
                     'projects_announced',
                     'project',
                     null
@@ -398,11 +407,15 @@ class ProjectController extends Controller
 
             if (!empty($students) && !empty($unannouncedProjects)) {
                 $projectTitles = $unannouncedProjects->pluck('title')->implode(', ');
-                $message = "تم إلغاء إعلان المشاريع التالية: {$projectTitles}";
 
                 $this->notificationService->createForUsers(
                     $students,
-                    $message,
+                    json_encode([
+                        'key' => 'notifications.project.unannounced',
+                        'params' => [
+                            'project_titles' => $projectTitles
+                        ]
+                    ]),
                     'projects_unannounced',
                     'project',
                     null
@@ -440,7 +453,12 @@ class ProjectController extends Controller
             if ($project->supervisor) {
                 $this->notificationService->create(
                     $project->supervisor,
-                    "تم حذف المشروع: {$project->title}",
+                    json_encode([
+                        'key' => 'notifications.project.deleted',
+                        'params' => [
+                            'project_title' => $project->title
+                        ]
+                    ]),
                     'project_deleted',
                     'project',
                     null
@@ -450,7 +468,12 @@ class ProjectController extends Controller
             foreach ($project->students as $student) {
                 $this->notificationService->create(
                     $student,
-                    "تم حذف المشروع: {$project->title}",
+                    json_encode([
+                        'key' => 'notifications.project.deleted',
+                        'params' => [
+                            'project_title' => $project->title
+                        ]
+                    ]),
                     'project_deleted',
                     'project',
                     null
@@ -519,19 +542,19 @@ class ProjectController extends Controller
     /**
      * Notify relevant parties about status change
      */
+    /**
+     * Notify relevant parties about status change
+     */
     protected function notifyStatusChange(Project $project, string $oldStatus, string $newStatus): void
     {
-        $statusLabels = [
-            'draft' => 'مسودة',
-            'available_for_registration' => 'متاح للتسجيل',
-            'in_progress' => 'قيد التنفيذ',
-            'completed' => 'مكتمل',
-            'archived' => 'مؤرشف',
-        ];
-
-        $oldStatusLabel = $statusLabels[$oldStatus] ?? $oldStatus;
-        $newStatusLabel = $statusLabels[$newStatus] ?? $newStatus;
-        $message = "تم تغيير حالة المشروع '{$project->title}' من {$oldStatusLabel} إلى {$newStatusLabel}";
+        $message = json_encode([
+            'key' => 'notifications.project.status_changed',
+            'params' => [
+                'project_title' => $project->title,
+                'old_status' => $oldStatus,
+                'new_status' => $newStatus
+            ]
+        ]);
 
         // Notify supervisor
         if ($project->supervisor) {

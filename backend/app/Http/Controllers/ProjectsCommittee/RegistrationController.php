@@ -438,7 +438,12 @@ class RegistrationController extends Controller
 
             $this->notificationService->create(
                 $notificationTarget,
-                "تم قبول طلب تسجيلك في المشروع: {$registration->project->title}",
+                json_encode([
+                    'key' => 'notifications.project.registration_approved',
+                    'params' => [
+                        'project_title' => $registration->project->title
+                    ]
+                ]),
                 'registration_approved',
                 'project',
                 $registration->project_id
@@ -520,7 +525,12 @@ class RegistrationController extends Controller
                 // Notify group leader about rejection
                 $this->notificationService->create(
                     $groupRequest->submitter,
-                    "تم رفض طلب التسجيل الخاص بمجموعتك\nملاحظات: {$validated['comments']}",
+                    json_encode([
+                        'key' => 'notifications.project.batch_registration_rejected',
+                        'params' => [
+                            'comments' => $validated['comments']
+                        ]
+                    ]),
                     'registration_rejected',
                     'project',
                     null
@@ -549,7 +559,13 @@ class RegistrationController extends Controller
             // Notify student about rejection
             $this->notificationService->create(
                 $registration->student,
-                "تم رفض طلب تسجيلك في المشروع: {$registration->project->title}\nملاحظات: {$validated['comments']}",
+                json_encode([
+                    'key' => 'notifications.project.registration_rejected',
+                    'params' => [
+                        'project_title' => $registration->project->title,
+                        'comments' => $validated['comments']
+                    ]
+                ]),
                 'registration_rejected',
                 'project',
                 $registration->project_id

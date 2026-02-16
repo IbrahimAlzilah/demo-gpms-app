@@ -55,13 +55,13 @@ class DefenseEvaluationController extends Controller
 
             $data[] = [
                 'project' => [
-                    'id' => $project->id,
+                    'id' => (string) $project->id,
                     'title' => $project->title,
                     'description' => $project->description,
                     'specialization' => $project->specialization,
                     'studentsCount' => $project->students_count,
                     'supervisor' => [
-                        'id' => $project->supervisor->id ?? null,
+                        'id' => $project->supervisor->id ? (string) $project->supervisor->id : null,
                         'name' => $project->supervisor->name ?? '',
                     ],
                 ],
@@ -118,13 +118,13 @@ class DefenseEvaluationController extends Controller
 
             $data[] = [
                 'student' => [
-                    'id' => $student->id,
+                    'id' => (string) $student->id,
                     'name' => $student->name ?? '',
                     'email' => $student->email,
                     'studentId' => $student->student_id ?? $student->username,
                 ],
                 'myEvaluation' => $myEvaluation ? [
-                    'id' => $myEvaluation->id,
+                    'id' => (string) $myEvaluation->id,
                     'score' => $myEvaluation->score,
                     'maxScore' => $myEvaluation->max_score,
                     'normalizedScore' => $myEvaluation->normalized_score,
@@ -189,7 +189,7 @@ class DefenseEvaluationController extends Controller
                 'success' => true,
                 'message' => 'Evaluation submitted successfully',
                 'data' => [
-                    'id' => $evaluation->id,
+                    'id' => (string) $evaluation->id,
                     'score' => $evaluation->score,
                     'maxScore' => $evaluation->max_score,
                     'normalizedScore' => $evaluation->normalized_score,
@@ -240,8 +240,8 @@ class DefenseEvaluationController extends Controller
                 'data' => [
                     'count' => $created->count(),
                     'evaluations' => $created->map(fn ($e) => [
-                        'id' => $e->id,
-                        'studentId' => $e->student_id,
+                        'id' => (string) $e->id,
+                        'studentId' => (string) $e->student_id,
                         'score' => $e->score,
                         'stage' => $e->defense_stage,
                     ])->values()->all(),
@@ -290,7 +290,7 @@ class DefenseEvaluationController extends Controller
                 'success' => true,
                 'message' => 'Evaluation updated successfully',
                 'data' => [
-                    'id' => $updated->id,
+                    'id' => (string) $updated->id,
                     'score' => $updated->score,
                     'maxScore' => $updated->max_score,
                     'normalizedScore' => $updated->normalized_score,

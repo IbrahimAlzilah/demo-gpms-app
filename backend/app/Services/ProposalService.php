@@ -47,7 +47,13 @@ class ProposalService
                 $submitterName = $submitter->name;
                 $this->notificationService->createForUsers(
                     $supervisors,
-                    "تم تقديم مقترح جديد: {$proposal->title} من قبل {$submitterName}",
+                    json_encode([
+                        'key' => 'notifications.proposal.submitted',
+                        'params' => [
+                            'proposal_title' => $proposal->title,
+                            'submitter_name' => $submitterName
+                        ]
+                    ]),
                     'proposal_submitted',
                     'proposal',
                     $proposal->id
@@ -64,7 +70,13 @@ class ProposalService
                 $submitterName = $proposal->studentGroup ? $proposal->studentGroup->name : $submitter->name;
                 $this->notificationService->createForUsers(
                     $committeeMembers,
-                    "تم تقديم مقترح جديد: {$proposal->title} من قبل {$submitterName}",
+                    json_encode([
+                        'key' => 'notifications.proposal.submitted',
+                        'params' => [
+                            'proposal_title' => $proposal->title,
+                            'submitter_name' => $submitterName
+                        ]
+                    ]),
                     'proposal_submitted',
                     'proposal',
                     $proposal->id
@@ -214,7 +226,12 @@ class ProposalService
             if ($proposal->submitter) {
                 $this->notificationService->create(
                     $proposal->submitter,
-                    "تم قبول مقترحك: {$proposal->title}",
+                    json_encode([
+                        'key' => 'notifications.proposal.approved',
+                        'params' => [
+                            'proposal_title' => $proposal->title
+                        ]
+                    ]),
                     'proposal_approved',
                     'proposal',
                     $proposal->id
@@ -246,13 +263,15 @@ class ProposalService
 
         // Notify submitter about rejection
         if ($proposal->submitter) {
-            $message = "تم رفض مقترحك: {$proposal->title}";
-            if ($reviewNotes) {
-                $message .= "\nملاحظات المراجعة: {$reviewNotes}";
-            }
             $this->notificationService->create(
                 $proposal->submitter,
-                $message,
+                json_encode([
+                    'key' => 'notifications.proposal.rejected',
+                    'params' => [
+                        'proposal_title' => $proposal->title,
+                        'notes' => $reviewNotes
+                    ]
+                ]),
                 'proposal_rejected',
                 'proposal',
                 $proposal->id
@@ -283,10 +302,15 @@ class ProposalService
 
         // Notify submitter about modification request
         if ($proposal->submitter) {
-            $message = "يتطلب مقترحك تعديلات: {$proposal->title}\nملاحظات المراجعة: {$reviewNotes}";
             $this->notificationService->create(
                 $proposal->submitter,
-                $message,
+                json_encode([
+                    'key' => 'notifications.proposal.modification_required',
+                    'params' => [
+                        'proposal_title' => $proposal->title,
+                        'notes' => $reviewNotes
+                    ]
+                ]),
                 'proposal_modification_required',
                 'proposal',
                 $proposal->id
@@ -536,9 +560,24 @@ class ProposalService
                     ? ($createdProposals[0]->studentGroup?->name ?? $submitter->name)
                     : $submitter->name;
                 $count = count($createdProposals);
-                $message = $count === 1
-                    ? "تم تقديم مقترح جديد: {$createdProposals[0]->title} من قبل {$submitterName}"
-                    : "تم تقديم {$count} مقترحات جديدة من قبل {$submitterName}";
+                
+                $messageData = $count === 1
+                    ? [
+                        'key' => 'notifications.proposal.submitted',
+                        'params' => [
+                            'proposal_title' => $createdProposals[0]->title,
+                            'submitter_name' => $submitterName
+                        ]
+                    ]
+                    : [
+                        'key' => 'notifications.proposal.batch_submitted',
+                        'params' => [
+                            'count' => $count,
+                            'submitter_name' => $submitterName
+                        ]
+                    ];
+                
+                $message = json_encode($messageData);
 
                 // During Proposal Submission Period: Only notify supervisors if submitter is supervisor
                 // Otherwise, notify committee members

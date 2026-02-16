@@ -46,24 +46,24 @@ export function ProjectDetails() {
   if (!id) {
     return (
       <MainLayout>
-        <BlockContent title={t('supervisor.projectIdRequired')}>
+        <BlockContent title={t('supervisor_dashboard.projectIdRequired')}>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertCircle className="h-5 w-5 text-destructive" />
-                {t('supervisor.projectIdRequired')}
+                {t('supervisor_dashboard.projectIdRequired')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
-                {t('supervisor.projectIdRequiredMessage')}
+                {t('supervisor_dashboard.projectIdRequiredMessage')}
               </p>
               <Button
                 onClick={() => navigate(ROUTES.SUPERVISOR.PROJECTS)}
                 variant="outline"
               >
                 <ArrowLeft className="size-4 ltr:rotate-180" />
-                {t('supervisor.backToProjects')}
+                {t('supervisor_dashboard.backToProjects')}
               </Button>
             </CardContent>
           </Card>
@@ -104,7 +104,7 @@ export function ProjectDetails() {
                 variant="outline"
               >
                 <ArrowLeft className="size-4 ltr:rotate-180" />
-                {t('supervisor.backToProjects')}
+                {t('supervisor_dashboard.backToProjects')}
               </Button>
             </CardContent>
           </Card>
@@ -330,7 +330,7 @@ export function ProjectDetails() {
                   <TabsContent value={evaluateDefenseStage} className="mt-0">
                     <UnifiedEvaluationModal
                       open={true}
-                      onOpenChange={() => {}}
+                      onOpenChange={() => { }}
                       inline
                       projectId={id}
                       role="supervisor"
@@ -364,12 +364,12 @@ export function ProjectDetails() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <AlertCircle className="h-5 w-5 text-destructive" />
-                    {t('supervisor.studentIdRequired')}
+                    {t('supervisor_dashboard.studentIdRequired')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-muted-foreground">
-                    {t('supervisor.studentIdRequiredMessage')}
+                    {t('supervisor_dashboard.studentIdRequiredMessage')}
                   </p>
                 </CardContent>
               </Card>

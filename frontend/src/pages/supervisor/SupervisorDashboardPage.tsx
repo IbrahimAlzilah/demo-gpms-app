@@ -107,31 +107,31 @@ export function SupervisorDashboardPage() {
             title={t('nav.projects')}
             value={stats.supervisedProjectsCount}
             icon={Briefcase}
-            subValue={t('supervisor.projectsUnderSupervision')}
+            subValue={t('supervisor_dashboard.projectsUnderSupervision')}
             color="blue"
           />
           <StatsCardComponent
             title={t('nav.supervisionRequests')}
             value={stats.pendingSupervisionRequests}
             icon={UserCheck}
-            subValue={t('supervisor.pendingRequests')}
+            subValue={t('supervisor_dashboard.pendingRequests')}
             color="yellow"
-            trend={stats.pendingSupervisionRequests > 0 ? { value: stats.pendingSupervisionRequests, label: t('supervisor.pendingActions'), positive: false } : undefined}
+            trend={stats.pendingSupervisionRequests > 0 ? { value: stats.pendingSupervisionRequests, label: t('supervisor_dashboard.pendingActions'), positive: false } : undefined}
           />
           <StatsCardComponent
             title={t('nav.meetings')}
             value={stats.upcomingMeetingsCount}
             icon={Calendar}
-            subValue={t('supervisor.upcomingMeetings')}
+            subValue={t('supervisor_dashboard.upcomingMeetings')}
             color="green"
           />
           <StatsCardComponent
             title={t('nav.evaluations')}
             value={stats.pendingEvaluations}
             icon={ClipboardCheck}
-            subValue={t('supervisor.pendingEvaluations')}
+            subValue={t('supervisor_dashboard.pendingEvaluations')}
             color="purple"
-            trend={stats.pendingEvaluations > 0 ? { value: stats.pendingEvaluations, label: t('supervisor.needsGrading'), positive: false } : undefined}
+            trend={stats.pendingEvaluations > 0 ? { value: stats.pendingEvaluations, label: t('supervisor_dashboard.needsGrading'), positive: false } : undefined}
           />
         </div>
 
@@ -141,15 +141,15 @@ export function SupervisorDashboardPage() {
 
             {/* Urgent Tasks Section */}
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold tracking-tight">{t('supervisor.urgentTasks')}</h2>
+              <h2 className="text-lg font-semibold tracking-tight">{t('supervisor_dashboard.urgentTasks')}</h2>
 
               <div className="grid gap-4">
                 {stats.pendingSupervisionRequests > 0 && (
                   <TaskRow
                     icon={UserCheck}
-                    title={t('supervisor.pendingRequests')}
-                    description={t('supervisor.youHavePendingRequests', { count: stats.pendingSupervisionRequests })}
-                    actionLabel={t('supervisor.review')}
+                    title={t('supervisor_dashboard.pendingRequests')}
+                    description={t('supervisor_dashboard.youHavePendingRequests', { count: stats.pendingSupervisionRequests })}
+                    actionLabel={t('supervisor_dashboard.review')}
                     actionLink={ROUTES.SUPERVISOR.SUPERVISION_REQUESTS}
                     type="warning"
                     ArrowIcon={ArrowIcon}
@@ -159,8 +159,8 @@ export function SupervisorDashboardPage() {
                 {stats.pendingEvaluations > 0 && (
                   <TaskRow
                     icon={ClipboardCheck}
-                    title={t('supervisor.pendingEvaluations')}
-                    description={t('supervisor.youHavePendingEvaluations', { count: stats.pendingEvaluations })}
+                    title={t('supervisor_dashboard.pendingEvaluations')}
+                    description={t('supervisor_dashboard.youHavePendingEvaluations', { count: stats.pendingEvaluations })}
                     actionLabel={t('nav.projects')}
                     actionLink={ROUTES.SUPERVISOR.PROJECTS}
                     type="error"
@@ -171,8 +171,8 @@ export function SupervisorDashboardPage() {
                 {stats.overdueMilestonesCount > 0 && (
                   <TaskRow
                     icon={AlertCircle}
-                    title={t('supervisor.overdueMilestones')}
-                    description={t('supervisor.youHaveOverdueMilestones', { count: stats.overdueMilestonesCount })}
+                    title={t('supervisor_dashboard.overdueMilestones')}
+                    description={t('supervisor_dashboard.youHaveOverdueMilestones', { count: stats.overdueMilestonesCount })}
                     actionLabel={t('nav.projects')}
                     actionLink={ROUTES.SUPERVISOR.PROJECTS}
                     type="error"
@@ -186,9 +186,9 @@ export function SupervisorDashboardPage() {
                     <div className="bg-green-100 dark:bg-green-900/20 p-4 rounded-full mb-4 ring-4 ring-white dark:ring-background shadow-sm">
                       <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
                     </div>
-                    <h3 className="font-semibold text-lg">{t('supervisor.allCaughtUp')}</h3>
+                    <h3 className="font-semibold text-lg">{t('supervisor_dashboard.allCaughtUp')}</h3>
                     <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
-                      {t('supervisor.noUrgentTasks')}
+                      {t('supervisor_dashboard.noUrgentTasks')}
                     </p>
                   </div>
                 )}
@@ -200,7 +200,7 @@ export function SupervisorDashboardPage() {
               <div className="space-y-4">
                 <h2 className="text-lg font-semibold tracking-tight flex items-center gap-2">
                   <Target className="h-5 w-5 text-muted-foreground" />
-                  {t('supervisor.milestones')}
+                  {t('supervisor_dashboard.milestones')}
                 </h2>
                 <div className="space-y-3">
                   {overdueMilestones.map((milestone) => (
@@ -215,7 +215,7 @@ export function SupervisorDashboardPage() {
                         <h3 className="font-semibold text-sm">{milestone.title}</h3>
                         <p className="text-xs text-muted-foreground mt-1">{milestone.projectTitle}</p>
                         <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                          {t('supervisor.daysOverdue', { count: milestone.daysOverdue })}
+                          {t('supervisor_dashboard.daysOverdue', { count: milestone.daysOverdue })}
                         </p>
                       </div>
                     </div>
@@ -232,7 +232,7 @@ export function SupervisorDashboardPage() {
                         <h3 className="font-semibold text-sm">{milestone.title}</h3>
                         <p className="text-xs text-muted-foreground mt-1">{milestone.projectTitle}</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {t('supervisor.dueIn', { count: milestone.daysUntil })}
+                          {t('supervisor_dashboard.dueIn', { count: milestone.daysUntil })}
                         </p>
                       </div>
                     </div>
@@ -243,14 +243,14 @@ export function SupervisorDashboardPage() {
 
             {/* Quick Actions Grid for Supervisor */}
             <div>
-              <h2 className="text-lg font-semibold tracking-tight mb-4">{t('supervisor.management')}</h2>
+              <h2 className="text-lg font-semibold tracking-tight mb-4">{t('supervisor_dashboard.management')}</h2>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="group rounded-xl border border-border bg-card p-6 transition-all hover:shadow-md hover:border-primary/20 cursor-pointer">
                   <div className="mb-4 inline-flex p-3 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 group-hover:scale-110 transition-transform">
                     <Users className="h-6 w-6" />
                   </div>
                   <h3 className="font-semibold text-base mb-1 group-hover:text-primary transition-colors">{t('nav.projects')}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">{t('supervisor.projectsCardDesc')}</p>
+                  <p className="text-sm text-muted-foreground mb-4">{t('supervisor_dashboard.projectsCardDesc')}</p>
                   <Button variant="outline" size="sm" asChild className="w-full">
                     <Link to={ROUTES.SUPERVISOR.PROJECTS}>{t('common.viewAll')}</Link>
                   </Button>
@@ -261,9 +261,9 @@ export function SupervisorDashboardPage() {
                     <UserCheck className="h-6 w-6" />
                   </div>
                   <h3 className="font-semibold text-base mb-1 group-hover:text-primary transition-colors">{t('nav.supervisionRequests')}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">{t('supervisor.supervisionRequestsCardDesc')}</p>
+                  <p className="text-sm text-muted-foreground mb-4">{t('supervisor_dashboard.supervisionRequestsCardDesc')}</p>
                   <Button variant="outline" size="sm" asChild className="w-full">
-                    <Link to={ROUTES.SUPERVISOR.SUPERVISION_REQUESTS}>{t('supervisor.review')}</Link>
+                    <Link to={ROUTES.SUPERVISOR.SUPERVISION_REQUESTS}>{t('supervisor_dashboard.review')}</Link>
                   </Button>
                 </div>
               </div>
@@ -280,7 +280,7 @@ export function SupervisorDashboardPage() {
                 <CardTitle className="text-base font-medium flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-primary" />
-                    {t('supervisor.upcomingMeetings')}
+                    {t('supervisor_dashboard.upcomingMeetings')}
                   </div>
                   {upcomingMeetings.length > 0 && <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-primary/10 text-primary">{upcomingMeetings.length}</span>}
                 </CardTitle>
@@ -315,7 +315,7 @@ export function SupervisorDashboardPage() {
                   ) : (
                     <div className="flex flex-col items-center justify-center py-12 text-center">
                       <Calendar className="h-10 w-10 text-muted-foreground/30 mb-3" />
-                      <p className="text-sm text-muted-foreground">{t('supervisor.noMeetings')}</p>
+                      <p className="text-sm text-muted-foreground">{t('supervisor_dashboard.noMeetings')}</p>
                     </div>
                   )}
 

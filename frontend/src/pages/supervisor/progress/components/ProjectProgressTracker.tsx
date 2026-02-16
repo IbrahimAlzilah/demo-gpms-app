@@ -58,7 +58,7 @@ export function ProjectProgressTracker({ projectId }: ProjectProgressTrackerProp
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Award className="h-5 w-5 text-primary" />
-            {t('supervisor.studentGrades')}
+            {t('supervisor_dashboard.studentGrades')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -72,7 +72,7 @@ export function ProjectProgressTracker({ projectId }: ProjectProgressTrackerProp
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="font-medium">
-                        {grade.student?.name || t('supervisor.student')}
+                        {grade.student?.name || t('supervisor_dashboard.student')}
                       </span>
                       <span className="text-sm text-muted-foreground">
                         {formatRelativeTime(grade.createdAt)}
@@ -92,7 +92,7 @@ export function ProjectProgressTracker({ projectId }: ProjectProgressTrackerProp
             </div>
           ) : (
             <p className="text-muted-foreground text-center py-4">
-              {t('supervisor.noGrades')}
+              {t('supervisor_dashboard.noGrades')}
             </p>
           )}
         </CardContent>
@@ -103,18 +103,18 @@ export function ProjectProgressTracker({ projectId }: ProjectProgressTrackerProp
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5 text-primary" />
-            {t('supervisor.supervisorNotes')}
+            {t('supervisor_dashboard.supervisorNotes')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Add Note Form */}
           <div className="space-y-2">
-            <Label htmlFor="note">{t('supervisor.addNote')}</Label>
+            <Label htmlFor="note">{t('supervisor_dashboard.addNote')}</Label>
             <Textarea
               id="note"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder={t('supervisor.notePlaceholder')}
+              placeholder={t('supervisor_dashboard.notePlaceholder')}
               rows={3}
               className="resize-none"
             />

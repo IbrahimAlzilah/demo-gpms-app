@@ -167,8 +167,8 @@ export const committeeEvaluationService = {
 
     return evaluations.map((item: any) => ({
       ...item,
-      studentId: item.student.id,
-      student: item.student,
+      studentId: String(item.student.id),
+      student: { ...item.student, id: String(item.student.id) },
       // Map 'myEvaluation' to 'committeeGrade' for frontend compatibility
       committeeGrade: item.myEvaluation
         ? {

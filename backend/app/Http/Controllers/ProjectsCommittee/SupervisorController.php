@@ -79,7 +79,12 @@ class SupervisorController extends Controller
                     $req->update(['status' => 'canceled']);
                     $this->notificationService->create(
                         $req->supervisor,
-                        "تم إلغاء طلب الإشراف على المشروع: {$project->title} من قبل اللجنة.",
+                        json_encode([
+                            'key' => 'notifications.supervisor.assignment_cancelled',
+                            'params' => [
+                                'project_title' => $project->title
+                            ]
+                        ]),
                         'supervisor_assignment_cancelled',
                         'project',
                         $project->id
@@ -99,7 +104,12 @@ class SupervisorController extends Controller
             // Notify the supervisor
             $this->notificationService->create(
                 $supervisor,
-                "تم ترشيحك للإشراف على المشروع: {$project->title}. يرجى الموافقة أو الرفض.",
+                json_encode([
+                    'key' => 'notifications.supervisor.assignment_request',
+                    'params' => [
+                        'project_title' => $project->title
+                    ]
+                ]),
                 'supervisor_assignment_request',
                 'supervisor_assignment_request',
                 $assignmentRequest->id
@@ -155,7 +165,12 @@ class SupervisorController extends Controller
             // Notify the supervisor
             $this->notificationService->create(
                 $supervisor,
-                "تم تعيينك مشرفاً على المشروع: {$project->title}",
+                json_encode([
+                    'key' => 'notifications.supervisor.assigned',
+                    'params' => [
+                        'project_title' => $project->title
+                    ]
+                ]),
                 'supervisor_assigned',
                 'project',
                 $project->id
@@ -221,7 +236,12 @@ class SupervisorController extends Controller
             if ($supervisor) {
                 $this->notificationService->create(
                     $supervisor,
-                    "تم إلغاء الإشراف على المشروع: {$projectTitle} من قبل اللجنة.",
+                    json_encode([
+                        'key' => 'notifications.supervisor.assignment_cancelled',
+                        'params' => [
+                            'project_title' => $projectTitle
+                        ]
+                    ]),
                     'supervisor_assignment_cancelled',
                     'project',
                     $projectId
@@ -275,7 +295,12 @@ class SupervisorController extends Controller
             // Notify the supervisor about cancellation
             $this->notificationService->create(
                 $assignmentRequest->supervisor,
-                "تم إلغاء طلب الإشراف على المشروع: {$assignmentRequest->project->title}",
+                json_encode([
+                    'key' => 'notifications.supervisor.assignment_cancelled',
+                    'params' => [
+                        'project_title' => $assignmentRequest->project->title
+                    ]
+                ]),
                 'supervisor_assignment_cancelled',
                 'project',
                 $assignmentRequest->project_id

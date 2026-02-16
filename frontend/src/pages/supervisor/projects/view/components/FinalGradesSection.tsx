@@ -29,12 +29,12 @@ export function FinalGradesSection({ grades, isLoading }: FinalGradesSectionProp
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Award className="h-5 w-5 text-primary" />
-            {t('supervisor.finalGrades')}
+            {t('supervisor_dashboard.finalGrades')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-center py-4">
-            {t('supervisor.noFinalGrades')}
+            {t('supervisor_dashboard.noFinalGrades')}
           </p>
         </CardContent>
       </Card>
@@ -46,7 +46,7 @@ export function FinalGradesSection({ grades, isLoading }: FinalGradesSectionProp
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Award className="h-5 w-5 text-primary" />
-          {t('supervisor.finalGrades')} ({grades.length})
+          {t('supervisor_dashboard.finalGrades')} ({grades.length})
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -60,7 +60,7 @@ export function FinalGradesSection({ grades, isLoading }: FinalGradesSectionProp
                 <div className="flex items-center gap-2">
                   <User className="h-5 w-5 text-muted-foreground" />
                   <h4 className="font-semibold">
-                    {grade.student?.name || t('supervisor.student')}
+                    {grade.student?.name || t('supervisor_dashboard.student')}
                   </h4>
                 </div>
                 {grade.isApproved && (

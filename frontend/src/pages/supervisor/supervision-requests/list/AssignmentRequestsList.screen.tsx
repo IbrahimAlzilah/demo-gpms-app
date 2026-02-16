@@ -117,7 +117,7 @@ export function AssignmentRequestsList() {
   return (
     <>
       <BlockContent
-        title={t('supervisor.committeeRequests', {
+        title={t('supervisor_dashboard.committeeRequests', {
           defaultValue: 'Committee Assignment Requests',
         })}
         variant="data-table"
@@ -161,7 +161,7 @@ export function AssignmentRequestsList() {
           onSearchChange={setGlobalFilter}
           enableFiltering={true}
           enableViews={true}
-          emptyMessage={t('supervisor.noCommitteeRequests', {
+          emptyMessage={t('supervisor_dashboard.noCommitteeRequests', {
             defaultValue: 'No assignment requests from project committee',
           })}
         />
@@ -190,8 +190,8 @@ export function AssignmentRequestsList() {
         }}
         title={
           state.action === 'approve'
-            ? t('supervisor.approveRequest', { defaultValue: 'Approve Request' })
-            : t('supervisor.rejectRequest', { defaultValue: 'Reject Request' })
+            ? t('supervisor_dashboard.approveRequest', { defaultValue: 'Approve Request' })
+            : t('supervisor_dashboard.rejectRequest', { defaultValue: 'Reject Request' })
         }
         description=""
         confirmLabel={t('common.confirm')}
@@ -203,18 +203,18 @@ export function AssignmentRequestsList() {
           <div className="space-y-4 py-2">
             <p className="text-sm">
               {state.action === 'approve'
-                ? t('supervisor.approveRequestConfirm', {
+                ? t('supervisor_dashboard.approveRequestConfirm', {
                   title: state.selectedRequest.project?.title,
                   defaultValue: `Are you sure you want to approve being a supervisor for "${state.selectedRequest.project?.title ?? ''}"?`,
                 })
-                : t('supervisor.rejectRequestConfirm', {
+                : t('supervisor_dashboard.rejectRequestConfirm', {
                   title: state.selectedRequest.project?.title,
                   defaultValue: `Are you sure you want to reject being a supervisor for "${state.selectedRequest.project?.title ?? ''}"?`,
                 })}
             </p>
             <div className="space-y-2">
               <Label htmlFor="response">
-                {t('supervisor.response', { defaultValue: 'Response/Comments' })}{' '}
+                {t('supervisor_dashboard.response', { defaultValue: 'Response/Comments' })}{' '}
                 {state.action === 'reject' && (
                   <span className="text-destructive">*</span>
                 )}
@@ -225,7 +225,7 @@ export function AssignmentRequestsList() {
                 onChange={(e) =>
                   setState((prev) => ({ ...prev, response: e.target.value }))
                 }
-                placeholder={t('supervisor.addResponse', {
+                placeholder={t('supervisor_dashboard.addResponse', {
                   defaultValue: 'Add a response...',
                 })}
                 required={state.action === 'reject'}

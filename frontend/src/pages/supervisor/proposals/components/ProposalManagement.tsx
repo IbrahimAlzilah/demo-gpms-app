@@ -4,7 +4,7 @@ import { useSupervisorProposals } from '../hooks/useProposals'
 import { ProposalForm } from './ProposalForm'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui'
 import { LoadingSpinner, StatusBadge } from '@/components/common'
-import { PlusCircle , Edit, FileText } from 'lucide-react'
+import { PlusCircle, Edit, FileText } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils/format'
 
 export function ProposalManagement() {
@@ -24,17 +24,17 @@ export function ProposalManagement() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">{t('supervisor.proposalManagement')}</h2>
+        <h2 className="text-2xl font-bold">{t('supervisor_dashboard.proposalManagement')}</h2>
         <Button onClick={() => setShowForm(true)}>
-          <PlusCircle  className="size-4" />
-          {t('supervisor.createProposal')}
+          <PlusCircle className="size-4" />
+          {t('supervisor_dashboard.createProposal')}
         </Button>
       </div>
 
       {showForm && (
         <Card>
           <CardHeader>
-            <CardTitle>{t('supervisor.createNewProposal')}</CardTitle>
+            <CardTitle>{t('supervisor_dashboard.createNewProposal')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ProposalForm
@@ -92,7 +92,7 @@ export function ProposalManagement() {
         ) : (
           <Card>
             <CardContent className="py-8 text-center text-muted-foreground">
-              {t('supervisor.noProposals')}
+              {t('supervisor_dashboard.noProposals')}
             </CardContent>
           </Card>
         )}

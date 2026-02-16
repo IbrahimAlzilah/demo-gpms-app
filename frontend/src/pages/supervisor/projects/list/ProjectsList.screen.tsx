@@ -70,7 +70,7 @@ export function ProjectsList({ onProjectSelect, onEvaluate: onEvaluateProp }: Pr
           onSearchChange={setGlobalFilter}
           enableFiltering={true}
           enableViews={true}
-          emptyMessage={t('supervisor.noProjects')}
+          emptyMessage={t('supervisor_dashboard.noProjects')}
         />
       </BlockContent>
 
@@ -78,7 +78,7 @@ export function ProjectsList({ onProjectSelect, onEvaluate: onEvaluateProp }: Pr
         <BlockContent variant="container" className="border-destructive">
           <div className="flex items-center gap-2 text-destructive">
             <AlertCircle className="h-5 w-5" />
-            <span>{t('supervisor.loadError')}</span>
+            <span>{t('supervisor_dashboard.loadError')}</span>
           </div>
         </BlockContent>
       )}
@@ -89,8 +89,8 @@ export function ProjectsList({ onProjectSelect, onEvaluate: onEvaluateProp }: Pr
         onOpenChange={(open) => !open && closeEvaluationModal()}
         title={
           evaluationModal.studentId
-            ? t('supervisor.evaluateProject')
-            : t('supervisor.selectStudentToEvaluate')
+            ? t('supervisor_dashboard.evaluateProject')
+            : t('supervisor_dashboard.selectStudentToEvaluate')
         }
         className="sm:max-w-[600px]"
       >
@@ -99,7 +99,7 @@ export function ProjectsList({ onProjectSelect, onEvaluate: onEvaluateProp }: Pr
             {!evaluationModal.studentId ? (
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground mb-4">
-                  {t('supervisor.selectStudentDescription')}
+                  {t('supervisor_dashboard.selectStudentDescription')}
                 </p>
                 <div className="grid gap-3">
                   {evaluationModal.project.students.map((student) => (

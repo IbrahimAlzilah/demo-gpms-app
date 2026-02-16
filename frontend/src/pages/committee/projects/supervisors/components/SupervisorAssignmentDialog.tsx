@@ -60,14 +60,14 @@ export function SupervisorAssignmentDialog({
   }
 
   return (
-    <ModalDialog open={open} onOpenChange={onOpenChange} title={t('supervisor.assignSupervisor', { defaultValue: 'Assign Supervisor' })} description={project?.title}>
+    <ModalDialog open={open} onOpenChange={onOpenChange} title={t('supervisor_assignments.assignSupervisor', { defaultValue: 'Assign Supervisor' })} description={project?.title}>
       <div className="space-y-6 py-4">
         {/* Supervisor Selection */}
         <div className="space-y-2">
-          <Label>{t('supervisor.selectSupervisor', { defaultValue: 'Select Supervisor' })}</Label>
+          <Label>{t('supervisor_assignments.selectSupervisor', { defaultValue: 'Select Supervisor' })}</Label>
           <Select value={selectedSupervisor} onValueChange={setSelectedSupervisor}>
             <SelectTrigger>
-              <SelectValue placeholder={t('supervisor.selectSupervisor', { defaultValue: 'Select Supervisor' })} />
+              <SelectValue placeholder={t('supervisor_assignments.selectSupervisor', { defaultValue: 'Select Supervisor' })} />
             </SelectTrigger>
             <SelectContent>
               {supervisors.map((supervisor) => (
@@ -82,23 +82,23 @@ export function SupervisorAssignmentDialog({
 
         {/* Assignment Type */}
         <div className="space-y-3">
-          <Label>{t('supervisor.assignmentType', { defaultValue: 'Assignment Type' })}</Label>
+          <Label>{t('supervisor_assignments.assignmentType', { defaultValue: 'Assignment Type' })}</Label>
           <RadioGroup value={assignmentType} onValueChange={(value) => setAssignmentType(value as 'direct' | 'request')} className="bg-muted/30 p-3 rounded-lg border gap-3">
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="request" id="request" />
               <Label htmlFor="request" className="font-normal">
-                {t('supervisor.requestApproval', { defaultValue: 'Request Approval (Recommended)' })}
+                {t('supervisor_assignments.requestApproval', { defaultValue: 'Request Approval (Recommended)' })}
                 <p className="text-xs text-muted-foreground">
-                  {t('supervisor.requestApprovalDesc', { defaultValue: 'Send request to supervisor for approval' })}
+                  {t('supervisor_assignments.requestApprovalDesc', { defaultValue: 'Send request to supervisor for approval' })}
                 </p>
               </Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="direct" id="direct" />
               <Label htmlFor="direct" className="font-normal">
-                {t('supervisor.directAssignment', { defaultValue: 'Direct Assignment' })}
+                {t('supervisor_assignments.directAssignment', { defaultValue: 'Direct Assignment' })}
                 <p className="text-xs text-muted-foreground">
-                  {t('supervisor.directAssignmentDesc', { defaultValue: 'Assign immediately without approval' })}
+                  {t('supervisor_assignments.directAssignmentDesc', { defaultValue: 'Assign immediately without approval' })}
                 </p>
               </Label>
             </div>
@@ -109,14 +109,14 @@ export function SupervisorAssignmentDialog({
         <div className="space-y-2">
           <Label htmlFor="notes">
             {assignmentType === 'request'
-              ? t('supervisor.notesForSupervisor', { defaultValue: 'Notes for Supervisor' })
-              : t('supervisor.notes', { defaultValue: 'Notes' })}
+              ? t('supervisor_assignments.notesForSupervisor', { defaultValue: 'Notes for Supervisor' })
+              : t('supervisor_assignments.notes', { defaultValue: 'Notes' })}
           </Label>
           <Textarea
             id="notes"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder={t('supervisor.assignmentNotesPlaceholder', { defaultValue: 'Add any notes...' })}
+            placeholder={t('supervisor_assignments.assignmentNotesPlaceholder', { defaultValue: 'Add any notes...' })}
             rows={3}
           />
         </div>
@@ -132,8 +132,8 @@ export function SupervisorAssignmentDialog({
         >
           {loading ? t('common.loading', { defaultValue: 'Loading...' }) :
             assignmentType === 'request'
-              ? t('supervisor.sendRequest', { defaultValue: 'Send Request' })
-              : t('supervisor.assign', { defaultValue: 'Assign' })
+              ? t('supervisor_assignments.sendRequest', { defaultValue: 'Send Request' })
+              : t('supervisor_assignments.assign', { defaultValue: 'Assign' })
           }
         </Button>
       </div>

@@ -89,7 +89,13 @@ class MeetingController extends Controller
         
         if (!empty($projectStudentIds)) {
             $formattedDate = \Carbon\Carbon::parse($meeting->scheduled_date)->format('Y-m-d H:i');
-            $message = "تم جدولة اجتماع جديد للمشروع '{$project->title}' في {$formattedDate}";
+            $message = json_encode([
+                'key' => 'notifications.meeting.scheduled',
+                'params' => [
+                    'project_title' => $project->title,
+                    'date' => $formattedDate
+                ]
+            ]);
             
             $notificationService->createForUsers(
                 $projectStudentIds,
@@ -153,7 +159,14 @@ class MeetingController extends Controller
         
         if (!empty($projectStudentIds)) {
             $formattedDate = \Carbon\Carbon::parse($meeting->scheduled_date)->format('Y-m-d H:i');
-            $message = "تم تحديث اجتماع المشروع '{$project->title}' إلى {$formattedDate} - " . ($validated['location'] ?? 'موقع غير محدد');
+            $message = json_encode([
+                'key' => 'notifications.meeting.updated',
+                'params' => [
+                    'project_title' => $project->title,
+                    'date' => $formattedDate,
+                    'location' => $validated['location'] ?? 'N/A'
+                ]
+            ]);
             
             $notificationService->createForUsers(
                 $projectStudentIds,

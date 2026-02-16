@@ -13,7 +13,7 @@ export interface ProjectFilters {
  * Project table column definition props
  */
 export interface ProjectTableColumnsProps {
-  t: (key: string) => string
+  t: (key: string, options?: any) => string
   onProjectSelect?: (project: Project) => void
   navigate?: (path: string) => void
   onEvaluate?: (project: Project) => void

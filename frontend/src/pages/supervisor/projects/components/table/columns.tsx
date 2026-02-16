@@ -107,7 +107,7 @@ export function createProjectColumns({
     {
       id: 'committeeStatus',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('supervisor.committeeStatus')} />
+        <DataTableColumnHeader column={column} title={t('supervisor_dashboard.committeeStatus')} />
       ),
       cell: ({ row }) => {
         // Fallback logic if committeeStatus string is missing
@@ -128,7 +128,7 @@ export function createProjectColumns({
     {
       id: 'defenseStage',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('supervisor.defenseStage')} />
+        <DataTableColumnHeader column={column} title={t('supervisor_dashboard.defenseStage')} />
       ),
       cell: ({ row }) => {
         const defenseStage = row.original.defenseStage
@@ -154,7 +154,7 @@ export function createProjectColumns({
     {
       id: 'defenseDate',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('supervisor.defenseDate')} />
+        <DataTableColumnHeader column={column} title={t('supervisor_dashboard.defenseDate')} />
       ),
       cell: ({ row }) => {
         const defenseStage = row.original.defenseStage
@@ -181,7 +181,7 @@ export function createProjectColumns({
     {
       id: 'supervisorEvaluation',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('supervisor.evaluationStatus')} />
+        <DataTableColumnHeader column={column} title={t('supervisor_dashboard.evaluationStatus')} />
       ),
       cell: ({ row }) => {
         const evalStatus = row.original.supervisorEvaluationStatus
@@ -205,7 +205,7 @@ export function createProjectColumns({
             />
             <div className="flex flex-col gap-0.5">
               <Badge variant={isEvaluated ? 'default' : 'outline'} className={currentStageStatus.isComplete ? 'bg-green-600 text-white hover:bg-green-700' : ''}>
-                {isEvaluated ? t('supervisor.evaluated') : t('supervisor.notEvaluated')}
+                {isEvaluated ? t('supervisor_dashboard.evaluated') : t('supervisor_dashboard.notEvaluated')}
               </Badge>
               <span className="text-xs text-muted-foreground">{progress}</span>
             </div>

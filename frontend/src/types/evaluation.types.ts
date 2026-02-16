@@ -41,14 +41,14 @@ export interface Grade extends BaseEntity {
   /** FD1 specific fields */
   fd1FinalGrade?: number | null
   fd1Adjustment?: number | null
-  fd1Approved?: boolean
+  isFd1Approved?: boolean
   fd1Published?: boolean
   fd1ApprovalStatus?: 'pending' | 'approved' | 'published'
   fd1GradeBreakdown?: GradeBreakdown & { defenseStage?: 'fd1' }
   /** FD2 specific fields */
   fd2FinalGrade?: number | null
   fd2Adjustment?: number | null
-  fd2Approved?: boolean
+  isFd2Approved?: boolean
   fd2Published?: boolean
   fd2ApprovalStatus?: 'pending' | 'approved' | 'published'
   fd2GradeBreakdown?: GradeBreakdown & { defenseStage?: 'fd2' }

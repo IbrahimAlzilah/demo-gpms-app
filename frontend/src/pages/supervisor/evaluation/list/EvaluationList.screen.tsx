@@ -116,14 +116,6 @@ export function EvaluationList() {
   return (
     <>
       <BlockContent title={t('nav.evaluation')} variant="data-table">
-        <Card className="mb-6 border-emerald-200 bg-emerald-50/50 dark:bg-emerald-950/20 dark:border-emerald-900/50">
-          <CardContent className="p-3 flex items-center gap-3">
-            <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <p className="text-sm text-emerald-800 dark:text-emerald-200">
-              {t('evaluation.supervisorOnlyGrades') || "You are submitting your supervisor grades only. Committee members' grades are private."}
-            </p>
-          </CardContent>
-        </Card>
         <DataTable
           columns={columns}
           data={data.items}
@@ -170,7 +162,7 @@ export function EvaluationList() {
             }))
           }
           title={`${t('evaluation.evaluate')} – ${state.selectedStage === 'fd1' ? t('evaluation.fd1') : t('evaluation.fd2')}`}
-          size="xl"
+          className="lg:max-w-3xl"
         >
           <UnifiedEvaluationModal
             open={state.showEvaluationModal}

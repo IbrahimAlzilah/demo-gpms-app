@@ -1,4 +1,4 @@
-import { X, User, Calendar, Users, Award, CheckCircle2, Clock, Check } from "lucide-react"
+import { CheckCircle2, Clock, Check, Users } from "lucide-react"
 import { formatDateTime } from "@/lib/utils/format"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -46,15 +46,30 @@ export function GradeDetailsView({ grade, onClose, stage, onApprove }: GradeDeta
 
     const stageData = getStageData()
 
+    // Helper to get stage-specific data
+    const stageBreakdown = stage === 'fd1' ? grade.fd1GradeBreakdown : (stage === 'fd2' ? grade.fd2GradeBreakdown : undefined)
+
     // Supervisor Data
-    const supervisorGrade = grade.supervisorGrade
-    const supervisorScore = stageData.supScore ?? supervisorGrade?.score
-    const supervisorMax = supervisorGrade?.maxScore ?? 100
+    const stageSupervisorEval = stageBreakdown?.supervisor
+    const genericSupervisorGrade = grade.supervisorGrade
+
+    const supervisorScore = stage ? stageData.supScore : (stageData.supScore ?? genericSupervisorGrade?.score)
+    // If strict stage, use stage max/metadata, else fallback
+    const supervisorMax = (stage ? stageSupervisorEval?.maxScore : genericSupervisorGrade?.maxScore) ?? 100
+    const supervisorDate = (stage ? stageSupervisorEval?.createdAt : genericSupervisorGrade?.evaluatedAt)
+    const supervisorBy = (stage ? stageSupervisorEval?.evaluatorName : genericSupervisorGrade?.evaluatedBy)
+    const supervisorComments = (stage ? stageSupervisorEval?.notes : genericSupervisorGrade?.comments)
 
     // Committee Data
-    const committeeGrade = grade.committeeGrade
-    const committeeScore = stageData.comScore ?? committeeGrade?.score
-    const committeeMax = committeeGrade?.maxScore ?? 100
+    const genericCommitteeGrade = grade.committeeGrade
+    const committeeScore = stage ? stageData.comScore : (stageData.comScore ?? genericCommitteeGrade?.score)
+    const committeeMax = genericCommitteeGrade?.maxScore ?? 100
+    // Committee metadata remains on generic object as breakdown is per-member and UI expects aggregate
+    // (Note: For FD1/FD2, committee usually submits individually, so aggregate 'evaluatedAt' is ambiguous)
+    const committeeDate = genericCommitteeGrade?.evaluatedAt
+    const committeeBy = genericCommitteeGrade?.evaluatedBy
+    const committeeComments = genericCommitteeGrade?.comments
+    const committeeMembersList = genericCommitteeGrade?.committeeMembers
 
     // Final Data
     const finalGrade = stageData.final
@@ -122,10 +137,10 @@ export function GradeDetailsView({ grade, onClose, stage, onApprove }: GradeDeta
                         <CardContent className="pt-4 space-y-4">
                             <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                                 <Badge variant="outline" className="bg-slate-50 font-normal gap-1">
-                                    {t('common.date')}: {formatDateTime(supervisorGrade?.evaluatedAt)}
+                                    {t('common.date')}: {formatDateTime(supervisorDate)}
                                 </Badge>
                                 <Badge variant="outline" className="bg-slate-50 font-normal gap-1">
-                                    {t('common.by')}: {supervisorGrade?.evaluatedBy || '-'}
+                                    {t('common.by')}: {supervisorBy || '-'}
                                 </Badge>
                             </div>
 
@@ -134,7 +149,7 @@ export function GradeDetailsView({ grade, onClose, stage, onApprove }: GradeDeta
                             <div className="space-y-2">
                                 <span className="text-xs font-medium text-muted-foreground block">{t('committee.grades.comments')}:</span>
                                 <p className="text-sm leading-relaxed text-slate-700 bg-slate-50 p-3 rounded-md min-h-[60px]">
-                                    {supervisorGrade?.comments || t('common.noComments')}
+                                    {supervisorComments || t('common.noComments')}
                                 </p>
                             </div>
 
@@ -159,16 +174,16 @@ export function GradeDetailsView({ grade, onClose, stage, onApprove }: GradeDeta
                         <CardContent className="pt-4 space-y-4">
                             <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                                 <Badge variant="outline" className="bg-slate-50 font-normal gap-1">
-                                    {t('common.date')}: {formatDateTime(committeeGrade?.evaluatedAt)}
+                                    {t('common.date')}: {formatDateTime(committeeDate)}
                                 </Badge>
                                 <Badge variant="outline" className="bg-slate-50 font-normal gap-1">
-                                    {t('common.by')}: {committeeGrade?.evaluatedBy || '-'}
+                                    {t('common.by')}: {committeeBy || '-'}
                                 </Badge>
                             </div>
 
-                            {committeeGrade?.committeeMembers && (
+                            {committeeMembersList && committeeMembersList.length > 0 && (
                                 <div className="text-xs text-muted-foreground">
-                                    {t('committee.grades.committeeMembers')}: {committeeGrade.committeeMembers.join(', ')}
+                                    {t('committee.grades.committeeMembers')}: {committeeMembersList.join(', ')}
                                 </div>
                             )}
 
@@ -177,7 +192,7 @@ export function GradeDetailsView({ grade, onClose, stage, onApprove }: GradeDeta
                             <div className="space-y-2">
                                 <span className="text-xs font-medium text-muted-foreground block">{t('committee.grades.comments')}:</span>
                                 <p className="text-sm leading-relaxed text-slate-700 bg-slate-50 p-3 rounded-md min-h-[60px]">
-                                    {committeeGrade?.comments || t('common.noComments')}
+                                    {committeeComments || t('common.noComments')}
                                 </p>
                             </div>
                         </CardContent>
@@ -189,7 +204,7 @@ export function GradeDetailsView({ grade, onClose, stage, onApprove }: GradeDeta
                             <div className="flex flex-col gap-1">
                                 <h3 className="font-semibold text-sm text-foreground">{t('committee.grades.approvalAndFinal')}</h3>
                                 <div className="flex gap-2 items-center">
-                                    <Badge variant={isApproved ? "success" : "secondary"} className={cn("gap-1", isApproved ? "bg-green-100 text-green-700 hover:bg-green-200" : "")}>
+                                    <Badge variant={(isApproved ? "secondary" : "secondary") as any} className={cn("gap-1", isApproved ? "bg-green-100 text-green-700 hover:bg-green-200" : "")}>
                                         {isApproved ? (
                                             <><CheckCircle2 className="h-3 w-3" /> {t('committee.grades.approved')}</>
                                         ) : (

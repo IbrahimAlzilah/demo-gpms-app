@@ -136,7 +136,13 @@ class GradeController extends Controller
             // Notify student about grade approval
             $this->notificationService->create(
                 $grade->student,
-                "تم اعتماد درجتك النهائية في المشروع: {$grade->project->title}\nالدرجة النهائية: {$grade->final_grade}",
+                json_encode([
+                    'key' => 'notifications.grade.approved',
+                    'params' => [
+                        'project_title' => $grade->project->title,
+                        'final_grade' => $grade->final_grade
+                    ]
+                ]),
                 'grade_approved',
                 'grade',
                 $grade->id
@@ -269,7 +275,13 @@ class GradeController extends Controller
                 // Send notification to student
                 $this->notificationService->create(
                     $grade->student,
-                    "تم إعلان نتيجتك النهائية في المشروع: {$grade->project->title}\nالدرجة النهائية: {$grade->final_grade}",
+                    json_encode([
+                        'key' => 'notifications.grade.published',
+                        'params' => [
+                            'project_title' => $grade->project->title,
+                            'final_grade' => $grade->final_grade
+                        ]
+                    ]),
                     'grade_published',
                     'grade',
                     $grade->id

@@ -151,20 +151,22 @@ export function useDocumentsList() {
   }, [userProject]);
 
   // Check if Final Defense 1 is completed (all students have approved grades)
-  const finalDefense1Completed = useMemo(() => {
-    if (!userProject || !grades || !userProject.students?.length) return false;
-    const projectGrades = grades.filter((g) => g.projectId === userProject.id);
-    const studentIds = new Set(userProject.students.map((s) => s.id));
-    const approvedGrades = projectGrades.filter(
-      (g) =>
-        g.isApproved &&
-        g.finalGrade !== undefined &&
-        studentIds.has(g.studentId),
-    );
-    return (
-      approvedGrades.length === studentIds.size && approvedGrades.length > 0
-    );
-  }, [userProject, grades]);
+  // const finalDefense1Completed = useMemo(() => {
+  //   if (!userProject || !grades || !userProject.students?.length) return false;
+  //   const projectGrades = grades.filter((g) => g.projectId === userProject.id);
+  //   const studentIds = new Set(userProject.students.map((s) => s.id));
+  //   const approvedGrades = projectGrades.filter(
+  //     (g) =>
+  //       g.isApproved &&
+  //       g.finalGrade !== undefined &&
+  //       studentIds.has(g.studentId),
+  //   );
+  //   return (
+  //     approvedGrades.length === studentIds.size && approvedGrades.length > 0
+  //   );
+  // }, [userProject, grades]);
+
+  const finalDefense1Completed = isPhase2Active ;
 
   // Check if Final Defense 2 is completed (similar check, but we'll use the same grades for now)
   // In a real system, you might have separate grade records for defense 1 and 2

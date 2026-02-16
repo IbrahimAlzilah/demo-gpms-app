@@ -15,31 +15,34 @@ const truncateErrorMessage = (message: string, maxLength: number = 150): string 
 export function useToast() {
   const { t } = useTranslation()
 
-  const toastSuccess = (message: string) => {
-    // If message is a key, t() translates it. If it's a raw string not in dict, t() returns it.
+  const toastSuccess = (message: string, options?: any) => {
     toast.success(t(message), {
       duration: 3000,
+      ...options,
     })
   }
 
-  const toastError = (message: string) => {
+  const toastError = (message: string, options?: any) => {
     const translated = t(message)
     const truncated = truncateErrorMessage(translated)
 
     toast.error(truncated, {
       duration: 5000,
+      ...options,
     })
   }
 
-  const toastWarning = (message: string) => {
+  const toastWarning = (message: string, options?: any) => {
     toast.warning(t(message), {
       duration: 4000,
+      ...options,
     })
   }
 
-  const toastInfo = (message: string) => {
+  const toastInfo = (message: string, options?: any) => {
     toast.info(t(message), {
       duration: 3000,
+      ...options,
     })
   }
 

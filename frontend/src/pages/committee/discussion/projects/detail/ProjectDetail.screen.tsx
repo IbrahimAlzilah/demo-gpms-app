@@ -93,7 +93,7 @@ export function ProjectDetailScreen() {
   return (
     <MainLayout>
       <div className="space-y-6 animate-in fade-in duration-300 pb-10">
-        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+        {/* <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
           <Button variant="ghost" size="sm" asChild className="gap-1 -ms-2">
             <Link to={ROUTES.DISCUSSION_COMMITTEE.PROJECTS}>
               <ChevronLeft className="h-4 w-4" />
@@ -104,22 +104,18 @@ export function ProjectDetailScreen() {
           <span className="font-medium text-foreground truncate max-w-[200px] sm:max-w-none">
             {project.title}
           </span>
-        </div>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xl">{project.title}</CardTitle>
-            {project.description && (
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap mt-1">
-                {project.description}
-              </p>
-            )}
-          </CardHeader>
-        </Card>
+        </div> */}
 
         <Card>
           <CardHeader className="pb-2 flex flex-row items-center justify-between gap-4">
-            <CardTitle className="text-sm">{t('discussion.workflowStatus')}</CardTitle>
+            <div>
+              <CardTitle className="text-xl">{project.title}</CardTitle>
+              {project.description && (
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap mt-1">
+                  {project.description}
+                </p>
+              )}
+            </div>
             {studentsCount > 0 && (
               <Button
                 size="sm"
@@ -130,6 +126,12 @@ export function ProjectDetailScreen() {
                 {t('discussion.evaluateProject')}
               </Button>
             )}
+          </CardHeader>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between gap-4">
+            <CardTitle className="text-sm">{t('discussion.workflowStatus')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-4 text-sm">

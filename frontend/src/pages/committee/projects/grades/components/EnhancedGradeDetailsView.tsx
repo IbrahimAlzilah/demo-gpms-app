@@ -1,4 +1,4 @@
-import { X, User, Calendar, Users, Award, CheckCircle2, Clock, Check, AlertCircle } from "lucide-react"
+import { X, User, Users, Award, CheckCircle2, Clock, Check, AlertCircle } from "lucide-react"
 import { formatDateTime } from "@/lib/utils/format"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -18,11 +18,11 @@ interface EnhancedGradeDetailsViewProps {
     validationErrors?: string[]
 }
 
-export function EnhancedGradeDetailsView({ 
-    grade, 
-    onClose, 
-    stage, 
-    onApprove, 
+export function EnhancedGradeDetailsView({
+    grade,
+    onClose,
+    stage,
+    onApprove,
     canApprove = false,
     validationErrors = []
 }: EnhancedGradeDetailsViewProps) {
@@ -36,12 +36,12 @@ export function EnhancedGradeDetailsView({
         if (stage === 'fd1') {
             return {
                 final: grade.fd1FinalGrade,
-                isApproved: grade.fd1Approved
+                isApproved: grade.isFd1Approved
             }
         } else if (stage === 'fd2') {
             return {
                 final: grade.fd2FinalGrade,
-                isApproved: grade.fd2Approved
+                isApproved: grade.isFd2Approved
             }
         }
         // Default/Legacy
@@ -301,7 +301,7 @@ export function EnhancedGradeDetailsView({
                                 {/* Contributions Breakdown */}
                                 <div className="space-y-3">
                                     <h3 className="font-semibold text-sm text-foreground mb-4">Grade Contributions</h3>
-                                    
+
                                     {breakdown?.supervisor && (
                                         <div className="flex justify-between items-center p-2 bg-amber-50 rounded">
                                             <span className="text-sm text-amber-800">Supervisor</span>
@@ -341,7 +341,7 @@ export function EnhancedGradeDetailsView({
                                 {/* Approval Status */}
                                 <div className="space-y-3">
                                     <h3 className="font-semibold text-sm text-foreground mb-4">Approval Status</h3>
-                                    
+
                                     <div className="space-y-2">
                                         <Badge variant={isApproved ? "default" : "secondary"} className={cn(
                                             "w-full justify-center py-2 gap-2",
@@ -365,8 +365,8 @@ export function EnhancedGradeDetailsView({
                                             <Alert>
                                                 <AlertCircle className="h-4 w-4" />
                                                 <AlertDescription className="text-xs">
-                                                    {validationErrors.length > 0 
-                                                        ? "Cannot approve: Missing required evaluations above." 
+                                                    {validationErrors.length > 0
+                                                        ? "Cannot approve: Missing required evaluations above."
                                                         : "All evaluations submitted. Ready for approval."}
                                                 </AlertDescription>
                                             </Alert>

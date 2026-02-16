@@ -50,7 +50,7 @@ export function SupervisorsList() {
         await supervisorAssignmentService.requestAssignment(projectId, supervisorId, notes)
         queryClient.invalidateQueries({ queryKey: ['supervisor-assignment-table'] })
         queryClient.invalidateQueries({ queryKey: ['supervisor-assignment-requests'] })
-        toastSuccess('supervisor.requestSent')
+        toastSuccess('supervisor_assignments.requestSent')
       } else {
         await assignSupervisor.mutateAsync({ projectId, supervisorId })
         toastSuccess('committee.supervisors.assignmentSuccess')
@@ -70,7 +70,7 @@ export function SupervisorsList() {
     if (cancelRequestId == null) return
     try {
       await supervisorAssignmentService.cancelAssignmentRequest(cancelRequestId)
-      toastSuccess('supervisor.requestCancelled')
+      toastSuccess('supervisor_assignments.requestCancelled')
       queryClient.invalidateQueries({ queryKey: ['supervisor-assignment-table'] })
       queryClient.invalidateQueries({ queryKey: ['supervisor-assignment-requests'] })
       setCancelRequestId(null)
@@ -176,8 +176,8 @@ export function SupervisorsList() {
           if (!open) setCancelRequestId(null)
         }}
         onConfirm={handleCancelRequestConfirm}
-        title={t('supervisor.cancelRequest')}
-        description={t('supervisor.cancelRequestConfirm')}
+        title={t('supervisor_assignments.cancelRequest')}
+        description={t('supervisor_assignments.cancelRequestConfirm')}
         confirmLabel={t('common.confirm')}
         cancelLabel={t('common.cancel')}
       />

@@ -391,14 +391,17 @@ class CommitteeController extends Controller
                 // Send notifications to assigned committee members
                 $committeeMembers = User::whereIn('id', $newMembers)->get();
                 foreach ($committeeMembers as $member) {
-                    $message = [
-                        'en' => "You have been assigned to evaluate project '{$project->title}' for {$assignment['defense_stage']}",
-                        'ar' => "تم تعيينك لتقييم مشروع '{$project->title}' لـ {$assignment['defense_stage']}"
-                    ];
+                    $message = json_encode([
+                        'key' => 'notifications.committee.assigned',
+                        'params' => [
+                            'project_title' => $project->title,
+                            'stage' => $assignment['defense_stage']
+                        ]
+                    ]);
                     
                     $notificationService->create(
                         $member,
-                        json_encode($message),
+                        $message,
                         'committee_assignment',
                         Project::class,
                         $project->id
@@ -595,14 +598,16 @@ class CommitteeController extends Controller
             $committeeMembers = User::whereIn('id', $currentMembers)->get();
             
             foreach ($committeeMembers as $member) {
-                $message = [
-                    'en' => "You have been removed from evaluating project '{$project->title}'",
-                    'ar' => "تم إزالتك من تقييم مشروع '{$project->title}'"
-                ];
+                $message = json_encode([
+                    'key' => 'notifications.committee.removed',
+                    'params' => [
+                        'project_title' => $project->title
+                    ]
+                ]);
                 
                 $notificationService->create(
                     $member,
-                    json_encode($message),
+                    $message,
                     'committee_assignment',
                     Project::class,
                     $project->id

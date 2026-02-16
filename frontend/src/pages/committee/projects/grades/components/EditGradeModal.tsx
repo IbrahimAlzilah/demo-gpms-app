@@ -42,12 +42,12 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSucce
                 setFetchingDetails(true)
                 try {
                     const data = await committeeGradeService.getDefenseReview(grade.project.id, stage)
-                    
+
                     if (data.evaluations?.length) {
                         const studentEvaluation = data.evaluations.find(
                             (e: any) => e.student.id === grade.studentId
                         )
-                        
+
                         if (studentEvaluation) {
                             const breakdown = studentEvaluation.gradeBreakdown || {}
                             setDetailedGrade({
@@ -62,7 +62,7 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSucce
                             })
                         }
                     }
-                    
+
                     setValidationErrors(data.validationErrors || [])
                     setCanApprove(data.canApprove || false)
                 } catch (error) {
@@ -185,7 +185,7 @@ export function EditGradeModal({ open, onOpenChange, grade, mode, stage, onSucce
                             grade={detailedGrade}
                             onClose={() => onOpenChange(false)}
                             stage={stage}
-                            onApprove={(!(stage === 'fd1' ? grade.fd1Approved : grade.fd2Approved) && !(stage === 'fd1' ? grade.fd1Published : grade.fd2Published)) ? handleApproveFromView : undefined}
+                            onApprove={(!(stage === 'fd1' ? grade.isFd1Approved : grade.isFd2Approved) && !(stage === 'fd1' ? grade.fd1Published : grade.fd2Published)) ? handleApproveFromView : undefined}
                             canApprove={canApprove}
                             validationErrors={validationErrors}
                         />

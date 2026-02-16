@@ -105,13 +105,15 @@ class DocumentService
                 if ($project->supervisor_id) {
                     $supervisor = User::find($project->supervisor_id);
                     if ($supervisor) {
-                        $documentTypeAr = $type === 'chapters' ? 'فصل' : 'مستند';
-                        $chapterInfo = $chapterNumber ? " (الفصل {$chapterNumber})" : '';
-                        $message = "تم إعادة رفع {$documentTypeAr}{$chapterInfo} للمشروع: {$project->title}";
-                        
                         $this->notificationService->create(
                             $supervisor,
-                            $message,
+                            json_encode([
+                                'key' => $type === 'chapters' ? 'notifications.document.chapter_resubmitted' : 'notifications.document.file_resubmitted',
+                                'params' => [
+                                    'chapter_number' => $chapterNumber,
+                                    'project_title' => $project->title
+                                ]
+                            ]),
                             'document_resubmitted',
                             'document',
                             $existing->id
@@ -139,13 +141,15 @@ class DocumentService
         if ($project->supervisor_id) {
             $supervisor = User::find($project->supervisor_id);
             if ($supervisor) {
-                $documentTypeAr = $type === 'chapters' ? 'فصل' : 'مستند';
-                $chapterInfo = $chapterNumber ? " (الفصل {$chapterNumber})" : '';
-                $message = "تم رفع {$documentTypeAr} جديد{$chapterInfo} للمشروع: {$project->title}";
-                
                 $this->notificationService->create(
                     $supervisor,
-                    $message,
+                    json_encode([
+                        'key' => $type === 'chapters' ? 'notifications.document.chapter_uploaded' : 'notifications.document.file_uploaded',
+                        'params' => [
+                            'chapter_number' => $chapterNumber,
+                            'project_title' => $project->title
+                        ]
+                    ]),
                     'document_uploaded',
                     'document',
                     $document->id
@@ -296,18 +300,16 @@ class DocumentService
         if ($document->submitted_by) {
             $submitter = User::find($document->submitted_by);
             if ($submitter) {
-                $statusAr = $status === 'approved' ? 'قبول' : 'رفض';
-                $documentTypeAr = $document->type === 'chapters' ? 'الفصل' : 'المستند';
-                $chapterInfo = $document->chapter_number ? " {$document->chapter_number}" : '';
-                $message = "تم {$statusAr} {$documentTypeAr}{$chapterInfo} للمشروع: {$document->project->title}";
-                
-                if ($comments) {
-                    $message .= "\nملاحظات المشرف: {$comments}";
-                }
-                
                 $this->notificationService->create(
                     $submitter,
-                    $message,
+                    json_encode([
+                        'key' => ($document->type === 'chapters' ? 'notifications.document.chapter_' : 'notifications.document.file_') . $status,
+                        'params' => [
+                            'chapter_number' => $document->chapter_number,
+                            'project_title' => $document->project->title,
+                            'comments' => $comments
+                        ]
+                    ]),
                     "document_{$status}",
                     'document',
                     $document->id

@@ -68,13 +68,15 @@ class SendDeadlineReminders extends Command
                             ->exists();
 
                         if (!$existing) {
-                            $periodLabel = $this->getPeriodTypeLabel($period->type);
-                            $message = "موعد تسليم قريب: {$periodLabel}\n";
-                            $message .= "موعد التسليم خلال {$daysBefore} " . ($daysBefore > 1 ? 'أيام' : 'يوم');
-
                             $this->notificationService->create(
                                 $user,
-                                $message,
+                                json_encode([
+                                    'key' => 'notifications.deadline.reminder',
+                                    'params' => [
+                                        'period_type' => $period->type,
+                                        'days_remaining' => $daysBefore
+                                    ]
+                                ]),
                                 $notificationType,
                                 'time_period',
                                 $period->id
