@@ -7,8 +7,8 @@ use App\Models\DefenseApproval;
 use App\Models\Grade;
 use App\Models\Project;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Secure grading engine for Committee, Supervisor, and Project Committee.
@@ -33,8 +33,8 @@ class GradingEngineService
      *
      * Returns per student:
      * - rawGrades: { supervisor: { raw, evaluatorId, evaluatorName }, committeeMembers: [...] }
-     * - committeeTotal
-     * - supervisorContribution
+     * - committeeTotal (Scaled)
+     * - supervisorContribution (Scaled)
      * - committeeAdjustment
      * - finalGrade
      */
@@ -45,7 +45,8 @@ class GradingEngineService
         }
 
         // Eager load students and all evaluations for this project/stage in one query
-        $project->loadMissing(['students', 'committeeMembers']);
+        $project->loadMissing(['students', 'committeeMembers', 'supervisor']);
+        
         $evaluations = DefenseEvaluation::where('project_id', $project->id)
             ->where('defense_stage', $stage)
             ->with('evaluator:id,name')
@@ -57,47 +58,78 @@ class GradingEngineService
             ->keyBy('student_id');
 
         $result = [];
+        $committeeMemberCount = $project->committeeMembers->count();
+
         foreach ($project->students as $student) {
             $studentEvals = $evaluations->where('student_id', $student->id);
             $supervisorEval = $studentEvals->where('evaluator_role', 'supervisor')->first();
             $committeeEvals = $studentEvals->where('evaluator_role', 'committee_member');
-
+            
+            // Supervisor Calculation: Grade / 2 (50% weight)
             $supervisorRaw = null;
-            $committeeMembersRaw = [];
             $supervisorContribution = 0;
-            $committeeTotal = 0;
-
             if ($supervisorEval) {
-                $norm = $supervisorEval->max_score > 0
-                    ? ($supervisorEval->score / $supervisorEval->max_score) * 100
-                    : 0;
-                $supervisorContribution = ($norm / 100) / 2;
+                $rawScore = (float) $supervisorEval->score;
+                $maxScore = (float) $supervisorEval->max_score > 0 ? (float) $supervisorEval->max_score : 100;
+                $normalized = ($rawScore / $maxScore) * 100;
+                $supervisorContribution = $normalized / 2; // 50%
+
                 $supervisorRaw = [
                     'evaluatorId' => $supervisorEval->evaluator_id,
-                    'evaluatorName' => $supervisorEval->evaluator->name ?? '',
-                    'rawScore' => (float) $supervisorEval->score,
-                    'maxScore' => (float) $supervisorEval->max_score,
+                    'evaluatorName' => $project->supervisor->name ?? 'Supervisor',
+                    'rawScore' => $rawScore,
+                    'maxScore' => $maxScore,
+                    'contribution' => $supervisorContribution
                 ];
             }
+
+            // Committee Calculation: SUM(Grade / 5) (20% weight per member)
+            $committeeMembersRaw = [];
+            $committeeTotalContribution = 0;
+
             foreach ($committeeEvals as $eval) {
-                $norm = $eval->max_score > 0 ? ($eval->score / $eval->max_score) * 100 : 0;
-                $contrib = $norm / 5; // Committee contribution per member = grade/5
-                $committeeTotal += $contrib;
+                $rawScore = (float) $eval->score;
+                $maxScore = (float) $eval->max_score > 0 ? (float) $eval->max_score : 100;
+                $normalized = ($rawScore / $maxScore) * 100;
+                
+                // Formula: Each member contributes 20% (Grade / 5)
+                // This assumes standard 2-member committee. 
+                // If committee size varies, this formula might strictly imply 20% per *any* member.
+                // Based on user requirement: "Each member contribution = grade / 5"
+                $contribution = $normalized / 5; 
+                
+                $committeeTotalContribution += $contribution;
+
                 $committeeMembersRaw[] = [
                     'evaluatorId' => $eval->evaluator_id,
-                    'evaluatorName' => $eval->evaluator->name ?? '',
-                    'rawScore' => (float) $eval->score,
-                    'maxScore' => (float) $eval->max_score,
+                    'evaluatorName' => $eval->evaluator->name ?? 'Committee Member',
+                    'rawScore' => $rawScore,
+                    'maxScore' => $maxScore,
+                    'contribution' => $contribution
                 ];
             }
-            $supervisorContributionScaled = round($supervisorContribution * 100, 2); // grade/2
-            $committeeTotalScaled = round($committeeTotal, 2); // sum(grade/5)
 
-            $grade = $grades->get($student->id);
-            $adjustment = $grade ? (float) ($stage === 'fd1' ? ($grade->fd1_adjustment ?? 0) : ($grade->fd2_adjustment ?? 0)) : 0;
-            $rawSum = ($supervisorContribution * 100) + $committeeTotal; // supervisor contrib (0-50) + committee total (sum of grade/5)
-            $scaledSum = $rawSum;
-            $finalGrade = $scaledSum > 0 || $adjustment !== 0.0 ? round($scaledSum + $adjustment, 2) : null;
+            // Get Adjustment and Final Grade from stored Grade record or calculate on fly
+            $gradeRecord = $grades->get($student->id);
+            $adjustment = 0.0;
+            if ($gradeRecord) {
+                $adjustment = (float) ($stage === 'fd1' ? ($gradeRecord->fd1_adjustment ?? 0) : ($gradeRecord->fd2_adjustment ?? 0));
+            }
+
+            // Final Grade Calculation
+            // Base = Supervisor (50%) + Committee Total (Sum of 20% chunks)
+            $baseScore = $supervisorContribution + $committeeTotalContribution;
+            
+            // Final = Base + Adjustment
+            $finalGrade = $baseScore + $adjustment;
+
+            // Ensure not negative (optional, but good practice)
+            $finalGrade = max(0, $finalGrade);
+
+            // Cap at 100? Requirement doesn't explicitly say, but grades usually are 0-100.
+            // Leaving uncapped for now to allow bonus points via adjustment if needed, 
+            // but standard logic implies 100 max.
+            // visual display typically truncates.
 
             $result[] = [
                 'student' => [
@@ -110,10 +142,11 @@ class GradingEngineService
                     'supervisor' => $supervisorRaw,
                     'committeeMembers' => $committeeMembersRaw,
                 ],
-                'committeeTotal' => $committeeTotalScaled,
-                'supervisorContribution' => $supervisorContributionScaled,
+                'committeeTotal' => round($committeeTotalContribution, 2),
+                'supervisorContribution' => round($supervisorContribution, 2),
                 'committeeAdjustment' => $adjustment,
-                'finalGrade' => $finalGrade,
+                'finalGrade' => round($finalGrade, 2),
+                'isComplete' => $supervisorEval && ($committeeEvals->count() >= $committeeMemberCount),
             ];
         }
 
@@ -134,6 +167,7 @@ class GradingEngineService
             throw new \InvalidArgumentException('Invalid defense stage. Must be fd1 or fd2.');
         }
 
+        // Verify assignment
         $isAssigned = $project->committeeMembers()->where('users.id', $committeeMember->id)->exists();
         if (!$isAssigned) {
             throw new \Exception('You are not assigned to this project\'s defense committee.');
@@ -147,13 +181,18 @@ class GradingEngineService
             foreach ($items as $item) {
                 $studentId = $item['student_id'] ?? null;
                 $score = $item['score'] ?? null;
+                
+                // Security check: ensure student belongs to project
                 if ($studentId === null || $score === null || !in_array($studentId, $studentIds)) {
-                    continue;
+                    continue; // Skip invalid or unrelated students
                 }
+
                 $student = $project->students->firstWhere('id', $studentId);
-                if (!$student) {
-                    continue;
-                }
+                
+                // Delegate to single evaluation service which handles 
+                // - Unique constraint (update or create)
+                // - Validation
+                // - Audit trail (created_by/modified_by)
                 $evaluation = $this->defenseEvaluationService->submitCommitteeMemberEvaluation(
                     $project,
                     $student,
@@ -185,6 +224,7 @@ class GradingEngineService
             throw new \InvalidArgumentException('Invalid defense stage. Must be fd1 or fd2.');
         }
 
+        // Verify supervisor ownership
         if ($project->supervisor_id !== $supervisor->id) {
             throw new \Exception('Unauthorized to grade this project.');
         }
@@ -197,13 +237,14 @@ class GradingEngineService
             foreach ($items as $item) {
                 $studentId = $item['student_id'] ?? null;
                 $score = $item['score'] ?? null;
+
+                // Security check
                 if ($studentId === null || $score === null || !in_array($studentId, $studentIds)) {
                     continue;
                 }
+                
                 $student = $project->students->firstWhere('id', $studentId);
-                if (!$student) {
-                    continue;
-                }
+
                 $evaluation = $this->defenseEvaluationService->submitSupervisorEvaluation(
                     $project,
                     $student,

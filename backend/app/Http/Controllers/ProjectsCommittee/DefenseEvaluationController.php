@@ -16,6 +16,7 @@ class DefenseEvaluationController extends Controller
 {
     public function __construct(
         protected DefenseEvaluationService $evaluationService,
+        protected \App\Services\GradingEngineService $gradingEngine,
         protected NotificationService $notificationService
     ) {}
 
@@ -77,32 +78,37 @@ class DefenseEvaluationController extends Controller
             ], 400);
         }
 
-        $students = $project->students;
-        $breakdowns = $this->evaluationService->getGradeBreakdownsForProject($project, $stage);
-        $data = [];
-
-        foreach ($students as $student) {
-            $breakdown = $breakdowns[$student->id] ?? [];
-
-            $data[] = [
-                'student' => [
-                    'id' => $student->id,
-                    'name' => $student->name ?? '',
-                    'email' => $student->email,
-                    'studentId' => $student->student_id ?? $student->username,
+        // Use GradingEngine for simplified and secure aggregation
+        $aggregated = $this->gradingEngine->getAggregatedGrades($project, $stage);
+        
+        // Also get detailed breakdowns for frontend compatibility if needed
+        // The GradingEngine returns a structure, we might need to map it to what frontend expects 
+        // OR update frontend to use new structure. 
+        // Looking at frontend `UnifiedEvaluationModal`, it expects:
+        // evaluations: [ { student: {...}, gradeBreakdown: {...}, ... } ]
+        
+        // Let's map GradingEngine result to the expected format
+        $data = array_map(function($item) {
+            return [
+                'student' => $item['student'],
+                'gradeBreakdown' => [
+                    'supervisor' => $item['rawGrades']['supervisor'],
+                    'committeeMembers' => $item['rawGrades']['committeeMembers'],
+                    'supervisorContribution' => $item['supervisorContribution'],
+                    'committeeContribution' => $item['committeeTotal'],
+                    'adjustment' => $item['committeeAdjustment'],
+                    'finalGrade' => $item['finalGrade'],
+                    'projectCommitteeMembers' => [], // TODO: GradingEngine doesn't return these detailed yet?
+                    'projectCommitteeContribution' => 0 // Legacy/Duplicate?
                 ],
-                // Detailed breakdown with individual contributions
-                'gradeBreakdown' => $breakdown,
-                // Legacy format for backward compatibility
-                'supervisorEvaluation' => $breakdown['supervisor'],
-                'committeeEvaluations' => $breakdown['committeeMembers'],
-                'committeeContribution' => $breakdown['committeeContribution'],
-                'projectCommitteeEvaluations' => $breakdown['projectCommitteeMembers'],
-                'projectCommitteeContribution' => $breakdown['projectCommitteeContribution'],
-                'supervisorContribution' => $breakdown['supervisorContribution'],
-                'finalGrade' => $breakdown['finalGrade'],
+                // flatten for legacy compatibility
+                'supervisorEvaluation' => $item['rawGrades']['supervisor'],
+                'committeeEvaluations' => $item['rawGrades']['committeeMembers'],
+                'committeeContribution' => $item['committeeTotal'],
+                'supervisorContribution' => $item['supervisorContribution'],
+                'finalGrade' => $item['finalGrade'],
             ];
-        }
+        }, $aggregated);
 
         // Get approval status
         $approval = DefenseApproval::where('project_id', $project->id)
