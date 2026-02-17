@@ -227,11 +227,6 @@ class DocumentService
             }
         }
 
-        // Phase 2 chapters additionally require Final Defense – 1 to be completed
-        $phase1Chapters = app(\App\Services\SettingsService::class)->getDocumentPhase1Chapters();
-        if ($chapterNumber > $phase1Chapters && !$this->isFinalDefensePhaseOneCompleted($project)) {
-            throw new \Exception('Phase 2 chapters can only be submitted after Final Defense – 1 is completed.');
-        }
     }
 
     /**

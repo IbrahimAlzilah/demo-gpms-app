@@ -68,7 +68,7 @@ export function SupervisorDashboardPage() {
               <div className="text-center space-y-2">
                 <h3 className="font-semibold text-destructive">{t('common.error', { defaultValue: 'Error' })}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {error.message || t('dashboard.supervisor.loadError')}
+                  {error.message || t('dashboard.supervisor_dashboard_info.loadError')}
                 </p>
               </div>
               <Button onClick={() => refetch()} variant="outline" className="mt-2">
@@ -91,7 +91,6 @@ export function SupervisorDashboardPage() {
   }
   const upcomingMeetings = data?.upcomingMeetings || []
   const overdueMilestones = data?.overdueMilestones || []
-  const projectsNeedingAttention = data?.projectsNeedingAttention || []
   const soonMilestones: Array<{ id: string; title: string; projectTitle: string; dueDate: string; daysUntil: number }> = [] // Not provided by backend yet
 
   return (
@@ -99,7 +98,7 @@ export function SupervisorDashboardPage() {
       <div className="space-y-8 animate-in fade-in duration-500 pb-10">
         {/* <DashboardHeader
           title={t('dashboard.welcomeBack', { name: user?.name, defaultValue: `Welcome back, ${user?.name || 'Supervisor'}` })}
-          subtitle={t('dashboard.supervisor.subtitle', { defaultValue: 'Manage your research projects and student progress.' })}
+          subtitle={t('dashboard.supervisor_dashboard_info.subtitle', { defaultValue: 'Manage your research projects and student progress.' })}
         /> */}
         {/* Stats Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -116,7 +115,6 @@ export function SupervisorDashboardPage() {
             icon={UserCheck}
             subValue={t('supervisor_dashboard.pendingRequests')}
             color="yellow"
-            trend={stats.pendingSupervisionRequests > 0 ? { value: stats.pendingSupervisionRequests, label: t('supervisor_dashboard.pendingActions'), positive: false } : undefined}
           />
           <StatsCardComponent
             title={t('nav.meetings')}
@@ -131,7 +129,6 @@ export function SupervisorDashboardPage() {
             icon={ClipboardCheck}
             subValue={t('supervisor_dashboard.pendingEvaluations')}
             color="purple"
-            trend={stats.pendingEvaluations > 0 ? { value: stats.pendingEvaluations, label: t('supervisor_dashboard.needsGrading'), positive: false } : undefined}
           />
         </div>
 

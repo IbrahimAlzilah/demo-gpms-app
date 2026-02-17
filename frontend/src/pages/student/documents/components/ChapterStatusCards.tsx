@@ -63,9 +63,8 @@ export function ChapterStatusCards({
       if (!phaseActive) reason = t('document.chapters.phaseNotActive')
       if (status === 'pending') reason = t('document.chapters.pendingReview')
     } else if (chapterNum === 4) {
-      canSubmit = phaseActive && phase === 2 && finalDefense1Completed && (status === 'not_started' || status === 'rejected')
-      if (!finalDefense1Completed) reason = t('document.chapters.defense1NotCompleted')
-      else if (!phaseActive) reason = t('document.chapters.phaseNotActive')
+      canSubmit = phaseActive && phase === 2 && (status === 'not_started' || status === 'rejected')
+      if (!phaseActive) reason = t('document.chapters.phaseNotActive')
       if (status === 'pending') reason = t('document.chapters.pendingReview')
     } else {
       // Chapters 2, 3, 5, 6: allow submit when prev approved; allow resubmit when rejected
@@ -87,7 +86,7 @@ export function ChapterStatusCards({
     let canReplace = false
     if (status === 'pending' && phaseActive) {
       if (chapterNum === 1) canReplace = phase === 1
-      else if (chapterNum === 4) canReplace = phase === 2 && finalDefense1Completed
+      else if (chapterNum === 4) canReplace = phase === 2
       else {
         const prevChapter = chapterNum - 1
         const prevDoc = chapterDocs.find((doc) => doc.chapterNumber === prevChapter)
