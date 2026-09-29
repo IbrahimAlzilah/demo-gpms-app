@@ -34,3 +34,33 @@ Graduation project management in universities is often handled manually via Exce
 
 ## 📁 Project Structure
 
+```
+frontend/    → React + Vite SPA
+backend/     → Laravel REST API
+docs/        → Architecture, database, API & role documentation
+```
+
+## 🚀 Getting Started
+
+**Backend:**
+```bash
+cd backend
+composer install
+composer run setup
+composer run dev
+```
+
+**Frontend:**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+## 📚 Documentation
+
+Full project documentation is available in [`/docs`](./docs), including:
+- System architecture
+- Database schema
+- API reference
+- User roles & permissions
